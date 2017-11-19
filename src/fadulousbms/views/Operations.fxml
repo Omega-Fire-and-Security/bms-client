@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.OperationsController">
+    <children>
+        <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+            <children>
+                <MenuBar HBox.hgrow="ALWAYS">
+                    <menus>
+                        <Menu mnemonicParsing="false" text="File">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#newClientClick" text="New Client" />
+                                <MenuItem mnemonicParsing="false" onAction="#newSupplierClick" text="New Supplier" />
+                                <MenuItem mnemonicParsing="false" onAction="#newMaterialClick" text="New Material" />
+                                <MenuItem mnemonicParsing="false" onAction="#newQuoteClick" text="New Quote" />
+                                <MenuItem mnemonicParsing="false" onAction="#createPurchaseOrderClick" text="New Purchase Order" />
+                                <MenuItem mnemonicParsing="false" text="Close" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Selected">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="View" />
+                                <MenuItem mnemonicParsing="false" text="Delete" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Help">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="About" />
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+            </children>
+        </HBox>
+        <fx:include source="SystemNav.fxml"/>
+        <TabPane id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
+            <tabs>
+                <!--<fx:include source="JobsTab.fxml" />
+                <fx:include source="MaterialsTab.fxml" />
+                <fx:include source="QuotesTab.fxml" />
+                <fx:include source="PurchaseOrdersTab.fxml" />-->
+                <fx:include source="ClientsTab.fxml" />
+                <fx:include source="SuppliersTab.fxml" />
+            </tabs>
+        </TabPane>
+        <HBox>
+            <children>
+                <Label text="Server Status:" />
+                <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                <Label fx:id="lblOutput" text="console output">
+                    <HBox.margin>
+                        <Insets left="10.0" />
+                    </HBox.margin>
+                </Label>
+            </children>
+        </HBox>
+    </children>
+</VBox>

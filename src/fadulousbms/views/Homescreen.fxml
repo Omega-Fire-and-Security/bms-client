@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane styleClass="border-pane" stylesheets="@../styles/home.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.HomescreenController">
+   <center>
+      <StackPane BorderPane.alignment="CENTER">
+         <children>
+            <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="sys-body" StackPane.alignment="CENTER">
+               <StackPane.margin>
+                  <Insets />
+               </StackPane.margin>
+               <center>
+                  <GridPane alignment="CENTER" hgap="20.0" vgap="20.0" BorderPane.alignment="CENTER">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <BorderPane.margin>
+                        <Insets bottom="40.0" left="70.0" right="70.0" top="40.0" />
+                     </BorderPane.margin>
+                     <children>
+                        <BorderPane onMouseClicked="#hrClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <center>
+                              <Label maxHeight="-Infinity" minWidth="-Infinity" text="HR" BorderPane.alignment="CENTER">
+                                 <font>
+                                    <Font name="FreeSans" size="40.0" />
+                                 </font></Label>
+                           </center>
+                        </BorderPane>
+                        <BorderPane onMouseClicked="#accountingClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1">
+                           <center>
+                              <Label text="Accounting" BorderPane.alignment="CENTER">
+                                 <font>
+                                    <Font size="28.0" />
+                                 </font>
+                              </Label>
+                           </center>
+                        </BorderPane>
+                        <BorderPane fx:id="btnOperations" onMouseClicked="#operationsClick" onMouseEntered="#operationsMouseEnter" onMouseExited="#operationsMouseLeave" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn">
+                           <center>
+                              <Label alignment="CENTER" contentDisplay="CENTER" text="Operations" BorderPane.alignment="CENTER">
+                                 <font>
+                                    <Font size="29.0" />
+                                 </font>
+                              </Label>
+                           </center>
+                        </BorderPane>
+                        <BorderPane onMouseClicked="#safetyClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.rowIndex="1">
+                           <center>
+                              <Label text="Safety" BorderPane.alignment="CENTER">
+                                 <font>
+                                    <Font size="32.0" />
+                                 </font>
+                              </Label>
+                           </center>
+                        </BorderPane>
+                        <BorderPane onMouseClicked="#showSettings" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.rowIndex="2">
+                           <center>
+                              <Label text="Settings" BorderPane.alignment="CENTER">
+                                 <font>
+                                    <Font size="31.0" />
+                                 </font>
+                              </Label>
+                           </center>
+                        </BorderPane>
+                        <BorderPane onMouseClicked="#facilitiesClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <center>
+                              <Label text="Facilities" BorderPane.alignment="CENTER">
+                                 <font>
+                                    <Font size="31.0" />
+                                 </font>
+                              </Label>
+                           </center>
+                        </BorderPane>
+                     </children>
+                     <padding>
+                        <Insets bottom="30.0" left="50.0" right="50.0" top="30.0" />
+                     </padding>
+                  </GridPane>
+               </center>
+            </BorderPane>
+         </children>
+      </StackPane>
+   </center>
+   <top>
+       <fx:include source="SystemNav.fxml"/>
+   </top>
+   <bottom>
+      <HBox BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Server Status:" />
+            <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label fx:id="lblOutput" text="console output">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

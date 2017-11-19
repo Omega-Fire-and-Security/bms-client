@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.AccountingController">
+    <children>
+        <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+            <children>
+                <MenuBar HBox.hgrow="ALWAYS">
+                    <menus>
+                        <Menu mnemonicParsing="false" text="File">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#createAssetClick" text="New Asset" />
+                                <MenuItem mnemonicParsing="false" onAction="#newExpenseClick" text="New Expense" />
+                                <MenuItem mnemonicParsing="false" onAction="#newRevenueClick" text="New Additional Revenue" />
+                                <MenuItem mnemonicParsing="false" onAction="#generalJournalClick" text="Generate General Journal" />
+                                <MenuItem mnemonicParsing="false" onAction="#generalLedgerClick" text="Generate General Ledger" />
+                                <MenuItem mnemonicParsing="false" onAction="#newResource" text="New Material" />
+                                <MenuItem mnemonicParsing="false" onAction="#newResourceType" text="New Material Type" />
+                                <MenuItem mnemonicParsing="false" text="Close" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Selected">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="View" />
+                                <MenuItem mnemonicParsing="false" text="Delete" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Help">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="About" />
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+            </children>
+        </HBox>
+
+        <fx:include source="SystemNav.fxml"/>
+
+        <TabPane id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
+            <tabs>
+                <fx:include source="InvoicesTab.fxml" />
+                <fx:include source="ExpensesTab.fxml" />
+                <!--<fx:include source="IncomeTab.fxml" />-->
+                <fx:include source="AssetsTab.fxml" />
+                <fx:include source="MaterialsTab.fxml" />
+            </tabs>
+        </TabPane>
+        <HBox>
+            <children>
+                <Label text="Server Status:" />
+                <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                <Label fx:id="lblOutput" text="console output">
+                    <HBox.margin>
+                        <Insets left="10.0" />
+                    </HBox.margin>
+                </Label>
+            </children>
+        </HBox>
+    </children>
+</VBox>

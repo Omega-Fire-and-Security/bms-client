@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+
+<Tab fx:id="assetsTab" text="Assets" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="fadulousbms.controllers.AssetsController">
+    <content>
+        <TableView fx:id="tblAssets" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Asset ID" visible="false" />
+                <TableColumn fx:id="colName" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Asset Name" />
+                <TableColumn fx:id="colSerial" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Serial Number" />
+                <TableColumn fx:id="colType" maxWidth="1.7976931348623157E308" minWidth="170.0" prefWidth="-1.0" text="Type" />
+                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Description" />
+                <TableColumn fx:id="colValue" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Cost" />
+                <TableColumn fx:id="colAccount" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Account" />
+                <TableColumn fx:id="colUnit" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Unit" />
+                <TableColumn fx:id="colQuantity" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Quantity" />
+                <TableColumn fx:id="colDateAcquired" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Acquired" />
+                <TableColumn fx:id="colDateExhausted" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Exhausted" />
+                <TableColumn fx:id="colOther" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Other" visible="false" />
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Action" />
+            </columns>
+        </TableView>
+    </content>
+</Tab>

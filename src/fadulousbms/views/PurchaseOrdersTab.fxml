@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Tab fx:id="purchaseOrdersTab" text="Purchase Orders" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.PurchaseOrdersController">
+    <content>
+        <TableView fx:id="tblPurchaseOrders" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="ID" visible="false" />
+                <TableColumn fx:id="colPONumber" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="P.O. Number" />
+                <TableColumn fx:id="colSupplier" maxWidth="1.7976931348623157E308" minWidth="160.0" prefWidth="-1.0" text="Supplier" />
+                <TableColumn fx:id="colDateLogged" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Logged" />
+                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="75.0" text="Status" />
+                <TableColumn fx:id="colCreator" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Creator" />
+                <TableColumn fx:id="colVat" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="VAT [%]" />
+                <TableColumn fx:id="colAccount" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Account" visible="false" />
+                <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Total" />
+                <TableColumn fx:id="colExtra" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Extra" visible="false" />
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="220.0" prefWidth="-1.0" text="Action" />
+            </columns>
+        </TableView>
+    </content>
+</Tab>

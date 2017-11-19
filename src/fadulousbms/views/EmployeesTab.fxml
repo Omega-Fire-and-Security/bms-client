@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+
+<Tab fx:id="employeesTab" text="Employees" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.EmployeesTabController">
+    <content>
+        <TableView fx:id="tblEmployees" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colEmployeeId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Employee ID" visible="false"/>
+                <TableColumn fx:id="colEmployeeFirstName" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Firstname"/>
+                <TableColumn fx:id="colEmployeeLastName" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Lastname"/>
+                <TableColumn fx:id="colEmployeeUsername" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Username"/>
+                <TableColumn fx:id="colEmployeeEmail" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="eMail Address" visible="false"/>
+                <TableColumn fx:id="colEmployeeCell" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Cell"/>
+                <TableColumn fx:id="colEmployeeTel" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Tel"/>
+                <TableColumn fx:id="colEmployeeSex" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Sex"/>
+                <TableColumn fx:id="colEmployeeActive" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Active"/>
+                <TableColumn fx:id="colEmployeeDateJoined" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Joined"/>
+                <TableColumn fx:id="colEmployeeOther" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Other" visible="false">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="other" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Action" />
+            </columns>
+        </TableView>
+    </content>
+</Tab>

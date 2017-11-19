@@ -1,0 +1,69 @@
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+
+<Tab text="Inventory" fx:id="stockTab" fx:controller="fadulousbms.controllers.ResourcesController" xmlns:fx="http://javafx.com/fxml">
+    <content>
+        <TableView fx:id="tblResources" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Client ID" visible="false">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="_id" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colName" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Item Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="resource_name" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colSerial" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Serial Number">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="resource_serial" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colType" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Type">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="resource_type" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="resource_description" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colValue" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Cost">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="resource_value" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colUnit" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Unit">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="unit" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colQuantity" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Quantity">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="quantity" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colDateAcquired" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Acquired">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="date_acquired" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colDateExhausted" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Exhausted">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="date_exhausted" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colOther" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Other" visible="false">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="extra" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Action">
+                </TableColumn>
+            </columns>
+        </TableView>
+    </content>
+</Tab>

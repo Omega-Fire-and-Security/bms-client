@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane styleClass="sys-nav" stylesheets="@../styles/home.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.NavController">
+    <bottom>
+        <BorderPane style="-fx-border-insets: -50 -10 0 -10;" BorderPane.alignment="CENTER">
+            <left>
+                <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fx:id="img_logo" fitHeight="70.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../../../images/logo.png" />
+                            </image>
+                            <HBox.margin>
+                                <Insets left="10.0" />
+                            </HBox.margin>
+                        </ImageView>
+                          <ImageView fx:id="img_profile" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                              <image>
+                                  <Image url="@../../../images/profile.png" />
+                              </image>
+                          </ImageView>
+                          <Label fx:id="user_name" text="not signed in" textFill="WHITE" HBox.hgrow="ALWAYS">
+                              <font>
+                                  <Font size="20.0" />
+                              </font>
+                              <HBox.margin>
+                                  <Insets right="10.0" />
+                              </HBox.margin>
+                          </Label>
+                    </children>
+                </HBox>
+            </left>
+         <center>
+                <HBox alignment="CENTER" BorderPane.alignment="CENTER">
+                    <children>
+                  <VBox alignment="CENTER">
+                     <children>
+                              <Label fx:id="company_name" alignment="CENTER" contentDisplay="CENTER" text="Enterprise Resource Engine" textFill="WHITE">
+                                  <font>
+                                      <Font size="30.0" />
+                                  </font>
+                              </Label>
+                              <Label fx:id="lblScreen" alignment="CENTER" contentDisplay="CENTER" text="" textFill="WHITE">
+                                  <font>
+                                      <Font size="24.0" />
+                                  </font>
+                              </Label>
+                     </children>
+                  </VBox>
+                    </children>
+                </HBox>
+         </center>
+         <right>
+              <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+                  <children>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#previousScreen" pickOnBounds="true" preserveRatio="true" styleClass="btnPrev" />
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnNext" />
+                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#showMain" pickOnBounds="true" preserveRatio="true" styleClass="btnHome"/>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnLogin" onMouseClicked="#showLogin"/>
+                  </children>
+              </HBox>
+         </right>
+        </BorderPane>
+    </bottom>
+</BorderPane>

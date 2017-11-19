@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.Button?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane styleClass="sys-nav" stylesheets="@../styles/home.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <bottom>
+      <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+         <children>
+              <BorderPane style="-fx-border-insets: -50 -10 0 -10;">
+                  <center>
+                      <VBox alignment="CENTER" BorderPane.alignment="CENTER" />
+                  </center>
+                  <left>
+                      <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+                          <children>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/logo.png" />
+                           </image>
+                        </ImageView>
+                          <Label text="Enterprise Resource Engine">
+                              <font>
+                                  <Font size="24.0" />
+                              </font>
+                          </Label>
+                              <Label text="not signed in" HBox.hgrow="ALWAYS">
+                                  <font>
+                                      <Font size="20.0" />
+                                  </font>
+                              </Label>
+                              <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                                  <image>
+                                      <Image url="@../../../images/profile.png" />
+                                  </image>
+                              </ImageView>
+                          </children>
+                      </HBox>
+                  </left>
+                  <right>
+                      <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER" />
+                  </right>
+              </BorderPane>
+            <BorderPane layoutX="10.0" layoutY="10.0" style="-fx-border-insets: -50 -10 0 -10;">
+               <center>
+                  <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+                     <children>
+                        <Label text="Operations">
+                           <font>
+                              <Font size="24.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+               </center>
+               <left>
+                  <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+                     <children>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/ic_navigate_before_black_48dp_2x.png" />
+                           </image>
+                        </ImageView>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="10.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/ic_navigate_next_black_48dp_2x.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
+               </left>
+               <right>
+                  <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
+                     <children>
+                        <Button minHeight="35.0" minWidth="70.0" mnemonicParsing="false" styleClass="btnAdd" stylesheets="@../styles/home.css" text="login">
+                           <HBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/ic_home_black_48dp_2x.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </HBox>
+               </right>
+            </BorderPane>
+         </children>
+      </VBox>
+   </bottom>
+</BorderPane>

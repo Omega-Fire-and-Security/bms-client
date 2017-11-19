@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.cell.*?>
+
+<VBox minWidth="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.ViewQuoteController">
+   <children>
+      <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+         <children>
+            <MenuBar prefHeight="35.0" HBox.hgrow="ALWAYS">
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                    <MenuItem mnemonicParsing="false" onAction="#newQuoteItem" text="New quote item" />
+                        <MenuItem mnemonicParsing="false" onAction="#newSaleConsultant" text="New Sale Consultant" />
+                        <MenuItem mnemonicParsing="false" text="Close" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Delete" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="About" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <Button defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#apply" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Update Quote">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
+            <Button defaultButton="true" ellipsisString="x" layoutX="500.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#createPDF" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Generate PDF">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
+            <Button minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#createJob" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New Job" HBox.hgrow="ALWAYS">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
+            <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#previousScreen" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
+         </children>
+      </HBox>
+      <BorderPane style="-fx-background-color: rgba(0,0,0,.1);">
+         <center>
+            <Label alignment="CENTER" contentDisplay="CENTER" text="Detailed Quote Information" BorderPane.alignment="CENTER">
+               <font>
+                  <Font size="25.0" />
+               </font>
+            </Label>
+         </center>
+      </BorderPane>
+      <SplitPane dividerPositions="0.5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+        <items>
+            <GridPane hgap="10.0" vgap="10.0">
+              <columnConstraints>
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
+              </columnConstraints>
+              <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Label text="Company" GridPane.rowIndex="1" />
+                  <Label alignment="CENTER" contentDisplay="CENTER" text="Contact Person" GridPane.rowIndex="2" />
+                  <Label text="Cell Number" GridPane.rowIndex="3" />
+                  <TextField fx:id="txtCell" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <TextField fx:id="txtTel" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <TextField fx:id="txtFax" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <TextField fx:id="txtEmail" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <Label text="Tel Number" GridPane.rowIndex="4" />
+                  <Label text="eMail Address" GridPane.rowIndex="6" />
+                  <Label text="Site name" GridPane.rowIndex="8" />
+                  <TextField fx:id="txtSite" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                  <Label text="Fax Number" GridPane.rowIndex="5" />
+                  <Label text="Client details" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                     <children>
+                        <ComboBox fx:id="cbxClients" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select client" HBox.hgrow="ALWAYS" />
+                        <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newClient" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                     <children>
+                        <ComboBox fx:id="cbxContactPerson" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select contact" HBox.hgrow="ALWAYS" />
+                        <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newEmployee" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
+                  <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (including VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <TextField fx:id="txtTotal" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <Label text="Request/Description" GridPane.rowIndex="9" />
+                  <TextArea fx:id="txtRequest" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="9" GridPane.vgrow="ALWAYS" />
+                  <Label text="VAT [%]" GridPane.rowIndex="7" />
+                  <TextField fx:id="txtVat" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </GridPane>
+            <GridPane alignment="CENTER" hgap="10.0" vgap="10.0">
+              <columnConstraints>
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
+                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
+              </columnConstraints>
+              <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+              </rowConstraints>
+               <children>
+                  <Label text="Quote ID" GridPane.rowIndex="1" />
+                  <Label text="Date Generated" GridPane.rowIndex="2" />
+                  <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" text="Sale Consultants" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font></Label>
+                  <TextField fx:id="txtQuoteId" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                     <GridPane.margin>
+                        <Insets />
+                     </GridPane.margin>
+                  </TextField>
+                  <TextField fx:id="txtDateGenerated" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <Label text="Quote details" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <TableView fx:id="tblSaleReps" editable="true" minHeight="100.0" tableMenuButtonVisible="true" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS">
+                    <columns>
+                      <TableColumn fx:id="colFirstname" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="First Name">
+                          <cellValueFactory>
+                              <PropertyValueFactory property="_id" />
+                          </cellValueFactory>
+                      </TableColumn>
+                        <TableColumn fx:id="colLastname" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Last Name" />
+                      <TableColumn fx:id="colCell" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Cell No." />
+                        <TableColumn fx:id="colTel" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Tel No." visible="false" />
+                        <TableColumn fx:id="colEmail" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="eMail" />
+                        <TableColumn fx:id="colGender" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Gender" visible="false" />
+                        <TableColumn fx:id="colActive" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Active" visible="false" />
+                        <TableColumn fx:id="colEmployeeAction" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Action" />
+                    </columns>
+                     <GridPane.margin>
+                        <Insets top="20.0" />
+                     </GridPane.margin>
+                  </TableView>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </GridPane>
+        </items>
+      </SplitPane>
+       <TableView fx:id="tblQuoteItems" editable="true" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true">
+           <columns>
+               <TableColumn fx:id="colItemNumber" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Item #">
+                   <cellValueFactory>
+                       <PropertyValueFactory property="item_number" />
+                   </cellValueFactory>
+               </TableColumn>
+            <TableColumn fx:id="colEquipmentName" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="200.0" text="Equipment Name">
+                <cellValueFactory>
+                    <PropertyValueFactory property="equipment_name" />
+                </cellValueFactory>
+            </TableColumn>
+               <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Equipment Description">
+                   <cellValueFactory>
+                       <PropertyValueFactory property="equipment_description" />
+                   </cellValueFactory>
+                   <!--<cellFactory>
+                       <TextFieldTableCellOld fx:factory="forTableColumn" />
+                   </cellFactory>-->
+               </TableColumn>
+               <TableColumn fx:id="colUnit" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Unit">
+                   <cellValueFactory>
+                       <PropertyValueFactory property="unit" />
+                   </cellValueFactory>
+                   <!--<cellFactory>
+                       <TextFieldTableCellOld fx:factory="forTableColumn" />
+                   </cellFactory>-->
+               </TableColumn>
+               <TableColumn fx:id="colValue" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Current Unit Cost" visible="false">
+                   <cellValueFactory>
+                       <PropertyValueFactory property="value" />
+                   </cellValueFactory>
+                   <!--<cellFactory>
+                       <TextFieldTableCellOld fx:factory="forTableColumn" />
+                   </cellFactory>-->
+               </TableColumn>
+               <TableColumn fx:id="colUnitCost" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Unit Cost">
+                   <cellValueFactory>
+                       <PropertyValueFactory property="labour" />
+                   </cellValueFactory>
+                   <cellFactory>
+                       <TextFieldTableCell fx:factory="forTableColumn" />
+                   </cellFactory>
+               </TableColumn>
+               <TableColumn fx:id="colQuantity" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Quantity">
+                   <cellValueFactory>
+                       <PropertyValueFactory property="quantity" />
+                   </cellValueFactory>
+                   <cellFactory>
+                       <TextFieldTableCell fx:factory="forTableColumn" />
+                   </cellFactory>
+               </TableColumn>
+               <TableColumn fx:id="colMarkup" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Markup" visible="false">
+                   <cellValueFactory>
+                       <PropertyValueFactory property="markup" />
+                   </cellValueFactory>
+                   <cellFactory>
+                       <TextFieldTableCell fx:factory="forTableColumn" />
+                   </cellFactory>
+               </TableColumn>
+               <TableColumn fx:id="colRate" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Rate">
+                   <cellValueFactory>
+                       <PropertyValueFactory property="rate" />
+                   </cellValueFactory>
+                   <!--<cellFactory>
+                       <TextFieldTableCellOld fx:factory="forTableColumn" />
+                   </cellFactory>-->
+               </TableColumn>
+            <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Total">
+               <cellValueFactory>
+                  <PropertyValueFactory property="total" />
+               </cellValueFactory>
+            </TableColumn>
+               <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="250.0" prefWidth="-1.0" text="Action">
+                  
+               </TableColumn>
+           </columns>
+       </TableView>
+      <HBox>
+         <children>
+            <Label text="Server Status:" />
+            <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label fx:id="lblOutput" text="console output">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+   </children>
+</VBox>

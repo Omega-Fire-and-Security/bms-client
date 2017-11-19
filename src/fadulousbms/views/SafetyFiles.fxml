@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.SafetyFilesController">
+   <children>
+      <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+         <children>
+            <MenuBar HBox.hgrow="ALWAYS">
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                    <MenuItem mnemonicParsing="false" onAction="#upload" text="Upload" />
+                      <MenuItem mnemonicParsing="false" onAction="#newSafetyDocReference" text="New Document Reference" />
+                    <MenuItem mnemonicParsing="false" onAction="#generateIndex" text="View Index Document" />
+                        <MenuItem mnemonicParsing="false" onAction="#repopulateSafetyDocs" text="Repopulate Safety documents" />
+                    <MenuItem mnemonicParsing="false" text="Close" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Print">
+                  <items>
+                        <MenuItem mnemonicParsing="false" onAction="#printIndex" text="Print Index Document" />
+                        <MenuItem mnemonicParsing="false" onAction="#printMarked" text="Print Marked Document" />
+                    <MenuItem mnemonicParsing="false" onAction="#printAll" text="Print All Documents" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+         </children>
+      </HBox>
+       <BorderPane styleClass="sys-nav" stylesheets="@../styles/home.css">
+           <bottom>
+               <BorderPane style="-fx-border-insets: -50 -10 0 -10;" BorderPane.alignment="CENTER">
+                   <center>
+                       <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+                           <children>
+                               <Label text="Safety">
+                                   <font>
+                                       <Font size="24.0" />
+                                   </font>
+                               </Label>
+                           </children>
+                       </VBox>
+                   </center>
+                   <left>
+                       <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+                           <children>
+                               <ImageView fx:id="btnBack" fitHeight="60.0" fitWidth="60.0" onMouseClicked="#previousScreen" pickOnBounds="true" preserveRatio="true" />
+                               <ImageView fx:id="btnNext" fitHeight="60.0" fitWidth="60.0" layoutX="10.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true" />
+                               <ImageView fx:id="btnHome" fitHeight="60.0" fitWidth="60.0" onMouseClicked="#showMain" pickOnBounds="true" preserveRatio="true" />
+                           </children>
+                       </HBox>
+                   </left>
+                   <right>
+                       <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
+                           <children>
+                               <HBox alignment="CENTER_LEFT">
+                                   <children>
+                                       <Label fx:id="user_name" text="not signed in" HBox.hgrow="ALWAYS">
+                                           <font>
+                                               <Font size="20.0" />
+                                           </font>
+                                           <HBox.margin>
+                                               <Insets right="10.0" />
+                                           </HBox.margin>
+                                       </Label>
+                                       <ImageView fx:id="img_profile" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                                           <image>
+                                               <Image url="@../../../images/profile.png" />
+                                           </image>
+                                       </ImageView>
+                                   </children>
+                               </HBox>
+                           </children>
+                       </HBox>
+                   </right>
+               </BorderPane>
+           </bottom>
+           <center>
+               <BorderPane style="-fx-border-insets: -50 -10 0 -10;" BorderPane.alignment="CENTER">
+                   <center>
+                       <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+                           <children>
+                               <Label fx:id="company_name" text="Enterprise Resource Engine">
+                                   <font>
+                                       <Font size="30.0" />
+                                   </font>
+                               </Label>
+                           </children>
+                       </VBox>
+                   </center>
+                   <left>
+                       <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+                           <children>
+                               <ImageView fx:id="img_profile1" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                                   <image>
+                                       <Image url="@../images/logo.png" />
+                                   </image>
+                               </ImageView>
+                           </children>
+                       </HBox>
+                   </left>
+                   <right>
+                       <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
+                           <children>
+                               <ImageView fx:id="btnLogin" fitHeight="60.0" fitWidth="60.0" onMouseClicked="#showLogin" pickOnBounds="true" preserveRatio="true">
+                                   <HBox.margin>
+                                       <Insets right="10.0" />
+                                   </HBox.margin>
+                               </ImageView>
+                           </children>
+                       </HBox>
+                   </right>
+               </BorderPane>
+           </center>
+       </BorderPane>
+      <TableView fx:id="tblSafety" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+        <columns>
+          <TableColumn fx:id="colIndex" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Index" visible="false">
+              <cellValueFactory>
+                  <PropertyValueFactory property="_id" />
+              </cellValueFactory>
+          </TableColumn>
+          <TableColumn fx:id="colLabel" maxWidth="1.7976931348623157E308" minWidth="180.0" prefWidth="-1.0" text="Label">
+              <cellValueFactory>
+                  <PropertyValueFactory property="client_name" />
+              </cellValueFactory>
+          </TableColumn>
+            <TableColumn fx:id="colPath" maxWidth="1.7976931348623157E308" minWidth="250.0" prefWidth="-1.0" text="Document Path" visible="false">
+                <cellValueFactory>
+                    <PropertyValueFactory property="physical_address" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colRequired" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Required?" visible="true">
+                <cellValueFactory>
+                    <PropertyValueFactory property="postal_address" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colOptions" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Logo Options" visible="false">
+                <cellValueFactory>
+                    <PropertyValueFactory property="tel" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colType" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Type">
+                <cellValueFactory>
+                    <PropertyValueFactory property="fax" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colSelect" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Select">
+                <cellValueFactory>
+                    <PropertyValueFactory property="active" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colOther" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Other" visible="false">
+                <cellValueFactory>
+                    <PropertyValueFactory property="other" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Quick Action">
+                <cellValueFactory>
+                    <PropertyValueFactory property="date_partnered" />
+                </cellValueFactory>
+            </TableColumn>
+        </columns>
+      </TableView>
+      <HBox>
+         <children>
+            <Label text="Server Status:" />
+            <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label fx:id="lblOutput" text="console output">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+   </children>
+</VBox>

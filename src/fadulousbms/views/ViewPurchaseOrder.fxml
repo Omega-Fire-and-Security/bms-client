@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.cell.*?>
+
+<VBox minWidth="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.ViewPurchaseOrderController">
+    <children>
+        <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+            <children>
+                <MenuBar prefHeight="35.0" HBox.hgrow="ALWAYS">
+                    <menus>
+                        <Menu mnemonicParsing="false" text="File">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#newPurchaseOrderItem" text="Add Material" />
+                        <MenuItem mnemonicParsing="false" onAction="#newAssetPurchaseOrderItem" text="Add Asset" />
+                        <MenuItem mnemonicParsing="false" onAction="#newResource" text="Create New Resource" />
+                        <MenuItem mnemonicParsing="false" onAction="#newAsset" text="Create New Asset" />
+                        <MenuItem mnemonicParsing="false" text="Close" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Edit">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="Delete" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Help">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="About" />
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+                <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#updatePurchaseOrder" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Update Purchase Order">
+                    <HBox.margin>
+                        <Insets left="5.0" right="5.0" />
+                    </HBox.margin>
+                </Button>
+            <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="589.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#approvePurchaseOrder" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Approve Purchase Order">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
+                <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#previousScreen" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
+            </children>
+        </HBox>
+        <SplitPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+            <items>
+                <GridPane hgap="10.0" vgap="10.0">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
+                        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="NEVER" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <children>
+                        <Label text="Supplier" GridPane.rowIndex="2" />
+                        <Label text="VAT [%]" GridPane.rowIndex="4" />
+                        <TextField fx:id="txtVat" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <Label text="Account" GridPane.rowIndex="5" />
+                        <TextField fx:id="txtAccount" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <Label text="Purchase Order Details" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                            <font>
+                                <Font size="25.0" />
+                            </font>
+                        </Label>
+                  <HBox fx:id="cbxSupplier" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                     <children>
+                        <ComboBox fx:id="cbxSuppliers" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select supplier" HBox.hgrow="ALWAYS" />
+                        <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newSupplier" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="cbxSupplier1" layoutX="379.0" layoutY="60.0" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                     <children>
+                        <ComboBox fx:id="cbxContactPerson" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select supplier contact person" HBox.hgrow="ALWAYS" />
+                        <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newEmployee" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
+                  <Label layoutX="20.0" layoutY="67.0" text="Supplier Contact Person" GridPane.rowIndex="3" />
+                  <Label text="Purchase Order Number" GridPane.rowIndex="1" />
+                  <Label text="Creator" GridPane.rowIndex="6" />
+                  <Label text="Status" GridPane.rowIndex="7" />
+                  <TextField fx:id="txtCreator" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                  <TextField fx:id="txtNumber" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <TextField fx:id="txtStatus" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    </padding>
+                </GridPane>
+            </items>
+        </SplitPane>
+      <TableView fx:id="tblPurchaseOrderItems" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+         <columns>
+            <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="ID" visible="false" />
+            <TableColumn fx:id="colItemNumber" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Item #" />
+            <TableColumn fx:id="colName" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="200.0" text="Item Name" />
+            <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Item Description" />
+            <TableColumn fx:id="colUnit" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Unit" />
+            <TableColumn fx:id="colQuantity" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Quantity" />
+            <TableColumn fx:id="colValue" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Unit Cost" />
+            <TableColumn fx:id="colDiscount" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Discount" visible="false" />
+            <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="250.0" prefWidth="-1.0" text="Action" />
+         </columns>
+      </TableView>
+      <HBox>
+         <children>
+            <Label text="Server Status:" />
+            <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label fx:id="lblOutput" text="console output">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+    </children>
+</VBox>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+
+<VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.SafetyController">
+   <children>
+      <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" minWidth="650.0" styleClass="border-pane" stylesheets="@../styles/home.css">
+         <top>
+            <fx:include source="SystemNav.fxml"/>
+         </top>
+         <center>
+            <StackPane BorderPane.alignment="CENTER">
+               <children>
+                  <BorderPane styleClass="sys-body" StackPane.alignment="CENTER">
+                     <StackPane.margin>
+                        <Insets />
+                     </StackPane.margin>
+                     <center>
+                        <GridPane alignment="CENTER" hgap="20.0" vgap="20.0" BorderPane.alignment="CENTER">
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                          </rowConstraints>
+                           <BorderPane.margin>
+                              <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                           </BorderPane.margin>
+                           <children>
+                              <BorderPane onMouseClicked="#appointmentClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                 <center>
+                                    <Label maxHeight="-Infinity" minWidth="-Infinity" text="Appointments" BorderPane.alignment="CENTER">
+                                       <font>
+                                          <Font name="FreeSans" size="40.0" />
+                                       </font>
+                                    </Label>
+                                 </center>
+                              </BorderPane>
+                              <BorderPane onMouseClicked="#riskClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1">
+                                 <center>
+                                    <Label text="Risk Assessments" BorderPane.alignment="CENTER">
+                                       <font>
+                                          <Font size="28.0" />
+                                       </font>
+                                    </Label>
+                                 </center>
+                              </BorderPane>
+                              <BorderPane fx:id="btnSafety" onMouseClicked="#safetyClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn">
+                                 <center>
+                                    <Label alignment="CENTER" contentDisplay="CENTER" text="Safety File" BorderPane.alignment="CENTER">
+                                       <font>
+                                          <Font size="29.0" />
+                                       </font>
+                                    </Label>
+                                 </center>
+                              </BorderPane>
+                              <BorderPane onMouseClicked="#inspectionClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.rowIndex="1">
+                                 <center>
+                                    <Label text="Inspection" BorderPane.alignment="CENTER">
+                                       <font>
+                                          <Font size="32.0" />
+                                       </font>
+                                    </Label>
+                                 </center>
+                              </BorderPane>
+                              <BorderPane onMouseClicked="#ohsClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.rowIndex="2">
+                                 <center>
+                                    <Label text="OHS Act, Machinery and Construction Regulation" textAlignment="CENTER" wrapText="true" BorderPane.alignment="CENTER">
+                                       <font>
+                                          <Font size="21.0" />
+                                       </font>
+                                    </Label>
+                                 </center>
+                              </BorderPane>
+                              <BorderPane onMouseClicked="#showScanWindow" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                 <center>
+                                    <Label text="Toolbox Talks" BorderPane.alignment="CENTER">
+                                       <font>
+                                          <Font size="31.0" />
+                                       </font>
+                                    </Label>
+                                 </center>
+                              </BorderPane>
+                              <BorderPane onMouseClicked="#appointmentClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.rowIndex="3">
+                                 <center>
+                                    <Label maxHeight="-Infinity" minWidth="-Infinity" text="Scans" BorderPane.alignment="CENTER">
+                                       <font>
+                                          <Font name="FreeSans" size="40.0" />
+                                       </font>
+                                    </Label>
+                                 </center>
+                              </BorderPane>
+                              <BorderPane layoutX="10.0" layoutY="303.0" onMouseClicked="#appointmentClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                 <center>
+                                    <Label maxHeight="-Infinity" minWidth="-Infinity" text="Employee" BorderPane.alignment="CENTER">
+                                       <font>
+                                          <Font name="FreeSans" size="40.0" />
+                                       </font>
+                                    </Label>
+                                 </center>
+                              </BorderPane>
+                           </children>
+                        </GridPane>
+                     </center>
+                  </BorderPane>
+               </children>
+            </StackPane>
+         </center>
+         <bottom>
+            <HBox fillHeight="false" BorderPane.alignment="CENTER">
+               <children>
+                  <Label text="Server Status:" />
+                  <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Label fx:id="lblOutput" text="console output">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+            </HBox>
+         </bottom>
+      </BorderPane>
+   </children>
+</VBox>

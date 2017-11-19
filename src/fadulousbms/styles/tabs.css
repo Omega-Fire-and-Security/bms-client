@@ -1,0 +1,59 @@
+#BMSTabs
+{
+    -fx-padding: 4px 0 0 0;
+}
+
+#BMSTabs *.tab-header-background
+{
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-border-image-source: url("../images/tab-area4.png");
+    -fx-border-image-slice: 0 0 25 0;
+    -fx-border-image-width: 0 0 25 0;
+    -fx-border-image-repeat: stretch;
+}
+
+#BMSTabs *.tab-header-area
+{
+    -fx-padding: 0 10px 0 4px;
+}
+
+#BMSTabs .headers-region
+{
+    -fx-effect: null;
+}
+
+#BMSTabs .tab
+{
+    -fx-padding: 0px 5px -2px 5px;
+    -fx-background-insets: 0 -20 0 0;
+    -fx-background-color: transparent;
+    -fx-text-fill: #fff;/*#c4d8de;*/
+    -fx-border-image-source: url("../images/tab6.png");
+    -fx-border-image-slice: 20 20 20 20 fill;
+    -fx-border-image-width: 20 20 20 20;
+    -fx-border-image-repeat: stretch;
+    -fx-font-size: 18px;
+}
+
+#BMSTabs .tab:hover
+{
+    -fx-border-image-source: url("../images/tab6_hover.png");
+}
+
+#BMSTabs .tab:selected
+{
+    -fx-border-image-source: url("../images/tab-selected6.png");
+    -fx-text-fill: #fff;/*#333333;*/
+/*    -fx-background-color: red;*/
+}
+
+#BMSTabs .tab-content-area
+{
+    -fx-background-color: #6a6d6e;
+}
+
+#BMSTabs .tab *.tab-label .text
+{
+    -fx-effect: null;
+}

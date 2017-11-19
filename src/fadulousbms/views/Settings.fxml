@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" minWidth="650.0" styleClass="border-pane" stylesheets="@../styles/home.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mvg.controllers.SettingsController">
+   <center>
+      <StackPane BorderPane.alignment="CENTER">
+         <children>
+            <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="sys-body" StackPane.alignment="CENTER">
+               <StackPane.margin>
+                  <Insets />
+               </StackPane.margin>
+               <center>
+                  <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                           <center>
+                              <BorderPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-width: 5;" BorderPane.alignment="CENTER">
+                                 <center>
+                                    <ImageView fx:id="img_logo" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-radius: 60;" styleClass="rounded-image" BorderPane.alignment="CENTER">
+                                       <image>
+                                          <Image url="@../../../images/logo.png" />
+                                       </image></ImageView>
+                                 </center>
+                                 <bottom>
+                                    <Button minHeight="40.0" minWidth="140.0" mnemonicParsing="false" onMouseClicked="#changeLogo" text="Change logo" BorderPane.alignment="CENTER" />
+                                 </bottom>
+                              </BorderPane>
+                           </center>
+                        </BorderPane>
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                           <children>
+                              <Label text="Server IP:" textFill="WHITE" />
+                              <TextField fx:id="txtIP" minWidth="300.0">
+                                 <HBox.margin>
+                                    <Insets left="20.0" />
+                                 </HBox.margin>
+                              </TextField>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="100.0" prefWidth="200.0">
+                           <children>
+                              <Label text="Server Port" textFill="#f8f8f8" />
+                              <TextField fx:id="txtPort" minWidth="300.0">
+                                 <HBox.margin>
+                                    <Insets left="20.0" />
+                                 </HBox.margin>
+                              </TextField>
+                           </children>
+                        </HBox>
+                        <BorderPane>
+                           <center>
+                              <Button mnemonicParsing="false" onMouseClicked="#applySettings" prefHeight="60.0" prefWidth="150.0" text="Apply" BorderPane.alignment="CENTER">
+                                 <BorderPane.margin>
+                                    <Insets bottom="20.0" />
+                                 </BorderPane.margin>
+                              </Button>
+                           </center>
+                        </BorderPane>
+                     </children>
+                  </VBox>
+               </center>
+            </BorderPane>
+         </children>
+      </StackPane>
+   </center>
+   <top>
+      <fx:include source="SystemNav.fxml"/>
+   </top>
+   <bottom>
+      <HBox BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Server Status:" />
+            <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label fx:id="lblOutput" text="console output">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

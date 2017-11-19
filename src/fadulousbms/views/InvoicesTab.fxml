@@ -1,0 +1,62 @@
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+
+<Tab text="Invoices" fx:id="invoicesTab" fx:controller="fadulousbms.controllers.InvoicesController" xmlns:fx="http://javafx.com/fxml">
+    <content>
+        <TableView fx:id="tblInvoices" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colInvoiceNum" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Invoice Number">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="_id" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colJobNum" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Job Number">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="job_number" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClient" maxWidth="1.7976931348623157E308" minWidth="180.0" prefWidth="-1.0" text="Client">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="client_name" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colDateGenerated" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Generated">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="date_generated" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colAccount" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Account">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="account" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colCreator" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Creator">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="creator" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Total">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="total" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colReceivable" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Receivable">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="receivable" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colExtra" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Extra" visible="false">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="extra" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="220.0" prefWidth="-1.0" text="Action">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="extra" />
+                    </cellValueFactory>
+                </TableColumn>
+            </columns>
+        </TableView>
+    </content>
+</Tab>
