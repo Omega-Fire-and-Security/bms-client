@@ -59,10 +59,11 @@
          <right>
               <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
                   <children>
-                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#previousScreen" pickOnBounds="true" preserveRatio="true" styleClass="btnPrev" />
+                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#back" pickOnBounds="true" preserveRatio="true" styleClass="btnPrev" />
                         <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnNext" />
-                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#showMain" pickOnBounds="true" preserveRatio="true" styleClass="btnHome"/>
-                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnLogin" onMouseClicked="#showLogin"/>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#home" pickOnBounds="true" preserveRatio="true" styleClass="btnHome"/>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnLogin" onMouseClicked="#login"/>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnMenu" onMouseClicked="#showContextMenu"/>
                   </children>
               </HBox>
          </right>

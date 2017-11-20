@@ -48,7 +48,7 @@
                   <Insets right="5.0" />
                </HBox.margin>
             </Button>
-            <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#previousScreen" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
+            <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#back" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
          </children>
       </HBox>
       <BorderPane>

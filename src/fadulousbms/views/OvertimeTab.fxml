@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+
+<Tab fx:id="overtimeTab" text="Overtime" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.EmployeesTabController">
+    <content>
+        <TableView fx:id="tblOvertime" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colEmployee" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Employee" visible="false"/>
+                <TableColumn fx:id="colJobNumber" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Job Number"/>
+                <TableColumn fx:id="colDate" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Date"/>
+                <TableColumn fx:id="colTimeIn" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Time In"/>
+                <TableColumn fx:id="colTimeOut" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Time Out" visible="false"/>
+                <TableColumn fx:id="colDateLogged" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Logged"/>
+                <TableColumn fx:id="colOther" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Other" visible="false">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="other" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Action" />
+            </columns>
+        </TableView>
+    </content>
+</Tab>

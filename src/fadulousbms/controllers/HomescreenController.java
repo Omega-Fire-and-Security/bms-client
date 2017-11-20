@@ -8,13 +8,11 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
-import fadulousbms.model.Employee;
 import fadulousbms.model.Screens;
 
 import java.io.IOException;
 
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import java.net.URL;
 import java.util.Random;
@@ -28,10 +26,10 @@ import javafx.animation.Timeline;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.effect.ColorAdjust;
-import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.swing.*;
 
@@ -64,7 +62,13 @@ public class HomescreenController extends ScreenController implements Initializa
     public void initialize(URL url, ResourceBundle rb) 
     {
     }
-    
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
+    }
+
     private Rectangle createTile()
     {
         Rectangle rectangle = new Rectangle(160, 100);

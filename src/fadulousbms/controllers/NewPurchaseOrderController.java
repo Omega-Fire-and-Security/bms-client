@@ -6,6 +6,7 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.managers.*;
@@ -23,6 +24,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -164,6 +166,12 @@ public class NewPurchaseOrderController extends OperationsController implements 
             refreshModel();
             Platform.runLater(() -> refreshView());
         }).start();
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML
@@ -642,7 +650,7 @@ public class NewPurchaseOrderController extends OperationsController implements 
     }
 
     @FXML
-    public void previousScreen()
+    public static void previousScreen()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         screenManager.showLoadingScreen(param ->

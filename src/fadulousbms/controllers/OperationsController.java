@@ -19,6 +19,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import jfxtras.labs.scene.control.radialmenu.RadialContainerMenuItem;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 /**
  * views Controller class
@@ -28,11 +30,10 @@ import javafx.scene.control.*;
 public class OperationsController extends ScreenController implements Initializable
 {
     @FXML
-    private TabPane tabs;
-    @FXML
-    private Tab clientTab;
+    private TabPane BMSTabs;
     @FXML
     private TableView<Client>    tblClients;
+    private static Tab selected_tab;
 
     public static final String TAG="OperationsController";
 
@@ -42,25 +43,23 @@ public class OperationsController extends ScreenController implements Initializa
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        /*if (SessionManager.getInstance().getActive() != null)
+        //set default selected tab, Clients->Job Log Sheet
+        //if(BMSTabs.getTabs()!=null)
+        //    if(BMSTabs.getTabs().size()>0)
+        //        selected_tab = BMSTabs.getTabs().get(0);
+
+        //change selected tab when tabs are changed
+        BMSTabs.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
         {
-            if (!SessionManager.getInstance().getActive().isExpired())
+            //TODO: choose first sub tab of selected tab
+            OperationsController.setSelectedTab(newValue);
+            IO.log(getClass().getName(), IO.TAG_INFO, "selected tab: " + newValue.getText());
+            /*if(!newValue.getId().toLowerCase().equals("clientsTab") && !newValue.getId().toLowerCase().equals("suppliersTab"))
             {
-                //Set default profile photo
-                if(HomescreenController.defaultProfileImage!=null)
-                {
-                    Image image = SwingFXUtils.toFXImage(HomescreenController.defaultProfileImage, null);
-                    super.getProfileImageView().setImage(image);
-                }else IO.log(getClass().getName(), "default profile image is null.", IO.TAG_ERROR);
-            }else
-            {
-                IO.logAndAlert("Session expired","No active sessions!", IO.TAG_ERROR);
-                return;
-            }
-        }else {
-            IO.logAndAlert("Session expired","No active sessions!", IO.TAG_ERROR);
-            return;
-        }*/
+                OperationsController.setSelectedTab(newValue);
+                IO.log(getClass().getName(), IO.TAG_INFO, "selected tab: " + newValue.getText());
+            }*/
+        });
     }
 
     @Override
@@ -81,8 +80,57 @@ public class OperationsController extends ScreenController implements Initializa
         //clientsController.refreshView();
     }
 
+    public RadialMenuItem[] getContextMenu()
+    {
+        RadialMenuItem[] default_context_menu = ScreenController.getDefaultContextMenu();
+        RadialMenuItem[] context_menu = new RadialMenuItem[default_context_menu.length+5];
+        System.arraycopy(default_context_menu, 0,  context_menu, 0, default_context_menu.length);
+
+        //append to default context menu
+        context_menu[default_context_menu.length] = new RadialMenuItemCustom(30, "New Client", null, null, event -> newClientClick());
+        context_menu[default_context_menu.length+1] = new RadialMenuItemCustom(30, "New Supplier", null, null, event -> newSupplierClick());
+        context_menu[default_context_menu.length+2] = new RadialMenuItemCustom(30, "New Material", null, null, event -> newMaterialClick());
+        context_menu[default_context_menu.length+3] = new RadialMenuItemCustom(30, "New Quote", null, null, event -> newQuoteClick());
+        context_menu[default_context_menu.length+4] = new RadialContainerMenuItem(30, "Selected", null);
+
+        //level 2 menu items
+        //((RadialContainerMenuItem)context_menu[default_context_menu.length+4]).addMenuItem(context_menu[0]);
+        //RadialMenuItem[] context_menu_lvl2;
+        if(selected_tab!=null)
+        {
+            switch (selected_tab.getId())
+            {
+                case JobsController.TAB_ID:
+                    IO.log(OperationsController.class.getName(), IO.TAG_INFO, "showing jobs context menu.");
+                    if(JobsController.getContextMenu()!=null)
+                    {
+                        //add level 2 context menu items
+                        for (RadialMenuItem menuItem: JobsController.getContextMenu())
+                            ((RadialContainerMenuItem)context_menu[default_context_menu.length+4]).addMenuItem(menuItem);
+                        //context_menu_lvl2 = new RadialMenuItem[JobsController.getContextMenu().length];
+                        //System.arraycopy(JobsController.getContextMenu(), 0, context_menu_lvl2, 0, JobsController.getContextMenu().length);
+                    } else IO.log(OperationsController.class.getName(), IO.TAG_WARN, JobsController.class.getName() + ": has no explicitly defined context menu.");
+                    break;
+                default:
+                    IO.log(OperationsController.class.getName(), IO.TAG_WARN, "unknown selected operations tab: " + selected_tab.getId());
+            }
+
+        } else IO.log(OperationsController.class.getName(), IO.TAG_ERROR, "selected tab is null");
+        return context_menu;
+    }
+
+    public static void setSelectedTab(Tab tab)
+    {
+        selected_tab=tab;
+    }
+
     @FXML
-    public void newClientClick()
+    public void newClient()
+    {
+        newClientClick();
+    }
+
+    public static void newClientClick()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         ScreenManager.getInstance().showLoadingScreen(param ->
@@ -110,7 +158,12 @@ public class OperationsController extends ScreenController implements Initializa
     }
 
     @FXML
-    public void newSupplierClick()
+    public void newSupplier()
+    {
+        newSupplierClick();
+    }
+
+    public static void newSupplierClick()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         ScreenManager.getInstance().showLoadingScreen(param ->
@@ -138,7 +191,12 @@ public class OperationsController extends ScreenController implements Initializa
     }
 
     @FXML
-    public void newMaterialClick()
+    public void newMaterial()
+    {
+        newMaterialClick();
+    }
+
+    public static void newMaterialClick()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         ScreenManager.getInstance().showLoadingScreen(param ->
@@ -166,7 +224,12 @@ public class OperationsController extends ScreenController implements Initializa
     }
 
     @FXML
-    public void newQuoteClick()
+    public void newQuote()
+    {
+        newQuoteClick();
+    }
+
+    public static void newQuoteClick()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         ScreenManager.getInstance().showLoadingScreen(param ->
@@ -193,7 +256,6 @@ public class OperationsController extends ScreenController implements Initializa
         });
     }
 
-    @FXML
     public void createPurchaseOrderClick()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
@@ -211,92 +273,6 @@ public class OperationsController extends ScreenController implements Initializa
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.NEW_PURCHASE_ORDER.getScreen()));
                         } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load purchase order creation screen.");
-                    } catch (IOException e)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                    }
-                }
-            }).start();
-            return null;
-        });
-    }
-
-    //nav
-    @FXML
-    public void productionClick()
-    {
-        try 
-        {
-            ScreenManager.getInstance().loadScreen(Screens.OPERATIONS_PRODUCTION.getScreen(),
-                    getClass().getResource("../views/" + Screens.OPERATIONS_PRODUCTION.getScreen()));
-            ScreenManager.getInstance().setScreen(Screens.OPERATIONS_PRODUCTION.getScreen());
-        } catch (IOException ex) 
-        {
-            Logger.getLogger(OperationsController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    @FXML
-    public void salesClick()
-    {
-        try
-        {
-            ScreenManager.getInstance().loadScreen(Screens.OPERATIONS_SALES.getScreen(),
-                    getClass().getResource("../views/" + Screens.OPERATIONS_SALES.getScreen()));
-            ScreenManager.getInstance().setScreen(Screens.OPERATIONS_SALES.getScreen());
-        } catch (IOException ex)
-        {
-            Logger.getLogger(OperationsController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    @FXML
-    public void resourcesClick()
-    {
-        final ScreenManager screenManager = ScreenManager.getInstance();
-        ScreenManager.getInstance().showLoadingScreen(param ->
-        {
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        if(screenManager.loadScreen(Screens.RESOURCES.getScreen(),getClass().getResource("../views/"+Screens.RESOURCES.getScreen())))
-                        {
-                            Platform.runLater(() ->
-                                    screenManager.setScreen(Screens.RESOURCES.getScreen()));
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load resources screen.");
-                    } catch (IOException e)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                    }
-                }
-            }).start();
-            return null;
-        });
-    }
-
-    //Sales event handlers
-    @FXML
-    public void quotesClick()
-    {
-        final ScreenManager screenManager = ScreenManager.getInstance();
-        ScreenManager.getInstance().showLoadingScreen(param ->
-        {
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        if(screenManager.loadScreen(Screens.QUOTES.getScreen(),getClass().getResource("../views/"+Screens.QUOTES.getScreen())))
-                        {
-                            Platform.runLater(() ->
-                                    screenManager.setScreen(Screens.QUOTES.getScreen()));
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quotes screen.");
                     } catch (IOException e)
                     {
                         IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());

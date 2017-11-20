@@ -6,6 +6,7 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.*;
+import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
 import javafx.collections.FXCollections;
@@ -14,6 +15,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -84,6 +86,12 @@ public class CreateAccountController extends ScreenController implements Initial
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
         }
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML

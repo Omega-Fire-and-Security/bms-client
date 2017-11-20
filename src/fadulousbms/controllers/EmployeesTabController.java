@@ -1,9 +1,6 @@
 package fadulousbms.controllers;
 
-import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.PDFViewer;
-import fadulousbms.auxilary.RemoteComms;
-import fadulousbms.auxilary.Session;
+import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.CustomTableViewControls;
 import fadulousbms.model.Employee;
@@ -20,6 +17,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.Callback;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -203,6 +201,12 @@ public class EmployeesTabController extends ScreenController implements Initiali
             e.printStackTrace();
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     /**

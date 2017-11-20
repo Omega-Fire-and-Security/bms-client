@@ -1,6 +1,8 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.Globals;
+import fadulousbms.auxilary.RadialMenuItemCustom;
+import fadulousbms.model.Screens;
 import javafx.scene.image.ImageView;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ScreenManager;
@@ -11,6 +13,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
@@ -90,5 +94,35 @@ public class NavController extends ScreenController implements Initializable
         if(ScreenManager.getInstance()!=null)
             ScreenManager.getInstance().setLblScreenName(lblScreen);
         refreshView();
+    }
+
+    @FXML
+    public void showContextMenu()
+    {
+        ScreenManager.getInstance().showContextMenu();
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
+    }
+
+    @FXML
+    public void login()
+    {
+        ScreenController.showLogin();
+    }
+
+    @FXML
+    public void home()
+    {
+        ScreenController.showMain();
+    }
+
+    @FXML
+    public void back()
+    {
+        ScreenController.previousScreen();
     }
 }

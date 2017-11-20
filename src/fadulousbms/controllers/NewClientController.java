@@ -1,6 +1,7 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.managers.ClientManager;
@@ -14,6 +15,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -49,7 +51,6 @@ public class NewClientController extends ScreenController implements Initializab
     @Override
     public void refreshModel()
     {
-
     }
 
     /**
@@ -58,6 +59,12 @@ public class NewClientController extends ScreenController implements Initializab
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML
@@ -189,7 +196,7 @@ public class NewClientController extends ScreenController implements Initializab
     }
 
     @FXML
-    public void previousScreen()
+    public static void previousScreen()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         ScreenManager.getInstance().showLoadingScreen(param ->

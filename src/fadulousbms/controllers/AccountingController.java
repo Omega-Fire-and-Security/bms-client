@@ -3,6 +3,7 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.PDF;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.AssetManager;
 import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.ScreenManager;
@@ -22,6 +23,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -51,6 +53,12 @@ public class AccountingController extends ScreenController implements Initializa
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML

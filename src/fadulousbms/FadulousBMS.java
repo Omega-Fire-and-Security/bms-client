@@ -128,7 +128,7 @@ public class FadulousBMS extends Application
             stage.setMinWidth(600);
 
             if(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth()>=1200)
-                stage.setWidth(900);
+                stage.setWidth(1000);
             stage.show();
         }else
         {
@@ -143,5 +143,4 @@ public class FadulousBMS extends Application
     {
         LauncherImpl.launchApplication(FadulousBMS.class, BMSPreloader.class, args);
     }
-    
 }

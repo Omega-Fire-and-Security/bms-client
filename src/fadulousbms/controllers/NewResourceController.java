@@ -1,6 +1,7 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.managers.ResourceManager;
@@ -14,6 +15,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -62,6 +64,12 @@ public class NewResourceController extends ScreenController implements Initializ
             refreshModel();
             Platform.runLater(() -> refreshView());
         }).start();
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML
@@ -185,7 +193,7 @@ public class NewResourceController extends ScreenController implements Initializ
     }
 
     @FXML
-    public void previousScreen()
+    public static void previousScreen()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         ScreenManager.getInstance().showLoadingScreen(param ->

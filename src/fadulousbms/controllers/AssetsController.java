@@ -6,7 +6,9 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.ScreenManager;
 import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -22,6 +24,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.Callback;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -165,6 +168,7 @@ public class AssetsController extends ScreenController implements Initializable
     /**
      * Initializes the controller class.
      */
+
     @Override
     public void initialize(URL url, ResourceBundle rb) 
     {
@@ -173,5 +177,11 @@ public class AssetsController extends ScreenController implements Initializable
             refreshModel();
             Platform.runLater(() -> refreshView());
         }).start();
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 }

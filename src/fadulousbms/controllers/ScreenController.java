@@ -7,21 +7,20 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.managers.QuoteManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.model.Screens;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -81,30 +80,42 @@ public abstract class ScreenController
     }
 
     @FXML
-    public void showLogin()
+    public static void showLogin()
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.LOGIN.getScreen(),getClass().getResource("../views/"+Screens.LOGIN.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.LOGIN.getScreen(),ScreenController.class.getResource("../views/"+Screens.LOGIN.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.LOGIN.getScreen());
-            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load login screen.");
+            else IO.log("ScreenController", IO.TAG_ERROR, "could not load login screen.");
         } catch (IOException e)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            IO.log("ScreenController", IO.TAG_ERROR, e.getMessage());
         }
     }
 
     @FXML
-    public void showMain()
+    public static void showMain()
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.HOME.getScreen(),getClass().getResource("../views/"+Screens.HOME.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.HOME.getScreen(),ScreenController.class.getResource("../views/"+Screens.HOME.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.HOME.getScreen());
-            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load home screen.");
+            else IO.log("ScreenController", IO.TAG_ERROR, "could not load home screen.");
         } catch (IOException e)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            IO.log("ScreenController", IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    @FXML
+    public static void previousScreen()
+    {
+        try
+        {
+            ScreenManager.getInstance().setPreviousScreen();
+        } catch (IOException e)
+        {
+            IO.log("ScreenController", IO.TAG_ERROR, e.getMessage());
         }
     }
 
@@ -143,6 +154,19 @@ public abstract class ScreenController
         IO.logAndAlert("Coming Soon", "This feature is currently being implemented.", IO.TAG_INFO);
     }
 
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        RadialMenuItem menuClose = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Close", null, null, event -> ScreenManager.getInstance().hideContextMenu());
+        RadialMenuItem menuBack = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Back", null, null, event -> previousScreen());
+        RadialMenuItem menuForward = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Forward", null, null, event -> showMain());
+        RadialMenuItem menuHome = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Home", null, null, event -> showMain());
+        RadialMenuItem menuLogin = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Login", null, null, event -> showLogin());
+
+        return new RadialMenuItem[]{menuClose, menuBack, menuForward, menuHome, menuLogin};
+    }
+
+    //public abstract RadialMenuItem[] getContextMenu();
+
     public ImageView getProfileImageView()
     {
         return this.img_profile;
@@ -156,17 +180,5 @@ public abstract class ScreenController
     public BorderPane getLoadingPane()
     {
         return this.loading_pane;
-    }
-
-    @FXML
-    public void previousScreen()
-    {
-        try
-        {
-            ScreenManager.getInstance().setPreviousScreen();
-        } catch (IOException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
     }
 }

@@ -5,7 +5,6 @@
  */
 package fadulousbms.controllers;
 
-import fadulousbms.FadulousBMS;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.managers.*;
@@ -19,6 +18,7 @@ import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.swing.JOptionPane;
 
@@ -54,6 +54,12 @@ public class LoginController extends ScreenController implements Initializable
     public void initialize(URL url, ResourceBundle rb) 
     {
         refreshView();
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML

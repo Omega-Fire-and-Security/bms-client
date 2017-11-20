@@ -31,6 +31,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -256,5 +257,11 @@ public class QuotesController extends OperationsController implements Initializa
             refreshModel();
             Platform.runLater(() -> refreshView());
         }).start();
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 }

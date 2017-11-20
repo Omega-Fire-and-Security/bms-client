@@ -21,6 +21,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.URL;
@@ -117,5 +118,11 @@ public class ViewQuoteController extends QuoteController
             tblQuoteItems.refresh();
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(selected.getTotal()));
         }else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
+    }
+
+    @FXML
+    public void back()
+    {
+        ScreenController.previousScreen();
     }
 }

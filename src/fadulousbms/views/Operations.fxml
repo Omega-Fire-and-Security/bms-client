@@ -13,10 +13,10 @@
                     <menus>
                         <Menu mnemonicParsing="false" text="File">
                             <items>
-                                <MenuItem mnemonicParsing="false" onAction="#newClientClick" text="New Client" />
-                                <MenuItem mnemonicParsing="false" onAction="#newSupplierClick" text="New Supplier" />
-                                <MenuItem mnemonicParsing="false" onAction="#newMaterialClick" text="New Material" />
-                                <MenuItem mnemonicParsing="false" onAction="#newQuoteClick" text="New Quote" />
+                                <MenuItem mnemonicParsing="false" onAction="#newClient" text="New Client" />
+                                <MenuItem mnemonicParsing="false" onAction="#newSupplier" text="New Supplier" />
+                                <MenuItem mnemonicParsing="false" onAction="#newMaterial" text="New Material" />
+                                <MenuItem mnemonicParsing="false" onAction="#newQuote" text="New Quote" />
                                 <MenuItem mnemonicParsing="false" onAction="#createPurchaseOrderClick" text="New Purchase Order" />
                                 <MenuItem mnemonicParsing="false" text="Close" />
                             </items>
@@ -37,14 +37,14 @@
             </children>
         </HBox>
         <fx:include source="SystemNav.fxml"/>
-        <TabPane id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
+        <TabPane fx:id="BMSTabs" id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
             <tabs>
                 <!--<fx:include source="JobsTab.fxml" />
                 <fx:include source="MaterialsTab.fxml" />
                 <fx:include source="QuotesTab.fxml" />
                 <fx:include source="PurchaseOrdersTab.fxml" />-->
-                <fx:include source="ClientsTab.fxml" />
-                <fx:include source="SuppliersTab.fxml" />
+                <fx:include source="ClientsTab.fxml"/>
+                <fx:include source="SuppliersTab.fxml"/>
             </tabs>
         </TabPane>
         <HBox>

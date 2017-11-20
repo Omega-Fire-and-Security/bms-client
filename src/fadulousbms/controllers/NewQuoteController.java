@@ -22,6 +22,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -37,11 +38,6 @@ import java.util.*;
  */
 public class NewQuoteController extends QuoteController
 {
-    /*@FXML
-    private VBox vboxForm;
-    @FXML
-    private Label lblTitle;*/
-
     @Override
     public void refreshView()
     {

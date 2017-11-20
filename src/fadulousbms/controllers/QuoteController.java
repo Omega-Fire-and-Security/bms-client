@@ -23,6 +23,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -294,7 +295,6 @@ public abstract class QuoteController extends ScreenController implements Initia
         //set vat text box
         txtVat.setText(String.valueOf(QuoteManager.VAT));
     }
-
 
     @Override
     public void refreshModel()
@@ -1392,7 +1392,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @FXML
-    public void previousScreen()
+    public static void previousScreen()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         ScreenManager.getInstance().showLoadingScreen(param ->

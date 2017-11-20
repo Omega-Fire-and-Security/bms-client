@@ -5,10 +5,7 @@
  */
 package fadulousbms.controllers;
 
-import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.PDFViewer;
-import fadulousbms.auxilary.RemoteComms;
-import fadulousbms.auxilary.Session;
+import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -25,6 +22,8 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.Callback;
+import jdk.nashorn.internal.scripts.JO;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,35 +44,38 @@ import java.util.ResourceBundle;
 public class JobsController extends ScreenController implements Initializable
 {
     @FXML
-    private TableView<Job>    tblJobs;
+    private TableView<Job> tblJobs;
     @FXML
-    private TableColumn     colJobNum,colClient,colSitename,colRequest, colTotal,
-                            colContactPerson,colDateGenerated,colPlannedStartDate,
-                            colDateAssigned,colDateStarted,colDateEnded,colCreator,colExtra,colAction;
+    private TableColumn colJobNum, colClient, colSitename, colRequest, colTotal,
+            colContactPerson, colDateGenerated, colPlannedStartDate,
+            colDateAssigned, colDateStarted, colDateEnded, colCreator, colExtra, colAction;
+    public static final String TAB_ID = "jobsTab";
 
     @Override
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading jobs view..");
 
-        if(JobManager.getInstance().getJobs()==null)
+        if (JobManager.getInstance().getJobs() == null)
         {
             IO.logAndAlert(getClass().getName(), "no jobs in database", IO.TAG_ERROR);
             return;
         }
-        if(JobManager.getInstance().getJobs().values()==null)
+        if (JobManager.getInstance().getJobs().values() == null)
         {
             IO.logAndAlert(getClass().getName(), "no jobs in database", IO.TAG_ERROR);
             return;
         }
         colJobNum.setMinWidth(100);
         colJobNum.setCellValueFactory(new PropertyValueFactory<>("job_number"));
-        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 215, "job_description", "/api/job");
+        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell
+                .forTableColumn(), 215, "job_description", "/api/job");
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_name"));
         colSitename.setCellValueFactory(new PropertyValueFactory<>("sitename"));
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
         //TODO: contact_personProperty
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date", "/api/job");
+        CustomTableViewControls
+                .makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date", "/api/job");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", "/api/job");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAssigned, "date_assigned", "/api/job");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateStarted, "date_started", "/api/job");
@@ -117,13 +119,15 @@ public class JobsController extends ScreenController implements Initializable
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnView.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnView.getStylesheets()
+                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnView.getStyleClass().add("btnDefault");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
-                                btnUpload.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnUpload.getStylesheets()
+                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnUpload.getStyleClass().add("btnDefault");
                                 btnUpload.setMinWidth(130);
                                 btnUpload.setMinHeight(35);
@@ -137,31 +141,36 @@ public class JobsController extends ScreenController implements Initializable
 
                                 HBox.setHgrow(btnSign, Priority.ALWAYS);
 
-                                btnViewSigned.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnViewSigned.getStylesheets()
+                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnViewSigned.getStyleClass().add("btnDefault");
                                 btnViewSigned.setMinWidth(130);
                                 btnViewSigned.setMinHeight(35);
                                 HBox.setHgrow(btnViewSigned, Priority.ALWAYS);
 
-                                btnInvoice.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnInvoice.getStylesheets()
+                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnInvoice.getStyleClass().add("btnDefault");
                                 btnInvoice.setMinWidth(100);
                                 btnInvoice.setMinHeight(35);
                                 HBox.setHgrow(btnInvoice, Priority.ALWAYS);
 
-                                btnPDF.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnPDF.getStylesheets()
+                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
-                                btnEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnEmail.getStylesheets()
+                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnEmail.getStyleClass().add("btnAdd");
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets()
+                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -171,223 +180,57 @@ public class JobsController extends ScreenController implements Initializable
                                 {
                                     setGraphic(null);
                                     setText(null);
-                                } else
+                                }
+                                else
                                 {
                                     HBox hBox = new HBox(btnView, btnUpload, btnSign, btnViewSigned, btnInvoice, btnPDF, btnEmail, btnRemove);
                                     hBox.setMaxWidth(Double.MAX_VALUE);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
                                     Job job = getTableView().getItems().get(getIndex());
 
-                                    btnSign.setText(job.isSigned()?"Signed":"Not Signed");
+                                    btnSign.setText(job.isSigned() ? "Signed" : "Not Signed");
                                     btnSign.setSelected(job.isSigned());
 
                                     btnView.setOnAction(event ->
                                     {
-                                        if(job==null)
+                                        if (job == null)
                                         {
-                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            IO.logAndAlert("Error " + getClass()
+                                                    .getName(), "Job object is not set", IO.TAG_ERROR);
                                             return;
                                         }
 
-                                        ScreenManager.getInstance().showLoadingScreen(param ->
-                                        {
-                                            new Thread(new Runnable()
-                                            {
-                                                @Override
-                                                public void run()
-                                                {
-                                                    JobManager.getInstance().setSelectedJob(job);
-                                                    try
-                                                    {
-                                                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
-                                                        {
-                                                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_JOB.getScreen()));
-                                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load jobs viewer screen.");
-                                                    } catch (IOException e)
-                                                    {
-                                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                                    }
-                                                }
-                                            }).start();
-                                            return null;
-                                        });
-                                        /*JobManager.getInstance().setSelectedJob(getTableView().getItems().get(getIndex()));
-                                        try
-                                        {
-                                            if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
-                                                screenManager.setScreen(Screens.VIEW_JOB.getScreen());
-                                            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load jobs viewer screen.");
-                                        } catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        }*/
+                                        viewJob(job);
                                     });
 
                                     btnUpload.setOnAction(event ->
                                     {
-                                        if(job==null)
+                                        if (job == null)
                                         {
-                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            IO.logAndAlert("Error " + getClass()
+                                                    .getName(), "Job object is not set", IO.TAG_ERROR);
                                             return;
                                         }
                                         JobManager.getInstance().uploadSigned(job.get_id());
                                     });
 
                                     btnSign.setOnAction(event ->
-                                    {
-                                        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
-                                        Session active = SessionManager.getInstance().getActive();
-                                        try
-                                        {
-                                            if (active != null)
+                                            signJob(job, param1 ->
                                             {
-                                                if (!active.isExpired())
+                                                //Refresh UI
+                                                new Thread(() ->
                                                 {
-                                                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
-                                                    HttpURLConnection conn = RemoteComms.postData("/api/job/sign/" + job.get_id(),"", headers);
-                                                    if(conn!=null)
-                                                    {
-                                                        if(conn.getResponseCode()==HttpURLConnection.HTTP_OK)
-                                                        {
-                                                            IO.logAndAlert("Success", "Successfully signed job[" + job.get_id()+"]", IO.TAG_ERROR);
-                                                            //Refresh UI
-                                                            new Thread(() ->
-                                                            {
-                                                                refreshModel();
-                                                                Platform.runLater(() -> refreshView());
-                                                            }).start();
-                                                        } else IO.logAndAlert("Error", "Could not sign job["+job.get_id()+"]: "+IO.readStream(conn.getErrorStream()), IO.TAG_ERROR);
-                                                        conn.disconnect();
-                                                    }
-                                                } else IO.showMessage("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
-                                            } else IO.showMessage("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
-                                        }catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        }
-                                    });
+                                                    refreshModel();
+                                                    Platform.runLater(() -> refreshView());
+                                                }).start();
+                                                return null;
+                                            }));
 
                                     btnViewSigned.setOnAction(event ->
-                                    {
-                                        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
-                                        Session active = SessionManager.getInstance().getActive();
-                                        try
-                                        {
-                                            if (active != null)
-                                            {
-                                                if (!active.isExpired())
-                                                {
-                                                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
-
-                                                    //String filename = String.valueOf(bo.get(property));
-                                                    long start = System.currentTimeMillis();
-                                                    byte[] file = RemoteComms.sendFileRequest("/api/job/signed/" + job.get_id(), headers);
-                                                    if (file != null)
-                                                    {
-                                                        long ellapsed = System.currentTimeMillis()-start;
-                                                        IO.log(getClass().getName(), IO.TAG_INFO, "File ["+job.get_id()+".pdf] download complete, size: "+file.length+" bytes in "+ellapsed+"msec.");
-                                                        PDFViewer pdfViewer = PDFViewer.getInstance();
-                                                        pdfViewer.setVisible(true);
-
-                                                        //String local_filename = filename.substring(filename.lastIndexOf('/')+1);
-                                                        String local_filename = job.get_id() + "_signed.pdf";
-                                                        if(new File("out/"+local_filename).exists())
-                                                            Files.delete(new File("out/"+local_filename).toPath());
-                                                        FileOutputStream out = new FileOutputStream(new File("out/"+local_filename));
-                                                        out.write(file, 0, file.length);
-                                                        out.flush();
-                                                        out.close();
-
-                                                        //pdfViewer.doOpen("bin/" + filename + ".bin");
-                                                        pdfViewer.doOpen("out/"+local_filename);
-                                                        //Clean up
-                                                        Files.delete(Paths.get("out/"+local_filename));
-                                                    } else
-                                                    {
-                                                        IO.logAndAlert("File Downloader", "File '" + job.get_id() + "_signed.pdf' could not be downloaded because the active session has expired.", IO.TAG_ERROR);
-                                                    }
-                                                } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-                                            } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                                        }catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        }
-                                    });
+                                            viewSignedJob(job));
 
                                     btnInvoice.setOnAction(event ->
-                                    {
-                                        try
-                                        {
-                                            if(job!=null)
-                                            {
-                                                //if(job.isSigned())
-                                                {
-                                                    if (job.getAssigned_employees() != null)
-                                                    {
-                                                        if (job.getDate_started() > 0 && job.getDate_completed() > 0)
-                                                        {
-                                                            if (job.getDate_completed() >= job.getDate_started())
-                                                            {
-                                                                InvoiceManager.getInstance().generateInvoice(job);
-                                                                ScreenManager.getInstance().showLoadingScreen(param ->
-                                                                {
-                                                                    new Thread(new Runnable()
-                                                                    {
-                                                                        @Override
-                                                                        public void run()
-                                                                        {
-                                                                            try
-                                                                            {
-                                                                                if (ScreenManager.getInstance()
-                                                                                        .loadScreen(Screens.ACCOUNTING
-                                                                                                .getScreen(), getClass()
-                                                                                                .getResource("../views/" + Screens.ACCOUNTING
-                                                                                                        .getScreen())))
-                                                                                {
-                                                                                    Platform.runLater(() -> ScreenManager
-                                                                                            .getInstance()
-                                                                                            .setScreen(Screens.ACCOUNTING
-                                                                                                    .getScreen()));
-                                                                                }
-                                                                                else IO.log(getClass()
-                                                                                        .getName(), IO.TAG_ERROR, "could not load invoice viewer screen.");
-                                                                            } catch (IOException e)
-                                                                            {
-                                                                                IO.log(getClass()
-                                                                                        .getName(), IO.TAG_ERROR, e
-                                                                                        .getMessage());
-                                                                            }
-                                                                        }
-                                                                    }).start();
-                                                                    return null;
-                                                                });
-                                                            }
-                                                            else
-                                                                IO.logAndAlert("Error", "Date started cannot be less than date completed.", IO.TAG_ERROR);
-                                                        }
-                                                        else
-                                                            IO.logAndAlert("Error", "Please ensure that you've entered valid dates then try again.", IO.TAG_ERROR);
-                                                    }
-                                                    else
-                                                        IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
-                                                } /*else
-                                                    IO.logAndAlert("Error", "Selected job has not been SIGNED yet, please sign it first and try again.", IO.TAG_ERROR);*/
-                                            } else IO.logAndAlert("Error", "Selected job is invalid.", IO.TAG_ERROR);
-                                        } catch (IOException ex)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                                        }
-                                        /*InvoiceManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
-                                        try
-                                        {
-                                            if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
-                                                screenManager.setScreen(Screens.VIEW_JOB.getScreen());
-                                            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load jobs viewer screen.");
-                                        } catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        }*/
-                                    });
+                                            generateJobInvoice(job));
 
                                     btnEmail.setOnAction(event ->
                                             JobManager.getInstance().sendEmail(job.get_id(), null));
@@ -446,5 +289,243 @@ public class JobsController extends ScreenController implements Initializable
             refreshModel();
             Platform.runLater(() -> refreshView());
         }).start();
+    }
+
+    private static void generateJobInvoice(Job job)
+    {
+        try
+        {
+            if (job != null)
+            {
+                if(job.isSigned())
+                {
+                    if (job.getAssigned_employees() != null)
+                    {
+                        if (job.getDate_started() > 0 && job.getDate_completed() > 0)
+                        {
+                            if (job.getDate_completed() >= job.getDate_started())
+                            {
+                                InvoiceManager.getInstance().generateInvoice(job);
+                                ScreenManager.getInstance().showLoadingScreen(param ->
+                                {
+                                    new Thread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            try
+                                            {
+                                                if (ScreenManager.getInstance()
+                                                        .loadScreen(Screens.ACCOUNTING
+                                                                .getScreen(), getClass()
+                                                                .getResource("../views/" + Screens.ACCOUNTING
+                                                                        .getScreen())))
+                                                {
+                                                    Platform.runLater(() -> ScreenManager
+                                                            .getInstance()
+                                                            .setScreen(Screens.ACCOUNTING
+                                                                    .getScreen()));
+                                                }
+                                                else IO.log(getClass()
+                                                        .getName(), IO.TAG_ERROR, "could not load invoice viewer screen.");
+                                            } catch (IOException e)
+                                            {
+                                                IO.log(getClass()
+                                                        .getName(), IO.TAG_ERROR, e
+                                                        .getMessage());
+                                            }
+                                        }
+                                    }).start();
+                                    return null;
+                                });
+                            } else
+                                IO.logAndAlert("Error", "Date started cannot be less than date completed.", IO.TAG_ERROR);
+                        } else
+                            IO.logAndAlert("Error", "Please ensure that you've entered valid dates then try again.", IO.TAG_ERROR);
+                    } else
+                        IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
+                } else
+                    IO.logAndAlert("Error", "Selected job has not been SIGNED yet, please sign it first and try again.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Error", "Selected job is invalid.", IO.TAG_ERROR);
+        } catch (IOException ex)
+        {
+            IO.log(JobsController.class.getName(), IO.TAG_ERROR, ex.getMessage());
+        }
+    }
+
+    private static void viewSignedJob(Job job)
+    {
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
+        Session active = SessionManager.getInstance().getActive();
+        try
+        {
+            if (active != null)
+            {
+                if (!active.isExpired())
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
+
+                    //String filename = String.valueOf(bo.get(property));
+                    long start = System.currentTimeMillis();
+                    byte[] file = RemoteComms.sendFileRequest("/api/job/signed/" + job.get_id(), headers);
+                    if (file != null)
+                    {
+                        long ellapsed = System.currentTimeMillis()-start;
+                        IO.log(JobsController.class.getName(), IO.TAG_INFO, "File ["+job.get_id()+".pdf] download complete, size: "+file.length+" bytes in "+ellapsed+"msec.");
+                        PDFViewer pdfViewer = PDFViewer.getInstance();
+                        pdfViewer.setVisible(true);
+
+                        //String local_filename = filename.substring(filename.lastIndexOf('/')+1);
+                        String local_filename = job.get_id() + "_signed.pdf";
+                        if(new File("out/"+local_filename).exists())
+                            Files.delete(new File("out/"+local_filename).toPath());
+                        FileOutputStream out = new FileOutputStream(new File("out/"+local_filename));
+                        out.write(file, 0, file.length);
+                        out.flush();
+                        out.close();
+
+                        //pdfViewer.doOpen("bin/" + filename + ".bin");
+                        pdfViewer.doOpen("out/"+local_filename);
+                        //Clean up
+                        Files.delete(Paths.get("out/"+local_filename));
+                    } else
+                    {
+                        IO.logAndAlert("File Downloader", "File '" + job.get_id() + "_signed.pdf' could not be downloaded because the active session has expired.", IO.TAG_ERROR);
+                    }
+                } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+            } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+        }catch (IOException e)
+        {
+            IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    private static void signJob(Job job, Callback callback)
+    {
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
+        Session active = SessionManager.getInstance().getActive();
+        try
+        {
+            if (active != null)
+            {
+                if (!active.isExpired())
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
+                    HttpURLConnection conn = RemoteComms.postData("/api/job/sign/" + job.get_id(),"", headers);
+                    if(conn!=null)
+                    {
+                        if(conn.getResponseCode()==HttpURLConnection.HTTP_OK)
+                        {
+                            IO.logAndAlert("Success", "Successfully signed job[" + job.get_id()+"]", IO.TAG_ERROR);
+                            if(callback!=null)
+                                callback.call(null);
+                        } else IO.logAndAlert("Error", "Could not sign job["+job.get_id()+"]: "+IO.readStream(conn.getErrorStream()), IO.TAG_ERROR);
+                        conn.disconnect();
+                    }
+                } else IO.showMessage("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
+            } else IO.showMessage("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
+        }catch (IOException e)
+        {
+            IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    private static void viewJob(Job job)
+    {
+        if(JobManager.getInstance().getSelectedJob()==null)
+        {
+            IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
+            return;
+        }
+
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    JobManager.getInstance().setSelectedJob(job);
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
+                        {
+                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_JOB.getScreen()));
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load jobs viewer screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                }
+            }).start();
+            return null;
+        });
+    }
+
+    public static RadialMenuItem[] getContextMenu()
+    {
+        RadialMenuItem[] context_menu = new RadialMenuItem[6];
+
+        //View Job Menu item
+        context_menu[0] = new RadialMenuItemCustom(30, "View Job", null, null, event ->
+        {
+            viewJob(JobManager.getInstance().getSelectedJob());
+        });
+
+        //Sign Job menu item
+        context_menu[1] = new RadialMenuItemCustom(30, "Sign Job", null, null, event ->
+        {
+            if(JobManager.getInstance().getSelectedJob()==null)
+            {
+                IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
+                return;
+            }
+            signJob(JobManager.getInstance().getSelectedJob(), null);
+        });
+
+        //View signed Job menu item
+        context_menu[2] = new RadialMenuItemCustom(30, "View Signed Job", null, null, event ->
+        {
+            if(JobManager.getInstance().getSelectedJob()==null)
+            {
+                IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
+                return;
+            }
+            viewSignedJob(JobManager.getInstance().getSelectedJob());
+        });
+
+        //Generate Job Invoice menu item
+        context_menu[3] = new RadialMenuItemCustom(30, "Generate Invoice", null, null, event ->
+        {
+            if(JobManager.getInstance().getSelectedJob()==null)
+            {
+                IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
+                return;
+            }
+            viewSignedJob(JobManager.getInstance().getSelectedJob());
+        });
+
+        //eMail Job menu item
+        context_menu[4] = new RadialMenuItemCustom(30, "e-Mail Job Card", null, null, event ->
+        {
+            if(JobManager.getInstance().getSelectedJob()==null)
+            {
+                IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
+                return;
+            }
+            JobManager.getInstance().sendEmail(JobManager.getInstance().getSelectedJob().get_id(), null);
+        });
+
+        //View Job PDF menu item
+        context_menu[5] = new RadialMenuItemCustom(30, "View Job Card [PDF]", null, null, event ->
+        {
+            if(JobManager.getInstance().getSelectedJob()==null)
+            {
+                IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
+                return;
+            }
+            JobManager.showJobCard(JobManager.getInstance().getSelectedJob());
+        });
+        return context_menu;
     }
 }

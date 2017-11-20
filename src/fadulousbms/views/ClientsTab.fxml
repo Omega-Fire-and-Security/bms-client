@@ -3,13 +3,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<Tab fx:id="clientsTab" text="Clients" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<Tab fx:id="clientsTab" text="Clients List" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.ClientsTabController">
     <content>
-        <TabPane id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
+        <TabPane fx:id="clientTabs" id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
             <tabs>
+                <fx:include source="ClientsListTab.fxml" />
                 <fx:include source="JobsTab.fxml" />
                 <fx:include source="QuotesTab.fxml" />
-                <fx:include source="ClientsListTab.fxml" />
+                <fx:include source="InvoicesTab.fxml" />
             </tabs>
         </TabPane>
     </content>

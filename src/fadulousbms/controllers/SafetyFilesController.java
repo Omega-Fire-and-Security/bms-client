@@ -6,9 +6,11 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.SafetyManager;
+import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.CustomTableViewControls;
 import fadulousbms.model.Employee;
@@ -23,6 +25,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -99,6 +102,12 @@ public class SafetyFilesController extends ScreenController implements Initializ
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
         }
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML

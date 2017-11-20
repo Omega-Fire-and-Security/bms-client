@@ -1,7 +1,9 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
 import javafx.embed.swing.SwingFXUtils;
@@ -11,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -66,7 +69,6 @@ public class JournalController extends ScreenController implements Initializable
     @Override
     public void refreshModel()
     {
-
     }
 
     /**
@@ -92,5 +94,9 @@ public class JournalController extends ScreenController implements Initializable
         }*/
     }
 
-
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
+    }
 }

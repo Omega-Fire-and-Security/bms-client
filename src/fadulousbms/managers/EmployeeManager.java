@@ -402,6 +402,120 @@ public class EmployeeManager extends BusinessObjectManager
         stage.show();
     }
 
+    public void newOvertimeApplicationWindow(Employee employee, Callback callback)
+    {
+        Stage stage = new Stage();
+        stage.setTitle(Globals.APP_NAME.getValue() + " - Overtime Application ["+employee+"]");
+        stage.setMinWidth(320);
+        stage.setHeight(500);
+        stage.setAlwaysOnTop(true);
+        stage.setResizable(false);
+
+        VBox vbox = new VBox(1);
+
+        final TextField txt_employee = new TextField();
+        txt_employee.setMinWidth(200);
+        txt_employee.setMaxWidth(Double.MAX_VALUE);
+        HBox employee_container = CustomTableViewControls.getLabelledNode("Employee: ", 200, txt_employee);
+
+        final TextField txt_job = new TextField();
+        txt_job.setMinWidth(200);
+        txt_job.setMaxWidth(Double.MAX_VALUE);
+        HBox job_container = CustomTableViewControls.getLabelledNode("Job Number: ", 200, txt_job);
+
+        final DatePicker dpk_overtime_date = new DatePicker();
+        dpk_overtime_date.setMinWidth(200);
+        dpk_overtime_date.setMaxWidth(Double.MAX_VALUE);
+        HBox date_container = CustomTableViewControls.getLabelledNode("Overtime Date", 200, dpk_overtime_date);
+
+        final TextField txt_checkin = new TextField();
+        txt_checkin.setMinWidth(200);
+        txt_checkin.setMaxWidth(Double.MAX_VALUE);
+        HBox checkin_container = CustomTableViewControls.getLabelledNode("Check-in Time: ", 200, txt_checkin);
+
+        final TextField txt_checkout = new TextField();
+        txt_checkout.setMinWidth(200);
+        txt_checkout.setMaxWidth(Double.MAX_VALUE);
+        HBox checkout_container = CustomTableViewControls.getLabelledNode("Check-out Time: ", 200, txt_checkout);
+
+        final TextArea txt_other = new TextArea();
+        txt_other.setMinWidth(200);
+        txt_other.setMaxWidth(Double.MAX_VALUE);
+        HBox other = CustomTableViewControls.getLabelledNode("Other", 200, txt_other);
+
+        HBox submit;
+        submit = CustomTableViewControls.getSpacedButton("Submit", event ->
+        {
+            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+            if(!Validators.isValidNode(dpk_overtime_date, dpk_overtime_date.getValue()==null?"":dpk_overtime_date.getValue().toString(), 4, date_regex))
+                return;
+            if(!Validators.isValidNode(txt_checkin, txt_checkin.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_checkout, txt_checkout.getText(), 1, ".+"))
+                return;
+
+            long date_partnered_in_sec = dpk_overtime_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
+            String str_other = txt_other.getText();
+
+            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new AbstractMap.SimpleEntry<>("date_partnered", String.valueOf(date_partnered_in_sec)));
+            params.add(new AbstractMap.SimpleEntry<>("other", str_other));
+
+            try
+            {
+                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                if(SessionManager.getInstance().getActive()!=null)
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "No active sessions.", "Session expired", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                HttpURLConnection connection = RemoteComms.postData("/api/overtime/add", params, headers);
+                if(connection!=null)
+                {
+                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                    {
+                        IO.logAndAlert("Success", "Successfully logged overtime.", IO.TAG_INFO);
+                        callback.call(null);
+                    }else{
+                        IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                    }
+                    connection.disconnect();
+                }
+            } catch (IOException e)
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        });
+
+        //populate clients combobox
+
+        //Add form controls vertically on the stage
+        vbox.getChildren().add(employee_container);
+        vbox.getChildren().add(job_container);
+        vbox.getChildren().add(date_container);
+        vbox.getChildren().add(checkin_container);
+        vbox.getChildren().add(checkout_container);
+        vbox.getChildren().add(other);
+        vbox.getChildren().add(submit);
+
+        //Setup scene and display stage
+        Scene scene = new Scene(vbox);
+        File fCss = new File("src/fadulousbms/styles/home.css");
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+
+        stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
+                loadDataFromServer());
+
+        stage.setScene(scene);
+        stage.show();
+        stage.centerOnScreen();
+    }
+
     private boolean validateFormField(TextField txt, String errTitle, String errMsg, String regex)
     {
         if(!Validators.isValidNode(txt, txt.getText(), regex))

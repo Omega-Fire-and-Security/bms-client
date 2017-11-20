@@ -85,6 +85,17 @@
     -fx-image:url("../gfx/key_white.png");
 }
 
+.btnMenu
+{
+    -fx-image:url("../gfx/menu_black.png");
+    -fx-width:20px;
+}
+
+.btnMenu:hover
+{
+    -fx-image:url("../gfx/menu_white.png");
+}
+
 .btnBack
 {
     -fx-background-color: rgba(200,0,0,.7);

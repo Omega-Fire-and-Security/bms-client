@@ -77,26 +77,26 @@ public class ClientManager extends BusinessObjectManager
     }
 
     public void loadDataFromServer()
-{
-    try
     {
-        if(clients==null)
-            reloadDataFromServer();
-        else IO.log(getClass().getName(), IO.TAG_INFO, "clients object has already been set.");
-    }catch (MalformedURLException ex)
-    {
-        IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-    }catch (ClassNotFoundException e)
-    {
-        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-    }catch (IOException ex)
-    {
-        IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
+        try
+        {
+            if(clients==null)
+                reloadDataFromServer();
+            else IO.log(getClass().getName(), IO.TAG_INFO, "clients object has already been set.");
+        }catch (MalformedURLException ex)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
+        }catch (ClassNotFoundException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
+        }catch (IOException ex)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
+        }
     }
-}
 
     public void reloadDataFromServer() throws ClassNotFoundException, IOException
     {

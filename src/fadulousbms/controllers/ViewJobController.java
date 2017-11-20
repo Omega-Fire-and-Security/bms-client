@@ -7,6 +7,7 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -21,6 +22,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -171,6 +173,12 @@ public class ViewJobController extends ScreenController implements Initializable
 
         colEmployeeAction.setMinWidth(120);
         colEmployeeAction.setCellFactory(actionColCellFactory);
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML
@@ -332,6 +340,12 @@ public class ViewJobController extends ScreenController implements Initializable
                 }
             }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    @FXML
+    public void back()
+    {
+        ScreenController.previousScreen();
     }
 
     class ComboBoxTableCell extends TableCell<BusinessObject, String>
