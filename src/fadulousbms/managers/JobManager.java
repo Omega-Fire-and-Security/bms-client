@@ -34,6 +34,7 @@ import java.net.URLEncoder;
 import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -990,10 +991,10 @@ public class JobManager extends BusinessObjectManager
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
-    public void sendEmail(String job_id, Callback callback)
+    public void emailSignedJobCard(String job_id, Callback callback)
     {
         Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Job Card ["+job_id+"]");
+        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Signed Job Card ["+job_id+"]");
         stage.setMinWidth(320);
         stage.setHeight(350);
         stage.setAlwaysOnTop(true);
@@ -1041,25 +1042,32 @@ public class JobManager extends BusinessObjectManager
             String str_subject = txt_subject.getText();
             String str_message = txt_message.getText();
 
-            //ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new AbstractMap.SimpleEntry<>("job_id", job_id));
+            params.add(new AbstractMap.SimpleEntry<>("to_email", str_destination));
+            params.add(new AbstractMap.SimpleEntry<>("subject", str_subject));
+            params.add(new AbstractMap.SimpleEntry<>("message", str_message));
 
-            //try
-            //{
+            try
+            {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
-                else
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
+                            .getSessionId()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
-                /*HttpURLConnection connection = RemoteComms.postData("/api/job/mailto/"+job_id, params, headers);
+                HttpURLConnection connection = RemoteComms.postData("/api/job/signed/mailto", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
-                        IO.logAndAlert("Success", "Successfully sent email!", IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully emailed signed job card to: " + txt_destination.getText(), IO.TAG_INFO);
                         if(callback!=null)
                             callback.call(null);
                     }else{
@@ -1070,7 +1078,135 @@ public class JobManager extends BusinessObjectManager
             } catch (IOException e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-            }*/
+            }
+        });
+
+        //Add form controls vertically on the stage
+        vbox.getChildren().add(destination);
+        vbox.getChildren().add(subject);
+        vbox.getChildren().add(hbox_job_id);
+        vbox.getChildren().add(message);
+        vbox.getChildren().add(submit);
+
+        //Setup scene and display stage
+        Scene scene = new Scene(vbox);
+        File fCss = new File("src/fadulousbms/styles/home.css");
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+
+        stage.setScene(scene);
+        stage.show();
+        stage.centerOnScreen();
+        stage.setResizable(true);
+    }
+
+    public void emailJobCard(Job job, Callback callback)
+    {
+        if(job==null)
+        {
+            IO.logAndAlert("Error", "Invalid Job.", IO.TAG_ERROR);
+            return;
+        }
+        Stage stage = new Stage();
+        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Job Card ["+job.get_id()+"]");
+        stage.setMinWidth(320);
+        stage.setHeight(350);
+        stage.setAlwaysOnTop(true);
+
+        VBox vbox = new VBox(1);
+
+        final TextField txt_destination = new TextField();
+        txt_destination.setMinWidth(200);
+        txt_destination.setMaxWidth(Double.MAX_VALUE);
+        txt_destination.setPromptText("Type in email address/es separated by commas");
+        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, txt_destination);
+
+        final TextField txt_subject = new TextField();
+        txt_subject.setMinWidth(200);
+        txt_subject.setMaxWidth(Double.MAX_VALUE);
+        txt_subject.setPromptText("Type in an eMail subject");
+        HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
+
+        final TextField txt_job_id = new TextField();
+        txt_job_id.setMinWidth(200);
+        txt_job_id.setMaxWidth(Double.MAX_VALUE);
+        txt_job_id.setPromptText("Type in a message");
+        txt_job_id.setEditable(false);
+        txt_job_id.setText(String.valueOf(job.getJob_number()));
+        HBox hbox_job_id = CustomTableViewControls.getLabelledNode("Job Number: ", 200, txt_job_id);
+
+        final TextArea txt_message = new TextArea();
+        txt_message.setMinWidth(200);
+        txt_message.setMaxWidth(Double.MAX_VALUE);
+        HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
+
+        HBox submit;
+        submit = CustomTableViewControls.getSpacedButton("Send", event ->
+        {
+            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+            if(!Validators.isValidNode(txt_destination, txt_destination.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
+                return;
+
+            String str_destination = txt_destination.getText();
+            String str_subject = txt_subject.getText();
+            String str_message = txt_message.getText();
+
+            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new AbstractMap.SimpleEntry<>("job_id", job.get_id()));
+            params.add(new AbstractMap.SimpleEntry<>("to_email", str_destination));
+            params.add(new AbstractMap.SimpleEntry<>("subject", str_subject));
+            params.add(new AbstractMap.SimpleEntry<>("message", str_message));
+            try
+            {
+                String path = PDF.createJobCardPdf(job);
+                if(path!=null)
+                {
+                    File f = new File(path);
+                    if(f.exists())
+                    {
+                        byte[] file_arr = new byte[(int)f.length()];
+                        FileInputStream in = new FileInputStream(f);
+                        in.read(file_arr, 0, (int)f.length());
+                        params.add(new AbstractMap.SimpleEntry<>("attachment", Base64.getEncoder().encodeToString(file_arr)));
+
+                        //send email
+                        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                        if(SessionManager.getInstance().getActive()!=null)
+                        {
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
+                                    .getSessionId()));
+                            params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                        } else
+                        {
+                            IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
+                            return;
+                        }
+
+                        HttpURLConnection connection = RemoteComms.postData("/api/job/mailto", params, headers);
+                        if(connection!=null)
+                        {
+                            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                            {
+                                IO.logAndAlert("Success", "Successfully emailed job card to ["+txt_destination.getText()+"]!", IO.TAG_INFO);
+                                if(callback!=null)
+                                    callback.call(null);
+                            }else{
+                                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                            }
+                            connection.disconnect();
+                        }
+                    }
+                }
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            }
         });
 
         //Add form controls vertically on the stage

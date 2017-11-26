@@ -251,14 +251,14 @@
                              <TextFieldTableCell fx:factory="forTableColumn" />
                          </cellFactory>
                      </TableColumn>
-                     <TableColumn fx:id="colValue" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Unit Cost">
+                     <!--<TableColumn fx:id="colValue" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Unit Cost">
                          <cellValueFactory>
                              <PropertyValueFactory property="value" />
                          </cellValueFactory>
-                         <!--<cellFactory>
+                         <cellFactory>
                              <TextFieldTableCellOld fx:factory="forTableColumn" />
-                         </cellFactory>-->
-                     </TableColumn>
+                         </cellFactory>
+                     </TableColumn>-->
                      <TableColumn fx:id="colMarkup" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Markup">
                          <cellValueFactory>
                              <PropertyValueFactory property="markup" />

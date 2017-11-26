@@ -34,9 +34,10 @@
          </children>
       </HBox>
       <fx:include source="SystemNav.fxml"/>
-      <TabPane id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
+      <TabPane fx:id="hrTabs" id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
          <tabs>
-            <fx:include source="EmployeesTab.fxml" />
+            <fx:include source="EmployeesTab.fxml"/>
+            <fx:include source="OvertimeTab.fxml"/>
          </tabs>
       </TabPane>
       <HBox>

@@ -184,6 +184,7 @@ public class HomescreenController extends ScreenController implements Initializa
             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load human resources screen.");
         } catch (IOException e)
         {
+            e.printStackTrace();
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
     }

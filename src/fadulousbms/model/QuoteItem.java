@@ -240,7 +240,7 @@ public class QuoteItem implements BusinessObject, Serializable
     public double getRate()
     {
         //double marked_up = getUnitCost() + getUnitCost()*(markup/100);
-        double total = getUnitCost();
+        double total = 0;//getUnitCost();
 
         //check additional costs
         if (getAdditional_costs() != null)

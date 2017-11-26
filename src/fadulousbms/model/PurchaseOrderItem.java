@@ -170,8 +170,8 @@ public abstract class PurchaseOrderItem implements BusinessObject, Serializable
 
     public String getCost()
     {
-        return Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getCostValue());
-    }
+        return String.valueOf(getCostValue());
+    }//Globals.CURRENCY_SYMBOL.getValue() + " " +
 
     //public abstract double getCostValue();
     public double getCostValue()
@@ -195,7 +195,7 @@ public abstract class PurchaseOrderItem implements BusinessObject, Serializable
         this.discount = discount;
     }
 
-    private StringProperty totalProperty(){return new SimpleStringProperty(String.valueOf(getTotal()));}
+    private StringProperty totalProperty(){return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));}
 
     public double getTotal()
     {

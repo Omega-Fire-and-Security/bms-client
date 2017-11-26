@@ -10,6 +10,7 @@ import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -44,37 +46,47 @@ public abstract class QuoteController extends ScreenController implements Initia
     protected TableView<QuoteItem> tblQuoteItems;
     @FXML
     protected TableView<Employee> tblSaleReps;
+    //Quote reps columns
     @FXML
-    protected TableColumn colFirstname,colLastname,colCell,colEmail,colTel,colGender,
-                        colActive,colTotal,colAction,colEmployeeAction;
+    protected TableColumn colFirstname,colLastname,colCell,colEmail,colTel,colGender,colActive,colEmployeeAction;
+    //Quote items table columns
     @FXML
-    protected TableColumn colMarkup,colQuantity,colUnitCost;
+    protected TableColumn colMarkup,colQuantity, colItemNumber, colEquipmentName, colDescription, colUnit, colValue, colRate, colTotal, colAction;
     @FXML
     protected ComboBox<Client> cbxClients;
     @FXML
     protected ComboBox<Employee> cbxContactPerson;
     @FXML
-    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtVat,txtDateGenerated,txtExtra;
+    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtExtra;
+    @FXML
+    protected Slider vatSlider;
+    @FXML
+    protected Label lblVat;
     @FXML
     protected TextArea txtRequest;
     protected HashMap<String, TableColumn> colsMap = new HashMap<>();
+    private ObservableList<TableColumn<QuoteItem, ?>> default_cols;
 
     @Override
     public void refreshView()
     {
         if(EmployeeManager.getInstance().getEmployees()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no employees were found in the database.", IO.TAG_ERROR);
-            return;
+            IO.logAndAlert(getClass().getName(), "no employees were found in the database.", IO.TAG_WARN);
+            //return;
         }
         if( ClientManager.getInstance().getClients()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_ERROR);
-            return;
+            IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_WARN);
+            //return;
         }
 
-        Employee[] employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
-        EmployeeManager.getInstance().getEmployees().values().toArray(employees);
+        Employee[] employees=null;
+        if(EmployeeManager.getInstance().getEmployees()!=null)
+        {
+            employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
+            EmployeeManager.getInstance().getEmployees().values().toArray(employees);
+        }
 
         tblSaleReps.getItems().clear();
         tblQuoteItems.getItems().clear();
@@ -170,7 +182,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             }
         });
 
-        colUnitCost.setCellValueFactory(new PropertyValueFactory<>("unit_cost"));
+        /*colUnitCost.setCellValueFactory(new PropertyValueFactory<>("unit_cost"));
         colUnitCost.setCellFactory(param -> new TableCell()
         {
             final TextField txt = new TextField("0.0");
@@ -211,7 +223,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                     getTableView().refresh();
                 }
             }
-        });
+        });*/
 
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
@@ -279,7 +291,8 @@ public abstract class QuoteController extends ScreenController implements Initia
             }
         });
         cbxContactPerson.setButtonCell(null);
-        cbxContactPerson.setItems(FXCollections.observableArrayList(employees));
+        if(employees!=null)
+            cbxContactPerson.setItems(FXCollections.observableArrayList(employees));
         cbxContactPerson.setOnAction(event ->
         {
             Employee employee = cbxContactPerson.getValue();
@@ -292,8 +305,53 @@ public abstract class QuoteController extends ScreenController implements Initia
             }//else IO.logAndAlert("Invalid Employee", "Selected contact person is invalid", IO.TAG_ERROR);
         });
 
-        //set vat text box
-        txtVat.setText(String.valueOf(QuoteManager.VAT));
+        //set vat slider
+        vatSlider.setMax(QuoteManager.VAT);
+        if(QuoteManager.getInstance().getSelectedQuote()!=null)
+        {
+            vatSlider.setValue(QuoteManager.getInstance().getSelectedQuote().getVat());
+            lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vatSlider.getValue())+"%]");
+        }
+        vatSlider.valueProperty().addListener(event ->
+        {
+            lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vatSlider.getValue())+"%]");
+            if(tblQuoteItems.getItems()!=null)
+            {
+                double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems());
+                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
+                        new DecimalFormat("##.##").format((total + (total*(vatSlider.getValue()/100)))));
+            }
+            /*if(String.valueOf(vatSlider.getValue()).length()>4)
+                lblVat.setText("VAT ["+String.valueOf(vatSlider.getValue()).substring(0,4)+"%]");//TODO: fix this hack
+            else lblVat.setText("VAT ["+String.valueOf(vatSlider.getValue())+"%]");//TODO: fix this hack*/
+        });
+
+        if(default_cols==null)
+            default_cols=tblQuoteItems.getColumns();
+
+        //set status
+        String status;
+        if(QuoteManager.getInstance().getSelectedQuote()!=null)
+        {
+            switch (QuoteManager.getInstance().getSelectedQuote().getStatus())
+            {
+                case Quote.STATUS_PENDING:
+                    status = "PENDING";
+                    break;
+                case Quote.STATUS_APPROVED:
+                    status = "APPROVED";
+                    break;
+                case Quote.STATUS_ARCHIVED:
+                    status = "ARCHIVED";
+                    break;
+                default:
+                    status = "UNKNOWN";
+                    IO.logAndAlert("Error", "Unknown Quote status: " + QuoteManager.getInstance().getSelectedQuote()
+                            .getStatus(), IO.TAG_ERROR);
+                    break;
+            }
+            txtStatus.setText(status);
+        }
     }
 
     @Override
@@ -304,6 +362,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             EmployeeManager.getInstance().reloadDataFromServer();
             ClientManager.getInstance().reloadDataFromServer();
             ResourceManager.getInstance().reloadDataFromServer();
+            QuoteManager.getInstance().reloadDataFromServer();
         }catch (MalformedURLException ex)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
@@ -374,9 +433,29 @@ public abstract class QuoteController extends ScreenController implements Initia
                                     {
                                         //TODO: deal with server side
                                         QuoteItem quoteItem = getTableView().getItems().get(getIndex());
+                                        //remove QuoteItem's additional costs TableColumns
+                                        if (quoteItem.getAdditional_costs() != null)
+                                        {
+                                            for (String str_cost : quoteItem.getAdditional_costs().split(";"))
+                                            {
+                                                String[] arr = str_cost.split("=");
+                                                if (arr != null)
+                                                {
+                                                    if (arr.length > 1)
+                                                    {
+                                                        //if column exists in map, remove it
+                                                        if(colsMap.get(arr[0].toLowerCase())!=null)
+                                                        {
+                                                            tblQuoteItems.getColumns().remove(colsMap.get(arr[0].toLowerCase()));
+                                                            IO.log(getClass().getName(), IO.TAG_INFO, "removed QuoteItem["+quoteItem.get_id()+"] additional cost column: "+arr[0]);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                         getTableView().getItems().remove(quoteItem);
                                         getTableView().refresh();
-                                        //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(QuoteManager.getInstance().getSelectedQuote())));
+                                        IO.log(getClass().getName(), IO.TAG_INFO, "removed QuoteItem["+quoteItem.get_id()+"]");
                                         txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().getSelectedQuote().getTotal()));
                                     });
 
@@ -678,6 +757,8 @@ public abstract class QuoteController extends ScreenController implements Initia
             TableColumn<QuoteItem, String> col = new TableColumn(txtName.getText());
             col.setPrefWidth(80);
             col.setCellFactory(getAdditionalCostCallback(col));
+
+            colsMap.put(txtName.getText().toLowerCase(), col);
             /*boolean found=false;
             for(TableColumn c: tblQuoteItems.getColumns())
                 if(col.getText().toLowerCase().equals(c.getText().toLowerCase()))
@@ -705,6 +786,11 @@ public abstract class QuoteController extends ScreenController implements Initia
         stage.setTitle("Extra Costs For Quote Item #"+quoteItem.getItem_numberValue());
         stage.setScene(new Scene(new VBox(row1, row2, row3, btnAdd)));
         stage.show();
+    }
+
+    public void addAdditionalCostColToMap(String id, TableColumn col)
+    {
+        colsMap.put(id, col);
     }
 
     @FXML
@@ -920,6 +1006,21 @@ public abstract class QuoteController extends ScreenController implements Initia
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
+    @FXML
+    public void approveQuote()
+    {
+        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        if(selected!=null)
+        {
+            if(selected.getStatus()!=Quote.STATUS_APPROVED)
+            {
+                selected.setStatus(Quote.STATUS_APPROVED);
+                updateQuote();
+            }
+            else IO.logAndAlert("Error", "Selected quote has already been approved.", IO.TAG_ERROR);
+        } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
+    }
+
     public void createQuote()
     {
         cbxClients.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
@@ -964,11 +1065,11 @@ public abstract class QuoteController extends ScreenController implements Initia
             txtEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
+        /*if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
         {
             txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
-        }
+        }*/
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
             txtSite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
@@ -1017,7 +1118,8 @@ public abstract class QuoteController extends ScreenController implements Initia
         quote.setSitename(str_site);
         quote.setRequest(txtRequest.getText());
         quote.setStatus(0);
-        quote.setVat(QuoteManager.VAT);
+        quote.setVat(Double.parseDouble(new DecimalFormat("##.##").format(vatSlider.getValue())));
+
         quote.setCreator(SessionManager.getInstance().getActive().getUsername());
         quote.setRevision(1.0);
         //QuoteItem[] items = new QuoteItem[quoteItems.size()];
@@ -1126,27 +1228,11 @@ public abstract class QuoteController extends ScreenController implements Initia
 
                             IO.logAndAlert("New Quote Creation Success", "Successfully created a new quote.", IO.TAG_INFO);
                             itemsModified = false;
-                            ScreenManager.getInstance().showLoadingScreen(param ->
+                            new Thread(() ->
                             {
-                                new Thread(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        try
-                                        {
-                                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),getClass().getResource("../views/"+Screens.VIEW_QUOTE.getScreen())))
-                                            {
-                                                Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen()));
-                                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quote viewer screen.");
-                                        } catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        }
-                                    }
-                                }).start();
-                                return null;
-                            });
+                                refreshModel();
+                                Platform.runLater(() -> refreshView());
+                            }).start();
                         }catch (MalformedURLException ex)
                         {
                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
@@ -1216,11 +1302,11 @@ public abstract class QuoteController extends ScreenController implements Initia
             txtEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
+        /*if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
         {
             txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
-        }
+        }*/
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
             txtSite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
@@ -1233,7 +1319,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         }
 
         String str_site = txtSite.getText();
-        String str_vat = txtVat.getText();
+        String str_vat = String.valueOf(vatSlider.getValue());
         //String str_extra = txtExtra.getText();
 
 
@@ -1245,7 +1331,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             selected.setVat(Double.parseDouble(str_vat));
             selected.setSitename(str_site);
             selected.setRequest(txtRequest.getText());
-            selected.setVat(QuoteManager.VAT);
+            selected.setVat(Double.parseDouble(new DecimalFormat("##.##").format(vatSlider.getValue())));
             /*if (str_extra != null)
                 selected.parse("extra", str_extra);*/
             //QuoteManager.getInstance().updateQuote(selected, ((QuoteItem[]) tblQuoteItems.getItems().toArray()), ((Employee[])tblSaleReps.getItems().toArray()));
@@ -1276,7 +1362,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                 IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
                 IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
             }
-        }
+        } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 
     @FXML
@@ -1290,62 +1376,68 @@ public abstract class QuoteController extends ScreenController implements Initia
                 Quote selected = QuoteManager.getInstance().getSelectedQuote();
                 if(selected!=null)
                 {
-                    Job job = new Job();
-                    job.setQuote_id(selected.get_id());
-                    /*if(JobManager.getInstance().getJobs()!=null)
-                        job.setJob_number(JobManager.getInstance().getJobs().length);
-                    else job.setJob_number(0);*/
-                    String new_job_id = JobManager.getInstance().createNewJob(job);
-                    if(new_job_id!=null)
+                    if(selected.getStatus()>Quote.STATUS_PENDING)
                     {
-                        IO.logAndAlert("Success", "Successfully created a new job.", IO.TAG_INFO);
-                        try
+                        Job job = new Job();
+                        job.setQuote_id(selected.get_id());
+                        /*if(JobManager.getInstance().getJobs()!=null)
+                            job.setJob_number(JobManager.getInstance().getJobs().length);
+                        else job.setJob_number(0);*/
+                        String new_job_id = JobManager.getInstance().createNewJob(job);
+                        if (new_job_id != null)
                         {
-                            JobManager.getInstance().reloadDataFromServer();
-                            JobManager.getInstance().setSelectedJob(JobManager.getInstance().getJobs().get(new_job_id));
-                            if(JobManager.getInstance().getJobs()!=null)
+                            IO.logAndAlert("Success", "Successfully created a new job.", IO.TAG_INFO);
+                            try
                             {
-                                ScreenManager.getInstance().showLoadingScreen(param ->
+                                JobManager.getInstance().reloadDataFromServer();
+                                JobManager.getInstance()
+                                        .setSelectedJob(JobManager.getInstance().getJobs().get(new_job_id));
+                                if (JobManager.getInstance().getJobs() != null)
                                 {
-                                    new Thread(new Runnable()
+                                    ScreenManager.getInstance().showLoadingScreen(param ->
                                     {
-                                        @Override
-                                        public void run()
+                                        new Thread(new Runnable()
                                         {
-                                            try
+                                            @Override
+                                            public void run()
                                             {
-                                                if (ScreenManager.getInstance()
-                                                        .loadScreen(Screens.VIEW_JOB.getScreen(), getClass()
-                                                                .getResource("../views/" + Screens.VIEW_JOB.getScreen())))
+                                                try
                                                 {
-                                                    Platform.runLater(() -> ScreenManager.getInstance()
-                                                            .setScreen(Screens.VIEW_JOB.getScreen()));
+                                                    if (ScreenManager.getInstance()
+                                                            .loadScreen(Screens.VIEW_JOB.getScreen(), getClass()
+                                                                    .getResource("../views/" + Screens.VIEW_JOB
+                                                                            .getScreen())))
+                                                    {
+                                                        Platform.runLater(() -> ScreenManager.getInstance()
+                                                                .setScreen(Screens.VIEW_JOB.getScreen()));
+                                                    }
+                                                    else IO.log(getClass()
+                                                            .getName(), IO.TAG_ERROR, "could not load job viewer screen.");
+                                                } catch (IOException e)
+                                                {
+                                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                                 }
-                                                else IO.log(getClass()
-                                                        .getName(), IO.TAG_ERROR, "could not load job viewer screen.");
-                                            } catch (IOException e)
-                                            {
-                                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                             }
-                                        }
-                                    }).start();
-                                    return null;
-                                });
-                            } else IO.logAndAlert("Error", "Could not find any jobs in the database.", IO.TAG_INFO);
-                        }catch (MalformedURLException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                        }catch (ClassNotFoundException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                        }catch (IOException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                        }
-                    }else IO.logAndAlert("Error", "Could not successfully create a new job.", IO.TAG_INFO);
+                                        }).start();
+                                        return null;
+                                    });
+                                }
+                                else IO.logAndAlert("Error", "Could not find any jobs in the database.", IO.TAG_INFO);
+                            } catch (MalformedURLException ex)
+                            {
+                                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                                IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
+                            } catch (ClassNotFoundException e)
+                            {
+                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
+                            } catch (IOException ex)
+                            {
+                                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                                IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
+                            }
+                        } else IO.logAndAlert("Error", "Could not successfully create a new job.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Error", "Quote has not been approved yet.", IO.TAG_ERROR);
                 }else IO.logAndAlert("Cannot Create Job", "Cannot create job because the selected quote is invalid.", IO.TAG_ERROR);
             }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -1392,7 +1484,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @FXML
-    public static void previousScreen()
+    public void back()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
         ScreenManager.getInstance().showLoadingScreen(param ->

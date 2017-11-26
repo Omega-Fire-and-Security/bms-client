@@ -5,6 +5,13 @@ import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
 import javafx.collections.ObservableList;
+import javafx.scene.Scene;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -578,5 +585,114 @@ public class QuoteManager extends BusinessObjectManager
         if (connection != null)
             connection.disconnect();
         return false;
+    }
+
+    public void sendEmail(String job_id, Callback callback)
+    {
+        Stage stage = new Stage();
+        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Quote ["+job_id+"]");
+        stage.setMinWidth(320);
+        stage.setHeight(350);
+        stage.setAlwaysOnTop(true);
+
+        VBox vbox = new VBox(1);
+
+        final TextField txt_destination = new TextField();
+        txt_destination.setMinWidth(200);
+        txt_destination.setMaxWidth(Double.MAX_VALUE);
+        txt_destination.setPromptText("Type in email address/es separated by commas");
+        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, txt_destination);
+
+        final TextField txt_subject = new TextField();
+        txt_subject.setMinWidth(200);
+        txt_subject.setMaxWidth(Double.MAX_VALUE);
+        txt_subject.setPromptText("Type in an eMail subject");
+        HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
+
+        final TextField txt_job_id = new TextField();
+        txt_job_id.setMinWidth(200);
+        txt_job_id.setMaxWidth(Double.MAX_VALUE);
+        txt_job_id.setPromptText("Type in a message");
+        txt_job_id.setEditable(false);
+        txt_job_id.setText(job_id);
+        HBox hbox_job_id = CustomTableViewControls.getLabelledNode("Job ID: ", 200, txt_job_id);
+
+        final TextArea txt_message = new TextArea();
+        txt_message.setMinWidth(200);
+        txt_message.setMaxWidth(Double.MAX_VALUE);
+        HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
+
+        HBox submit;
+        submit = CustomTableViewControls.getSpacedButton("Send", event ->
+        {
+            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+            if(!Validators.isValidNode(txt_destination, txt_destination.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
+                return;
+
+            String str_destination = txt_destination.getText();
+            String str_subject = txt_subject.getText();
+            String str_message = txt_message.getText();
+
+            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new AbstractMap.SimpleEntry<>("quote_id", job_id));
+            params.add(new AbstractMap.SimpleEntry<>("to_email", str_destination));
+            params.add(new AbstractMap.SimpleEntry<>("subject", str_subject));
+            params.add(new AbstractMap.SimpleEntry<>("message", str_message));
+
+            try
+            {
+                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                if(SessionManager.getInstance().getActive()!=null)
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
+                            .getSessionId()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                } else
+                {
+                    IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
+                    return;
+                }
+
+                HttpURLConnection connection = RemoteComms.postData("/api/quote/mailto", params, headers);
+                if(connection!=null)
+                {
+                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                    {
+                        IO.logAndAlert("Success", "Successfully sent email!", IO.TAG_INFO);
+                        if(callback!=null)
+                            callback.call(null);
+                    }else{
+                        IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                    }
+                    connection.disconnect();
+                }
+            } catch (IOException e)
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        });
+
+        //Add form controls vertically on the stage
+        vbox.getChildren().add(destination);
+        vbox.getChildren().add(subject);
+        vbox.getChildren().add(hbox_job_id);
+        vbox.getChildren().add(message);
+        vbox.getChildren().add(submit);
+
+        //Setup scene and display stage
+        Scene scene = new Scene(vbox);
+        File fCss = new File("src/fadulousbms/styles/home.css");
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+
+        stage.setScene(scene);
+        stage.show();
+        stage.centerOnScreen();
+        stage.setResizable(true);
     }
 }

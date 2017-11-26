@@ -233,7 +233,7 @@ public class JobsController extends ScreenController implements Initializable
                                             generateJobInvoice(job));
 
                                     btnEmail.setOnAction(event ->
-                                            JobManager.getInstance().sendEmail(job.get_id(), null));
+                                            JobManager.getInstance().emailJobCard(job, null));
 
                                     btnRemove.setOnAction(event ->
                                     {
@@ -513,7 +513,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            JobManager.getInstance().sendEmail(JobManager.getInstance().getSelectedJob().get_id(), null);
+            JobManager.getInstance().emailJobCard(JobManager.getInstance().getSelectedJob(), null);
         });
 
         //View Job PDF menu item

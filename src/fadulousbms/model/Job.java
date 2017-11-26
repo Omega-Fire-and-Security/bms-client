@@ -112,7 +112,7 @@ public class Job implements BusinessObject, Serializable
 
     public StringProperty job_numberProperty()
     {
-        return new SimpleStringProperty(String.valueOf(job_number));
+        return new SimpleStringProperty(String.valueOf(getJob_number()));
     }
 
     public long getJob_number()

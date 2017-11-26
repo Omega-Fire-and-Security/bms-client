@@ -63,7 +63,7 @@ public class ViewQuoteController extends QuoteController
             txtQuoteId.setText(selected.get_id());
             txtSite.setText(selected.getSitename());
             txtRequest.setText(selected.getRequest());
-            txtVat.setText(String.valueOf(selected.getVat()));
+            //txtVat.setText(String.valueOf(selected.getVat()));
 
             try
             {
@@ -108,7 +108,8 @@ public class ViewQuoteController extends QuoteController
                                 {
                                     col.setPrefWidth(80);
                                     tblQuoteItems.getColumns().add(col);
-                                    colsMap.put(arr[0].toLowerCase(), col);
+                                    super.addAdditionalCostColToMap(arr[0].toLowerCase(), col);//TODO: use quoteItem.getResource_id()
+                                    //colsMap.put(arr[0].toLowerCase(), col);
                                 }
                             }
                         }

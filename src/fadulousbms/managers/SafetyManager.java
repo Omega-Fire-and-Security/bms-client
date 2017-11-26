@@ -231,13 +231,13 @@ public class SafetyManager extends BusinessObjectManager
                 MenuItem scan = new MenuItem("Scan");
                 scan.setOnAction(event->
                 {
-                    try
+                    /*try
                     {
                         Sane.scan();
                     } catch (IOException e)
                     {
                         IO.logAndAlert(Sane.class.getName(), e.getMessage(), IO.TAG_ERROR);
-                    }
+                    }*/
                 });
 
                 MenuItem exit = new MenuItem("Close Window");

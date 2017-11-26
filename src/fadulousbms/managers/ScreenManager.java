@@ -11,15 +11,18 @@ import java.util.AbstractMap;
 import java.util.Stack;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.controllers.HRController;
 import fadulousbms.controllers.OperationsController;
 import fadulousbms.controllers.ScreenController;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.*;
@@ -87,7 +90,7 @@ public class ScreenManager extends StackPane
      * @return true if successfully added new screen, false otherwise.
      * @throws IOException
      */
-    public boolean  loadScreen(String id, URL path) throws IOException
+    public boolean loadScreen(String id, URL path) throws IOException
     {
         FXMLLoader loader = new FXMLLoader(path);
         Parent screen = loader.load();
@@ -120,8 +123,7 @@ public class ScreenManager extends StackPane
         if(screens.size()>1)
         {
             screens.pop().getValue();
-            controllers.pop().getValue();
-            setScreen("previous");
+            setScreen(controllers.pop().getKey());
         }
     }
 
@@ -162,7 +164,7 @@ public class ScreenManager extends StackPane
         transition.play();
         if(translucent_borderpane!=null)
         this.getChildren().remove(translucent_borderpane);
-        //radialMenu.setVisible(false);
+        radialMenu.setVisible(false);
     }
 
     public void showContextMenu()//final double x, final double y
@@ -171,6 +173,8 @@ public class ScreenManager extends StackPane
         {
             if(focused instanceof OperationsController)
                 initRadialMenu(((OperationsController)focused).getContextMenu());
+            else if(focused instanceof HRController)
+                initRadialMenu(((HRController)focused).getContextMenu());
             else initRadialMenu(focused.getDefaultContextMenu());
         }
 
@@ -180,7 +184,7 @@ public class ScreenManager extends StackPane
             lastOffsetValue = radialMenu.getOffset();
             //radialMenu.setVisible(false);
         }*/
-        //radialMenu.setTranslateX(x);
+        radialMenu.setTranslateX(this.getMinWidth()/2);
         //radialMenu.setTranslateY(y);
         radialMenu.setVisible(true);
 
@@ -193,10 +197,10 @@ public class ScreenManager extends StackPane
                 new KeyFrame(Duration.millis(150),new KeyValue(y_transition, this.getMinHeight()/2)));
         yTransition.play();
 
-        final DoubleProperty x_transition =  radialMenu.translateXProperty();
+        /*final DoubleProperty x_transition =  radialMenu.translateXProperty();
         Timeline transition = new Timeline(new KeyFrame(Duration.ONE, new KeyValue(x_transition, this.getWidth())),
                 new KeyFrame(Duration.millis(150),new KeyValue(x_transition, this.getMinWidth()/2)));
-        transition.play();
+        transition.play();*/
 
         final DoubleProperty opacity_transition_property =  radialMenu.opacityProperty();
         Timeline opacity_transition = new Timeline(new KeyFrame(Duration.ONE, new KeyValue(opacity_transition_property, 0.0)),
@@ -252,6 +256,15 @@ public class ScreenManager extends StackPane
                             if(lblScreenName!=null)
                                 lblScreenName.setText(focused_id.split("\\.")[0]);
                             getChildren().add(screen);
+
+                            peekScreens().setOnContextMenuRequested(event ->
+                            {
+                                if(radialMenu!=null)
+                                    if(radialMenu.isVisible())
+                                        hideContextMenu();
+                                    else showContextMenu();
+                                else showContextMenu();
+                            });
 
                             //initRadialMenu(focused.getDefaultContextMenu());
                             //getChildren().add(radialMenu);

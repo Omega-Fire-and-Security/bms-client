@@ -8,13 +8,9 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -31,10 +27,7 @@ public class OperationsController extends ScreenController implements Initializa
 {
     @FXML
     private TabPane BMSTabs;
-    @FXML
-    private TableView<Client>    tblClients;
     private static Tab selected_tab;
-
     public static final String TAG="OperationsController";
 
     /**

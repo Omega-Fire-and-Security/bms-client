@@ -193,34 +193,6 @@ public class NewResourceController extends ScreenController implements Initializ
     }
 
     @FXML
-    public static void previousScreen()
-    {
-        final ScreenManager screenManager = ScreenManager.getInstance();
-        ScreenManager.getInstance().showLoadingScreen(param ->
-        {
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        if(screenManager.loadScreen(Screens.OPERATIONS.getScreen(),getClass().getResource("../views/"+Screens.OPERATIONS.getScreen())))
-                        {
-                            //Platform.runLater(() ->
-                            screenManager.setScreen(Screens.OPERATIONS.getScreen());
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load operations screen.");
-                    } catch (IOException e)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                    }
-                }
-            }).start();
-            return null;
-        });
-    }
-
-    @FXML
     public void newResourceType()
     {
         ResourceManager.getInstance().newResourceTypeWindow(param ->
@@ -232,5 +204,18 @@ public class NewResourceController extends ScreenController implements Initializ
             }).start();
             return null;
         });
+    }
+
+    @FXML
+    public void back()
+    {
+        try
+        {
+            ScreenManager.getInstance().setPreviousScreen();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
     }
 }

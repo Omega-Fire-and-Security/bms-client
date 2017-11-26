@@ -30,15 +30,14 @@ public class Quote implements BusinessObject, Serializable
     private double revision;
     private String extra;
     private int status;
-    //private Client client;
-    //private Employee contact_person;
-    //private Employee creator_employee;
     private QuoteItem[] resources;
     private QuoteRep[] representatives;
     //public static double VAT = 14.0;
-
     private boolean marked;
     public static final String TAG = "Quote";
+    public static final int STATUS_PENDING =0;
+    public static final int STATUS_APPROVED =1;
+    public static final int STATUS_ARCHIVED =2;
 
     public StringProperty idProperty(){return new SimpleStringProperty(_id);}
 
@@ -222,7 +221,7 @@ public class Quote implements BusinessObject, Serializable
 
     public double getTotal()
     {
-        //Compute total
+        //Compute total including VAT
         double total=0;
         if(this.getResources()!=null)
         {
@@ -330,8 +329,9 @@ public class Quote implements BusinessObject, Serializable
                     + URLEncoder.encode(sitename, "UTF-8"));
             result.append("&" + URLEncoder.encode("request","UTF-8") + "="
                     + URLEncoder.encode(request, "UTF-8"));
-            result.append("&" + URLEncoder.encode("status","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(status), "UTF-8"));
+            if(status>0)
+                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(status), "UTF-8"));
             result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(vat), "UTF-8"));
             result.append("&" + URLEncoder.encode("creator","UTF-8") + "="

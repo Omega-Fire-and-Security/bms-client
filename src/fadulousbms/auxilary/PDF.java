@@ -2393,32 +2393,32 @@ public class PDF
         pdfViewer.doOpen(path);
     }
 
-    public static void createJobCardPdf(Job job) throws IOException
+    public static String createJobCardPdf(Job job) throws IOException
     {
         if(SessionManager.getInstance().getActive()==null)
         {
             IO.logAndAlert(TAG, "Active session object is null.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         if(SessionManager.getInstance().getActive().isExpired())
         {
             IO.logAndAlert(TAG, "Active session has expired.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         if(job==null)
         {
             IO.log(TAG, IO.TAG_ERROR, "Job object passed is null.");
-            return;
+            return null;
         }
         if(job.getQuote()==null)
         {
             IO.log(TAG, IO.TAG_ERROR, "Job's Quote object is null.");
-            return;
+            return null;
         }
         if(job.getQuote().getClient()==null)
         {
             IO.log(TAG, IO.TAG_ERROR, "Job Quote's Client object is null.");
-            return;
+            return null;
         }
 
         //ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
@@ -2555,7 +2555,7 @@ public class PDF
         }else
         {
             IO.logAndAlert(TAG, "job " + job.get_id() + " has no assigned employees.", IO.TAG_ERROR);
-            return;
+            return null;
         }
 
         String path = "bin/pdf/job_card_" + job.get_id() + ".pdf";
@@ -2572,6 +2572,8 @@ public class PDF
         PDFViewer pdfViewer = PDFViewer.getInstance();
         pdfViewer.setVisible(true);
         pdfViewer.doOpen(path);
+
+        return path;
     }
 
     public static void addTextToPageStream(PDPageContentStream contents, String text, int font_size, int x, int y) throws IOException

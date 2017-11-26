@@ -102,7 +102,7 @@ public class PurchaseOrder implements BusinessObject, Serializable
 
     public String getVat()
     {
-        return String.valueOf(vat);
+        return String.valueOf(getVatVal());
     }
 
     public double getVatVal()

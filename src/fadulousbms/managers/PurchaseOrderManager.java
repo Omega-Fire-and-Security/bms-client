@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by ghost on 2017/01/13.
@@ -51,6 +52,15 @@ public class PurchaseOrderManager extends BusinessObjectManager
     public PurchaseOrder getSelected()
     {
         return this.selected;
+    }
+
+    public static double computePurchaseOrderTotal(List<PurchaseOrderItem> poItems)
+    {
+        //compute total
+        double total=0;
+        for(PurchaseOrderItem item: poItems)
+            total += item.getTotal();
+        return total;
     }
 
     @Override

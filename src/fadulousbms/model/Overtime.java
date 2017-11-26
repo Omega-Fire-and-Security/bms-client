@@ -3,9 +3,11 @@ package fadulousbms.model;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.EmployeeManager;
+import fadulousbms.managers.JobManager;
 import fadulousbms.managers.ResourceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import jdk.nashorn.internal.scripts.JO;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -24,9 +26,13 @@ public class Overtime implements BusinessObject, Serializable
     private long time_in;
     private long time_out;
     private long date_logged;
+    private int status;
     private String extra;
     private boolean marked;
     public static final String TAG = "Overtime";
+    public static final int STATUS_PENDING =0;
+    public static final int STATUS_APPROVED =1;
+    public static final int STATUS_ARCHIVED =2;
 
     public StringProperty idProperty(){return new SimpleStringProperty(_id);}
 
@@ -82,6 +88,13 @@ public class Overtime implements BusinessObject, Serializable
         this.usr = usr;
     }
 
+    public StringProperty job_numberProperty()
+    {
+        if(getJob()!=null)
+            return getJob().job_numberProperty();
+        else return new SimpleStringProperty("N/A");
+    }
+
     public StringProperty job_idProperty(){return new SimpleStringProperty(getJob_id());}
 
     public String getJob_id()
@@ -92,6 +105,16 @@ public class Overtime implements BusinessObject, Serializable
     public void setJob_id(String job_id)
     {
         this.job_id = job_id;
+    }
+
+    public Job getJob()
+    {
+        if(job_id==null)
+            return null;
+        HashMap<String, Job> jobs = JobManager.getInstance().getJobs();
+        if(jobs!=null)
+            return jobs.get(job_id);
+        return null;
     }
 
     public long getDate()
@@ -109,7 +132,7 @@ public class Overtime implements BusinessObject, Serializable
         return time_in;
     }
 
-    private StringProperty time_inProperty(){return new SimpleStringProperty(String.valueOf(time_in));}
+    public StringProperty time_inProperty(){return new SimpleStringProperty(String.valueOf(getTime_in()));}
 
     public void setTime_in(long time_in)
     {
@@ -121,7 +144,7 @@ public class Overtime implements BusinessObject, Serializable
         return time_out;
     }
 
-    private StringProperty time_outProperty(){return new SimpleStringProperty(String.valueOf(time_out));}
+    public StringProperty time_outProperty(){return new SimpleStringProperty(String.valueOf(getTime_out()));}
 
     public void setTime_out(long time_out)
     {
@@ -138,7 +161,19 @@ public class Overtime implements BusinessObject, Serializable
         this.date_logged = date_logged;
     }
 
-    private StringProperty extraProperty(){return new SimpleStringProperty(extra);}
+    public StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(getStatus()));}
+
+    public int getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(int status)
+    {
+        this.status= status;
+    }
+
+    public StringProperty extraProperty(){return new SimpleStringProperty(getExtra());}
 
     public String getExtra()
     {
@@ -150,8 +185,18 @@ public class Overtime implements BusinessObject, Serializable
         this.extra = extra;
     }
 
+    public StringProperty employeeProperty()
+    {
+        Employee employee = getEmployee();
+        if(employee!=null)
+            return new SimpleStringProperty(getEmployee().toString());
+        else return new SimpleStringProperty("N/A");
+    }
+
     public Employee getEmployee()
     {
+        if(usr==null)
+            return null;
         HashMap<String, Employee> employees = EmployeeManager.getInstance().getEmployees();
         if(employees!=null)
             return employees.get(usr);
@@ -161,7 +206,7 @@ public class Overtime implements BusinessObject, Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/api/overtime";
+        return "/api/overtime_record";
     }
 
     @Override
@@ -175,22 +220,25 @@ public class Overtime implements BusinessObject, Serializable
                     + URLEncoder.encode(usr, "UTF-8"));
             result.append("&" + URLEncoder.encode("job_id","UTF-8") + "="
                     + URLEncoder.encode(job_id, "UTF-8"));
-            if(date>0)
+            if(getStatus()>0)
+                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getStatus()), "UTF-8"));
+            if(getDate()>0)
                 result.append("&" + URLEncoder.encode("date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date), "UTF-8"));
-            if(time_in>0)
+                        + URLEncoder.encode(String.valueOf(getDate()), "UTF-8"));
+            if(getTime_in()>0)
                 result.append("&" + URLEncoder.encode("time_in","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(time_in), "UTF-8"));
-            if(time_out>0)
+                        + URLEncoder.encode(String.valueOf(getTime_in()), "UTF-8"));
+            if(getTime_out()>0)
                 result.append("&" + URLEncoder.encode("time_out","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(time_out), "UTF-8"));
-            if(date_logged>0)
+                        + URLEncoder.encode(String.valueOf(getTime_out()), "UTF-8"));
+            if(getDate_logged()>0)
                 result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_logged), "UTF-8"));
-            if(extra!=null)
-                if(!extra.isEmpty())
+                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
+            if(getExtra()!=null)
+                if(!getExtra().isEmpty())
                     result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
-                            + URLEncoder.encode(extra, "UTF-8"));
+                            + URLEncoder.encode(getExtra(), "UTF-8"));
             return result.toString();
         } catch (UnsupportedEncodingException e)
         {
@@ -213,16 +261,19 @@ public class Overtime implements BusinessObject, Serializable
                     setJob_id(String.valueOf(val));
                     break;
                 case "date":
-                    setDate(Long.valueOf((String)val));
+                    setDate(Long.valueOf(String.valueOf(val)));
                     break;
                 case "date_logged":
-                    date_logged = Long.parseLong(String.valueOf(val));
+                    setDate_logged(Long.parseLong(String.valueOf(val)));
                     break;
                 case "time_in":
-                    setTime_in(Long.parseLong((String)val));
+                    setTime_in(Long.parseLong(String.valueOf(val)));
                     break;
                 case "time_out":
-                    setTime_out(Long.parseLong((String)val));
+                    setTime_out(Long.parseLong(String.valueOf(val)));
+                    break;
+                case "status":
+                    setStatus(Integer.parseInt(String.valueOf(val)));
                     break;
                 case "extra":
                     setExtra((String)val);
@@ -256,6 +307,8 @@ public class Overtime implements BusinessObject, Serializable
                 return getTime_in();
             case "time_out":
                 return getTime_out();
+            case "status":
+                return getStatus();
             case "extra":
                 return getExtra();
             default:
