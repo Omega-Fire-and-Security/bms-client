@@ -340,18 +340,18 @@ public class JobsController extends ScreenController implements Initializable
                                         {
                                             try
                                             {
+                                                //TODO: show Invoices tab
                                                 if (ScreenManager.getInstance()
-                                                        .loadScreen(Screens.ACCOUNTING
+                                                        .loadScreen(Screens.OPERATIONS
                                                                 .getScreen(), getClass()
-                                                                .getResource("../views/" + Screens.ACCOUNTING
+                                                                .getResource("../views/" + Screens.OPERATIONS
                                                                         .getScreen())))
                                                 {
                                                     Platform.runLater(() -> ScreenManager
                                                             .getInstance()
-                                                            .setScreen(Screens.ACCOUNTING
+                                                            .setScreen(Screens.OPERATIONS
                                                                     .getScreen()));
-                                                }
-                                                else IO.log(getClass()
+                                                } else IO.log(getClass()
                                                         .getName(), IO.TAG_ERROR, "could not load invoice viewer screen.");
                                             } catch (IOException e)
                                             {

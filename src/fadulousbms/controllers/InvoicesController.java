@@ -7,6 +7,7 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.PDF;
+import fadulousbms.auxilary.PDFViewer;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -80,9 +81,10 @@ public class InvoicesController extends ScreenController implements Initializabl
                     {
                         final TableCell<Invoice, String> cell = new TableCell<Invoice, String>()
                         {
-                            final Button btnViewQuote = new Button("View Quote");
-                            final Button btnViewJob = new Button("View Job");
-                            final Button btnPDF = new Button("PDF");
+                            final Button btnViewQuote = new Button("View linked Quote");
+                            final Button btnViewJob = new Button("View linked Job");
+                            final Button btnPDF = new Button("View as PDF");
+                            final Button btnEmail = new Button("eMail Invoice");
                             final Button btnRemove = new Button("Delete");
 
                             @Override
@@ -90,22 +92,28 @@ public class InvoicesController extends ScreenController implements Initializabl
                             {
                                 super.updateItem(item, empty);
                                 btnViewQuote.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnViewQuote.getStyleClass().add("btnApply");
+                                btnViewQuote.getStyleClass().add("btnDefault");
                                 btnViewQuote.setMinWidth(100);
                                 btnViewQuote.setMinHeight(35);
                                 HBox.setHgrow(btnViewQuote, Priority.ALWAYS);
 
                                 btnViewJob.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnViewJob.getStyleClass().add("btnApply");
+                                btnViewJob.getStyleClass().add("btnDefault");
                                 btnViewJob.setMinWidth(100);
                                 btnViewJob.setMinHeight(35);
                                 HBox.setHgrow(btnViewJob, Priority.ALWAYS);
 
                                 btnPDF.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnPDF.getStyleClass().add("btnApply");
+                                btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
+
+                                btnEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnEmail.getStyleClass().add("btnDefault");
+                                btnEmail.setMinWidth(100);
+                                btnEmail.setMinHeight(35);
+                                HBox.setHgrow(btnEmail, Priority.ALWAYS);
 
                                 btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
@@ -119,7 +127,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnViewQuote, btnViewJob, btnPDF, btnRemove);
+                                    HBox hBox = new HBox(btnViewQuote, btnViewJob, btnPDF, btnEmail, btnRemove);
                                     Invoice invoice = getTableView().getItems().get(getIndex());
 
                                     btnViewQuote.setOnAction(event ->
@@ -233,11 +241,22 @@ public class InvoicesController extends ScreenController implements Initializabl
                                     btnPDF.setOnAction(event -> {
                                         try
                                         {
-                                            PDF.createInvoicePdf(invoice);
+                                            String path = PDF.createInvoicePdf(invoice);
+                                            if(path!=null)
+                                            {
+                                                PDFViewer pdfViewer = PDFViewer.getInstance();
+                                                pdfViewer.setVisible(true);
+                                                pdfViewer.doOpen(path);
+                                            }else IO.logAndAlert("Error", "Could not get valid path of generated Invoice PDF document.", IO.TAG_ERROR);
                                         } catch (IOException ex)
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
                                         }
+                                    });
+
+                                    btnEmail.setOnAction(event ->
+                                    {
+                                        InvoiceManager.getInstance().emailInvoice(invoice, null);
                                     });
 
                                     hBox.setFillHeight(true);

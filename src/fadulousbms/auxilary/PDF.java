@@ -700,12 +700,12 @@ public class PDF
         pdfViewer.doOpen(path);
     }
 
-    public static void createQuotePdf(Quote quote) throws IOException
+    public static String createQuotePdf(Quote quote) throws IOException
     {
         if(quote==null)
         {
             IO.logAndAlert("PDF Viewer", "Quote object passed is null.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         //Prepare PDF data from database.
         //Load Quote Client
@@ -713,20 +713,20 @@ public class PDF
         if(client==null)
         {
             IO.logAndAlert("PDF Viewer Error", "Quote has no client assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         //Load Employees assigned to Quote
         Employee[] reps = quote.getRepresentatives();
         if(reps==null)
         {
             IO.logAndAlert("PDF Viewer Error", "Quote has no representatives(employees) assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         Employee contact = quote.getContact_person();
         if(contact==null)
         {
             IO.logAndAlert("PDF Viewer Error", "Quote has no client contact person assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
 
         // Create a new document with an empty page.
@@ -1149,28 +1149,28 @@ public class PDF
         document.save(path);
         document.close();
 
-        PDFViewer pdfViewer = PDFViewer.getInstance();
-        pdfViewer.setVisible(true);
-
-        pdfViewer.doOpen(path);//"bin/pdf/quote_" + quote.get_id() + ".pdf"
+        //PDFViewer pdfViewer = PDFViewer.getInstance();
+        //pdfViewer.setVisible(true);
+        //pdfViewer.doOpen(path);//"bin/pdf/quote_" + quote.get_id() + ".pdf"
+        return path;
     }
 
-    public static void createInvoicePdf(Invoice invoice) throws IOException
+    public static String createInvoicePdf(Invoice invoice) throws IOException
     {
         if(invoice==null)
         {
             IO.logAndAlert("PDF Viewer", "Invoice object passed is null.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         if(invoice.getJob()==null)
         {
             IO.logAndAlert("PDF Viewer", "Invoice->Job object passed is null.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         if(invoice.getJob().getQuote()==null)
         {
             IO.logAndAlert("PDF Viewer", "Invoice->Job->Quote object passed is null.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         Job job = invoice.getJob();
         Quote quote = invoice.getJob().getQuote();
@@ -1180,20 +1180,20 @@ public class PDF
         if(client==null)
         {
             IO.logAndAlert("PDF Viewer Error", "Quote has no client assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         //Load Employees assigned to Quote
         Employee[] reps = invoice.getJob().getQuote().getRepresentatives();
         if(reps==null)
         {
             IO.logAndAlert("PDF Viewer Error", "Quote has no representatives(employees) assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         Employee contact = quote.getContact_person();
         if(contact==null)
         {
             IO.logAndAlert("PDF Viewer Error", "Quote has no client contact person assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
 
         // Create a new document with an empty page.
@@ -1670,9 +1670,7 @@ public class PDF
         document.save(path);
         document.close();
 
-        PDFViewer pdfViewer = PDFViewer.getInstance();
-        pdfViewer.setVisible(true);
-        pdfViewer.doOpen(path);
+        return path;
     }
 
     static int partition(Transaction arr[], int left, int right)

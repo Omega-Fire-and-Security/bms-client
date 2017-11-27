@@ -166,7 +166,7 @@ public class QuotesController extends OperationsController implements Initializa
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnView, btnPDF, btnRemove);
+                                    HBox hBox = new HBox(btnView, btnPDF, btnEmail, btnRemove);
 
                                     btnView.setOnAction(event ->
                                     {
@@ -206,15 +206,24 @@ public class QuotesController extends OperationsController implements Initializa
                                         Quote quote = getTableView().getItems().get(getIndex());
                                         try
                                         {
-                                            PDF.createQuotePdf(quote);
+                                            String path = PDF.createQuotePdf(quote);
+                                            if(path!=null)
+                                            {
+                                                PDFViewer pdfViewer = PDFViewer.getInstance();
+                                                pdfViewer.setVisible(true);
+                                                pdfViewer.doOpen(path);
+                                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid quote pdf path returned.");
                                         } catch (IOException ex)
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
                                         }
                                     });
 
-                                    /*btnEmail.setOnAction(event ->
-                                            JobManager.getInstance().emailJobCard(job, null));*/
+                                    btnEmail.setOnAction(event ->
+                                    {
+                                        Quote quote = getTableView().getItems().get(getIndex());
+                                        QuoteManager.getInstance().emailQuote(quote, null);
+                                    });
 
                                     btnRemove.setOnAction(event ->
                                     {
