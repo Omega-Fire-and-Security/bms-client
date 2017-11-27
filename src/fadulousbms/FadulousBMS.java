@@ -8,6 +8,7 @@ package fadulousbms;
 import com.sun.javafx.application.LauncherImpl;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.controllers.JobsController;
 import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.model.Screens;
@@ -22,6 +23,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  *
@@ -91,6 +94,20 @@ public class FadulousBMS extends Application
     {
         stage.setOnCloseRequest(event ->
         {
+            stage.onCloseRequestProperty().addListener((observable, oldValue, newValue) ->
+            {
+                //Clean up
+                try
+                {
+                    //delete out/ directory
+                    Files.delete(Paths.get("out/"));
+                } catch (IOException ex)
+                {
+                    ex.printStackTrace();
+                    IO.log(JobsController.class.getName(), IO.TAG_ERROR, ex.getMessage());
+                }
+            });
+
             int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?");
             if(result==JOptionPane.OK_OPTION)
             {

@@ -37,27 +37,9 @@ public class Job implements BusinessObject, Serializable
     private String quote_id;
     private boolean signed;
     private boolean marked;
+    private String signed_job;
     private Employee[] assigned_employees;
     private FileMetadata[] safety_catalogue;
-    //private Client client;//Client requesting the Job
-    //private Comment[] employee_comments;
-    //private Comment[] clients_comments;
-    //private Invoice invoice;
-    //private Resource[] resources_used;
-    
-    /*public Job(String _id, String job_name, String job_description, String client_id, long date_logged, long date_assigned, long date_started, long date_completed, String invoice_id, boolean job_completed)
-    {
-        this._id = _id;
-        this.job_name = job_name;//new SimpleStringProperty(job_name);
-        this.job_description = job_description;
-        this.client_id = client_id;
-        this.date_logged = date_logged;
-        this.date_assigned = date_assigned;
-        this.date_started = date_started;
-        this.date_completed = date_completed;
-        this.invoice_id = invoice_id;
-        this.job_completed = job_completed;
-    }*/
 
     public StringProperty idProperty(){return new SimpleStringProperty(_id);}
 
@@ -241,6 +223,22 @@ public class Job implements BusinessObject, Serializable
         return signed;
     }
 
+    /**
+     * @return base64 encoded string of signed Job
+     */
+    public String getSigned_job()
+    {
+        return signed_job;
+    }
+
+    /**
+     * @param signed_job Base64 representation of signed Job
+     */
+    public void setSigned_job(String signed_job)
+    {
+        this.signed_job = signed_job;
+    }
+
     public StringProperty quote_idProperty()
     {
         return new SimpleStringProperty(quote_id);
@@ -346,6 +344,9 @@ public class Job implements BusinessObject, Serializable
                     + URLEncoder.encode(quote_id, "UTF-8"));
             result.append("&" + URLEncoder.encode("signed","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(signed), "UTF-8"));
+            if(getSigned_job()!=null)
+                result.append("&" + URLEncoder.encode("signed_job","UTF-8") + "="
+                        + URLEncoder.encode(getSigned_job(), "UTF-8"));
             if(date_logged>0)
                 result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
                         + URLEncoder.encode(String.valueOf(date_logged), "UTF-8"));
@@ -398,6 +399,9 @@ public class Job implements BusinessObject, Serializable
                 case "signed":
                     signed = (Boolean) val;
                     break;
+                case "signed_job":
+                    signed_job = (String) val;
+                    break;
                 case "planned_start_date":
                     planned_start_date = Long.parseLong(String.valueOf(val));
                     break;
@@ -444,32 +448,35 @@ public class Job implements BusinessObject, Serializable
     {
         switch (var.toLowerCase())
         {
-            case "quote_id":
-                return quote_id;
-            case "signed":
-                return signed;
-            case "planned_start_date":
-                return planned_start_date;
-            case "date_logged":
-                return date_logged;
-            case "date_assigned":
-                return date_assigned;
-            case "date_started":
-                return date_started;
-            case "date_completed":
-                return date_completed;
-            case "invoice_id":
-                return invoice_id;
-            case "assigned_employees":
-                return assigned_employees;
-            case "safety_catalogue":
-                return safety_catalogue;
+            case "_id":
+                return get_id();
             case "job_number":
-                return job_number;
+                return getJob_number();
+            case "quote_id":
+                return getQuote_id();
+            case "signed":
+                return isSigned();
+            case "signed_job":
+                return getSigned_job();
+            case "planned_start_date":
+                return getPlanned_start_date();
+            case "date_logged":
+                return getDate_logged();
+            case "date_assigned":
+                return getDate_assigned();
+            case "date_started":
+                return getDate_started();
+            case "date_completed":
+                return getDate_completed();
+            case "invoice_id":
+                return getInvoice_id();
+            case "assigned_employees":
+                return getAssigned_employees();
+            case "safety_catalogue":
+                return getSafety_catalogue();
             default:
                 IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Job attribute '" + var + "'.");
                 return null;
         }
     }
 }
-

@@ -127,8 +127,9 @@ public class QuotesController extends OperationsController implements Initializa
                     {
                         final TableCell<Quote, String> cell = new TableCell<Quote, String>()
                         {
-                            final Button btnView = new Button("View");
-                            final Button btnPDF = new Button("PDF");
+                            final Button btnView = new Button("View Quote");
+                            final Button btnPDF = new Button("View as PDF");
+                            final Button btnEmail = new Button("eMail Quote");
                             final Button btnRemove = new Button("Delete");
 
                             @Override
@@ -136,16 +137,22 @@ public class QuotesController extends OperationsController implements Initializa
                             {
                                 super.updateItem(item, empty);
                                 btnView.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnView.getStyleClass().add("btnApply");
+                                btnView.getStyleClass().add("btnDefault");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
                                 btnPDF.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnPDF.getStyleClass().add("btnApply");
+                                btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
+
+                                btnEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnEmail.getStyleClass().add("btnDefault");
+                                btnEmail.setMinWidth(100);
+                                btnEmail.setMinHeight(35);
+                                HBox.setHgrow(btnEmail, Priority.ALWAYS);
 
                                 btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
@@ -195,15 +202,6 @@ public class QuotesController extends OperationsController implements Initializa
                                         });
                                     });
 
-                                    btnRemove.setOnAction(event ->
-                                    {
-                                        Quote quote = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(quote);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
-                                    });
-
                                     btnPDF.setOnAction(event -> {
                                         Quote quote = getTableView().getItems().get(getIndex());
                                         try
@@ -213,6 +211,18 @@ public class QuotesController extends OperationsController implements Initializa
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
                                         }
+                                    });
+
+                                    /*btnEmail.setOnAction(event ->
+                                            JobManager.getInstance().emailJobCard(job, null));*/
+
+                                    btnRemove.setOnAction(event ->
+                                    {
+                                        Quote quote = getTableView().getItems().get(getIndex());
+                                        getTableView().getItems().remove(quote);
+                                        getTableView().refresh();
+                                        //TODO: remove from server
+                                        IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
                                     });
 
                                     hBox.setFillHeight(true);

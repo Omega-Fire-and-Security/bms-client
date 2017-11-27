@@ -24,7 +24,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -350,7 +349,8 @@ public abstract class QuoteController extends ScreenController implements Initia
                             .getStatus(), IO.TAG_ERROR);
                     break;
             }
-            txtStatus.setText(status);
+            if(txtStatus!=null)
+                txtStatus.setText(status);
         }
     }
 
@@ -1228,11 +1228,34 @@ public abstract class QuoteController extends ScreenController implements Initia
 
                             IO.logAndAlert("New Quote Creation Success", "Successfully created a new quote.", IO.TAG_INFO);
                             itemsModified = false;
-                            new Thread(() ->
+                            /*new Thread(() ->
                             {
                                 refreshModel();
                                 Platform.runLater(() -> refreshView());
-                            }).start();
+                            }).start();*/
+                            ScreenManager.getInstance().showLoadingScreen(param ->
+                            {
+                                new Thread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        try
+                                        {
+                                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),getClass().getResource("../views/"+Screens.VIEW_QUOTE.getScreen())))
+                                            {
+                                                //Platform.runLater(() ->
+                                                ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen());
+                                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load view quote screen.");
+                                        } catch (IOException e)
+                                        {
+                                            e.printStackTrace();
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
+                                    }
+                                }).start();
+                                return null;
+                            });
                         }catch (MalformedURLException ex)
                         {
                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
@@ -1326,6 +1349,11 @@ public abstract class QuoteController extends ScreenController implements Initia
         Quote selected = QuoteManager.getInstance().getSelectedQuote();
         if(selected!=null)
         {
+            if(selected.getStatus()==Quote.STATUS_APPROVED)
+            {
+                IO.logAndAlert("Error", "Selected Quote has already been approved and can no longer be changed.", IO.TAG_ERROR);
+                return;
+            }
             selected.setClient_id(cbxClients.getValue().get_id());
             selected.setContact_person_id(cbxContactPerson.getValue().getUsr());
             selected.setVat(Double.parseDouble(str_vat));
@@ -1383,17 +1411,18 @@ public abstract class QuoteController extends ScreenController implements Initia
                         /*if(JobManager.getInstance().getJobs()!=null)
                             job.setJob_number(JobManager.getInstance().getJobs().length);
                         else job.setJob_number(0);*/
-                        String new_job_id = JobManager.getInstance().createNewJob(job);
+                        String new_job_id = JobManager.getInstance().createNewJob(job, null);
                         if (new_job_id != null)
                         {
                             IO.logAndAlert("Success", "Successfully created a new job.", IO.TAG_INFO);
                             try
                             {
                                 JobManager.getInstance().reloadDataFromServer();
-                                JobManager.getInstance()
-                                        .setSelectedJob(JobManager.getInstance().getJobs().get(new_job_id));
                                 if (JobManager.getInstance().getJobs() != null)
                                 {
+                                    JobManager.getInstance()
+                                            .setSelected(JobManager.getInstance().getJobs().get(new_job_id));
+
                                     ScreenManager.getInstance().showLoadingScreen(param ->
                                     {
                                         new Thread(new Runnable()

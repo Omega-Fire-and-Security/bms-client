@@ -7,7 +7,6 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -65,7 +64,7 @@ public class ViewJobController extends ScreenController implements Initializable
         colActive.setCellValueFactory(new PropertyValueFactory<>("active"));
 
         //Populate fields
-        Job selected = JobManager.getInstance().getSelectedJob();
+        Job selected = JobManager.getInstance().getSelected();
         if(selected!=null)
         {
             if(selected.getQuote()==null)
@@ -251,12 +250,12 @@ public class ViewJobController extends ScreenController implements Initializable
     @FXML
     public void exportPDF()
     {
-        if(JobManager.getInstance().getSelectedJob()!=null)
+        if(JobManager.getInstance().getSelected()!=null)
         {
-            if(JobManager.getInstance().getSelectedJob().getAssigned_employees()!=null)
+            if(JobManager.getInstance().getSelected().getAssigned_employees()!=null)
             {
-                if(JobManager.getInstance().getSelectedJob().getAssigned_employees().length>0)
-                    JobManager.showJobCard(JobManager.getInstance().getSelectedJob());
+                if(JobManager.getInstance().getSelected().getAssigned_employees().length>0)
+                    JobManager.showJobCard(JobManager.getInstance().getSelected());
                 else IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
             } else IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
         } else IO.logAndAlert("Error", "Selected job is invalid.", IO.TAG_ERROR);
@@ -270,36 +269,36 @@ public class ViewJobController extends ScreenController implements Initializable
         {
             if(!smgr.getActive().isExpired())
             {
-                if(JobManager.getInstance().getSelectedJob()!=null)
+                if(JobManager.getInstance().getSelected()!=null)
                 {
                     //add job representatives
                     boolean created_all=true;
                     if (tblEmployees.getItems() != null)
                         for (Employee employee : tblEmployees.getItems())
-                            created_all=JobManager.createJobRepresentative(JobManager.getInstance().getSelectedJob().get_id(), employee.getUsr());
+                            created_all=JobManager.createJobRepresentative(JobManager.getInstance().getSelected().get_id(), employee.getUsr());
                     if(created_all)
                     {
                         IO.logAndAlert("Success", "Successfully updated job[#" + String
-                                .valueOf(JobManager.getInstance().getSelectedJob()
+                                .valueOf(JobManager.getInstance().getSelected()
                                         .getJob_number()) + "] representatives.", IO.TAG_INFO);
                         try
                         {
                             JobManager.getInstance().reloadDataFromServer();
-                            //JobManager.getInstance().setSelectedJob(JobManager.getInstance().getJobs().get(new_job_id));
+                            //JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(new_job_id));
 
-                            JobManager.getInstance().setSelectedJob(JobManager.getInstance().getJobs().get(JobManager.getInstance().getSelectedJob().get_id()));
+                            JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(JobManager.getInstance().getSelected().get_id()));
 
                             if(JobManager.getInstance().getJobs()!=null)
                             {
                                 ScreenManager.getInstance().showLoadingScreen(param ->
                                 {
-                                    new Thread(() ->
+                                    /*new Thread(() ->
                                     {
                                         refreshModel();
                                         Platform.runLater(() -> refreshView());
-                                    }).start();
+                                    }).start();*/
 
-                                    /*new Thread(new Runnable()
+                                    new Thread(new Runnable()
                                     {
                                         @Override
                                         public void run()
@@ -317,7 +316,7 @@ public class ViewJobController extends ScreenController implements Initializable
                                                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                             }
                                         }
-                                    }).start();*/
+                                    }).start();
 
                                     return null;
                                 });
@@ -336,7 +335,7 @@ public class ViewJobController extends ScreenController implements Initializable
                             IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
                         }
                     }
-                    else IO.logAndAlert("Error", "Could NOT update job[#"+String.valueOf(JobManager.getInstance().getSelectedJob().getJob_number())+"] representatives.", IO.TAG_ERROR);
+                    else IO.logAndAlert("Error", "Could NOT update job[#"+String.valueOf(JobManager.getInstance().getSelected().getJob_number())+"] representatives.", IO.TAG_ERROR);
                 }
             }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -345,7 +344,29 @@ public class ViewJobController extends ScreenController implements Initializable
     @FXML
     public void back()
     {
-        ScreenController.previousScreen();
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(),getClass().getResource("../views/"+Screens.OPERATIONS.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            ScreenManager.getInstance().setScreen(Screens.OPERATIONS.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load operations screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 
     class ComboBoxTableCell extends TableCell<BusinessObject, String>

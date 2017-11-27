@@ -587,10 +587,19 @@ public class QuoteManager extends BusinessObjectManager
         return false;
     }
 
-    public void sendEmail(String job_id, Callback callback)
+    public void emailQuote(Quote quote, Callback callback)
     {
+        if(quote==null)
+        {
+            IO.logAndAlert("Error", "Invalid Quote.", IO.TAG_ERROR);
+            return;
+        }
+
+        //upload Quote PDF to server
+        //uploadQuotePDF(quote);
+
         Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Quote ["+job_id+"]");
+        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Quote ["+quote.get_id()+"]");
         stage.setMinWidth(320);
         stage.setHeight(350);
         stage.setAlwaysOnTop(true);
@@ -614,8 +623,8 @@ public class QuoteManager extends BusinessObjectManager
         txt_job_id.setMaxWidth(Double.MAX_VALUE);
         txt_job_id.setPromptText("Type in a message");
         txt_job_id.setEditable(false);
-        txt_job_id.setText(job_id);
-        HBox hbox_job_id = CustomTableViewControls.getLabelledNode("Job ID: ", 200, txt_job_id);
+        txt_job_id.setText(String.valueOf(quote.get_id()));
+        HBox hbox_job_id = CustomTableViewControls.getLabelledNode("Quote ID: ", 200, txt_job_id);
 
         final TextArea txt_message = new TextArea();
         txt_message.setMinWidth(200);
@@ -639,13 +648,13 @@ public class QuoteManager extends BusinessObjectManager
             String str_message = txt_message.getText();
 
             ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("quote_id", job_id));
+            params.add(new AbstractMap.SimpleEntry<>("quote_id", quote.get_id()));
             params.add(new AbstractMap.SimpleEntry<>("to_email", str_destination));
             params.add(new AbstractMap.SimpleEntry<>("subject", str_subject));
             params.add(new AbstractMap.SimpleEntry<>("message", str_message));
-
             try
             {
+                //send email
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
                 {
@@ -663,7 +672,7 @@ public class QuoteManager extends BusinessObjectManager
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
-                        IO.logAndAlert("Success", "Successfully sent email!", IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully emailed quote to ["+txt_destination.getText()+"]!", IO.TAG_INFO);
                         if(callback!=null)
                             callback.call(null);
                     }else{
@@ -673,6 +682,7 @@ public class QuoteManager extends BusinessObjectManager
                 }
             } catch (IOException e)
             {
+                e.printStackTrace();
                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
             }
         });

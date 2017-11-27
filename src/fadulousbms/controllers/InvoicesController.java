@@ -7,7 +7,6 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.PDF;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -186,7 +185,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                                 @Override
                                                 public void run()
                                                 {
-                                                    JobManager.getInstance().setSelectedJob(invoice.getJob());
+                                                    JobManager.getInstance().setSelected(invoice.getJob());
                                                     try
                                                     {
                                                         if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
@@ -208,7 +207,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                             return;
                                         }
                                         JobManager.getInstance().loadDataFromServer();
-                                        JobManager.getInstance().setSelectedJob(invoice.getJob());
+                                        JobManager.getInstance().setSelected(invoice.getJob());
                                         try
                                         {
                                             if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))

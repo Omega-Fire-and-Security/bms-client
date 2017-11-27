@@ -344,8 +344,7 @@ public class RemoteComms
 
         httpConn.connect();
         String desc = IO.readStream(httpConn.getInputStream());
-        IO.logAndAlert("File Upload", httpConn.getResponseCode() + ":\t" + desc, IO.TAG_INFO);
+        IO.log(RemoteComms.class.getName(), httpConn.getResponseCode() + ":\t" + desc, IO.TAG_INFO);
         httpConn.disconnect();
-
     }
 }

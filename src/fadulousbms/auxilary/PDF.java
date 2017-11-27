@@ -2420,6 +2420,16 @@ public class PDF
             IO.log(TAG, IO.TAG_ERROR, "Job Quote's Client object is null.");
             return null;
         }
+        if(job.getAssigned_employees()==null)
+        {
+            IO.logAndAlert("Error", "Job[#"+job.getJob_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
+            return null;
+        }
+        if(job.getAssigned_employees().length<=0)
+        {
+            IO.logAndAlert("Error", "Job[#"+job.getJob_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
+            return null;
+        }
 
         //ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
         //headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
@@ -2558,6 +2568,7 @@ public class PDF
             return null;
         }
 
+        //TODO: fix this hack
         String path = "bin/pdf/job_card_" + job.get_id() + ".pdf";
         int i=1;
         while(new File(path).exists())
@@ -2568,11 +2579,6 @@ public class PDF
 
         document.save(path);
         document.close();
-
-        PDFViewer pdfViewer = PDFViewer.getInstance();
-        pdfViewer.setVisible(true);
-        pdfViewer.doOpen(path);
-
         return path;
     }
 
