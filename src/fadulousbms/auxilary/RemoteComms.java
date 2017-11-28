@@ -68,32 +68,41 @@ public class RemoteComms
                                     ttl = Integer.parseInt(val);
                                     break;
                                 default:
-                                    System.err.println("Unknown cookie attribute: " + key);
+                                    IO.log("User Authenticator", IO.TAG_ERROR, "Unknown cookie attribute: " + key);
                                     break;
                             }
                         }else{
-                            throw new LoginException("Cookie attributes are invalid. Missing '='.");
+                            //throw new LoginException("Cookie attributes are invalid. Missing '='.");
+                            IO.logAndAlert("Authentication Error", "Cookie attributes are invalid. Missing '='.", IO.TAG_ERROR);
                         }
                     }
-                    
+
+                    IO.log("User Authenticator", IO.TAG_INFO, "successfully signed in.");
+
                     Session session = new Session(usr, session_id, date, ttl);
                     connObj.disconnect();
                     return session;
                 }else{
                     connObj.disconnect();
-                    throw new LoginException("Cookie attributes are invalid. Not enough attributes. Must be >= 3.");
+                    IO.logAndAlert("Authentication Error", "Cookie attributes are invalid. Not enough attributes. Must be >= 3.", IO.TAG_ERROR);
+                    //throw new LoginException("Cookie attributes are invalid. Not enough attributes. Must be >= 3.");
                 }
             }else{
                 connObj.disconnect();
-               throw new LoginException("Cookie object is not set.");
+                IO.logAndAlert("Authentication Error", "Cookie object is not set.", IO.TAG_ERROR);
+               //throw new LoginException("Cookie object is not set.");
             }
         }else{
             connObj.disconnect();
-            if(connObj.getResponseCode()==404)
+            IO.log("User Authenticator", IO.TAG_ERROR, "could not sign in.");
+            if(connObj.getResponseCode()==HttpURLConnection.HTTP_NOT_FOUND)
+                IO.logAndAlert("Authentication Error", "Invalid credentials.\nPlease try again with valid credentials or reset your password if you have forgotten it.", IO.TAG_ERROR);
+            /*if(connObj.getResponseCode()==404)
                 throw new LoginException("Invalid credentials.");
             else
-                throw new LoginException("Could not authenticate, server response code: " + connObj.getResponseCode());
+                throw new LoginException("Could not authenticate, server response code: " + connObj.getResponseCode());*/
         }
+        return null;
     }
 
     public static void setHost(String h)

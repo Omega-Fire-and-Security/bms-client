@@ -79,49 +79,52 @@ public class LoginController extends ScreenController implements Initializable
     @FXML
     public void login()
     {
-        final ScreenManager screenManager = ScreenManager.getInstance();
-        ScreenManager.getInstance().showLoadingScreen(param ->
+        try
         {
-            new Thread(new Runnable()
+            String usr = txtUsr.getText(), pwd=txtPwd.getText();
+            if(usr!=null && pwd!=null)
             {
-                @Override
-                public void run()
+                Session session = RemoteComms.auth(usr, pwd);
+                if(session != null)
                 {
-                    try
+                    SessionManager ssn_mgr = SessionManager.getInstance();
+                    ssn_mgr.addSession(session);
+
+                    //load User data to memory
+                    EmployeeManager.getInstance().loadDataFromServer();
+                    //Load HomeScreen
+                    final ScreenManager screenManager = ScreenManager.getInstance();
+                    ScreenManager.getInstance().showLoadingScreen(param ->
                     {
-                        String usr = txtUsr.getText(), pwd=txtPwd.getText();
-                        if(usr!=null && pwd!=null)
+                        new Thread(new Runnable()
                         {
-                            Session session = RemoteComms.auth(usr, pwd);
-                            SessionManager ssn_mgr = SessionManager.getInstance();
-                            ssn_mgr.addSession(session);
-
-                            //load User data to memory
-                            EmployeeManager.getInstance().loadDataFromServer();
-
-                            if (screenManager.loadScreen(Screens.HOME.getScreen(), getClass().getResource("../views/" + Screens.HOME.getScreen())))
+                            @Override
+                            public void run()
                             {
-                                screenManager.setScreen(Screens.HOME.getScreen());
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load home screen.");
-                        }else{
-                            JOptionPane.showMessageDialog(null, "Invalid entry.", "Login failure", JOptionPane.ERROR_MESSAGE);
-                            IO.log(getClass().getName(), IO.TAG_ERROR, "invalid input.");
-                        }
-                    }catch(ConnectException ex)
-                    {
-                        JOptionPane.showMessageDialog(null, ex.getMessage() + ", \nis the server up? are you connected to the network?", "Login failure", JOptionPane.ERROR_MESSAGE);
-                        IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage() + ", \nis the server up? are you connected to the network?");
-                    } catch (LoginException ex)
-                    {
-                        JOptionPane.showMessageDialog(null, ex.getMessage(), "Login failure", JOptionPane.ERROR_MESSAGE);
-                        IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                    } catch (IOException e)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                    }
-                }
-            }).start();
-            return null;
-        });
+                                try
+                                {
+                                    if (screenManager.loadScreen(Screens.HOME.getScreen(), getClass().getResource("../views/" + Screens.HOME.getScreen())))
+                                        screenManager.setScreen(Screens.HOME.getScreen());
+                                    else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load home screen.");
+                                } catch (IOException e)
+                                {
+                                    IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
+                                }
+                            }
+                        }).start();
+                        return null;
+                    });
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid user session.");
+            }else IO.logAndAlert("Login failure", "Invalid input.", IO.TAG_ERROR);
+        }catch(ConnectException ex)
+        {
+            IO.logAndAlert("Login failure", ex.getMessage() + ", \nis the server up? are you connected to the network?", IO.TAG_ERROR);
+        } catch (LoginException ex)
+        {
+            IO.logAndAlert("Login failure", ex.getMessage(), IO.TAG_ERROR);
+        } catch (IOException e)
+        {
+            IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
+        }
     }
 }

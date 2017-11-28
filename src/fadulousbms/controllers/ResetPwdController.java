@@ -8,6 +8,7 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
+import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
@@ -41,34 +42,26 @@ public class ResetPwdController extends ScreenController implements Initializabl
     @Override
     public void refreshView()
     {
-        Employee e = SessionManager.getInstance().getActiveEmployee();
-        if(e!=null)
-            this.getUserNameLabel().setText(e.getFirstname() + " " + e.getLastname());
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
-
         //TODO
         txtUsr.setText("ghost");
         txtPwd.setText("abc");
-
-        try
-        {
-            BufferedImage bufferedImage;
-            bufferedImage = ImageIO.read(new File("images/profile.png"));
-            Image image = SwingFXUtils.toFXImage(bufferedImage, null);
-            this.getProfileImageView().setImage(image);
-
-            /*for(int i=0;i<30;i++)
-                news_feed_tiles.getChildren().add(createTile());*/
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        }
     }
 
     @Override
     public void refreshModel()
     {
-
+        try
+        {
+            EmployeeManager.getInstance().reloadDataFromServer();
+        } catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
     }
 
     /**
