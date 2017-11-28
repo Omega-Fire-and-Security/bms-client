@@ -1,5 +1,6 @@
 package fadulousbms.auxilary;
 
+import fadulousbms.FadulousBMS;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import org.apache.pdfbox.cos.COSName;
@@ -9,7 +10,9 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -46,6 +49,7 @@ public class PDF
     private static final int ROW_COUNT = 35;
     private static final Insets page_margins = new Insets(100,10,100,10);
     private static int quote_page_count=1;
+    private PDFont default_font;
 
     public static void printPDF(final byte[] byteStream) throws PrintException
     {
@@ -244,12 +248,12 @@ public class PDF
             contents.beginText();
     }
 
-    public static void createPurchaseOrderPdf(PurchaseOrder purchaseOrder) throws IOException
+    public static String createPurchaseOrderPdf(PurchaseOrder purchaseOrder) throws IOException
     {
         if(purchaseOrder==null)
         {
             IO.logAndAlert("PDF Viewer", "PurchaseOrder object passed is null.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         //Prepare PDF data from database.
         //Load PurchaseOrder Supplier
@@ -257,21 +261,21 @@ public class PDF
         if(supplier==null)
         {
             IO.logAndAlert("PDF Viewer Error", "PurchaseOrder has no Supplier assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         //Load PurchaseOrder contact person
         Employee employee = purchaseOrder.getContact_person();
         if(employee==null)
         {
             IO.logAndAlert("PDF Viewer Error", "PurchaseOrder has no contact person assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
         //Load PurchaseOrder contact person
         PurchaseOrderItem[] purchaseOrderItems = purchaseOrder.getItems();
         if(purchaseOrderItems==null)
         {
             IO.logAndAlert("PDF Viewer Error", "PurchaseOrder has no PurchaseOrderItems assigned to it.", IO.TAG_ERROR);
-            return;
+            return null;
         }
 
         // Create a new document with an empty page.
@@ -281,7 +285,14 @@ public class PDF
 
         // Adobe Acrobat uses Helvetica as a default font and
         // stores that under the name '/Helv' in the resources dictionary
-        PDFont font = PDType1Font.HELVETICA;
+        //PDFont font = PDType1Font.HELVETICA;
+        File font_file = new File(FadulousBMS.class.getResource("fonts/Ubuntu-L.ttf").getFile());
+        if(font_file==null)
+        {
+            IO.log("Purchase Order PDF generator Error", IO.TAG_ERROR, "Could not find default system font file [fonts/Raleway-Light.ttf]");
+            return null;
+        }
+        PDFont font = PDType0Font.load(document, font_file);
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
@@ -320,7 +331,9 @@ public class PDF
         //left text
         addTextToPageStream(contents,"Purchase Order #" + purchaseOrder.getNumber(), PDType1Font.COURIER_BOLD_OBLIQUE, 17,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(purchaseOrder.getDate_logged()*1000))), 12, 20, line_pos);
+        addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,20, line_pos);
+        line_pos-=LINE_HEIGHT;
+        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(purchaseOrder.getDate_logged()*1000))), 12, 20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"Overall Discount:  " + purchaseOrder.discountProperty().get(), 12,20 , line_pos);
         line_pos-=LINE_HEIGHT;//next line
@@ -386,7 +399,7 @@ public class PDF
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"VAT No.: #############", 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"POSTAL ADDRESS: " + purchaseOrder.getSupplier().getPostal_address(), 12,supplier_text_x, line_pos);
+        //addTextToPageStream(contents,"POSTAL ADDRESS: " + purchaseOrder.getSupplier().getPostal_address(), 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"CITY: ##########", 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
@@ -394,7 +407,7 @@ public class PDF
 
         line_pos-=LINE_HEIGHT*2;//next 2ND line
 
-        addTextToPageStream(contents,"PHYSICAL ADDRESS: " + purchaseOrder.getSupplier().getPhysical_address(), 12,supplier_text_x, line_pos);
+        //addTextToPageStream(contents, String.format("PHYSICAL ADDRESS: %s", purchaseOrder.getSupplier().getPhysical_address()), 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"CITY: ########", 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
@@ -541,7 +554,8 @@ public class PDF
             addTextToPageStream(contents, item.getItem_number(), 12,col_pos+30, line_pos);
             col_pos += 80;//next column
             //Description col
-            addTextToPageStream(contents, item.getItem_description(), 12,col_pos+5, line_pos);
+            //addTextToPageStream(contents, item.getItem_description(), 12,col_pos+5, line_pos);
+            addTextToPageStream(contents, item.getItem_description() , font, 12, col_pos+5, line_pos);
             col_pos = (int)w/2;//next column - starts at middle of page
             //Unit col
             addTextToPageStream(contents,item.getUnit(), 12,col_pos+5, line_pos);
@@ -694,10 +708,7 @@ public class PDF
         document.save(path);
         document.close();
 
-        PDFViewer pdfViewer = PDFViewer.getInstance();
-        pdfViewer.setVisible(true);
-
-        pdfViewer.doOpen(path);
+        return path;
     }
 
     public static String createQuotePdf(Quote quote) throws IOException
@@ -768,12 +779,15 @@ public class PDF
         //left text
         addTextToPageStream(contents,"Company: " + client.getClient_name(), 12, 20, line_pos);
         //right text
-        addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(quote.getDate_generated()*1000))), 12,(int)(w/2)+5, line_pos);
+        addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,(int)(w/2)+5, line_pos);
+        line_pos-=LINE_HEIGHT;
+        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(quote.getDate_generated()*1000))), 12,(int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;//next line
+
         //left text
         addTextToPageStream(contents,"Company Tel: " + client.getTel(), 12,20, line_pos);
         //right text
-        addTextToPageStream(contents,"Sale Consultant(s):", PDType1Font.COURIER_BOLD_OBLIQUE, 16,(int)((w/2)+((w/2)/4)), line_pos);
+        addTextToPageStream(contents,"Sale Consultant(s): ", PDType1Font.COURIER_BOLD_OBLIQUE, 16,(int)((w/2)+((w/2)/4)), line_pos);
 
         //horizontal solid line after company details
         contents.endText();
@@ -1230,7 +1244,9 @@ public class PDF
         addTextToPageStream(contents,"Invoice ID: " + invoice.get_id(), PDType1Font.COURIER_BOLD_OBLIQUE, 15,20, line_pos);
         line_pos-=LINE_HEIGHT;
         int center_vert_line_start = line_pos;
-        addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(job.getDate_logged()*1000))), 12,20, line_pos);
+        addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,20, line_pos);
+        line_pos-=LINE_HEIGHT;
+        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(job.getDate_logged()*1000))), 12,20, line_pos);
         line_pos-=LINE_HEIGHT;
         addTextToPageStream(contents,"Creator:  " + invoice.getCreator(), 12,20, line_pos);
         line_pos-=LINE_HEIGHT;
@@ -1245,7 +1261,7 @@ public class PDF
         PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
         contents.drawImage(logo, (int)(w/2)+ 20, line_pos-logo_h-10, 150, logo_h);
 
-        line_pos-=LINE_HEIGHT*4;
+        line_pos-=LINE_HEIGHT*5;
         temp_pos = line_pos;
 
         //horizontal solid line after company logo
@@ -1267,6 +1283,7 @@ public class PDF
         addTextToPageStream(contents,"Company: " + client.getClient_name(), 12, 20, line_pos);
         line_pos-=LINE_HEIGHT;
         addTextToPageStream(contents,"Company Tel: " + client.getTel(), 12,20, line_pos);
+        //addTextToPageStream(contents,"Contact Person[s]: ", 12,20, line_pos-LINE_HEIGHT);
 
         line_pos=temp_pos;
 
@@ -2582,17 +2599,49 @@ public class PDF
 
     public static void addTextToPageStream(PDPageContentStream contents, String text, int font_size, int x, int y) throws IOException
     {
-        PDFont font = PDType1Font.HELVETICA;
-        contents.setFont(font, font_size);
-        contents.setTextMatrix(new Matrix(1, 0, 0, 1, x, y-TEXT_VERT_OFFSET));
-        contents.showText(text);
+        try
+        {
+            addTextToPageStream(contents, text, PDType1Font.HELVETICA, font_size, x, y);
+        }catch (IllegalArgumentException e)
+        {
+            IO.log("PDF creator", IO.TAG_ERROR, e.getMessage());
+        }
     }
 
     public static void addTextToPageStream(PDPageContentStream contents, String text, PDFont font,int font_size, int x, int y) throws IOException
     {
         contents.setFont(font, font_size);
         contents.setTextMatrix(new Matrix(1, 0, 0, 1, x, y-TEXT_VERT_OFFSET));
-        contents.showText(text);
+
+        char[] text_arr = text.toCharArray();
+        StringBuilder str_builder = new StringBuilder();
+        //PDType0Font.
+        Encoding e = org.apache.pdfbox.pdmodel.font.encoding.Encoding.getInstance(COSName.WIN_ANSI_ENCODING);// EncodingManager.INSTANCE.getEncoding(COSName.WIN_ANSI_ENCODING);
+        //Encoding e = EncodingManager.INSTANCE.getEncoding(COSName.WIN_ANSI_ENCODING);
+
+        System.out.println("\n\n::::::::::::::::::::Processing Text: [" + text + "]::::::::::::::::::::");
+        System.out.println("Encoding Name: " + e.getEncodingName());
+        System.out.println("Encoding Name to Code Map: " + e.getNameToCodeMap());
+        //String toPDF = String.valueOf(Character.toChars(e.getCode(e.getNameFromCharacter(symbol))));
+
+        for (int i = 0; i < text_arr.length; i++)
+        {
+            Character c = text_arr[i];
+            int code = 0;
+            System.out.println(String.format("Character [%s] has codename: [%s] and code [%s]", c, e.getName(c), String.valueOf(e.getNameToCodeMap().get(c))));
+            if(e.getName(c).toLowerCase().equals(".notdef"))
+                str_builder.append("[?]");
+            else str_builder.append(c);
+            /*if(Character.isWhitespace(c))
+            {
+                code = e.getNameToCodeMap().get("space");
+            }else{
+                String toPDF = String.valueOf(Character.toChars(e.getCodeToNameMap().get(e.getName(symbol))));
+                code = e.getNameToCodeMap(e.getName(c));
+            }
+            str_builder.appendCodePoint(code);*/
+        }
+        contents.showText(str_builder.toString());
     }
 
     /**

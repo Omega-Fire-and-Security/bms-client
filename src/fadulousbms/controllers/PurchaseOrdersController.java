@@ -7,7 +7,9 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.PDF;
+import fadulousbms.auxilary.PDFViewer;
 import fadulousbms.auxilary.RadialMenuItemCustom;
+import fadulousbms.managers.InvoiceManager;
 import fadulousbms.managers.PurchaseOrderManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SupplierManager;
@@ -87,8 +89,9 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                     {
                         final TableCell<PurchaseOrder, String> cell = new TableCell<PurchaseOrder, String>()
                         {
-                            final Button btnView = new Button("View");
-                            final Button btnPDF = new Button("PDF");
+                            final Button btnView = new Button("View PO");
+                            final Button btnPDF = new Button("View as PDF");
+                            final Button btnEmail = new Button("eMail PO");
                             final Button btnRemove = new Button("Delete");
 
                             @Override
@@ -96,16 +99,22 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                             {
                                 super.updateItem(item, empty);
                                 btnView.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnView.getStyleClass().add("btnApply");
+                                btnView.getStyleClass().add("btnDefault");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
                                 btnPDF.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnPDF.getStyleClass().add("btnAdd");
+                                btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
+
+                                btnEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnEmail.getStyleClass().add("btnDefault");
+                                btnEmail.setMinWidth(100);
+                                btnEmail.setMinHeight(35);
+                                HBox.setHgrow(btnEmail, Priority.ALWAYS);
 
                                 btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
@@ -119,14 +128,14 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnView, btnPDF, btnRemove);
+                                    HBox hBox = new HBox(btnView, btnPDF, btnEmail, btnRemove);
                                     PurchaseOrder po = getTableView().getItems().get(getIndex());
 
                                     btnView.setOnAction(event ->
                                     {
                                         if(po==null)
                                         {
-                                            IO.logAndAlert("Error " + getClass().getName(), "Purchase Order object is not set", IO.TAG_ERROR);
+                                            IO.logAndAlert("Error", "Purchase Order object is not set", IO.TAG_ERROR);
                                             return;
                                         }
 
@@ -164,12 +173,28 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                         PurchaseOrderManager.getInstance().setSelected(po);
                                         try
                                         {
-                                            PDF.createPurchaseOrderPdf(po);
+                                            String path = PDF.createPurchaseOrderPdf(po);
+                                            if(path!=null)
+                                            {
+                                                PDFViewer pdfViewer = PDFViewer.getInstance();
+                                                pdfViewer.setVisible(true);
+                                                pdfViewer.doOpen(path);
+                                            } else IO.logAndAlert("Error", "Could not get path of generated Purchase Order PDF document.", IO.TAG_ERROR);
                                         } catch (IOException e)
                                         {
                                             IO.logAndAlert("IO Error " + getClass().getName(), e.getMessage(), IO.TAG_ERROR);
                                             e.printStackTrace();
                                         }
+                                    });
+
+                                    btnEmail.setOnAction(event ->
+                                    {
+                                        if (po == null)
+                                        {
+                                            IO.logAndAlert("Error", "Purchase Order object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        PurchaseOrderManager.getInstance().emailPurchaseOrder(po, null);
                                     });
 
                                     btnRemove.setOnAction(event ->

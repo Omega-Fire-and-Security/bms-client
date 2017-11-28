@@ -179,7 +179,7 @@ public class InvoiceManager extends BusinessObjectManager
             return;
         }
 
-        //upload Quote PDF to server
+        //upload Invoice PDF to server
         uploadInvoicePDF(invoice);
 
         Stage stage = new Stage();
