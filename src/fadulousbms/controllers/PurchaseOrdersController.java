@@ -146,15 +146,26 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                                 @Override
                                                 public void run()
                                                 {
-                                                    PurchaseOrderManager.getInstance().setSelected(po);
                                                     try
                                                     {
+                                                        //refresh model
+                                                        PurchaseOrderManager.getInstance().reloadDataFromServer();
+                                                        if(PurchaseOrderManager.getInstance().getPurchaseOrders()!=null)
+                                                            PurchaseOrderManager.getInstance().setSelected(PurchaseOrderManager.getInstance().getPurchaseOrders().get(po.get_id()));
+                                                        else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any purchase orders in server.");
+
+                                                        //load PO viewer
                                                         if(ScreenManager.getInstance().loadScreen(Screens.VIEW_PURCHASE_ORDER.getScreen(),getClass().getResource("../views/"+Screens.VIEW_PURCHASE_ORDER.getScreen())))
                                                         {
                                                             Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_PURCHASE_ORDER.getScreen()));
                                                         } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load purchase order viewer screen.");
+                                                    } catch (ClassNotFoundException e)
+                                                    {
+                                                        e.printStackTrace();
+                                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                                     } catch (IOException e)
                                                     {
+                                                        e.printStackTrace();
                                                         IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                                     }
                                                 }

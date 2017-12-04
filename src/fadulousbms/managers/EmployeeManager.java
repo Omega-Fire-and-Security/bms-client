@@ -2,10 +2,8 @@ package fadulousbms.managers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import fadulousbms.auxilary.Globals;
-import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RemoteComms;
-import fadulousbms.auxilary.Validators;
+import fadulousbms.auxilary.*;
+import fadulousbms.controllers.JobsController;
 import fadulousbms.model.*;
 import fadulousbms.model.Error;
 import javafx.collections.FXCollections;
@@ -18,11 +16,14 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -411,5 +412,251 @@ public class EmployeeManager extends BusinessObjectManager
             return false;
         }
         return true;
+    }
+
+    public void uploadID(String employee_id)
+    {
+        //Validate session - also done on server-side don't worry ;)
+        SessionManager smgr = SessionManager.getInstance();
+        if(smgr.getActive()!=null)
+        {
+            if(!smgr.getActive().isExpired())
+            {
+                try
+                {
+                    FileChooser fileChooser = new FileChooser();
+                    File f = fileChooser.showOpenDialog(null);
+                    if (f != null)
+                    {
+                        if (f.exists())
+                        {
+                            FileInputStream in = new FileInputStream(f);
+                            byte[] buffer = new byte[(int) f.length()];
+                            in.read(buffer, 0, buffer.length);
+                            in.close();
+
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
+
+                            RemoteComms.uploadFile("/api/employee/id/upload/" + employee_id, headers, buffer);
+                            IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded ID for employee ["+employee_id+"], file size: [" + buffer.length + "] bytes.");
+                        } else
+                        {
+                            IO.logAndAlert(getClass().getName(), "File not found.", IO.TAG_ERROR);
+                        }
+                    } else
+                    {
+                        IO.log(getClass().getName(), "File object is null.", IO.TAG_ERROR);
+                    }
+                }catch (IOException e)
+                {
+                    IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+                }
+            }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    public void uploadCV(String employee_id)
+    {
+        //Validate session - also done on server-side don't worry ;)
+        SessionManager smgr = SessionManager.getInstance();
+        if(smgr.getActive()!=null)
+        {
+            if(!smgr.getActive().isExpired())
+            {
+                try
+                {
+                    FileChooser fileChooser = new FileChooser();
+                    File f = fileChooser.showOpenDialog(null);
+                    if (f != null)
+                    {
+                        if (f.exists())
+                        {
+                            FileInputStream in = new FileInputStream(f);
+                            byte[] buffer = new byte[(int) f.length()];
+                            in.read(buffer, 0, buffer.length);
+                            in.close();
+
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
+
+                            RemoteComms.uploadFile("/api/employee/cv/upload/" + employee_id, headers, buffer);
+                            IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded CV for employee ["+employee_id+"], file size: [" + buffer.length + "] bytes.");
+                        } else
+                        {
+                            IO.logAndAlert(getClass().getName(), "File not found.", IO.TAG_ERROR);
+                        }
+                    } else
+                    {
+                        IO.log(getClass().getName(), "File object is null.", IO.TAG_ERROR);
+                    }
+                }catch (IOException e)
+                {
+                    IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+                }
+            }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    public static void viewID(String employee_id)
+    {
+        if(employee_id==null)
+        {
+            IO.logAndAlert("Error", "Invalid employee identifier object passed.", IO.TAG_ERROR);
+            return;
+        }
+
+        //Validate session - also done on server-side don't worry ;)
+        SessionManager smgr = SessionManager.getInstance();
+        if(smgr.getActive()!=null)
+        {
+            if (!smgr.getActive().isExpired())
+            {
+                try
+                {
+                    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+
+                    //String filename = String.valueOf(bo.get(property));
+                    long start = System.currentTimeMillis();
+                    byte[] file = RemoteComms.sendFileRequest("/api/employee/id/" + employee_id, headers);
+
+                    if (file != null)
+                    {
+                        long ellapsed = System.currentTimeMillis() - start;
+                        //IO.log(JobsController.class.getName(), IO.TAG_INFO, "File ["+job.get_id()+".pdf] download complete, size: "+file.length+" bytes in "+ellapsed+"msec.");
+                        PDFViewer pdfViewer = PDFViewer.getInstance();
+                        pdfViewer.setVisible(true);
+
+                        //String local_filename = filename.substring(filename.lastIndexOf('/')+1);
+                        String local_filename = employee_id + "_id.pdf";
+                        /*if (new File("out/" + local_filename).exists())
+                            Files.delete(new File("out/" + local_filename).toPath());*/
+                        //TODO: fix this hack
+                        int i = 1;
+                        File f = new File("out/" + local_filename);
+                        if (f.exists())
+                        {
+                            if (f.delete())
+                                IO.log(JobsController.class.getName(), IO.TAG_INFO, "deleted file [" + f
+                                        .getAbsolutePath() + "]");
+                            else
+                            {
+                                IO.log(EmployeeManager.class.getName(), IO.TAG_WARN, "could not delete file ["+f.getAbsolutePath()+"]");
+                                //get new filename
+                                while((f=new File("out/"+local_filename)).exists())
+                                {
+                                    local_filename = employee_id + "_id." + i + ".pdf";
+                                    i++;
+                                }
+                            }
+                        }
+
+                        FileOutputStream out = new FileOutputStream(new File("out/" + local_filename));
+                        out.write(file, 0, file.length);
+                        out.flush();
+                        out.close();
+
+                        IO.log(JobsController.class.getName(), IO.TAG_INFO, "downloaded employee ID document [" + employee_id
+                                +"] to path [out/" + local_filename + "], size: " + file.length + " bytes, in "+ellapsed
+                                +" msec. launching PDF viewer.");
+
+                        pdfViewer.doOpen("out/" + local_filename);
+                    }
+                    else
+                    {
+                        IO.logAndAlert("File Downloader Error", "Employee ["+employee_id
+                                +"] ID document file could not be downloaded because the active session has expired.", IO.TAG_ERROR);
+                    }
+                } catch (IOException e)
+                {
+                    IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("File Downloader Error", "Employee ["+employee_id+"] ID document file could not be downloaded.", IO.TAG_ERROR);
+                    //IO.logAndAlert("Error", "Could not download ID document for employee ["+employee_id+"]: " + e.getMessage(), IO.TAG_ERROR);
+                }
+            } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    public static void viewCV(String employee_id)
+    {
+        if(employee_id==null)
+        {
+            IO.logAndAlert("Error", "Invalid employee identifier object passed.", IO.TAG_ERROR);
+            return;
+        }
+
+        //Validate session - also done on server-side don't worry ;)
+        SessionManager smgr = SessionManager.getInstance();
+        if(smgr.getActive()!=null)
+        {
+            if (!smgr.getActive().isExpired())
+            {
+                try
+                {
+                    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+
+                    //String filename = String.valueOf(bo.get(property));
+                    long start = System.currentTimeMillis();
+                    byte[] file = RemoteComms.sendFileRequest("/api/employee/cv/" + employee_id, headers);
+
+                    if (file != null)
+                    {
+                        long ellapsed = System.currentTimeMillis() - start;
+                        //IO.log(JobsController.class.getName(), IO.TAG_INFO, "File ["+job.get_id()+".pdf] download complete, size: "+file.length+" bytes in "+ellapsed+"msec.");
+                        PDFViewer pdfViewer = PDFViewer.getInstance();
+                        pdfViewer.setVisible(true);
+
+                        //String local_filename = filename.substring(filename.lastIndexOf('/')+1);
+                        String local_filename = employee_id + "_cv.pdf";
+                        /*if (new File("out/" + local_filename).exists())
+                            Files.delete(new File("out/" + local_filename).toPath());*/
+                        //TODO: fix this hack
+                        int i = 1;
+                        File f = new File("out/" + local_filename);
+                        if (f.exists())
+                        {
+                            if (f.delete())
+                                IO.log(JobsController.class.getName(), IO.TAG_INFO, "deleted file [" + f
+                                        .getAbsolutePath() + "]");
+                            else
+                            {
+                                IO.log(EmployeeManager.class.getName(), IO.TAG_WARN, "could not delete file ["+f.getAbsolutePath()+"]");
+                                //get new filename
+                                while((f=new File("out/"+local_filename)).exists())
+                                {
+                                    local_filename = employee_id + "_cv." + i + ".pdf";
+                                    i++;
+                                }
+                            }
+                        }
+
+                        FileOutputStream out = new FileOutputStream(new File("out/" + local_filename));
+                        out.write(file, 0, file.length);
+                        out.flush();
+                        out.close();
+
+                        IO.log(JobsController.class.getName(), IO.TAG_INFO, "downloaded employee CV document [" + employee_id
+                                +"] to path [out/" + local_filename + "], size: " + file.length + " bytes, in "+ellapsed
+                                +" msec. launching PDF viewer.");
+
+                        pdfViewer.doOpen("out/" + local_filename);
+                    }
+                    else
+                    {
+                        IO.logAndAlert("File Downloader Error", "Employee ["+employee_id
+                                +"] CV document file could not be downloaded because the active session has expired.", IO.TAG_ERROR);
+                    }
+                } catch (IOException e)
+                {
+                    IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("File Downloader Error", "Employee ["+employee_id+"] CV document file could not be downloaded.", IO.TAG_ERROR);
+                    //IO.logAndAlert("Error", "Could not download ID document for employee ["+employee_id+"]: " + e.getMessage(), IO.TAG_ERROR);
+                }
+            } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 }

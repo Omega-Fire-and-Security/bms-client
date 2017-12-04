@@ -43,7 +43,7 @@
 
         <TabPane id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
             <tabs>
-                <fx:include source="InvoicesTab.fxml" />
+                <!--<fx:include source="InvoicesTab.fxml" />-->
                 <fx:include source="ExpensesTab.fxml" />
                 <!--<fx:include source="IncomeTab.fxml" />-->
                 <fx:include source="AssetsTab.fxml" />

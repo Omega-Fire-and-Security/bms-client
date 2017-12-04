@@ -39,7 +39,7 @@ public class LoginController extends ScreenController implements Initializable
     {
         //TODO: remove this
         txtUsr.setText("ghost");
-        txtPwd.setText("12345678");
+        txtPwd.setText("87654321");
     }
 
     @Override

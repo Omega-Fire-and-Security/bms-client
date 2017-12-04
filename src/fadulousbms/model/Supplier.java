@@ -19,13 +19,14 @@ public class Supplier implements BusinessObject, Serializable
     private String postal_address;
     private String tel;
     private String fax;
+    private String contact_email;
     private String speciality;
     private boolean active;
     private long date_partnered;
     private String website;
     private String registration;
     private String vat;
-    private String contact_email;
+    private String account_name;
     private String other;
     private boolean marked;
 
@@ -179,6 +180,18 @@ public class Supplier implements BusinessObject, Serializable
         this.registration = registration;
     }
 
+    public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
+
+    public String getAccount_name()
+    {
+        return account_name;
+    }
+
+    public void setAccount_name(String account_name)
+    {
+        this.account_name = account_name;
+    }
+
     public StringProperty vatProperty(){return new SimpleStringProperty(getVat());}
 
     public String getVat()
@@ -255,6 +268,9 @@ public class Supplier implements BusinessObject, Serializable
                 case "vat":
                     setVat((String)val);
                     break;
+                case "account_name":
+                    setAccount_name((String)val);
+                    break;
                 case "contact_email":
                     setContact_email((String)val);
                     break;
@@ -298,6 +314,8 @@ public class Supplier implements BusinessObject, Serializable
                 return getRegistration();
             case "vat":
                 return getVat();
+            case "account_name":
+                return getAccount_name();
             case "contact_email":
                 return getContact_email();
             case "other":
@@ -329,11 +347,11 @@ public class Supplier implements BusinessObject, Serializable
                     + URLEncoder.encode(postal_address, "UTF-8"));
             result.append("&" + URLEncoder.encode("tel","UTF-8") + "="
                     + URLEncoder.encode(tel, "UTF-8"));
-            result.append("&" + URLEncoder.encode("fax","UTF-8") + "="
-                    + URLEncoder.encode(fax, "UTF-8"));
             if(fax!=null)
-                result.append("&" + URLEncoder.encode("speciality","UTF-8") + "="
-                        + URLEncoder.encode(speciality, "UTF-8"));
+                result.append("&" + URLEncoder.encode("fax","UTF-8") + "="
+                        + URLEncoder.encode(fax, "UTF-8"));
+                    result.append("&" + URLEncoder.encode("speciality","UTF-8") + "="
+                            + URLEncoder.encode(speciality, "UTF-8"));
             result.append("&" + URLEncoder.encode("active","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(active), "UTF-8"));
             if(date_partnered>0)
@@ -344,7 +362,9 @@ public class Supplier implements BusinessObject, Serializable
             result.append("&" + URLEncoder.encode("registration","UTF-8") + "="
                     + URLEncoder.encode(registration, "UTF-8"));
             result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
-                    + URLEncoder.encode(vat, "UTF-8"));
+                    + URLEncoder.encode(String.valueOf(getVat()), "UTF-8"));
+            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(getAccount_name()), "UTF-8"));
             result.append("&" + URLEncoder.encode("contact_email","UTF-8") + "="
                     + URLEncoder.encode(contact_email, "UTF-8"));
             if(other!=null)

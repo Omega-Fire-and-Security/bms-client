@@ -5,6 +5,7 @@
  */
 package fadulousbms.controllers;
 
+import fadulousbms.FadulousBMS;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
@@ -51,9 +52,13 @@ public class PurchaseOrderController extends OperationsController implements Ini
     protected TableColumn colId, colItemNumber, colName, colDescription, colUnit,colQuantity, colValue, colDiscount,
             colCreator, colTotal, colAction;
     @FXML
-    protected TextField txtNumber, txtAccount, txtCreator, txtStatus, txtTotal;
+    protected TextField txtNumber, txtCreator, txtStatus, txtTotal;
+    //@FXML
+    //protected Slider vatSlider;
     @FXML
-    protected Slider vatSlider;
+    protected ToggleButton toggleVatExempt;
+    @FXML
+    protected ComboBox<String> cbxAccount;
     @FXML
     protected Label lblVat;
     @FXML
@@ -66,11 +71,6 @@ public class PurchaseOrderController extends OperationsController implements Ini
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading view purchase order view..");
 
-        if(PurchaseOrderManager.getInstance().getSelected()==null)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, "selected po is invalid[null].");
-            return;
-        }
         if(SupplierManager.getInstance().getSuppliers()==null)
         {
             IO.logAndAlert(getClass().getName(), "no suppliers found in the database.", IO.TAG_ERROR);
@@ -81,33 +81,39 @@ public class PurchaseOrderController extends OperationsController implements Ini
             IO.logAndAlert(getClass().getName(), "no employees found in the database.", IO.TAG_ERROR);
             return;
         }
+        //setup PO default accounts
+        cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
 
         //setup suppliers combo box
         Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getSuppliers().values().toArray().length];
         SupplierManager.getInstance().getSuppliers().values().toArray(suppliers);
         cbxSuppliers.setItems(FXCollections.observableArrayList(suppliers));
-        //set selected
-        if(PurchaseOrderManager.getInstance().getSelected().getSupplier()!=null)
-            cbxSuppliers.setValue(PurchaseOrderManager.getInstance().getSelected().getSupplier());
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid supplier.");
+        cbxSuppliers.valueProperty().addListener((observable, oldValue, newValue) ->
+        {
+            System.out.println("changed supplier");
+            cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()}));
+        });
 
         //setup employees combo box
         Employee[] employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
         EmployeeManager.getInstance().getEmployees().values().toArray(employees);
         cbxContactPerson.setItems(FXCollections.observableArrayList(employees));
         //set default total
-        txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " 0");
-
-        //set selected
-        if(PurchaseOrderManager.getInstance().getSelected().getSupplier()!=null)
-            cbxContactPerson.setValue(PurchaseOrderManager.getInstance().getSelected().getContact_person());
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid contact person.");
+        //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " 0");
 
         //set vat slider max value
-        vatSlider.setMax(QuoteManager.VAT);
+        //vatSlider.setMax(QuoteManager.VAT);
 
+        refreshTotal();
+        toggleVatExempt.selectedProperty().addListener((observable, oldValue, newValue) ->
+        {
+                if(newValue)
+                    toggleVatExempt.setText("VAT exempt");
+                else toggleVatExempt.setText(QuoteManager.VAT+ "%");
+                refreshTotal();
+        });
         //every time the slider value changes, show the value on a label
-        vatSlider.valueProperty().addListener(event ->
+        /*vatSlider.valueProperty().addListener(event ->
         {
             lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vatSlider.getValue())+"%]");
             if(tblPurchaseOrderItems.getItems()!=null)
@@ -116,7 +122,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                 txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                         new DecimalFormat("##.##").format((total + (total*(vatSlider.getValue()/100)))));
             }
-        });
+        });*/
 
         //set up PurchaseOrderItems table
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
@@ -138,8 +144,6 @@ public class PurchaseOrderController extends OperationsController implements Ini
         }));
         colDiscount.setCellFactory(col -> new TextFieldTableCell("discount", "discount", null));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
-
-        tblPurchaseOrderItems.setItems(FXCollections.observableArrayList(PurchaseOrderManager.getInstance().getSelected().getItems()));
 
         //update totals on TableCell commit
         /*tblPurchaseOrderItems.editingCellProperty().addListener((observable, oldValue, newValue) ->
@@ -205,13 +209,23 @@ public class PurchaseOrderController extends OperationsController implements Ini
         colAction.setCellFactory(cellFactory);
     }
 
-    private void refreshTotal()
+    protected void refreshTotal()
     {
+        double vat = QuoteManager.VAT;
+        if(toggleVatExempt.isSelected())//if is VAT exempt
+            vat =0.0;//is VAT exempt
+        lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vat)+"%]");
         if(tblPurchaseOrderItems.getItems()!=null)
         {
             double total = PurchaseOrderManager.computePurchaseOrderTotal(tblPurchaseOrderItems.getItems());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
-                    new DecimalFormat("##.##").format((total + (total*(vatSlider.getValue()/100)))));
+                    new DecimalFormat("##.##").format((total + (total*(vat)))));
+        }
+        if(tblPurchaseOrderItems.getItems()!=null)
+        {
+            double total = PurchaseOrderManager.computePurchaseOrderTotal(tblPurchaseOrderItems.getItems());
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
+                    new DecimalFormat("##.##").format((total + (total*(vat/100)))));
         }
     }
 
@@ -220,11 +234,22 @@ public class PurchaseOrderController extends OperationsController implements Ini
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase order data model..");
 
-        EmployeeManager.getInstance().loadDataFromServer();
+        try
+        {
+            EmployeeManager.getInstance().reloadDataFromServer();
+            ResourceManager.getInstance().reloadDataFromServer();
+            SupplierManager.getInstance().reloadDataFromServer();
+            PurchaseOrderManager.getInstance().reloadDataFromServer();
+        } catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
         AssetManager.getInstance().loadDataFromServer();
-        ResourceManager.getInstance().loadDataFromServer();
-        SupplierManager.getInstance().loadDataFromServer();
-        PurchaseOrderManager.getInstance().loadDataFromServer();
     }
 
     /**
@@ -405,11 +430,19 @@ public class PurchaseOrderController extends OperationsController implements Ini
             txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }*/
-        if (!Validators.isValidNode(txtAccount, txtAccount.getText(), 1, ".+"))
+
+        cbxAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        if (cbxAccount.getValue() == null)
         {
-            txtAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            cbxAccount.getStyleClass().remove("form-control-default");
+            cbxAccount.getStyleClass().add("control-input-error");
             return;
+        } else
+        {
+            cbxAccount.getStyleClass().remove("control-input-error");
+            cbxAccount.getStyleClass().add("form-control-default");
         }
+
 
         List<PurchaseOrderItem> purchaseOrderItems = tblPurchaseOrderItems.getItems();
 
@@ -432,8 +465,11 @@ public class PurchaseOrderController extends OperationsController implements Ini
         {
             str_supplier = cbxSuppliers.getValue().get_id();
             str_contact = cbxContactPerson.getValue().getUsr();
-            str_vat = new DecimalFormat("##.##").format(vatSlider.getValue());//txtVat.getText();
-            str_account = txtAccount.getText();
+            double vat = QuoteManager.VAT;
+            if(toggleVatExempt.isSelected())
+                vat=0;
+            str_vat = new DecimalFormat("##.##").format(vat);//txtVat.getText();
+            str_account = cbxAccount.getValue();
         } catch (NumberFormatException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
@@ -904,8 +940,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     return;
                 }
             }
-        }
-        IO.logAndAlert("Asset Purchase Order", "No assets were found in the database, please add some assets first and try again.", IO.TAG_ERROR);
+        } else IO.logAndAlert("Asset Purchase Order", "No assets were found in the database, please add some assets first and try again.", IO.TAG_ERROR);
     }
 
     @FXML
@@ -939,11 +974,22 @@ public class PurchaseOrderController extends OperationsController implements Ini
         {
             txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
-        }*/
+        }
         if(!Validators.isValidNode(txtAccount, txtAccount.getText(), 1, ".+"))
         {
             txtAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
+        }*/
+        cbxAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        if (cbxAccount.getValue() == null)
+        {
+            cbxAccount.getStyleClass().remove("form-control-default");
+            cbxAccount.getStyleClass().add("control-input-error");
+            return;
+        } else
+        {
+            cbxAccount.getStyleClass().remove("control-input-error");
+            cbxAccount.getStyleClass().add("form-control-default");
         }
 
         List<PurchaseOrderItem> purchaseOrderItems = tblPurchaseOrderItems.getItems();
@@ -967,8 +1013,11 @@ public class PurchaseOrderController extends OperationsController implements Ini
         {
             str_supplier = cbxSuppliers.getValue().get_id();
             str_contact = cbxContactPerson.getValue().getUsr();
-            str_vat = new DecimalFormat("##.##").format(vatSlider.getValue());//txtVat.getText();
-            str_account = txtAccount.getText();
+            double vat = QuoteManager.VAT;
+            if(toggleVatExempt.isSelected())
+                vat=0;
+            str_vat = new DecimalFormat("##.##").format(vat);//txtVat.getText();
+            str_account = cbxAccount.getValue();//txtAccount.getText();
         }catch (NumberFormatException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);

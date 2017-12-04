@@ -38,8 +38,8 @@ public class SuppliersController extends ScreenController implements Initializab
     private TableView<Supplier>    tblSuppliers;
     @FXML
     private TableColumn     colSupplierId,colSupplierName,colSupplierPhysicalAddress,colSupplierSpeciality,
-                            colSupplierPostalAddress,colSupplierTel,colSupplierFax,colSupplierActive,
-                            colSupplierDatePartnered,colSupplierWebsite,colSupplierRegistration,colSupplierVat,colSupplierOther,colAction;
+                            colSupplierPostalAddress,colSupplierTel,colSupplierFax,colSupplierEmail,colSupplierActive,
+                            colSupplierDatePartnered,colSupplierWebsite,colSupplierRegistration,colSupplierVat,colSupplierAccount,colSupplierOther,colAction;
 
     @Override
     public void refreshView()
@@ -60,12 +60,14 @@ public class SuppliersController extends ScreenController implements Initializab
         CustomTableViewControls.makeEditableTableColumn(colSupplierPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", "/api/supplier");
         CustomTableViewControls.makeEditableTableColumn(colSupplierTel, TextFieldTableCell.forTableColumn(), 80, "tel", "/api/supplier");
         CustomTableViewControls.makeEditableTableColumn(colSupplierFax, TextFieldTableCell.forTableColumn(), 80, "fax", "/api/supplier");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", "/api/supplier");
         CustomTableViewControls.makeEditableTableColumn(colSupplierSpeciality, TextFieldTableCell.forTableColumn(), 80, "speciality", "/api/supplier");
         CustomTableViewControls.makeCheckboxedTableColumn(colSupplierActive, null, 80, "active", "/api/supplier");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colSupplierDatePartnered, "date_partnered", "/api/supplier");
         CustomTableViewControls.makeEditableTableColumn(colSupplierWebsite, TextFieldTableCell.forTableColumn(), 100, "website", "/api/supplier");
         CustomTableViewControls.makeEditableTableColumn(colSupplierRegistration, TextFieldTableCell.forTableColumn(), 100, "registration", "/api/supplier");
         CustomTableViewControls.makeEditableTableColumn(colSupplierVat, TextFieldTableCell.forTableColumn(), 100, "vat", "/api/supplier");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/api/supplier");
         CustomTableViewControls.makeEditableTableColumn(colSupplierOther, TextFieldTableCell.forTableColumn(), 80, "other", "/api/supplier");
 
         ObservableList<Supplier> lst_suppliers = FXCollections.observableArrayList();

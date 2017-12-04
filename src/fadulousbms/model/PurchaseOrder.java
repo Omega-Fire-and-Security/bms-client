@@ -143,8 +143,9 @@ public class PurchaseOrder implements BusinessObject, Serializable
     public double getTotal()
     {
         double total=0;
-        for(PurchaseOrderItem item: getItems())
-            total+=item.getCostValue()*item.getQuantityValue();
+        if(getItems()!=null)
+            for(PurchaseOrderItem item: getItems())
+                total+=item.getCostValue()*item.getQuantityValue();
         return total;
     }
 

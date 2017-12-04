@@ -6,6 +6,8 @@ import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -26,7 +28,7 @@ public class NewSupplierController extends ScreenController implements Initializ
 {
     private boolean itemsModified;
     @FXML
-    private TextField txtName,txtSpeciality,txtTel,txtFax,txtWebsite,txtRegistration,txtVat,txtEmail;
+    private TextField txtName,txtSpeciality,txtTel,txtFax,txtWebsite,txtRegistration,txtVat,txtAccount,txtEmail;
     @FXML
     private CheckBox cbxActive;
     @FXML
@@ -37,6 +39,15 @@ public class NewSupplierController extends ScreenController implements Initializ
     @Override
     public void refreshView()
     {
+        txtName.textProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
+            {
+                //TODO: remove spaces, and make lowercase
+                txtAccount.setText(newValue);
+            }
+        });
     }
 
     @Override
@@ -128,6 +139,11 @@ public class NewSupplierController extends ScreenController implements Initializ
             txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
+        if(!Validators.isValidNode(txtAccount, txtAccount.getText(), 1, ".+"))
+        {
+            txtAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            return;
+        }
 
 
         //prepare supplier parameters
@@ -142,6 +158,7 @@ public class NewSupplierController extends ScreenController implements Initializ
         supplier.setWebsite(txtWebsite.getText());
         supplier.setRegistration(txtRegistration.getText());
         supplier.setVat(txtVat.getText());
+        supplier.setAccount_name(txtAccount.getText());
         supplier.setContact_email(txtEmail.getText());
         supplier.setActive(cbxActive.isSelected());
 

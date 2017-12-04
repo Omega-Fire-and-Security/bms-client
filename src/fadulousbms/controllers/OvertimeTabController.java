@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 public class OvertimeTabController extends ScreenController implements Initializable
 {
     @FXML
-    private TableColumn colEmployeeId, colEmployee, colJobNumber, colDate,
+    private TableColumn colEmployeeId, colEmployee, colStatus, colJobNumber, colDate,
             colTimeIn, colTimeOut, colDateLogged, colOther, colAction;
     @FXML
     private TableView<Overtime> tblOvertime;
@@ -47,6 +47,7 @@ public class OvertimeTabController extends ScreenController implements Initializ
         colEmployee.setCellValueFactory(new PropertyValueFactory<>("employee"));
         colJobNumber.setMinWidth(100);
         colJobNumber.setCellValueFactory(new PropertyValueFactory<>("job_number"));
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         CustomTableViewControls.makeEditableTableColumn(colTimeIn, TextFieldTableCell.forTableColumn(), 120, "time_in", "/api/overtime_record");
         CustomTableViewControls.makeEditableTableColumn(colTimeOut, TextFieldTableCell.forTableColumn(), 120, "time_out", "/api/overtime_record");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDate, "date", "/api/overtime_record");

@@ -74,7 +74,9 @@ public class EmployeesTabController extends ScreenController implements Initiali
                         {
                             final Button btnView = new Button("View");
                             final Button btnUploadCV = new Button("Upload CV");
+                            final Button btnViewCV = new Button("View CV");
                             final ToggleButton btnUploadID = new ToggleButton("Upload ID");
+                            final ToggleButton btnViewID = new ToggleButton("View ID");
                             final Button btnUploadCertificate = new Button("Upload Certificate");
                             final Button btnRemove = new Button("Delete");
 
@@ -89,16 +91,28 @@ public class EmployeesTabController extends ScreenController implements Initiali
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
                                 btnUploadCV.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnUploadCV.getStyleClass().add("btnDefault");
+                                btnUploadCV.getStyleClass().add("btnAdd");
                                 btnUploadCV.setMinWidth(130);
                                 btnUploadCV.setMinHeight(35);
                                 HBox.setHgrow(btnUploadCV, Priority.ALWAYS);
 
+                                btnViewCV.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnViewCV.getStyleClass().add("btnDefault");
+                                btnViewCV.setMinWidth(130);
+                                btnViewCV.setMinHeight(35);
+                                HBox.setHgrow(btnViewCV, Priority.ALWAYS);
+
                                 btnUploadID.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-                                btnUploadID.getStyleClass().add("btnDefault");
+                                btnUploadID.getStyleClass().add("btnAdd");
                                 btnUploadID.setMinWidth(130);
                                 btnUploadID.setMinHeight(35);
                                 HBox.setHgrow(btnUploadID, Priority.ALWAYS);
+
+                                btnViewID.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnViewID.getStyleClass().add("btnDefault");
+                                btnViewID.setMinWidth(130);
+                                btnViewID.setMinHeight(35);
+                                HBox.setHgrow(btnViewID, Priority.ALWAYS);
 
                                 btnUploadCertificate.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
                                 btnUploadCertificate.getStyleClass().add("btnDefault");
@@ -118,14 +132,13 @@ public class EmployeesTabController extends ScreenController implements Initiali
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnView, btnUploadCV, btnUploadID, btnUploadCertificate, btnRemove);
+                                    HBox hBox = new HBox(btnView, btnUploadCV, btnViewCV, btnUploadID, btnViewID, btnUploadCertificate, btnRemove);
                                     hBox.setMaxWidth(Double.MAX_VALUE);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
                                     Employee employee = getTableView().getItems().get(getIndex());
 
                                     btnView.setOnAction(event ->
                                     {
-
                                     });
 
                                     btnUploadCV.setOnAction(event ->
@@ -135,7 +148,17 @@ public class EmployeesTabController extends ScreenController implements Initiali
                                             IO.logAndAlert("Error " + getClass().getName(), "Employee object is not set", IO.TAG_ERROR);
                                             return;
                                         }
-                                        //JobManager.getInstance().uploadSigned(job.get_id());
+                                        EmployeeManager.getInstance().uploadCV(employee.get_id());
+                                    });
+
+                                    btnViewCV.setOnAction(event ->
+                                    {
+                                        if(employee==null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Employee object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        EmployeeManager.getInstance().viewCV(employee.get_id());
                                     });
 
                                     btnUploadID.setOnAction(event ->
@@ -145,7 +168,17 @@ public class EmployeesTabController extends ScreenController implements Initiali
                                             IO.logAndAlert("Error " + getClass().getName(), "Employee object is not set", IO.TAG_ERROR);
                                             return;
                                         }
-                                        //JobManager.getInstance().uploadSigned(job.get_id());
+                                        EmployeeManager.getInstance().uploadID(employee.get_id());
+                                    });
+
+                                    btnViewID.setOnAction(event ->
+                                    {
+                                        if(employee==null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Employee object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        EmployeeManager.getInstance().viewID(employee.get_id());
                                     });
 
                                     btnUploadCertificate.setOnAction(event ->

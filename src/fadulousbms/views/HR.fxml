@@ -14,6 +14,8 @@
                   <Menu mnemonicParsing="false" text="File">
                      <items>
                         <MenuItem mnemonicParsing="false" text="New Employee" />
+                        <MenuItem mnemonicParsing="false" onAction="#overtimeApplication" text="Overtime Application" />
+                        <MenuItem mnemonicParsing="false" onAction="#leaveApplication" text="Leave Application" />
                         <MenuItem mnemonicParsing="false" text="Close" />
                      </items>
                   </Menu>
@@ -36,8 +38,11 @@
       <fx:include source="SystemNav.fxml"/>
       <TabPane fx:id="hrTabs" id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
          <tabs>
-            <fx:include source="EmployeesTab.fxml"/>
-            <fx:include source="OvertimeTab.fxml"/>
+             <fx:include source="EmployeesTab.fxml"/>
+             <fx:include source="OvertimeTab.fxml"/>
+             <fx:include source="LeaveTab.fxml"/>
+             <fx:include source="PayrollTab.fxml"/>
+             <fx:include source="PolicyTab.fxml"/>
          </tabs>
       </TabPane>
       <HBox>

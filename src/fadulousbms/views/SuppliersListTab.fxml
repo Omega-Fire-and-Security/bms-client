@@ -38,6 +38,11 @@
                         <PropertyValueFactory property="fax" />
                     </cellValueFactory>
                 </TableColumn>
+                <TableColumn fx:id="colSupplierEmail" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Email">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="contact_email" />
+                    </cellValueFactory>
+                </TableColumn>
                 <TableColumn fx:id="colSupplierSpeciality" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Speciality">
                     <cellValueFactory>
                         <PropertyValueFactory property="speciality" />
@@ -58,23 +63,27 @@
                         <PropertyValueFactory property="website" />
                     </cellValueFactory>
                 </TableColumn>
-            <TableColumn fx:id="colSupplierRegistration" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Registration #">
-               <cellValueFactory>
-                  <PropertyValueFactory property="website" />
-               </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="colSupplierVat" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="VAT Number">
-               <cellValueFactory>
-                  <PropertyValueFactory property="website" />
-               </cellValueFactory>
-            </TableColumn>
+                <TableColumn fx:id="colSupplierRegistration" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Registration #">
+                   <cellValueFactory>
+                      <PropertyValueFactory property="registration" />
+                   </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colSupplierVat" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="VAT Number">
+                   <cellValueFactory>
+                      <PropertyValueFactory property="vat" />
+                   </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colSupplierAccount" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Account Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="account_name" />
+                    </cellValueFactory>
+                </TableColumn>
                 <TableColumn fx:id="colSupplierOther" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Other" visible="false">
                     <cellValueFactory>
                         <PropertyValueFactory property="other" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Action">
-                </TableColumn>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Action"/>
             </columns>
         </TableView>
     </content>

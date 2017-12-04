@@ -4,17 +4,16 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
-<Tab fx:id="overtimeTab" text="Overtime" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.OvertimeTabController">
+<Tab fx:id="leaveTab" text="Leave" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.LeaveTabController">
     <content>
-        <TableView fx:id="tblOvertime" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+        <TableView fx:id="tblLeave" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colEmployeeId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Employee ID" visible="false"/>
+                <TableColumn fx:id="colLeaveId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Leave Reference #" visible="false"/>
                 <TableColumn fx:id="colEmployee" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Employee"/>
-                <TableColumn fx:id="colJobNumber" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Job Number"/>
                 <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Status"/>
-                <TableColumn fx:id="colDate" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Date"/>
-                <TableColumn fx:id="colTimeIn" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Time In"/>
-                <TableColumn fx:id="colTimeOut" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Time Out"/>
+                <TableColumn fx:id="colStartDate" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Start Date"/>
+                <TableColumn fx:id="colEndDate" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="End Date"/>
+                <TableColumn fx:id="colReturnDate" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Date Returned"/>
                 <TableColumn fx:id="colDateLogged" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Logged"/>
                 <TableColumn fx:id="colOther" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Other" visible="false">
                     <cellValueFactory>

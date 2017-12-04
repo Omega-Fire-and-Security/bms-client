@@ -108,13 +108,13 @@ public class JobsController extends ScreenController implements Initializable
                     {
                         final TableCell<Job, String> cell = new TableCell<Job, String>()
                         {
-                            final Button btnView = new Button("View");
+                            final Button btnView = new Button("View Job");
                             final Button btnUpload = new Button("Upload Signed");
                             final ToggleButton btnSign = new ToggleButton("Not Signed");
                             final Button btnViewSigned = new Button("View Signed Document");
                             final Button btnInvoice = new Button("Generate Invoice");
-                            final Button btnPDF = new Button("View PDF");
-                            final Button btnEmail = new Button("eMail");
+                            final Button btnPDF = new Button("View as PDF");
+                            final Button btnEmail = new Button("eMail Job Card");
                             final Button btnEmailSigned = new Button("eMail Signed Job Card");
                             final Button btnRemove = new Button("Delete");
 
@@ -203,14 +203,28 @@ public class JobsController extends ScreenController implements Initializable
 
                                     btnView.setOnAction(event ->
                                     {
-                                        JobManager.getInstance().setSelected(job);
-                                        if (job == null)
+                                        try
                                         {
-                                            IO.logAndAlert("Error " + getClass()
-                                                    .getName(), "Job object is not set", IO.TAG_ERROR);
-                                            return;
+                                            JobManager.getInstance().reloadDataFromServer();
+                                            if (job == null)
+                                            {
+                                                IO.logAndAlert("Error " + getClass()
+                                                        .getName(), "Job object is not set", IO.TAG_ERROR);
+                                                return;
+                                            }
+                                            if(JobManager.getInstance().getJobs()!=null)
+                                                JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(job.get_id()));
+                                            else IO.log(getClass().getName(), IO.TAG_ERROR, "no jobs were found in the database." );
+                                            viewJob(JobManager.getInstance().getSelected());
+                                        } catch (ClassNotFoundException e)
+                                        {
+                                            e.printStackTrace();
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        } catch (IOException e)
+                                        {
+                                            e.printStackTrace();
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                         }
-                                        viewJob(job);
                                     });
 
                                     btnUpload.setOnAction(event ->

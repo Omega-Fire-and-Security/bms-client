@@ -45,7 +45,7 @@ public class ViewJobController extends ScreenController implements Initializable
     private TableColumn colFirstname,colLastname,colCell,colEmail,colTel,colGender,
                         colActive,colEmployeeAction;
     @FXML
-    private TextField txtJobNumber,txtCompany, txtContact, txtCell,txtTel,txtTotal,txtFax,txtEmail,txtSite,txtDateGenerated,txtExtra;
+    private TextField txtJobNumber,txtCompany, txtContact, txtCell,txtTel,txtTotal,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtExtra;
     @FXML
     private TextArea txtRequest;
 
@@ -88,6 +88,7 @@ public class ViewJobController extends ScreenController implements Initializable
             txtRequest.setText(selected.getQuote().getRequest());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                         String.valueOf(selected.getQuote().getTotal()));
+            txtStatus.setText(selected.isSigned()?"SIGNED":"NOT SIGNED");
 
             try
             {

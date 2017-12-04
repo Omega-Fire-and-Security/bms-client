@@ -2,10 +2,7 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RadialMenuItemCustom;
-import fadulousbms.managers.EmployeeManager;
-import fadulousbms.managers.OvertimeManager;
-import fadulousbms.managers.ScreenManager;
-import fadulousbms.managers.SessionManager;
+import fadulousbms.managers.*;
 import fadulousbms.model.Employee;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
@@ -75,7 +72,7 @@ public class HRController extends ScreenController implements Initializable
     {
         //Copy default context menu
         RadialMenuItem[] default_context_menu = ScreenController.getDefaultContextMenu();
-        RadialMenuItem[] context_menu = new RadialMenuItem[default_context_menu.length+3];
+        RadialMenuItem[] context_menu = new RadialMenuItem[default_context_menu.length+4];
         System.arraycopy(default_context_menu, 0,  context_menu, 0, default_context_menu.length);
 
         //append to default context menu
@@ -83,12 +80,18 @@ public class HRController extends ScreenController implements Initializable
         context_menu[default_context_menu.length] = new RadialMenuItemCustom(30, "New Employee", null,
                 null, event -> EmployeeManager.getInstance().newExternalEmployeeWindow("Create New Employee",null));
         //record overtime menu item
-        context_menu[default_context_menu.length+1] = new RadialMenuItemCustom(30, "Record Overtime", null, null, event ->
+        context_menu[default_context_menu.length+1] = new RadialMenuItemCustom(30, "Overtime Application", null, null, event ->
         {
             if(SessionManager.getInstance().getActiveEmployee()!=null)
                 OvertimeManager.getInstance().newOvertimeApplicationWindow(SessionManager.getInstance().getActiveEmployee(), null, null);
         });
-        context_menu[default_context_menu.length+2] = new RadialContainerMenuItem(30, "Selected", null);
+        //record leave application menu item
+        context_menu[default_context_menu.length+2] = new RadialMenuItemCustom(30, "Leave Application", null, null, event ->
+        {
+            if(SessionManager.getInstance().getActiveEmployee()!=null)
+                LeaveManager.getInstance().newLeaveApplicationWindow(SessionManager.getInstance().getActiveEmployee(), null);
+        });
+        context_menu[default_context_menu.length+3] = new RadialContainerMenuItem(30, "Selected", null);
 
         //Get context menu for selected tab
         if(selected_tab!=null)
@@ -101,8 +104,17 @@ public class HRController extends ScreenController implements Initializable
                     {
                         //add level 2 context menu items
                         for (RadialMenuItem menuItem: OvertimeTabController.getContextMenu())
-                            ((RadialContainerMenuItem)context_menu[default_context_menu.length+2]).addMenuItem(menuItem);
+                            ((RadialContainerMenuItem)context_menu[default_context_menu.length+3]).addMenuItem(menuItem);
                     } else IO.log(getClass().getName(), IO.TAG_WARN, OvertimeTabController.class.getName() + ": has no explicitly defined context menu.");
+                    break;
+                case LeaveTabController.TAB_ID:
+                    IO.log(getClass().getName(), IO.TAG_INFO, "showing leave context menu.");
+                    if(LeaveTabController.getContextMenu()!=null)
+                    {
+                        //add level 2 context menu items
+                        for (RadialMenuItem menuItem: LeaveTabController.getContextMenu())
+                            ((RadialContainerMenuItem)context_menu[default_context_menu.length+3]).addMenuItem(menuItem);
+                    } else IO.log(getClass().getName(), IO.TAG_WARN, LeaveTabController.class.getName() + ": has no explicitly defined context menu.");
                     break;
                 default:
                     IO.log(getClass().getName(), IO.TAG_WARN, "unknown selected HR tab: " + selected_tab.getId());
@@ -110,5 +122,29 @@ public class HRController extends ScreenController implements Initializable
 
         } else IO.log(getClass().getName(), IO.TAG_ERROR, "selected tab is null");
         return context_menu;
+    }
+
+    @FXML
+    public void overtimeApplication()
+    {
+        if(SessionManager.getInstance().getActive()!=null)
+            if(!SessionManager.getInstance().getActive().isExpired())
+                if(SessionManager.getInstance().getActiveEmployee()!=null)
+                    OvertimeManager.getInstance().newOvertimeApplicationWindow(SessionManager.getInstance().getActiveEmployee(), null, null);
+                else IO.logAndAlert("Error", "Active Employee is invalid.", IO.TAG_ERROR);
+            else IO.logAndAlert("Error", "Active session has expired.", IO.TAG_ERROR);
+        else IO.logAndAlert("Error", "Active session is invalid.", IO.TAG_ERROR);
+    }
+
+    @FXML
+    public void leaveApplication()
+    {
+        if(SessionManager.getInstance().getActive()!=null)
+            if(!SessionManager.getInstance().getActive().isExpired())
+                if(SessionManager.getInstance().getActiveEmployee()!=null)
+                    LeaveManager.getInstance().newLeaveApplicationWindow(SessionManager.getInstance().getActiveEmployee(), null);
+                else IO.logAndAlert("Error", "Active Employee is invalid.", IO.TAG_ERROR);
+            else IO.logAndAlert("Error", "Active session has expired.", IO.TAG_ERROR);
+        else IO.logAndAlert("Error", "Active session is invalid.", IO.TAG_ERROR);
     }
 }

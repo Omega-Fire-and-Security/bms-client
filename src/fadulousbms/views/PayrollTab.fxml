@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Tab fx:id="payrollTab" text="Payroll" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <content>
+        <TabPane fx:id="BMSTabs" id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
+            <tabs>
+                <fx:include source="SalariesTab.fxml"/>
+                <fx:include source="PAYETab.fxml"/>
+                <fx:include source="UIFTab.fxml"/>
+                <fx:include source="SDLTab.fxml"/>
+            </tabs>
+        </TabPane>
+    </content>
+</Tab>

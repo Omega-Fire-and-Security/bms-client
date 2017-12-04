@@ -1,13 +1,9 @@
 package fadulousbms.model;
 
-import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.EmployeeManager;
-import fadulousbms.managers.JobManager;
-import fadulousbms.managers.ResourceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import jdk.nashorn.internal.scripts.JO;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -17,19 +13,18 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/01/21.
  */
-public class Overtime implements BusinessObject, Serializable
+public class Leave implements BusinessObject, Serializable
 {
     private String _id;
     private String usr;
-    private String job_id;
-    private long date;
-    private long time_in;
-    private long time_out;
+    private long start_date;
+    private long end_date;
+    private long return_date;
     private long date_logged;
     private int status;
     private String extra;
     private boolean marked;
-    public static final String TAG = "Overtime";
+    public static final String TAG = "Leave";
     public static final int STATUS_PENDING =0;
     public static final int STATUS_APPROVED =1;
     public static final int STATUS_ARCHIVED =2;
@@ -88,67 +83,34 @@ public class Overtime implements BusinessObject, Serializable
         this.usr = usr;
     }
 
-    public StringProperty job_numberProperty()
+    public long getStart_date()
     {
-        if(getJob()!=null)
-            return getJob().job_numberProperty();
-        else return new SimpleStringProperty("N/A");
+        return start_date;
     }
 
-    public StringProperty job_idProperty(){return new SimpleStringProperty(getJob_id());}
-
-    public String getJob_id()
+    public void setStart_date(long date)
     {
-        return job_id;
+        this.start_date = date;
     }
 
-    public void setJob_id(String job_id)
+    public long getEnd_date()
     {
-        this.job_id = job_id;
+        return end_date;
     }
 
-    public Job getJob()
+    public void setEnd_date(long date)
     {
-        if(job_id==null)
-            return null;
-        HashMap<String, Job> jobs = JobManager.getInstance().getJobs();
-        if(jobs!=null)
-            return jobs.get(job_id);
-        return null;
+        this.end_date = date;
     }
 
-    public long getDate()
+    public long getReturn_date()
     {
-        return date;
+        return return_date;
     }
 
-    public void setDate(long date)
+    public void setReturn_date(long date)
     {
-        this.date = date;
-    }
-
-    public long getTime_in()
-    {
-        return time_in;
-    }
-
-    public StringProperty time_inProperty(){return new SimpleStringProperty(String.valueOf(getTime_in()));}
-
-    public void setTime_in(long time_in)
-    {
-        this.time_in = time_in;
-    }
-
-    public long getTime_out()
-    {
-        return time_out;
-    }
-
-    public StringProperty time_outProperty(){return new SimpleStringProperty(String.valueOf(getTime_out()));}
-
-    public void setTime_out(long time_out)
-    {
-        this.time_out = time_out;
+        this.return_date = date;
     }
 
     public long getDate_logged()
@@ -219,7 +181,7 @@ public class Overtime implements BusinessObject, Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/api/overtime_record";
+        return "/api/leave_record";
     }
 
     @Override
@@ -231,20 +193,18 @@ public class Overtime implements BusinessObject, Serializable
         {
             result.append(URLEncoder.encode("usr","UTF-8") + "="
                     + URLEncoder.encode(usr, "UTF-8"));
-            result.append("&" + URLEncoder.encode("job_id","UTF-8") + "="
-                    + URLEncoder.encode(job_id, "UTF-8"));
             if(getStatus()>0)
                 result.append("&" + URLEncoder.encode("status","UTF-8") + "="
                         + URLEncoder.encode(String.valueOf(getStatus()), "UTF-8"));
-            if(getDate()>0)
-                result.append("&" + URLEncoder.encode("date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate()), "UTF-8"));
-            if(getTime_in()>0)
-                result.append("&" + URLEncoder.encode("time_in","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getTime_in()), "UTF-8"));
-            if(getTime_out()>0)
-                result.append("&" + URLEncoder.encode("time_out","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getTime_out()), "UTF-8"));
+            if(getStart_date()>0)
+                result.append("&" + URLEncoder.encode("start_date","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getStart_date()), "UTF-8"));
+            if(getEnd_date()>0)
+                result.append("&" + URLEncoder.encode("end_date","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getEnd_date()), "UTF-8"));
+            if(getReturn_date()>0)
+                result.append("&" + URLEncoder.encode("return_date","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getReturn_date()), "UTF-8"));
             if(getDate_logged()>0)
                 result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
                         + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
@@ -270,20 +230,14 @@ public class Overtime implements BusinessObject, Serializable
                 case "usr":
                     setUsr(String.valueOf(val));
                     break;
-                case "job_id":
-                    setJob_id(String.valueOf(val));
+                case "start_date":
+                    setStart_date(Long.valueOf(String.valueOf(val)));
                     break;
-                case "date":
-                    setDate(Long.valueOf(String.valueOf(val)));
+                case "end_date":
+                    setEnd_date(Long.parseLong(String.valueOf(val)));
                     break;
-                case "date_logged":
-                    setDate_logged(Long.parseLong(String.valueOf(val)));
-                    break;
-                case "time_in":
-                    setTime_in(Long.parseLong(String.valueOf(val)));
-                    break;
-                case "time_out":
-                    setTime_out(Long.parseLong(String.valueOf(val)));
+                case "return_date":
+                    setReturn_date(Long.parseLong(String.valueOf(val)));
                     break;
                 case "status":
                     setStatus(Integer.parseInt(String.valueOf(val)));
@@ -292,7 +246,7 @@ public class Overtime implements BusinessObject, Serializable
                     setExtra((String)val);
                     break;
                 default:
-                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown Overtime attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown Leave attribute '" + var + "'.");
                     break;
             }
         }catch (NumberFormatException e)
@@ -310,22 +264,20 @@ public class Overtime implements BusinessObject, Serializable
                 return get_id();
             case "usr":
                 return getUsr();
-            case "job_id":
-                return getJob_id();
-            case "date":
-                return getDate();
+            case "start_date":
+                return getStart_date();
+            case "end_date":
+                return getEnd_date();
+            case "return_date":
+                return getReturn_date();
             case "date_logged":
-                return date_logged;
-            case "time_in":
-                return getTime_in();
-            case "time_out":
-                return getTime_out();
+                return getDate_logged();
             case "status":
                 return getStatus();
             case "extra":
                 return getExtra();
             default:
-                IO.log(TAG, IO.TAG_ERROR, "Unknown Overtime attribute '" + var + "'.");
+                IO.log(TAG, IO.TAG_ERROR, "Unknown Leave attribute '" + var + "'.");
                 return null;
         }
     }
