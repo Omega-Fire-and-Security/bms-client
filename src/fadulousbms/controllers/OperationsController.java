@@ -62,7 +62,7 @@ public class OperationsController extends ScreenController implements Initializa
         if(e!=null)
             this.getUserNameLabel().setText(e.toString());
         else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");*/
-        System.out.println("Focused: "+ScreenManager.getInstance().getFocused_id());
+        //System.out.println("Focused: "+ScreenManager.getInstance().getFocused_id());
     }
 
     @Override

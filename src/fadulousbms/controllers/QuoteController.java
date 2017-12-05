@@ -1478,11 +1478,17 @@ public abstract class QuoteController extends ScreenController implements Initia
                 PDFViewer pdfViewer = PDFViewer.getInstance();
                 pdfViewer.setVisible(true);
                 pdfViewer.doOpen(path);
-            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid quote pdf path returned.");
+            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid quote PDF path returned.");
         } catch (IOException ex)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
         }
+    }
+
+    @FXML
+    public void requestApproval()
+    {
+        //send email requesting approval of Quote
     }
 
     @FXML

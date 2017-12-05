@@ -203,7 +203,7 @@ public class QuotesController extends OperationsController implements Initializa
                                     btnEmail.setOnAction(event ->
                                     {
                                         Quote quote = getTableView().getItems().get(getIndex());
-                                        QuoteManager.getInstance().emailQuote(quote, null);
+                                        //QuoteManager.getInstance().emailQuote(quote, null);
                                     });
 
                                     btnRemove.setOnAction(event ->
