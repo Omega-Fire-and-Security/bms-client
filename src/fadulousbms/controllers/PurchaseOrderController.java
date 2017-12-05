@@ -89,10 +89,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
         SupplierManager.getInstance().getSuppliers().values().toArray(suppliers);
         cbxSuppliers.setItems(FXCollections.observableArrayList(suppliers));
         cbxSuppliers.valueProperty().addListener((observable, oldValue, newValue) ->
-        {
-            System.out.println("changed supplier");
-            cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()}));
-        });
+                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()})));
 
         //setup employees combo box
         Employee[] employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];

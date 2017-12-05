@@ -176,10 +176,10 @@ public class ClientManager extends BusinessObjectManager
         txt_tel.setMaxWidth(Double.MAX_VALUE);
         HBox tel = CustomTableViewControls.getLabelledNode("Tel Number", 200, txt_tel);
 
-        final TextField txt_fax = new TextField();
-        txt_fax.setMinWidth(200);
-        txt_fax.setMaxWidth(Double.MAX_VALUE);
-        HBox fax = CustomTableViewControls.getLabelledNode("Fax Number", 200, txt_fax);
+        final TextField txt_contact_email = new TextField();
+        txt_contact_email.setMinWidth(200);
+        txt_contact_email.setMaxWidth(Double.MAX_VALUE);
+        HBox contact_email = CustomTableViewControls.getLabelledNode("eMail Address", 200, txt_contact_email);
 
         final TextField txt_client_reg = new TextField();
         txt_client_reg.setMinWidth(200);
@@ -191,10 +191,10 @@ public class ClientManager extends BusinessObjectManager
         txt_client_vat.setMaxWidth(Double.MAX_VALUE);
         HBox client_vat = CustomTableViewControls.getLabelledNode("VAT Number", 200, txt_client_vat);
 
-        final CheckBox chbx_active = new CheckBox();
-        chbx_active.setMinWidth(200);
-        chbx_active.setMaxWidth(Double.MAX_VALUE);
-        HBox active = CustomTableViewControls.getLabelledNode("Active", 200, chbx_active);
+        final TextField txt_client_account = new TextField();
+        txt_client_account.setMinWidth(200);
+        txt_client_account.setMaxWidth(Double.MAX_VALUE);
+        HBox client_account = CustomTableViewControls.getLabelledNode("Account Name", 200, txt_client_account);
 
         final DatePicker dpk_date_partnered = new DatePicker();
         dpk_date_partnered.setMinWidth(200);
@@ -205,6 +205,12 @@ public class ClientManager extends BusinessObjectManager
         txt_website.setMinWidth(200);
         txt_website.setMaxWidth(Double.MAX_VALUE);
         HBox website = CustomTableViewControls.getLabelledNode("Website", 200, txt_website);
+
+        final CheckBox chbx_active = new CheckBox();
+        chbx_active.setMinWidth(200);
+        chbx_active.setMaxWidth(Double.MAX_VALUE);
+        chbx_active.setSelected(true);
+        HBox active = CustomTableViewControls.getLabelledNode("Active", 200, chbx_active);
 
         final TextArea txt_other = new TextArea();
         txt_other.setMinWidth(200);
@@ -224,44 +230,34 @@ public class ClientManager extends BusinessObjectManager
                 return;
             if(!Validators.isValidNode(txt_tel, txt_tel.getText(), 1, ".+"))
                 return;
-            if(!Validators.isValidNode(txt_fax, txt_fax.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_website, txt_website.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(dpk_date_partnered, dpk_date_partnered.getValue()==null?"":dpk_date_partnered.getValue().toString(), 4, date_regex))
-                return;
-            if(!Validators.isValidNode(txt_website, txt_website.getText(), 1, ".+"))
+            if(!Validators.isValidNode(txt_contact_email, txt_contact_email.getText(), 1, ".+"))
                 return;
             if(!Validators.isValidNode(txt_client_reg, txt_client_reg.getText(), 1, ".+"))
                 return;
             if(!Validators.isValidNode(txt_client_vat, txt_client_vat.getText(), 1, ".+"))
                 return;
+            if(!Validators.isValidNode(txt_client_account, txt_client_account.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(dpk_date_partnered, dpk_date_partnered.getValue()==null?"":dpk_date_partnered.getValue().toString(), 4, date_regex))
+                return;
+            if(!Validators.isValidNode(txt_website, txt_website.getText(), 1, ".+"))
+                return;
 
-            String str_client_name = txt_client_name.getText();
-            String str_physical_address = txt_physical_address.getText();
-            String str_postal_address = txt_postal_address.getText();
-            String str_tel = txt_tel.getText();
-            String str_website = txt_website.getText();
             long date_partnered_in_sec = dpk_date_partnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-            String str_reg = txt_client_reg.getText();
-            String str_vat = txt_client_vat.getText();
-            String str_other = txt_other.getText();
-            boolean is_active = chbx_active.selectedProperty().get();
 
             ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("client_name", str_client_name));
-            params.add(new AbstractMap.SimpleEntry<>("physical_address", str_physical_address));
-            params.add(new AbstractMap.SimpleEntry<>("postal_address", str_postal_address));
-            params.add(new AbstractMap.SimpleEntry<>("tel", str_tel));
-            if(txt_fax.getText()!=null)
-                if(!txt_fax.getText().isEmpty())
-                    params.add(new AbstractMap.SimpleEntry<>("fax", txt_fax.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("website", str_website));
+            params.add(new AbstractMap.SimpleEntry<>("client_name", txt_client_name.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("physical_address", txt_physical_address.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("postal_address", txt_postal_address.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("tel", txt_tel.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("contact_email", txt_contact_email.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("registration", txt_client_reg.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("vat", txt_client_vat.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("account_name", txt_client_account.getText()));
             params.add(new AbstractMap.SimpleEntry<>("date_partnered", String.valueOf(date_partnered_in_sec)));
-            params.add(new AbstractMap.SimpleEntry<>("other", str_other));
-            params.add(new AbstractMap.SimpleEntry<>("registration", str_reg));
-            params.add(new AbstractMap.SimpleEntry<>("vat", str_vat));
-            params.add(new AbstractMap.SimpleEntry<>("active", String.valueOf(is_active)));
+            params.add(new AbstractMap.SimpleEntry<>("website", txt_website.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("active", String.valueOf(chbx_active.isSelected())));
+            params.add(new AbstractMap.SimpleEntry<>("other", txt_other.getText()));
 
             try
             {
@@ -279,7 +275,7 @@ public class ClientManager extends BusinessObjectManager
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
-                        IO.logAndAlert("Success", "Successfully added new client!", IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully created a new client!", IO.TAG_INFO);
                         callback.call(null);
                     }else{
                         IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
@@ -299,13 +295,14 @@ public class ClientManager extends BusinessObjectManager
         vbox.getChildren().add(physical_address);
         vbox.getChildren().add(postal_address);
         vbox.getChildren().add(tel);
-        vbox.getChildren().add(fax);
-        vbox.getChildren().add(website);
+        vbox.getChildren().add(contact_email);
         vbox.getChildren().add(client_reg);
         vbox.getChildren().add(client_vat);
+        vbox.getChildren().add(client_account);
         vbox.getChildren().add(date_partnered);
-        vbox.getChildren().add(other);
+        vbox.getChildren().add(website);
         vbox.getChildren().add(active);
+        vbox.getChildren().add(other);
         vbox.getChildren().add(submit);
 
         //Setup scene and display stage

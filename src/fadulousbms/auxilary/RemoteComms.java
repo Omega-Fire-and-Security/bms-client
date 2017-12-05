@@ -307,9 +307,9 @@ public class RemoteComms
                             else
                             {
                                 String msg = IO.readStream(connection.getErrorStream());
-                                Gson gson = new GsonBuilder().create();
-                                Error error = gson.fromJson(msg, Error.class);
-                                IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), error.getError(), IO.TAG_ERROR);
+                                /*Gson gson = new GsonBuilder().create();
+                                Error error = gson.fromJson(msg, Error.class);*/
+                                IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
                             }
                             connection.disconnect();
                         }else IO.logAndAlert("Error", "Connection to server was interrupted.", IO.TAG_ERROR);

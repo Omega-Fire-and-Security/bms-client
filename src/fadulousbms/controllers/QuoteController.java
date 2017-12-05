@@ -57,8 +57,12 @@ public abstract class QuoteController extends ScreenController implements Initia
     protected ComboBox<Employee> cbxContactPerson;
     @FXML
     protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtExtra;
+    //@FXML
+    //protected Slider vatSlider;
     @FXML
-    protected Slider vatSlider;
+    protected ToggleButton toggleVatExempt;
+    @FXML
+    protected ComboBox<String> cbxAccount;
     @FXML
     protected Label lblVat;
     @FXML
@@ -86,6 +90,19 @@ public abstract class QuoteController extends ScreenController implements Initia
             employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
             EmployeeManager.getInstance().getEmployees().values().toArray(employees);
         }
+        //setup Quote default accounts
+        cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
+        cbxClients.valueProperty().addListener((observable, oldValue, newValue) ->
+                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()})));
+
+        refreshTotal();
+        toggleVatExempt.selectedProperty().addListener((observable, oldValue, newValue) ->
+        {
+            if(newValue)
+                toggleVatExempt.setText("VAT exempt");
+            else toggleVatExempt.setText(QuoteManager.VAT+ "%");
+            refreshTotal();
+        });
 
         tblSaleReps.getItems().clear();
         tblQuoteItems.getItems().clear();
@@ -157,11 +174,9 @@ public abstract class QuoteController extends ScreenController implements Initia
                             try
                             {
                                 quote_item.setQuantity(Integer.valueOf(txt.getText()));
-                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems())));
+                                //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems())));
+                                refreshTotal();
                                 tblQuoteItems.refresh();
-                                //RemoteComms.updateBusinessObjectOnServer(quote_item, "/api/quote/resource", "quantity");
-                                //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems())));
-                                //tblQuoteItems.refresh();
                             }catch (NumberFormatException e)
                             {
                                 IO.logAndAlert("Error","Please enter a valid quantity.", IO.TAG_ERROR);
@@ -180,49 +195,6 @@ public abstract class QuoteController extends ScreenController implements Initia
                 }
             }
         });
-
-        /*colUnitCost.setCellValueFactory(new PropertyValueFactory<>("unit_cost"));
-        colUnitCost.setCellFactory(param -> new TableCell()
-        {
-            final TextField txt = new TextField("0.0");
-
-            @Override
-            protected void updateItem(Object item, boolean empty)
-            {
-                super.updateItem(item, empty);
-                if (getIndex() >= 0 && getIndex() < tblQuoteItems.getItems().size())
-                {
-                    QuoteItem quoteItem = tblQuoteItems.getItems().get(getIndex());
-                    //update QuoteItem object on TextField commit
-                    txt.setOnKeyPressed(event ->
-                    {
-                        if(event.getCode()== KeyCode.ENTER)
-                        {
-                            QuoteItem quote_item = (QuoteItem) getTableView().getItems().get(getIndex());
-                            try
-                            {
-                                quote_item.setUnit_cost(Double.valueOf(txt.getText()));
-                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems())));
-                                tblQuoteItems.refresh();
-                                //RemoteComms.updateBusinessObjectOnServer(quote_item, "/api/quote/resource", "labour");
-                                //tblQuoteItems.refresh();
-                            }catch (NumberFormatException e)
-                            {
-                                IO.logAndAlert("Error","Please enter a valid unit cost.", IO.TAG_ERROR);
-                                return;
-                            }
-                            IO.log(getClass().getName(), IO.TAG_INFO,"Successfully updated [unit cost] property for quote item #" + quote_item.getItem_number());
-                        }
-                    });
-                    if (!empty)
-                    {
-                        txt.setText(quoteItem.getUnit_cost());
-                        setGraphic(txt);
-                    } else setGraphic(null);
-                    getTableView().refresh();
-                }
-            }
-        });*/
 
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
@@ -304,27 +276,6 @@ public abstract class QuoteController extends ScreenController implements Initia
             }//else IO.logAndAlert("Invalid Employee", "Selected contact person is invalid", IO.TAG_ERROR);
         });
 
-        //set vat slider
-        vatSlider.setMax(QuoteManager.VAT);
-        if(QuoteManager.getInstance().getSelectedQuote()!=null)
-        {
-            vatSlider.setValue(QuoteManager.getInstance().getSelectedQuote().getVat());
-            lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vatSlider.getValue())+"%]");
-        }
-        vatSlider.valueProperty().addListener(event ->
-        {
-            lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vatSlider.getValue())+"%]");
-            if(tblQuoteItems.getItems()!=null)
-            {
-                double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems());
-                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
-                        new DecimalFormat("##.##").format((total + (total*(vatSlider.getValue()/100)))));
-            }
-            /*if(String.valueOf(vatSlider.getValue()).length()>4)
-                lblVat.setText("VAT ["+String.valueOf(vatSlider.getValue()).substring(0,4)+"%]");//TODO: fix this hack
-            else lblVat.setText("VAT ["+String.valueOf(vatSlider.getValue())+"%]");//TODO: fix this hack*/
-        });
-
         if(default_cols==null)
             default_cols=tblQuoteItems.getColumns();
 
@@ -351,6 +302,26 @@ public abstract class QuoteController extends ScreenController implements Initia
             }
             if(txtStatus!=null)
                 txtStatus.setText(status);
+        }
+    }
+
+    protected void refreshTotal()
+    {
+        double vat = QuoteManager.VAT;
+        if(toggleVatExempt.isSelected())//if is VAT exempt
+            vat =0.0;//is VAT exempt
+        lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vat)+"%]");
+        if(tblQuoteItems.getItems()!=null)
+        {
+            double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems());
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
+                    new DecimalFormat("##.##").format((total + (total*(vat)))));
+        }
+        if(tblQuoteItems.getItems()!=null)
+        {
+            double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems());
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
+                    new DecimalFormat("##.##").format((total + (total*(vat/100)))));
         }
     }
 
@@ -1015,9 +986,10 @@ public abstract class QuoteController extends ScreenController implements Initia
             if(selected.getStatus()!=Quote.STATUS_APPROVED)
             {
                 selected.setStatus(Quote.STATUS_APPROVED);
-                updateQuote();
-            }
-            else IO.logAndAlert("Error", "Selected quote has already been approved.", IO.TAG_ERROR);
+                QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems(), tblSaleReps.getItems());
+                refreshModel();
+                refreshView();
+            } else IO.logAndAlert("Error", "Selected quote has already been approved.", IO.TAG_ERROR);
         } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 
@@ -1055,21 +1027,23 @@ public abstract class QuoteController extends ScreenController implements Initia
             txtTel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        /*if(!Validators.isValidNode(txtFax, txtFax.getText(), 1, ".+"))
-        {
-            txtFax.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-            return;
-        }*/
         if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
         {
             txtEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        /*if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
+
+        cbxAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        if(cbxAccount.getValue()==null)
         {
-            txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            cbxAccount.getStyleClass().remove("form-control-default");
+            cbxAccount.getStyleClass().add("control-input-error");
             return;
-        }*/
+        }else{
+            cbxAccount.getStyleClass().remove("control-input-error");
+            cbxAccount.getStyleClass().add("form-control-default");
+        }
+
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
             txtSite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
@@ -1106,30 +1080,24 @@ public abstract class QuoteController extends ScreenController implements Initia
             return;
         }
 
-        String str_company = cbxClients.getValue().get_id();
-        String str_contact = cbxContactPerson.getValue().getUsr();
-        String str_site = txtSite.getText();
-        String str_extra = null;//txtExtra.getText();
-
         //prepare quote attributes
         Quote quote = new Quote();
-        quote.setClient_id(str_company);
-        quote.setContact_person_id(str_contact);
-        quote.setSitename(str_site);
+        quote.setClient_id(cbxClients.getValue().get_id());
+        quote.setContact_person_id(cbxContactPerson.getValue().getUsr());
+        quote.setSitename(txtSite.getText());
         quote.setRequest(txtRequest.getText());
         quote.setStatus(0);
-        quote.setVat(Double.parseDouble(new DecimalFormat("##.##").format(vatSlider.getValue())));
-
+        quote.setAccount_name(cbxAccount.getValue());
         quote.setCreator(SessionManager.getInstance().getActive().getUsername());
         quote.setRevision(1.0);
-        //QuoteItem[] items = new QuoteItem[quoteItems.size()];
-        //quoteItems.toArray(items);
-        //quote.setResources(items);
-        //Employee[] reps = new Employee[quoteReps.size()];
-        //quoteReps.toArray(reps);
-        //quote.setRepresentatives(reps);
-        if(str_extra!=null)
-            quote.setExtra(str_extra);
+
+        if(toggleVatExempt.isSelected())
+            quote.setVat(0);
+        else quote.setVat(QuoteManager.VAT);
+
+        if(txtExtra!=null)
+            if(txtExtra.getText()!=null)
+                quote.setExtra(txtExtra.getText());
 
         try
         {
@@ -1325,11 +1293,17 @@ public abstract class QuoteController extends ScreenController implements Initia
             txtEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        /*if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
+        cbxAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        if(cbxAccount.getValue()==null)
         {
-            txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            cbxAccount.getStyleClass().remove("form-control-default");
+            cbxAccount.getStyleClass().add("control-input-error");
             return;
-        }*/
+        }else{
+            cbxAccount.getStyleClass().remove("control-input-error");
+            cbxAccount.getStyleClass().add("form-control-default");
+        }
+
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
             txtSite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
@@ -1341,11 +1315,6 @@ public abstract class QuoteController extends ScreenController implements Initia
             return;
         }
 
-        String str_site = txtSite.getText();
-        String str_vat = String.valueOf(vatSlider.getValue());
-        //String str_extra = txtExtra.getText();
-
-
         Quote selected = QuoteManager.getInstance().getSelectedQuote();
         if(selected!=null)
         {
@@ -1356,13 +1325,13 @@ public abstract class QuoteController extends ScreenController implements Initia
             }
             selected.setClient_id(cbxClients.getValue().get_id());
             selected.setContact_person_id(cbxContactPerson.getValue().getUsr());
-            selected.setVat(Double.parseDouble(str_vat));
-            selected.setSitename(str_site);
+            if(toggleVatExempt.isSelected())
+                selected.setVat(0);
+            else selected.setVat(QuoteManager.VAT);
+            selected.setSitename(txtSite.getText());
             selected.setRequest(txtRequest.getText());
-            selected.setVat(Double.parseDouble(new DecimalFormat("##.##").format(vatSlider.getValue())));
-            /*if (str_extra != null)
-                selected.parse("extra", str_extra);*/
-            //QuoteManager.getInstance().updateQuote(selected, ((QuoteItem[]) tblQuoteItems.getItems().toArray()), ((Employee[])tblSaleReps.getItems().toArray()));
+            selected.setAccount_name(cbxAccount.getValue());
+
             QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems(), tblSaleReps.getItems());
 
             try
@@ -1375,8 +1344,6 @@ public abstract class QuoteController extends ScreenController implements Initia
                     refreshModel();
                     Platform.runLater(() -> refreshView());
                 }).start();
-                //tblQuoteItems.refresh();
-                //tblSaleReps.refresh();
             }catch (MalformedURLException ex)
             {
                 IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());

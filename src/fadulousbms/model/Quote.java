@@ -25,6 +25,7 @@ public class Quote implements BusinessObject, Serializable
     private String sitename;
     private String request;
     private double vat;
+    private String account_name;
     private long date_generated;
     private String creator;
     private double revision;
@@ -165,6 +166,18 @@ public class Quote implements BusinessObject, Serializable
     public void setVat(double vat)
     {
         this.vat = vat;
+    }
+
+    private StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name());}
+
+    public String getAccount_name()
+    {
+        return account_name;
+    }
+
+    public void setAccount_name(String account_name)
+    {
+        this.account_name = account_name;
     }
 
     public StringProperty creatorProperty()
@@ -334,6 +347,8 @@ public class Quote implements BusinessObject, Serializable
                         + URLEncoder.encode(String.valueOf(status), "UTF-8"));
             result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(vat), "UTF-8"));
+            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
+                    + URLEncoder.encode(account_name, "UTF-8"));
             result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
                     + URLEncoder.encode(creator, "UTF-8"));
             result.append("&" + URLEncoder.encode("revision","UTF-8") + "="
@@ -390,6 +405,9 @@ public class Quote implements BusinessObject, Serializable
                 case "vat":
                     vat = Double.parseDouble(String.valueOf(val));
                     break;
+                case "account_name":
+                    account_name = String.valueOf(val);
+                    break;
                 case "extra":
                     extra = String.valueOf(val);
                     break;
@@ -424,6 +442,8 @@ public class Quote implements BusinessObject, Serializable
                 return creator;
             case "vat":
                 return vat;
+            case "account_name":
+                return account_name;
             case "revision":
                 return revision;
             case "extra":

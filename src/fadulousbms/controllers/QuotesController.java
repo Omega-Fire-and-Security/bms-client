@@ -83,38 +83,19 @@ public class QuotesController extends OperationsController implements Initializa
         }
 
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-
-
         colClient.setMinWidth(120);
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_id"));
         colClient.setCellFactory(col -> new ComboBoxTableCell(ClientManager.getInstance().getClients(), "client_id", "/api/quote"));
-
         colContactPerson.setMinWidth(120);
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person_id"));
         colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr", "/api/quote"));
-
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_generated", "/api/quote");
         CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", "/api/quote");
         CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", "/api/quote");
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","SALE"}, false,"/api/quote");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
         colRevision.setCellValueFactory(new PropertyValueFactory<>("revision"));
-        CustomTableViewControls.makeEditableTableColumn(colVat, TextFieldTableCell.forTableColumn(), 100, "vat", "/api/quote");
-        colVat.setOnEditCommit(event ->
-        {
-            BusinessObject bo = event.getRowValue();
-            if(bo!=null)
-            {
-                bo.parse("vat", event.getNewValue());
-                RemoteComms.updateBusinessObjectOnServer(bo, "/api/quote", "vat");
-                tblQuotes.refresh();
-                /*new Thread(() ->
-                {
-                    refreshModel();
-                    Platform.runLater(() -> refreshView());
-                }).start();*/
-            }
-        });
+        colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
         CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 100, "extra", "/api/quote");
 
@@ -245,7 +226,6 @@ public class QuotesController extends OperationsController implements Initializa
                         return cell;
                     }
                 };
-        colAction.setCellValueFactory(new PropertyValueFactory<>(""));
         colAction.setCellFactory(cellFactory);
 
         tblQuotes.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->

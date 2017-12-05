@@ -35,7 +35,7 @@ public class NewClientController extends ScreenController implements Initializab
 {
     private boolean itemsModified;
     @FXML
-    private TextField txtName,txtTel,txtFax,txtWebsite, txtRegistration,txtVat;
+    private TextField txtName,txtTel,txtFax,txtEmail,txtWebsite, txtRegistration,txtVat, txtAccount;
     @FXML
     private CheckBox cbxActive;
     @FXML
@@ -70,6 +70,9 @@ public class NewClientController extends ScreenController implements Initializab
     @FXML
     public void createClient()
     {
+        //String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+        String date_regex=".+";
+
         if(SessionManager.getInstance().getActive()==null)
         {
             IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -95,9 +98,19 @@ public class NewClientController extends ScreenController implements Initializab
             txtPostal.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        if(!Validators.isValidNode(txtWebsite, txtWebsite.getText(), 1, ".+"))
+        if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
         {
-            txtWebsite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtTel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            return;
+        }
+        if(!Validators.isValidNode(txtFax, txtFax.getText(), 1, ".+"))
+        {
+            txtFax.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            return;
+        }
+        if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
+        {
+            txtEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtRegistration, txtRegistration.getText(), 1, ".+"))
@@ -110,14 +123,19 @@ public class NewClientController extends ScreenController implements Initializab
             txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
+        if(!Validators.isValidNode(txtAccount, txtAccount.getText(), 1, ".+"))
         {
-            txtTel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        if(!Validators.isValidNode(txtFax, txtFax.getText(), 1, ".+"))
+        if(!Validators.isValidNode(datePartnered, datePartnered.getValue()==null?"":datePartnered.getValue().toString(), 4, date_regex))
         {
-            txtFax.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            datePartnered.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            return;
+        }
+        if(!Validators.isValidNode(txtWebsite, txtWebsite.getText(), 1, ".+"))
+        {
+            txtWebsite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
 
@@ -128,10 +146,12 @@ public class NewClientController extends ScreenController implements Initializab
         client.setPostal_address(txtPostal.getText());
         client.setTel(txtTel.getText());
         client.setFax(txtFax.getText());
+        client.setContact_email(txtEmail.getText());
         client.setDate_partnered(datePartnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         client.setWebsite(txtWebsite.getText());
         client.setRegistration(txtRegistration.getText());
         client.setVat(txtVat.getText());
+        client.setAccount_name(txtAccount.getText());
         client.setActive(cbxActive.isSelected());
 
         //if(str_extra!=null)

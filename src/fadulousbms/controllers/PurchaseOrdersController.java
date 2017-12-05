@@ -44,7 +44,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
     @FXML
     private TableView tblPurchaseOrders;
     @FXML
-    private TableColumn colId,colPONumber,colSupplier,colDateLogged,colStatus,colCreator,colAccount,colVat,colTotal,colExtra,colAction;
+    private TableColumn colId,colPONumber,colSupplier,colDateLogged,colStatus,colCreator,colVat,colTotal,colExtra,colAction;
 
     @Override
     public void refreshView()
@@ -68,8 +68,9 @@ public class PurchaseOrdersController extends ScreenController implements Initia
         colSupplier.setCellValueFactory(new PropertyValueFactory<>("supplier_id"));
         colSupplier.setCellFactory(col -> new ComboBoxTableCell(SupplierManager.getInstance().getSuppliers(), "supplier_id", "/api/purchaseorder"));
 
-        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/api/purchaseorder");
-        CustomTableViewControls.makeEditableTableColumn(colVat, TextFieldTableCell.forTableColumn(), 50, "vat", "/api/purchaseorder");
+        //CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/api/purchaseorder");
+        //CustomTableViewControls.makeEditableTableColumn(colVat, TextFieldTableCell.forTableColumn(), 50, "vat", "/api/purchaseorder");
+        colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", "/api/purchaseorder");
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/api/purchaseorder");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));

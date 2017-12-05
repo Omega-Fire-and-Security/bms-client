@@ -19,19 +19,21 @@ import java.net.URLEncoder;
  */
 public class Client implements BusinessObject, Serializable
 {
-    private String _id;//Client id
+    private String _id;
     private String client_name;
     private String physical_address;
     private String postal_address;
-    private Job[] jobs;
     private String tel;
     private String fax;
-    private boolean active;
-    private long date_partnered;
+    private String contact_email;
     private String registration;
     private String vat;
+    private String account_name;
+    private long date_partnered;
     private String website;
+    private boolean active;
     private String other;
+    private Job[] jobs;
     private boolean marked;
 
     public StringProperty idProperty(){return new SimpleStringProperty(_id);}
@@ -124,6 +126,18 @@ public class Client implements BusinessObject, Serializable
         this.fax = fax;
     }
 
+    public StringProperty contact_emailProperty(){return new SimpleStringProperty(contact_email);}
+
+    public String getContact_email()
+    {
+        return contact_email;
+    }
+
+    public void setContact_email(String contact_email)
+    {
+        this.contact_email = contact_email;
+    }
+
     public Job[] getJobs()
     {
         return jobs;
@@ -192,6 +206,18 @@ public class Client implements BusinessObject, Serializable
         this.vat = vat;
     }
 
+    public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
+
+    public String getAccount_name()
+    {
+        return account_name;
+    }
+
+    public void setAccount_name(String account_name)
+    {
+        this.account_name = account_name;
+    }
+
     public String getOther()
     {
         return other;
@@ -226,8 +252,17 @@ public class Client implements BusinessObject, Serializable
                 case "fax":
                     setFax((String) val);
                     break;
-                case "active":
-                    setActive(Boolean.parseBoolean(String.valueOf(val)));
+                case "contact_email":
+                    setContact_email((String)val);
+                    break;
+                case "registration":
+                    setRegistration((String) val);
+                    break;
+                case "vat":
+                    setVat((String) val);
+                    break;
+                case "account_name":
+                    setAccount_name((String)val);
                     break;
                 case "date_partnered":
                     setDate_partnered(Long.parseLong(String.valueOf(val)));
@@ -235,11 +270,8 @@ public class Client implements BusinessObject, Serializable
                 case "website":
                     setWebsite((String) val);
                     break;
-                case "registration":
-                    setRegistration((String) val);
-                    break;
-                case "vat":
-                    setVat((String) val);
+                case "active":
+                    setActive(Boolean.parseBoolean(String.valueOf(val)));
                     break;
                 case "other":
                     setOther((String) val);
@@ -269,16 +301,20 @@ public class Client implements BusinessObject, Serializable
                 return getTel();
             case "fax":
                 return getFax();
-            case "active":
-                return isActive();
-            case "date_partnered":
-                return getDate_partnered();
-            case "website":
-                return getWebsite();
+            case "contact_email":
+                return getContact_email();
             case "registration":
                 return getRegistration();
             case "vat":
                 return getVat();
+            case "account_name":
+                return getAccount_name();
+            case "date_partnered":
+                return getDate_partnered();
+            case "website":
+                return getWebsite();
+            case "active":
+                return isActive();
             case "other":
                 return getOther();
             default:
@@ -301,30 +337,35 @@ public class Client implements BusinessObject, Serializable
         try
         {
             result.append(URLEncoder.encode("client_name","UTF-8") + "="
-                    + URLEncoder.encode(client_name, "UTF-8"));
+                    + URLEncoder.encode(getClient_name(), "UTF-8"));
             result.append("&" + URLEncoder.encode("physical_address","UTF-8") + "="
-                    + URLEncoder.encode(physical_address, "UTF-8"));
+                    + URLEncoder.encode(getPhysical_address(), "UTF-8"));
             result.append("&" + URLEncoder.encode("postal_address","UTF-8") + "="
-                    + URLEncoder.encode(postal_address, "UTF-8"));
+                    + URLEncoder.encode(getPostal_address(), "UTF-8"));
             result.append("&" + URLEncoder.encode("tel","UTF-8") + "="
-                    + URLEncoder.encode(tel, "UTF-8"));
-            result.append("&" + URLEncoder.encode("active","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(active), "UTF-8"));
-            result.append("&" + URLEncoder.encode("date_partnered","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(date_partnered), "UTF-8"));
-            result.append("&" + URLEncoder.encode("registration","UTF-8") + "="
-                    + URLEncoder.encode(registration, "UTF-8"));
-            result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
-                    + URLEncoder.encode(vat, "UTF-8"));
-            if(fax!=null)
+                    + URLEncoder.encode(getTel(), "UTF-8"));
+            if(getFax()!=null)
                 result.append("&" + URLEncoder.encode("fax","UTF-8") + "="
-                        + URLEncoder.encode(fax, "UTF-8"));
-            if(website!=null)
+                        + URLEncoder.encode(getFax(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("contact_email","UTF-8") + "="
+                    + URLEncoder.encode(getContact_email(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("registration","UTF-8") + "="
+                    + URLEncoder.encode(getRegistration(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
+                    + URLEncoder.encode(getVat(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(getAccount_name()), "UTF-8"));
+            if(getDate_partnered()>0)
+                result.append("&" + URLEncoder.encode("date_partnered","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getDate_partnered()), "UTF-8"));
+            if(getWebsite()!=null)
                 result.append("&" + URLEncoder.encode("website","UTF-8") + "="
-                        + URLEncoder.encode(website, "UTF-8"));
+                        + URLEncoder.encode(getWebsite(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("active","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(isActive()), "UTF-8"));
             if(other!=null)
                 result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                        + URLEncoder.encode(other, "UTF-8"));
+                        + URLEncoder.encode(getOther(), "UTF-8"));
 
             return result.toString();
         } catch (UnsupportedEncodingException e)

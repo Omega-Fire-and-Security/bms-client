@@ -61,6 +61,15 @@ public class ViewQuoteController extends QuoteController
             txtEmail.setText(selected.getContact_person().getEmail());
             txtFax.setText(cbxClients.getValue().getFax());
             txtQuoteId.setText(selected.get_id());
+            //set VAT toggle button value
+            toggleVatExempt.setText(QuoteManager.getInstance().getSelectedQuote().getVat()==QuoteManager.VAT?QuoteManager.VAT+"%":"VAT exempt");
+            toggleVatExempt.setSelected(QuoteManager.getInstance().getSelectedQuote().getVat()==QuoteManager.VAT?false:true);
+            //load account[s] for Client
+            if(QuoteManager.getInstance().getSelectedQuote().getClient()!=null)
+                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", QuoteManager.getInstance().getSelectedQuote().getClient().getAccount_name()}));
+            else IO.log(getClass().getName(), IO.TAG_ERROR, "Selected Quote Client is null.");
+            //set selected Supplier account
+            cbxAccount.setValue(QuoteManager.getInstance().getSelectedQuote().getClient().getAccount_name());
             txtSite.setText(selected.getSitename());
             txtRequest.setText(selected.getRequest());
             //txtVat.setText(String.valueOf(selected.getVat()));

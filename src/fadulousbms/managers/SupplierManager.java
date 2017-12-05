@@ -121,25 +121,15 @@ public class SupplierManager extends BusinessObjectManager
         txt_tel.setMaxWidth(Double.MAX_VALUE);
         HBox tel = CustomTableViewControls.getLabelledNode("Supplier tel number", 200, txt_tel);
 
+        final TextField txt_contact_email = new TextField();
+        txt_contact_email.setMinWidth(200);
+        txt_contact_email.setMaxWidth(Double.MAX_VALUE);
+        HBox contact_email = CustomTableViewControls.getLabelledNode("eMail Address", 200, txt_contact_email);
+
         final TextField txt_speciality = new TextField();
         txt_speciality.setMinWidth(200);
         txt_speciality.setMaxWidth(Double.MAX_VALUE);
         HBox speciality = CustomTableViewControls.getLabelledNode("Supplier speciality", 200, txt_speciality);
-
-        final CheckBox chbx_active = new CheckBox();
-        chbx_active.setMinWidth(200);
-        chbx_active.setMaxWidth(Double.MAX_VALUE);
-        HBox active = CustomTableViewControls.getLabelledNode("Active", 200, chbx_active);
-
-        final DatePicker dpk_date_partnered = new DatePicker();
-        dpk_date_partnered.setMinWidth(200);
-        dpk_date_partnered.setMaxWidth(Double.MAX_VALUE);
-        HBox date_partnered = CustomTableViewControls.getLabelledNode("Date partnered", 200, dpk_date_partnered);
-
-        final TextField txt_website = new TextField();
-        txt_website.setMinWidth(200);
-        txt_website.setMaxWidth(Double.MAX_VALUE);
-        HBox website = CustomTableViewControls.getLabelledNode("Supplier website", 200, txt_website);
 
         final TextField txt_supplier_reg = new TextField();
         txt_supplier_reg.setMinWidth(200);
@@ -151,10 +141,26 @@ public class SupplierManager extends BusinessObjectManager
         txt_supplier_vat.setMaxWidth(Double.MAX_VALUE);
         HBox supplier_vat = CustomTableViewControls.getLabelledNode("VAT Number", 200, txt_supplier_vat);
 
-        final TextField txt_contact_email = new TextField();
-        txt_contact_email.setMinWidth(200);
-        txt_contact_email.setMaxWidth(Double.MAX_VALUE);
-        HBox contact_email = CustomTableViewControls.getLabelledNode("eMail Address", 200, txt_contact_email);
+        final TextField txt_supplier_account = new TextField();
+        txt_supplier_account.setMinWidth(200);
+        txt_supplier_account.setMaxWidth(Double.MAX_VALUE);
+        HBox supplier_account = CustomTableViewControls.getLabelledNode("Account Name", 200, txt_supplier_account);
+
+        final DatePicker dpk_date_partnered = new DatePicker();
+        dpk_date_partnered.setMinWidth(200);
+        dpk_date_partnered.setMaxWidth(Double.MAX_VALUE);
+        HBox date_partnered = CustomTableViewControls.getLabelledNode("Date partnered", 200, dpk_date_partnered);
+
+        final TextField txt_website = new TextField();
+        txt_website.setMinWidth(200);
+        txt_website.setMaxWidth(Double.MAX_VALUE);
+        HBox website = CustomTableViewControls.getLabelledNode("Supplier website", 200, txt_website);
+
+        final CheckBox chbx_active = new CheckBox();
+        chbx_active.setMinWidth(200);
+        chbx_active.setMaxWidth(Double.MAX_VALUE);
+        chbx_active.setSelected(true);
+        HBox active = CustomTableViewControls.getLabelledNode("Active", 200, chbx_active);
 
         final TextArea txt_other = new TextArea();
         txt_other.setMinWidth(200);
@@ -178,25 +184,27 @@ public class SupplierManager extends BusinessObjectManager
                 return;
             if(!Validators.isValidNode(txt_speciality, txt_speciality.getText(), 1, ".+"))
                 return;
-            if(!Validators.isValidNode(dpk_date_partnered, dpk_date_partnered.getValue()==null?"":dpk_date_partnered.getValue().toString(), 4, date_regex))
-                return;
-            if(!Validators.isValidNode(txt_website, txt_website.getText(), 1, ".+"))
-                return;
             if(!Validators.isValidNode(txt_supplier_reg, txt_supplier_reg.getText(), 1, ".+"))
                 return;
             if(!Validators.isValidNode(txt_supplier_vat, txt_supplier_vat.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_supplier_account, txt_supplier_account.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(dpk_date_partnered, dpk_date_partnered.getValue()==null?"":dpk_date_partnered.getValue().toString(), 4, date_regex))
+                return;
+            if(!Validators.isValidNode(txt_website, txt_website.getText(), 1, ".+"))
                 return;
 
             String str_supplier_name = txt_supplier_name.getText();
             String str_physical_address = txt_physical_address.getText();
             String str_postal_address = txt_postal_address.getText();
             String str_tel = txt_tel.getText();
+            String str_contact_email = txt_contact_email.getText();
             String str_speciality = txt_speciality.getText();
             String str_website = txt_website.getText();
             String str_reg = txt_supplier_reg.getText();
             String str_vat = txt_supplier_vat.getText();
             long date_partnered_in_sec = dpk_date_partnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-            String str_contact_email = txt_contact_email.getText();
             String str_other = txt_other.getText();
             boolean is_active = chbx_active.selectedProperty().get();
 
@@ -205,12 +213,13 @@ public class SupplierManager extends BusinessObjectManager
             params.add(new AbstractMap.SimpleEntry<>("physical_address", str_physical_address));
             params.add(new AbstractMap.SimpleEntry<>("postal_address", str_postal_address));
             params.add(new AbstractMap.SimpleEntry<>("tel", str_tel));
+            params.add(new AbstractMap.SimpleEntry<>("contact_email", str_contact_email));
             params.add(new AbstractMap.SimpleEntry<>("speciality", str_speciality));
-            params.add(new AbstractMap.SimpleEntry<>("website", str_website));
             params.add(new AbstractMap.SimpleEntry<>("registration", str_reg));
             params.add(new AbstractMap.SimpleEntry<>("vat", str_vat));
+            params.add(new AbstractMap.SimpleEntry<>("account_name", txt_supplier_account.getText()));
             params.add(new AbstractMap.SimpleEntry<>("date_partnered", String.valueOf(date_partnered_in_sec)));
-            params.add(new AbstractMap.SimpleEntry<>("contact_email", str_contact_email));
+            params.add(new AbstractMap.SimpleEntry<>("website", str_website));
             params.add(new AbstractMap.SimpleEntry<>("other", str_other));
             params.add(new AbstractMap.SimpleEntry<>("active", String.valueOf(is_active)));
 
@@ -257,14 +266,15 @@ public class SupplierManager extends BusinessObjectManager
         vbox.getChildren().add(physical_address);
         vbox.getChildren().add(postal_address);
         vbox.getChildren().add(tel);
+        vbox.getChildren().add(contact_email);
         vbox.getChildren().add(speciality);
-        vbox.getChildren().add(website);
         vbox.getChildren().add(supplier_reg);
         vbox.getChildren().add(supplier_vat);
+        vbox.getChildren().add(supplier_account);
         vbox.getChildren().add(date_partnered);
-        vbox.getChildren().add(contact_email);
-        vbox.getChildren().add(other);
+        vbox.getChildren().add(website);
         vbox.getChildren().add(active);
+        vbox.getChildren().add(other);
         vbox.getChildren().add(submit);
 
         //Setup scene and display stage

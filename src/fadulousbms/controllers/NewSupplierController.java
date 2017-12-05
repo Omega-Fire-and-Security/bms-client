@@ -28,7 +28,7 @@ public class NewSupplierController extends ScreenController implements Initializ
 {
     private boolean itemsModified;
     @FXML
-    private TextField txtName,txtSpeciality,txtTel,txtFax,txtWebsite,txtRegistration,txtVat,txtAccount,txtEmail;
+    private TextField txtName,txtSpeciality,txtTel,txtFax,txtEmail,txtWebsite,txtRegistration,txtVat,txtAccount;
     @FXML
     private CheckBox cbxActive;
     @FXML
@@ -39,14 +39,10 @@ public class NewSupplierController extends ScreenController implements Initializ
     @Override
     public void refreshView()
     {
-        txtName.textProperty().addListener(new ChangeListener<String>()
+        txtName.textProperty().addListener((observable, oldValue, newValue) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
-            {
-                //TODO: remove spaces, and make lowercase
-                txtAccount.setText(newValue);
-            }
+            //TODO: remove spaces, and make lowercase
+            txtAccount.setText(newValue);
         });
     }
 
@@ -72,7 +68,8 @@ public class NewSupplierController extends ScreenController implements Initializ
     @FXML
     public void createSupplier()
     {
-        String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+        //String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+        String date_regex=".+";
 
         if(SessionManager.getInstance().getActive()==null)
         {
@@ -119,16 +116,6 @@ public class NewSupplierController extends ScreenController implements Initializ
             txtSpeciality.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-        if(!Validators.isValidNode(datePartnered, datePartnered.getValue()==null?"":datePartnered.getValue().toString(), 4, date_regex))
-        {
-            datePartnered.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-            return;
-        }
-        if(!Validators.isValidNode(txtWebsite, txtWebsite.getText(), 1, ".+"))
-        {
-            txtWebsite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
-            return;
-        }
         if(!Validators.isValidNode(txtRegistration, txtRegistration.getText(), 1, ".+"))
         {
             txtRegistration.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
@@ -144,7 +131,16 @@ public class NewSupplierController extends ScreenController implements Initializ
             txtAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
             return;
         }
-
+        if(!Validators.isValidNode(datePartnered, datePartnered.getValue()==null?"":datePartnered.getValue().toString(), 4, date_regex))
+        {
+            datePartnered.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            return;
+        }
+        if(!Validators.isValidNode(txtWebsite, txtWebsite.getText(), 1, ".+"))
+        {
+            txtWebsite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            return;
+        }
 
         //prepare supplier parameters
         Supplier supplier = new Supplier();
@@ -153,13 +149,13 @@ public class NewSupplierController extends ScreenController implements Initializ
         supplier.setPostal_address(txtPostal.getText());
         supplier.setTel(txtTel.getText());
         supplier.setFax(txtFax.getText());
-        supplier.setDate_partnered(datePartnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+        supplier.setContact_email(txtEmail.getText());
         supplier.setSpeciality(txtSpeciality.getText());
-        supplier.setWebsite(txtWebsite.getText());
         supplier.setRegistration(txtRegistration.getText());
         supplier.setVat(txtVat.getText());
         supplier.setAccount_name(txtAccount.getText());
-        supplier.setContact_email(txtEmail.getText());
+        supplier.setDate_partnered(datePartnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+        supplier.setWebsite(txtWebsite.getText());
         supplier.setActive(cbxActive.isSelected());
 
         //if(str_extra!=null)
@@ -189,7 +185,7 @@ public class NewSupplierController extends ScreenController implements Initializ
                         IO.logAndAlert("New Supplier Creation Failure", "Invalid response.", IO.TAG_ERROR);
                         return;
                     }
-                    IO.logAndAlert("New Supplier Creation Success", "Successfully created a new supplier.", IO.TAG_INFO);
+                    IO.logAndAlert("New Supplier Creation Success", "Successfully created a new supplier ["+txtName.getText()+"].", IO.TAG_INFO);
                     SupplierManager.getInstance().initialize();
                     SupplierManager.getInstance().setSelected(supplier);
                     itemsModified = false;

@@ -37,8 +37,8 @@ public class ClientsController extends ScreenController implements Initializable
     private TableView<Client>    tblClients;
     @FXML
     private TableColumn     colClientId,colClientName,colClientPhysicalAddress,
-                            colClientPostalAddress,colClientTel,colClientFax,colClientActive,
-                            colClientDatePartnered,colClientWebsite,colClientRegistration,colClientVat,colClientOther,colAction;
+                            colClientPostalAddress,colClientTel,colClientFax,colClientEmail,colClientRegistration,
+                            colClientVat,colClientAccount,colClientDatePartnered,colClientWebsite,colClientActive,colClientOther,colAction;
 
     @Override
     public void refreshView()
@@ -57,11 +57,13 @@ public class ClientsController extends ScreenController implements Initializable
         CustomTableViewControls.makeEditableTableColumn(colClientPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", "/api/client");
         CustomTableViewControls.makeEditableTableColumn(colClientTel, TextFieldTableCell.forTableColumn(), 80, "tel", "/api/client");
         CustomTableViewControls.makeEditableTableColumn(colClientFax, TextFieldTableCell.forTableColumn(), 80, "fax", "/api/client");
+        CustomTableViewControls.makeEditableTableColumn(colClientEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", "/api/client");
         CustomTableViewControls.makeCheckboxedTableColumn(colClientActive, null, 80, "active", "/api/client");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colClientDatePartnered, "date_partnered", "/api/client");
         CustomTableViewControls.makeEditableTableColumn(colClientWebsite, TextFieldTableCell.forTableColumn(), 100, "website", "/api/client");
         CustomTableViewControls.makeEditableTableColumn(colClientRegistration, TextFieldTableCell.forTableColumn(), 100, "registration", "/api/client");
         CustomTableViewControls.makeEditableTableColumn(colClientVat, TextFieldTableCell.forTableColumn(), 100, "vat", "/api/client");
+        CustomTableViewControls.makeEditableTableColumn(colClientAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/api/client");
         CustomTableViewControls.makeEditableTableColumn(colClientOther, TextFieldTableCell.forTableColumn(), 50, "other", "/api/client");
 
         ObservableList<Client> lst_clients = FXCollections.observableArrayList();

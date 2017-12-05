@@ -38,6 +38,11 @@
                         <PropertyValueFactory property="fax" />
                     </cellValueFactory>
                 </TableColumn>
+                <TableColumn fx:id="colClientEmail" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Email">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="contact_email" />
+                    </cellValueFactory>
+                </TableColumn>
                 <TableColumn fx:id="colClientActive" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Active">
                     <cellValueFactory>
                         <PropertyValueFactory property="active" />
@@ -53,16 +58,21 @@
                         <PropertyValueFactory property="website" />
                     </cellValueFactory>
                 </TableColumn>
-            <TableColumn fx:id="colClientRegistration" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Registration #">
-               <cellValueFactory>
-                  <PropertyValueFactory property="website" />
-               </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="colClientVat" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="VAT #">
-               <cellValueFactory>
-                  <PropertyValueFactory property="website" />
-               </cellValueFactory>
-            </TableColumn>
+                <TableColumn fx:id="colClientRegistration" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Registration #">
+                   <cellValueFactory>
+                      <PropertyValueFactory property="website" />
+                   </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientVat" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="VAT #">
+                   <cellValueFactory>
+                      <PropertyValueFactory property="website" />
+                   </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientAccount" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Account Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="account_name" />
+                    </cellValueFactory>
+                </TableColumn>
                 <TableColumn fx:id="colClientOther" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Other" visible="false">
                     <cellValueFactory>
                         <PropertyValueFactory property="other" />

@@ -32,12 +32,12 @@
                         </Menu>
                     </menus>
                 </MenuBar>
-                <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#createSupplier" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Create Supplier">
+                <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#createSupplier" styleClass="btnAdd" stylesheets="@../../../../../OmegaBMS/FadulousBMS/src/fadulousbms/styles/home.css" text="Create Supplier">
                     <HBox.margin>
                         <Insets left="5.0" right="5.0" />
                     </HBox.margin>
                 </Button>
-                <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" styleClass="btnBack" onMouseClicked="#back" stylesheets="@../styles/home.css" text="Back" />
+                <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#previousScreen" styleClass="btnBack" stylesheets="@../../../../../OmegaBMS/FadulousBMS/src/fadulousbms/styles/home.css" text="Back" />
             </children>
         </HBox>
         <SplitPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
@@ -56,10 +56,11 @@
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
@@ -70,29 +71,31 @@
                         <TextField fx:id="txtTel" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                         <TextField fx:id="txtFax" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                         <Label text="Tel Number" GridPane.rowIndex="4" />
-                        <Label text="Date Partnered" GridPane.rowIndex="8" />
-                        <Label text="Website" GridPane.rowIndex="9" />
-                        <TextField fx:id="txtWebsite" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                        <Label text="Date Partnered" GridPane.rowIndex="11" />
+                        <Label text="Website" GridPane.rowIndex="12" />
+                        <TextField fx:id="txtWebsite" GridPane.columnIndex="1" GridPane.rowIndex="12" />
                         <Label text="Fax Number" GridPane.rowIndex="5" />
                         <Label text="Create New Supplier" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                             <font>
                                 <Font size="25.0" />
                             </font>
                         </Label>
-                        <Label text="Active" GridPane.rowIndex="12" />
+                        <Label text="Active" GridPane.rowIndex="13" />
                         <TextField fx:id="txtName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <Label text="eMail Address" GridPane.rowIndex="6" />
                   <Label text="Speciality" GridPane.rowIndex="7" />
-                  <CheckBox fx:id="cbxActive" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="12" />
-                  <DatePicker fx:id="datePartnered" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                  <CheckBox fx:id="cbxActive" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="13" />
+                  <DatePicker fx:id="datePartnered" GridPane.columnIndex="1" GridPane.rowIndex="11" />
                   <TextField fx:id="txtSpeciality" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                   <TextField fx:id="txtEmail" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                   <TextArea fx:id="txtPhysical" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <TextArea fx:id="txtPostal" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                  <Label text="Registration Number" GridPane.rowIndex="10" />
-                  <Label text="VAT Number" GridPane.rowIndex="11" />
-                  <TextField fx:id="txtRegistration" GridPane.columnIndex="1" GridPane.rowIndex="10" />
-                  <TextField fx:id="txtVat" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                  <Label text="Registration Number" GridPane.rowIndex="8" />
+                  <Label text="VAT Number" GridPane.rowIndex="9" />
+                  <TextField fx:id="txtRegistration" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                  <TextField fx:id="txtVat" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                  <Label text="Account Name" GridPane.rowIndex="10" />
+                  <TextField fx:id="txtAccount" GridPane.columnIndex="1" GridPane.rowIndex="10" />
                     </children>
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
