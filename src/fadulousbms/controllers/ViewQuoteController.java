@@ -54,6 +54,16 @@ public class ViewQuoteController extends QuoteController
                 IO.logAndAlert("View Quote Error", "Selected quote's client attribute is null.", IO.TAG_ERROR);
                 return;
             }
+            //Hide [Approve] button if not authorized
+            if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()<Employee.ACCESS_LEVEL_SUPER)
+            {
+                btnApprove.setVisible(false);
+                btnApprove.setDisable(true);
+            }else{
+                btnApprove.setVisible(true);
+                btnApprove.setDisable(false);
+            }
+
             cbxClients.setValue(selected.getClient());
             cbxContactPerson.setValue(selected.getContact_person());
             txtCell.setText(selected.getContact_person().getCell());

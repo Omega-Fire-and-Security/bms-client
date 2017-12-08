@@ -53,6 +53,8 @@ public class PurchaseOrderController extends OperationsController implements Ini
             colCreator, colTotal, colAction;
     @FXML
     protected TextField txtNumber, txtCreator, txtStatus, txtTotal;
+    @FXML
+    protected Button btnApprove;
     //@FXML
     //protected Slider vatSlider;
     @FXML
@@ -635,6 +637,14 @@ public class PurchaseOrderController extends OperationsController implements Ini
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
         }
+    }
+
+    @FXML
+    public void requestApproval()
+    {
+        //send email requesting approval of Quote
+        if(PurchaseOrderManager.getInstance().getSelected()!=null)
+            PurchaseOrderManager.getInstance().requestPOApproval(PurchaseOrderManager.getInstance().getSelected(), null);
     }
 
     @FXML

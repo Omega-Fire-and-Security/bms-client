@@ -8,6 +8,7 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.*;
+import fadulousbms.model.Employee;
 import javafx.collections.FXCollections;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import java.text.DecimalFormat;
@@ -33,6 +34,16 @@ public class ViewPurchaseOrderController extends PurchaseOrderController
             if(PurchaseOrderManager.getInstance().getSelected().getSupplier()!=null)
                 cbxContactPerson.setValue(PurchaseOrderManager.getInstance().getSelected().getContact_person());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid contact person.");
+
+            //Hide [Approve] button if not authorized
+            if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()< Employee.ACCESS_LEVEL_SUPER)
+            {
+                btnApprove.setVisible(false);
+                btnApprove.setDisable(true);
+            }else{
+                btnApprove.setVisible(true);
+                btnApprove.setDisable(false);
+            }
 
             //set selected PO's table items
             if(PurchaseOrderManager.getInstance().getSelected().getItems()!=null)

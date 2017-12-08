@@ -92,15 +92,6 @@ public abstract class QuoteController extends ScreenController implements Initia
             employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
             EmployeeManager.getInstance().getEmployees().values().toArray(employees);
         }
-        //Hide [Approve] button if not authorized
-        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()<Employee.ACCESS_LEVEL_SUPER)
-        {
-            btnApprove.setVisible(false);
-            btnApprove.setDisable(true);
-        }else{
-            btnApprove.setVisible(true);
-            btnApprove.setDisable(false);
-        }
 
         //setup Quote default accounts
         cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));

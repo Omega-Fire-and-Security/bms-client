@@ -35,16 +35,21 @@
                         </Menu>
                     </menus>
                 </MenuBar>
+            <Button fx:id="btnApprove" alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="589.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#approvePurchaseOrder" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Approve Purchase Order">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
+            <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="432.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#requestApproval" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Request Approval">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
                 <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#updatePurchaseOrder" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Update Purchase Order">
                     <HBox.margin>
                         <Insets left="5.0" right="5.0" />
                     </HBox.margin>
                 </Button>
-            <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="589.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#approvePurchaseOrder" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Approve Purchase Order">
-               <HBox.margin>
-                  <Insets right="5.0" />
-               </HBox.margin>
-            </Button>
                 <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#back" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
             </children>
         </HBox>
