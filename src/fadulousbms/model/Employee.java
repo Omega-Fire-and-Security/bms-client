@@ -37,6 +37,10 @@ public class Employee implements BusinessObject, Serializable
     private String other;
     private boolean marked;
     public static final String TAG = "Employee";
+    public static int ACCESS_LEVEL_NONE = 0;
+    public static int ACCESS_LEVEL_NORMAL = 1;
+    public static int ACCESS_LEVEL_ADMIN = 2;
+    public static int ACCESS_LEVEL_SUPER = 3;
 
     public StringProperty idProperty(){return new SimpleStringProperty(_id);}
 

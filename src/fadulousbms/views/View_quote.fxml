@@ -34,7 +34,12 @@
                 </Menu>
               </menus>
             </MenuBar>
-            <Button defaultButton="true" ellipsisString="x" layoutX="395.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#approveQuote" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Approve Quote">
+            <Button fx:id="btnApprove" defaultButton="true" ellipsisString="x" layoutX="395.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#approveQuote" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Approve Quote">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
+            <Button defaultButton="true" ellipsisString="x" layoutX="286.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#requestApproval" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Request Approval">
                <HBox.margin>
                   <Insets right="5.0" />
                </HBox.margin>

@@ -66,6 +66,8 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     protected Label lblVat;
     @FXML
+    protected Button btnApprove;
+    @FXML
     protected TextArea txtRequest;
     protected HashMap<String, TableColumn> colsMap = new HashMap<>();
     private ObservableList<TableColumn<QuoteItem, ?>> default_cols;
@@ -90,6 +92,16 @@ public abstract class QuoteController extends ScreenController implements Initia
             employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
             EmployeeManager.getInstance().getEmployees().values().toArray(employees);
         }
+        //Hide [Approve] button if not authorized
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()<Employee.ACCESS_LEVEL_SUPER)
+        {
+            btnApprove.setVisible(false);
+            btnApprove.setDisable(true);
+        }else{
+            btnApprove.setVisible(true);
+            btnApprove.setDisable(false);
+        }
+
         //setup Quote default accounts
         cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
         cbxClients.valueProperty().addListener((observable, oldValue, newValue) ->
@@ -1489,6 +1501,8 @@ public abstract class QuoteController extends ScreenController implements Initia
     public void requestApproval()
     {
         //send email requesting approval of Quote
+        if(QuoteManager.getInstance().getSelectedQuote()!=null)
+            QuoteManager.getInstance().requestQuoteApproval(QuoteManager.getInstance().getSelectedQuote(), null);
     }
 
     @FXML

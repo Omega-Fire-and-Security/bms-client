@@ -4,10 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -586,12 +586,36 @@ public class QuoteManager extends BusinessObjectManager
             connection.disconnect();
         return false;
     }
-
     public void emailQuote(Quote quote, Callback callback)
+    {
+        System.out.println("QuoteManager>emailQuote: not implemented.");
+    }
+
+    public void requestQuoteApproval(Quote quote, Callback callback)
     {
         if(quote==null)
         {
             IO.logAndAlert("Error", "Invalid Quote.", IO.TAG_ERROR);
+            return;
+        }
+        if(EmployeeManager.getInstance().getEmployees()==null)
+        {
+            IO.logAndAlert("Error", "Could not find any employees in the system.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Error: Invalid Session", "Could not find any valid sessions.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Error: Session Expired", "The active session has expired.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActiveEmployee()==null)
+        {
+            IO.logAndAlert("Error: Invalid Employee Session", "Could not find any active employee sessions.", IO.TAG_ERROR);
             return;
         }
 
@@ -606,25 +630,57 @@ public class QuoteManager extends BusinessObjectManager
 
         VBox vbox = new VBox(1);
 
-        final TextField txt_destination = new TextField();
-        txt_destination.setMinWidth(200);
-        txt_destination.setMaxWidth(Double.MAX_VALUE);
-        txt_destination.setPromptText("Type in email address/es separated by commas");
-        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, txt_destination);
+        //gather list of Employees with enough clearance to approve quotes
+        ArrayList<Employee> lst_auth_employees = new ArrayList<>();
+        for(Employee employee: EmployeeManager.getInstance().getEmployees().values())
+            if(employee.getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
+                lst_auth_employees.add(employee);
+
+        if(lst_auth_employees==null)
+        {
+            IO.logAndAlert("Error", "Could not find any employee with the required access rights to approve documents.", IO.TAG_ERROR);
+            return;
+        }
+
+        final ComboBox<Employee> cbx_destination = new ComboBox(FXCollections.observableArrayList(lst_auth_employees));
+        cbx_destination.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
+        {
+            @Override
+            public ListCell<Employee> call(ListView<Employee> param)
+            {
+                return new ListCell<Employee>()
+                {
+                    @Override
+                    protected void updateItem(Employee employee, boolean empty)
+                    {
+                        if(employee!=null && !empty)
+                        {
+                            super.updateItem(employee, empty);
+                            setText(employee.toString() + " <" + employee.getEmail() + ">");
+                        }
+                    }
+                };
+            }
+        });
+        cbx_destination.setMinWidth(200);
+        cbx_destination.setMaxWidth(Double.MAX_VALUE);
+        cbx_destination.setPromptText("Pick a recipient");
+        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, cbx_destination);
 
         final TextField txt_subject = new TextField();
         txt_subject.setMinWidth(200);
         txt_subject.setMaxWidth(Double.MAX_VALUE);
         txt_subject.setPromptText("Type in an eMail subject");
+        txt_subject.setText("QUOTE ["+quote.get_id()+"] APPROVAL REQUEST");
         HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
 
-        final TextField txt_job_id = new TextField();
+        /*final TextField txt_job_id = new TextField();
         txt_job_id.setMinWidth(200);
         txt_job_id.setMaxWidth(Double.MAX_VALUE);
         txt_job_id.setPromptText("Type in a message");
         txt_job_id.setEditable(false);
         txt_job_id.setText(String.valueOf(quote.get_id()));
-        HBox hbox_job_id = CustomTableViewControls.getLabelledNode("Quote ID: ", 200, txt_job_id);
+        HBox hbox_job_id = CustomTableViewControls.getLabelledNode("Quote ID: ", 200, txt_job_id);*/
 
         final TextArea txt_message = new TextArea();
         txt_message.setMinWidth(200);
@@ -636,22 +692,25 @@ public class QuoteManager extends BusinessObjectManager
         {
             String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
 
-            if(!Validators.isValidNode(txt_destination, txt_destination.getText(), 1, ".+"))
+            //TODO: check this
+            if(!Validators.isValidNode(cbx_destination, cbx_destination.getValue()==null?"":cbx_destination.getValue().getEmail(), 1, ".+"))
                 return;
             if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
                 return;
             if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
                 return;
 
-            String str_destination = txt_destination.getText();
-            String str_subject = txt_subject.getText();
-            String str_message = txt_message.getText();
+            String msg = txt_message.getText();
+
+            //convert all new line chars to HTML break-lines
+            msg = msg.replaceAll("\\n", "<br/>");
 
             ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
             params.add(new AbstractMap.SimpleEntry<>("quote_id", quote.get_id()));
-            params.add(new AbstractMap.SimpleEntry<>("to_email", str_destination));
-            params.add(new AbstractMap.SimpleEntry<>("subject", str_subject));
-            params.add(new AbstractMap.SimpleEntry<>("message", str_message));
+            params.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
+            params.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("message", msg));
+
             try
             {
                 //send email
@@ -672,11 +731,11 @@ public class QuoteManager extends BusinessObjectManager
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
-                        IO.logAndAlert("Success", "Successfully emailed quote to ["+txt_destination.getText()+"]!", IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully emailed quote to ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
                         if(callback!=null)
                             callback.call(null);
                     }else{
-                        IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                        IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                     }
                     connection.disconnect();
                 }
@@ -687,10 +746,27 @@ public class QuoteManager extends BusinessObjectManager
             }
         });
 
+        cbx_destination.valueProperty().addListener((observable, oldValue, newValue) ->
+        {
+            if(newValue==null)
+            {
+                IO.log(getClass().getName(), "invalid destination address.", IO.TAG_ERROR);
+                return;
+            }
+            Employee sender = SessionManager.getInstance().getActiveEmployee();
+            String title = null;
+            if(newValue.getGender()!=null)
+                title = newValue.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";
+            String msg = "Good day " + title + " " + newValue.getLastname() + ",\n\nCould you please assist me" +
+                            " by approving this quote to be issued to "  + quote.getClient().getClient_name() + ".\nThank you.\nBest Regards,\n"
+                            + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
+            txt_message.setText(msg);
+        });
+
         //Add form controls vertically on the stage
         vbox.getChildren().add(destination);
         vbox.getChildren().add(subject);
-        vbox.getChildren().add(hbox_job_id);
+        //vbox.getChildren().add(hbox_job_id);
         vbox.getChildren().add(message);
         vbox.getChildren().add(submit);
 

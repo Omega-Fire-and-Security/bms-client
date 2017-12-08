@@ -183,7 +183,8 @@ public class QuotesController extends OperationsController implements Initializa
                                         });
                                     });
 
-                                    btnPDF.setOnAction(event -> {
+                                    btnPDF.setOnAction(event ->
+                                    {
                                         Quote quote = getTableView().getItems().get(getIndex());
                                         try
                                         {
