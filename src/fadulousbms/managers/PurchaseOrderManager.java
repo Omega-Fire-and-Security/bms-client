@@ -376,7 +376,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
             if(newValue.getGender()!=null)
                 title = newValue.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";
             String msg = "Good day " + title + " " + newValue.getLastname() + ",\n\nCould you please assist me" +
-                    " by approving this purchase order to be issued to "  + po.getSupplier().getSupplier_name() + ".\nThank you.\nBest Regards,\n"
+                    " by approving this purchase order to be issued to "  + po.getSupplier().getSupplier_name() + ".\nThank you.\n\nBest Regards,\n"
                     + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
             txt_message.setText(msg);
         });

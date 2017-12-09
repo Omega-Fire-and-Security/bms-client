@@ -48,11 +48,23 @@ public class ViewJobController extends ScreenController implements Initializable
     private TextField txtJobNumber,txtCompany, txtContact, txtCell,txtTel,txtTotal,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtExtra;
     @FXML
     private TextArea txtRequest;
+    @FXML
+    private Button btnSign;
 
     @Override
     public void refreshView()
     {
         tblEmployees.getItems().clear();
+
+        //Hide [Sign] button if not authorized
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()< Employee.ACCESS_LEVEL_SUPER)
+        {
+            btnSign.setVisible(false);
+            btnSign.setDisable(true);
+        }else{
+            btnSign.setVisible(true);
+            btnSign.setDisable(false);
+        }
 
         //Setup Sale Reps table
         colFirstname.setCellValueFactory(new PropertyValueFactory<>("firstname"));

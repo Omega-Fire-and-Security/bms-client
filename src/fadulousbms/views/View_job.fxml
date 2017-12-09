@@ -33,7 +33,17 @@
                 </Menu>
               </menus>
             </MenuBar>
+            <Button fx:id="btnSign" layoutX="383.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#signJob" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Sign">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
             <Button minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#update" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Update">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Button>
+            <Button layoutX="283.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#requestSignature" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Request Signature">
                <HBox.margin>
                   <Insets right="5.0" />
                </HBox.margin>
@@ -78,6 +88,7 @@
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints />
               </rowConstraints>
                <children>
                   <Label text="Company" GridPane.rowIndex="1" />
