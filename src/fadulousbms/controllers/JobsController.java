@@ -215,14 +215,12 @@ public class JobsController extends ScreenController implements Initializable
                                             if(JobManager.getInstance().getJobs()!=null)
                                                 JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(job.get_id()));
                                             else IO.log(getClass().getName(), IO.TAG_ERROR, "no jobs were found in the database." );
-                                            viewJob(JobManager.getInstance().getSelected());
+                                            JobManager.getInstance().viewJob(JobManager.getInstance().getSelected());
                                         } catch (ClassNotFoundException e)
                                         {
-                                            e.printStackTrace();
                                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                         } catch (IOException e)
                                         {
-                                            e.printStackTrace();
                                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                         }
                                     });
@@ -239,7 +237,7 @@ public class JobsController extends ScreenController implements Initializable
                                     });
 
                                     btnSign.setOnAction(event ->
-                                            signJob(job, param1 ->
+                                            JobManager.getInstance().signJob(job, param1 ->
                                             {
                                                 //Refresh UI
                                                 new Thread(() ->
@@ -526,67 +524,7 @@ public class JobsController extends ScreenController implements Initializable
         }
     }*/
 
-    private static void signJob(Job job, Callback callback)
-    {
-        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
-        Session active = SessionManager.getInstance().getActive();
-        try
-        {
-            if (active != null)
-            {
-                if (!active.isExpired())
-                {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
-                    HttpURLConnection conn = RemoteComms.postData("/api/job/sign/" + job.get_id(),"", headers);
-                    if(conn!=null)
-                    {
-                        if(conn.getResponseCode()==HttpURLConnection.HTTP_OK)
-                        {
-                            IO.logAndAlert("Success", "Successfully signed job[" + job.get_id()+"]", IO.TAG_ERROR);
-                            if(callback!=null)
-                                callback.call(null);
-                        } else IO.logAndAlert("Error", "Could not sign job["+job.get_id()+"]: "+IO.readStream(conn.getErrorStream()), IO.TAG_ERROR);
-                        conn.disconnect();
-                    }
-                } else IO.showMessage("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
-            } else IO.showMessage("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
-        }catch (IOException e)
-        {
-            IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
-        }
-    }
 
-    private static void viewJob(Job job)
-    {
-        if(job==null)
-        {
-            IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
-            return;
-        }
-
-        ScreenManager.getInstance().showLoadingScreen(param ->
-        {
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    JobManager.getInstance().setSelected(job);
-                    try
-                    {
-                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
-                        {
-                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_JOB.getScreen()));
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load jobs viewer screen.");
-                    } catch (IOException e)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                    }
-                }
-            }).start();
-            return null;
-        });
-    }
 
     public static RadialMenuItem[] getContextMenu()
     {
@@ -594,7 +532,7 @@ public class JobsController extends ScreenController implements Initializable
 
         //View Job Menu item
         context_menu[0] = new RadialMenuItemCustom(30, "View Job", null, null, event ->
-                viewJob(JobManager.getInstance().getSelected()));
+                JobManager.getInstance().viewJob(JobManager.getInstance().getSelected()));
 
         //Sign Job menu item
         context_menu[1] = new RadialMenuItemCustom(30, "Sign Job", null, null, event ->
@@ -604,7 +542,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            signJob(JobManager.getInstance().getSelected(), null);
+            JobManager.getInstance().signJob(JobManager.getInstance().getSelected(), null);
         });
 
         //View signed Job menu item

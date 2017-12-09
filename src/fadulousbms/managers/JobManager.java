@@ -4,13 +4,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.controllers.HomescreenController;
+import fadulousbms.controllers.JobsController;
 import fadulousbms.controllers.OperationsController;
 import fadulousbms.model.*;
 import fadulousbms.model.Error;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -90,6 +93,9 @@ public class JobManager extends BusinessObjectManager
         loadDataFromServer();
     }
 
+    /**
+     * Method to load Job objects from the server if they have not already been reloaded.
+     */
     public void loadDataFromServer()
     {
         try
@@ -112,6 +118,11 @@ public class JobManager extends BusinessObjectManager
         }
     }
 
+    /**
+     * Method to force synchronize Job objects from the server with local storage.
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
     public void reloadDataFromServer() throws ClassNotFoundException, IOException
     {
         SessionManager smgr = SessionManager.getInstance();
@@ -194,24 +205,21 @@ public class JobManager extends BusinessObjectManager
         }else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
+    /**
+     * Method to get a map of all Jobs in the database.
+     * @return
+     */
     public HashMap<String, Job> getJobs()
     {
         return this.jobs;
     }
 
-    public void setSelected(Job job)
-    {
-        this.selected_job = job;
-        if(selected_job!=null)
-            IO.log(getClass().getName(), IO.TAG_INFO, "set selected job to: " + job);
-        //}else IO.log(getClass().getName(), IO.TAG_ERROR, "job to be set as selected is null.");
-    }
-
-    public Job getSelected()
-    {
-        return selected_job;
-    }
-
+    /**
+     * Method to create new Job object on the database server.
+     * @param job Job object to be created.
+     * @param callback Callback to be executed on if request was successful.
+     * @return server response.
+     */
     public String createNewJob(Job job, Callback callback)
     {
         try
@@ -255,6 +263,33 @@ public class JobManager extends BusinessObjectManager
         return null;
     }
 
+    /**
+     * Method to set the currently selected Job object.
+     * @param job Job object to be set as selected Job object.
+     */
+    public void setSelected(Job job)
+    {
+        this.selected_job = job;
+        if(selected_job!=null)
+            IO.log(getClass().getName(), IO.TAG_INFO, "set selected job to: " + job);
+        //}else IO.log(getClass().getName(), IO.TAG_ERROR, "job to be set as selected is null.");
+    }
+
+    /**
+     * Method to return the currently selected Job object.
+     * @return selected Job object.
+     */
+    public Job getSelected()
+    {
+        return selected_job;
+    }
+
+    /**
+     * Assign Employees to a Job.
+     * @param job_id Object identifier of Job to be assigned Employees.
+     * @param usr username of Employee to be assigned to Job.
+     * @return boolean value determining if assingnment was un/successful.
+     */
     public static boolean createJobRepresentative(String job_id, String usr)
     {
         try
@@ -298,6 +333,10 @@ public class JobManager extends BusinessObjectManager
         return false;
     }
 
+    /**
+     * Method to show a catalog (in PDF viewer) of safety files associated with the Job
+     * @param job Job object whose safety catalog is to be shown.
+     */
     public void showJobSafetyFile(Job job)
     {
         if(job !=null)
@@ -306,6 +345,81 @@ public class JobManager extends BusinessObjectManager
         }else IO.log(TAG, IO.TAG_ERROR, "showJobSafetyFile> job object is null.");
     }
 
+    /**
+     * Method to send request to server to sign a Job.
+     * @param job Job object to be signed.
+     * @param callback Callback to be executed on successful request.
+     */
+    public static void signJob(Job job, Callback callback)
+    {
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
+        Session active = SessionManager.getInstance().getActive();
+        try
+        {
+            if (active != null)
+            {
+                if (!active.isExpired())
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
+                    HttpURLConnection conn = RemoteComms.postData("/api/job/sign/" + job.get_id(),"", headers);
+                    if(conn!=null)
+                    {
+                        if(conn.getResponseCode()==HttpURLConnection.HTTP_OK)
+                        {
+                            IO.logAndAlert("Success", "Successfully signed job[" + job.get_id()+"]", IO.TAG_ERROR);
+                            if(callback!=null)
+                                callback.call(null);
+                        } else IO.logAndAlert("Error", "Could not sign job["+job.get_id()+"]: "+IO.readStream(conn.getErrorStream()), IO.TAG_ERROR);
+                        conn.disconnect();
+                    }
+                } else IO.showMessage("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
+            } else IO.showMessage("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
+        }catch (IOException e)
+        {
+            IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Method to view Job info in editable form.
+     * @param job Job object to exported to a PDF document.
+     */
+    public static void viewJob(Job job)
+    {
+        if(job==null)
+        {
+            IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
+            return;
+        }
+
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    JobManager.getInstance().setSelected(job);
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
+                        {
+                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_JOB.getScreen()));
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load jobs viewer screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                }
+            }).start();
+            return null;
+        });
+    }
+
+    /**
+     * Method to view Job in PDF viewer.
+     * @param job Job object to exported to a PDF document.
+     */
     public static void showJobCard(Job job)
     {
         if(job!=null)
@@ -329,7 +443,208 @@ public class JobManager extends BusinessObjectManager
         }
     }
 
-    public void uploadSigned(Job job)
+    /**
+     * Method to send eMail containing Job card (PDF) and a URL to sign the Job.
+     * @param job Job object to be signed.
+     * @param callback Callback to be executed on successful request.
+     */
+    public static void requestSignature(Job job, Callback callback)
+    {
+        if(job==null)
+        {
+            IO.logAndAlert("Error", "Invalid Job.", IO.TAG_ERROR);
+            return;
+        }
+        if(JobManager.getInstance().getJobs()==null)
+        {
+            IO.logAndAlert("Error", "Could not find any jobs in the system.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Error: Invalid Session", "Could not find any valid sessions.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Error: Session Expired", "The active session has expired.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActiveEmployee()==null)
+        {
+            IO.logAndAlert("Error: Invalid Employee Session", "Could not find any active employee sessions.", IO.TAG_ERROR);
+            return;
+        }
+
+        //upload Job PDF to server
+        uploadJobCardPDF(job);
+
+        Stage stage = new Stage();
+        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Job ["+job.get_id()+"]");
+        stage.setMinWidth(320);
+        stage.setHeight(350);
+        stage.setAlwaysOnTop(true);
+
+        VBox vbox = new VBox(1);
+
+        //gather list of Employees with enough clearance to sign jobs
+        ArrayList<Employee> lst_auth_employees = new ArrayList<>();
+        for(Employee employee: EmployeeManager.getInstance().getEmployees().values())
+            if(employee.getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
+                lst_auth_employees.add(employee);
+
+        if(lst_auth_employees==null)
+        {
+            IO.logAndAlert("Error", "Could not find any employee with the required access rights to sign off the job.", IO.TAG_ERROR);
+            return;
+        }
+
+        final ComboBox<Employee> cbx_destination = new ComboBox(FXCollections.observableArrayList(lst_auth_employees));
+        cbx_destination.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
+        {
+            @Override
+            public ListCell<Employee> call(ListView<Employee> param)
+            {
+                return new ListCell<Employee>()
+                {
+                    @Override
+                    protected void updateItem(Employee employee, boolean empty)
+                    {
+                        if(employee!=null && !empty)
+                        {
+                            super.updateItem(employee, empty);
+                            setText(employee.toString() + " <" + employee.getEmail() + ">");
+                        }
+                    }
+                };
+            }
+        });
+        cbx_destination.setMinWidth(200);
+        cbx_destination.setMaxWidth(Double.MAX_VALUE);
+        cbx_destination.setPromptText("Pick a recipient");
+        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, cbx_destination);
+
+        final TextField txt_subject = new TextField();
+        txt_subject.setMinWidth(200);
+        txt_subject.setMaxWidth(Double.MAX_VALUE);
+        txt_subject.setPromptText("Type in an eMail subject");
+        txt_subject.setText("JOB [#"+job.getJob_number()+"] SIGNATURE REQUEST");
+        HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
+
+        /*final TextField txt_job_id = new TextField();
+        txt_job_id.setMinWidth(200);
+        txt_job_id.setMaxWidth(Double.MAX_VALUE);
+        txt_job_id.setPromptText("Type in a message");
+        txt_job_id.setEditable(false);
+        txt_job_id.setText(String.valueOf(quote.get_id()));
+        HBox hbox_job_id = CustomTableViewControls.getLabelledNode("Quote ID: ", 200, txt_job_id);*/
+
+        final TextArea txt_message = new TextArea();
+        txt_message.setMinWidth(200);
+        txt_message.setMaxWidth(Double.MAX_VALUE);
+        HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
+
+        HBox submit;
+        submit = CustomTableViewControls.getSpacedButton("Send", event ->
+        {
+            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+            //TODO: check this
+            if(!Validators.isValidNode(cbx_destination, cbx_destination.getValue()==null?"":cbx_destination.getValue().getEmail(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
+                return;
+
+            String msg = txt_message.getText();
+
+            //convert all new line chars to HTML break-lines
+            msg = msg.replaceAll("\\n", "<br/>");
+
+            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new AbstractMap.SimpleEntry<>("job_id", job.get_id()));
+            params.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
+            params.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("message", msg));
+
+            try
+            {
+                //send email
+                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                if(SessionManager.getInstance().getActive()!=null)
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
+                            .getSessionId()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                } else
+                {
+                    IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
+                    return;
+                }
+
+                HttpURLConnection connection = RemoteComms.postData("/api/job/mailto", params, headers);
+                if(connection!=null)
+                {
+                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                    {
+                        //TODO: CC self
+                        IO.logAndAlert("Success", "Successfully sent email to ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
+                        if(callback!=null)
+                            callback.call(null);
+                    }else{
+                        IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                    }
+                    connection.disconnect();
+                }
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+                IO.log(JobManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        });
+
+        cbx_destination.valueProperty().addListener((observable, oldValue, newValue) ->
+        {
+            if(newValue==null)
+            {
+                IO.log(JobManager.class.getName(), "invalid destination address.", IO.TAG_ERROR);
+                return;
+            }
+            Employee sender = SessionManager.getInstance().getActiveEmployee();
+            String title = null;
+            if(newValue.getGender()!=null)
+                title = newValue.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";
+            String msg = "Good day " + title + " " + newValue.getLastname() + ",\n\nCould you please assist me" +
+                    " by signing this job to be rendered to "  + job.getQuote().getClient().getClient_name() + ".\nThank you.\nBest Regards,\n"
+                    + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
+            txt_message.setText(msg);
+        });
+
+        //Add form controls vertically on the stage
+        vbox.getChildren().add(destination);
+        vbox.getChildren().add(subject);
+        //vbox.getChildren().add(hbox_job_id);
+        vbox.getChildren().add(message);
+        vbox.getChildren().add(submit);
+
+        //Setup scene and display stage
+        Scene scene = new Scene(vbox);
+        File fCss = new File("src/fadulousbms/styles/home.css");
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+
+        stage.setScene(scene);
+        stage.show();
+        stage.centerOnScreen();
+        stage.setResizable(true);
+    }
+
+    /**
+     * Method to upload a Job (in Base64 format) to the server.
+     * @param job Job object to be uploaded.
+     */
+    public static void uploadSigned(Job job)
     {
         //Validate session - also done on server-side don't worry ;)
         SessionManager smgr = SessionManager.getInstance();
@@ -370,21 +685,25 @@ public class JobManager extends BusinessObjectManager
                                     +"], file size: [" + buffer.length + "] bytes. " + IO.readStream(connection.getErrorStream()), IO.TAG_INFO);*/
                         } else
                         {
-                            IO.logAndAlert(getClass().getName(), "File ["+f.getAbsolutePath()+"] not found.", IO.TAG_ERROR);
+                            IO.logAndAlert(JobManager.class.getName(), "File ["+f.getAbsolutePath()+"] not found.", IO.TAG_ERROR);
                         }
                     } else
                     {
-                        IO.log(getClass().getName(), "File object is null.", IO.TAG_ERROR);
+                        IO.log(JobManager.class.getName(), "File object is null.", IO.TAG_ERROR);
                     }
                 }catch (IOException e)
                 {
-                    IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+                    IO.log(JobManager.class.getName(), e.getMessage(), IO.TAG_ERROR);
                 }
             }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
-    public void uploadSigned(String job_id)
+    /**
+     * Method to upload a Job card (in PDF format) to the server.
+     * @param job_id identifier of Job object to be uploaded.
+     */
+    public static void uploadSigned(String job_id)
     {
         //Validate session - also done on server-side don't worry ;)
         SessionManager smgr = SessionManager.getInstance();
@@ -410,24 +729,88 @@ public class JobManager extends BusinessObjectManager
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                             RemoteComms.uploadFile("/api/job/signed/upload/" + job_id, headers, buffer);
-                            IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded signed job ["+job_id+"], file size: [" + buffer.length + "] bytes.");
+                            IO.log(JobManager.class.getName(), IO.TAG_INFO, "\n uploaded signed job ["+job_id+"], file size: [" + buffer.length + "] bytes.");
                         } else
                         {
-                            IO.logAndAlert(getClass().getName(), "File not found.", IO.TAG_ERROR);
+                            IO.logAndAlert(JobManager.class.getName(), "File not found.", IO.TAG_ERROR);
                         }
                     } else
                     {
-                        IO.log(getClass().getName(), "File object is null.", IO.TAG_ERROR);
+                        IO.log(JobManager.class.getName(), "File object is null.", IO.TAG_ERROR);
                     }
                 }catch (IOException e)
                 {
-                    IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+                    IO.log(JobManager.class.getName(), e.getMessage(), IO.TAG_ERROR);
+                }
+            }else IO.logAndAlert("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        }else IO.logAndAlert("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    /**
+     * Method to upload a Job card (in PDF format) to the server.
+     * @param job Job object to be uploaded.
+     */
+    public static void uploadJobCardPDF(Job job)
+    {
+        if(job==null)
+        {
+            IO.logAndAlert("Error", "Invalid job object passed.", IO.TAG_ERROR);
+            return;
+        }
+        //Validate session - also done on server-side don't worry ;)
+        SessionManager smgr = SessionManager.getInstance();
+        if(smgr.getActive()!=null)
+        {
+            if(!smgr.getActive().isExpired())
+            {
+                try
+                {
+                    String path = PDF.createJobCardPdf(job);
+                    if(path!=null)
+                    {
+                        File f = new File(path);
+                        if (f != null)
+                        {
+                            if (f.exists())
+                            {
+                                FileInputStream in = new FileInputStream(f);
+                                byte[] buffer = new byte[(int) f.length()];
+                                in.read(buffer, 0, buffer.length);
+                                in.close();
+
+                                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance()
+                                        .getActive().getSessionId()));
+                                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
+
+                                RemoteComms.uploadFile("/api/job/upload/" + job.get_id(), headers, buffer);
+                                IO.log(JobManager.class.getName(), IO.TAG_INFO, "\n uploaded job card [#" + job
+                                        .getJob_number() + "], file size: [" + buffer.length + "] bytes.");
+                            }
+                            else
+                            {
+                                IO.logAndAlert(JobManager.class.getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
+                            }
+                        }
+                        else
+                        {
+                            IO.log(JobManager.class.getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
+                        }
+                    } else IO.log(JobManager.class.getName(), "Could not get valid path for created job card pdf. Please make sure you've assigned employees to the job.", IO.TAG_ERROR);
+                }catch (IOException e)
+                {
+                    IO.log(JobManager.class.getName(), e.getMessage(), IO.TAG_ERROR);
                 }
             }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
-    public void emailSignedJobCard(Job job, Callback callback)
+    /**
+     * Method to email a signed copy of the Job card to any specified recipient.
+     * @param job Job object to be emailed.
+     * @param callback Callback to be executed on successful request.
+     */
+    public static void emailSignedJobCard(Job job, Callback callback)
     {
         if(job==null)
         {
@@ -548,62 +931,12 @@ public class JobManager extends BusinessObjectManager
         stage.setResizable(true);
     }
 
-    public void uploadJobCardPDF(Job job)
-    {
-        if(job==null)
-        {
-            IO.logAndAlert("Error", "Invalid job object passed.", IO.TAG_ERROR);
-            return;
-        }
-        //Validate session - also done on server-side don't worry ;)
-        SessionManager smgr = SessionManager.getInstance();
-        if(smgr.getActive()!=null)
-        {
-            if(!smgr.getActive().isExpired())
-            {
-                try
-                {
-                    String path = PDF.createJobCardPdf(job);
-                    if(path!=null)
-                    {
-                        File f = new File(path);
-                        if (f != null)
-                        {
-                            if (f.exists())
-                            {
-                                FileInputStream in = new FileInputStream(f);
-                                byte[] buffer = new byte[(int) f.length()];
-                                in.read(buffer, 0, buffer.length);
-                                in.close();
-
-                                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance()
-                                        .getActive().getSessionId()));
-                                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
-
-                                RemoteComms.uploadFile("/api/job/upload/" + job.get_id(), headers, buffer);
-                                IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded job card [#" + job
-                                        .getJob_number() + "], file size: [" + buffer.length + "] bytes.");
-                            }
-                            else
-                            {
-                                IO.logAndAlert(getClass().getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
-                            }
-                        }
-                        else
-                        {
-                            IO.log(getClass().getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
-                        }
-                    } else IO.log(getClass().getName(), "Could not get valid path for created job card pdf. Please make sure you've assigned employees to the job.", IO.TAG_ERROR);
-                }catch (IOException e)
-                {
-                    IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
-                }
-            }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
-    }
-
-    public void emailJobCard(Job job, Callback callback)
+    /**
+     * Method to email a copy of the Job card to any specified recipient.
+     * @param job Job object to be emailed.
+     * @param callback Callback to be executed on successful request.
+     */
+    public static void emailJobCard(Job job, Callback callback)
     {
         if(job==null)
         {
@@ -716,7 +1049,7 @@ public class JobManager extends BusinessObjectManager
             } catch (IOException e)
             {
                 e.printStackTrace();
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                IO.log(JobManager.class.getName(), IO.TAG_ERROR, e.getMessage());
             }
         });
 
@@ -739,7 +1072,11 @@ public class JobManager extends BusinessObjectManager
         stage.setResizable(true);
     }
 
-    public void showJobReps(Job job)
+    /**
+     * Method to show Job representatives
+     * @param job Job object whose representatives are to be shown.
+     */
+    public static void showJobReps(Job job)
     {
         /*SessionManager smgr = SessionManager.getInstance();
         if(smgr.getActive()!=null)

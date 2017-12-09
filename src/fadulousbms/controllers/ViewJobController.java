@@ -7,6 +7,7 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -24,12 +25,11 @@ import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.DateTimeException;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * views Controller class
@@ -365,6 +365,35 @@ public class ViewJobController extends ScreenController implements Initializable
                         e.printStackTrace();
                     }
                 }
+            }).start();
+            return null;
+        });
+    }
+
+    @FXML
+    public void requestSignature()
+    {
+        //send email requesting approval of Job
+        if(JobManager.getInstance().getSelected()!=null)
+            JobManager.getInstance().requestSignature(JobManager.getInstance().getSelected(), null);
+    }
+
+    @FXML
+    public void signJob()
+    {
+        if(JobManager.getInstance().getSelected()==null)
+        {
+            IO.logAndAlert("Error", "Selected Job object is invalid.", IO.TAG_ERROR);
+            return;
+        }
+
+        JobManager.getInstance().signJob(JobManager.getInstance().getSelected(), param1 ->
+        {
+            //Refresh UI
+            new Thread(() ->
+            {
+                refreshModel();
+                Platform.runLater(() -> refreshView());
             }).start();
             return null;
         });
