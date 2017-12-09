@@ -147,6 +147,7 @@ public class RemoteComms
             int read=0;
             while ((line=in.readLine())!=null)
                 response += line;
+            IO.logAndAlert("Error", response, IO.TAG_ERROR);
         }
 
         IO.log(TAG, IO.TAG_INFO, "GET response> " + response + "\n");
