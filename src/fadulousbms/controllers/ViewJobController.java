@@ -154,7 +154,7 @@ public class ViewJobController extends ScreenController implements Initializable
                             {
                                 super.updateItem(item, empty);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -215,13 +215,13 @@ public class ViewJobController extends ScreenController implements Initializable
                 btnAdd.setMinHeight(40);
                 btnAdd.setDefaultButton(true);
                 btnAdd.getStyleClass().add("btnApply");
-                btnAdd.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                 Button btnCancel = new Button("Close");
                 btnCancel.setMinWidth(80);
                 btnCancel.setMinHeight(40);
                 btnCancel.getStyleClass().add("btnBack");
-                btnCancel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                 HBox hBox = new HBox(new Label("Employee: "), employeeComboBox);
                 HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -366,7 +366,7 @@ public class ViewJobController extends ScreenController implements Initializable
                 {
                     try
                     {
-                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(),getClass().getResource("../views/"+Screens.OPERATIONS.getScreen())))
+                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
                         {
                             //Platform.runLater(() ->
                             ScreenManager.getInstance().setScreen(Screens.OPERATIONS.getScreen());

@@ -377,13 +377,13 @@ public abstract class QuoteController extends ScreenController implements Initia
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnAdd.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnAdd.getStyleClass().add("btnAdd");
                                 btnAdd.setMinWidth(100);
                                 btnAdd.setMinHeight(35);
                                 HBox.setHgrow(btnAdd, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -463,7 +463,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                             {
                                 super.updateItem(item, empty);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -786,20 +786,20 @@ public abstract class QuoteController extends ScreenController implements Initia
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnDefault");
-                    btnAdd.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnNewMaterial = new Button("New Material");
                     btnNewMaterial.setMinWidth(130);
                     btnNewMaterial.setMinHeight(40);
                     btnNewMaterial.setDefaultButton(true);
                     btnNewMaterial.getStyleClass().add("btnAdd");
-                    btnNewMaterial.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnNewMaterial.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     HBox hBox = new HBox(new Label("Material: "), resourceComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -909,13 +909,13 @@ public abstract class QuoteController extends ScreenController implements Initia
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnApply");
-                    btnAdd.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     HBox hBox = new HBox(new Label("Employee: "), employeeComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -998,7 +998,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
     public void createQuote()
     {
-        cbxClients.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxClients.getValue()==null)
         {
             cbxClients.getStyleClass().remove("form-control-default");
@@ -1009,7 +1009,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             cbxClients.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxContactPerson.getValue()==null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -1022,21 +1022,21 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
         {
-            txtCell.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtCell.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
         {
-            txtTel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtTel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
         {
-            txtEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
 
-        cbxAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxAccount.getValue()==null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");
@@ -1049,12 +1049,12 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
-            txtSite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtSite.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtRequest, txtRequest.getText(), 1, ".+"))
         {
-            txtRequest.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtRequest.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
 
@@ -1213,7 +1213,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                     {
                                         try
                                         {
-                                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),getClass().getResource("../views/"+Screens.VIEW_QUOTE.getScreen())))
+                                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
                                             {
                                                 //Platform.runLater(() ->
                                                 ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen());
@@ -1259,7 +1259,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     public void updateQuote()
     {
-        cbxClients.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxClients.getValue()==null)
         {
             cbxClients.getStyleClass().remove("form-control-default");
@@ -1270,7 +1270,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             cbxClients.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxContactPerson.getValue()==null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -1283,20 +1283,20 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
         {
-            txtCell.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtCell.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
         {
-            txtTel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtTel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
         {
-            txtEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
-        cbxAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxAccount.getValue()==null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");
@@ -1309,12 +1309,12 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
-            txtSite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtSite.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtRequest, txtRequest.getText(), 1, ".+"))
         {
-            txtRequest.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtRequest.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
 
@@ -1509,7 +1509,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.OPERATIONS.getScreen(),getClass().getResource("../views/"+Screens.OPERATIONS.getScreen())))
+                        if(screenManager.loadScreen(Screens.OPERATIONS.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
                         {
                             //Platform.runLater(() ->
                             screenManager.setScreen(Screens.OPERATIONS.getScreen());

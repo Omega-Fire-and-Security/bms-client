@@ -85,13 +85,13 @@ public class ResourcesController extends ScreenController implements Initializab
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnView.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnView.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnView.getStyleClass().add("btnApply");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -181,7 +181,7 @@ public class ResourcesController extends ScreenController implements Initializab
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_RESOURCE.getScreen(),getClass().getResource("../views/"+Screens.NEW_RESOURCE.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_RESOURCE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_RESOURCE.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.NEW_RESOURCE.getScreen()));

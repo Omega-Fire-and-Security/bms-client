@@ -381,42 +381,6 @@ public class JobManager extends BusinessObjectManager
     }
 
     /**
-     * Method to view Job info in editable form.
-     * @param job Job object to exported to a PDF document.
-     */
-    public static void viewJob(Job job)
-    {
-        if(job==null)
-        {
-            IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
-            return;
-        }
-
-        ScreenManager.getInstance().showLoadingScreen(param ->
-        {
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    JobManager.getInstance().setSelected(job);
-                    try
-                    {
-                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
-                        {
-                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_JOB.getScreen()));
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load jobs viewer screen.");
-                    } catch (IOException e)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                    }
-                }
-            }).start();
-            return null;
-        });
-    }
-
-    /**
      * Method to view Job in PDF viewer.
      * @param job Job object to exported to a PDF document.
      */

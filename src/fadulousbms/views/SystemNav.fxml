@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.text.*?>
@@ -14,7 +15,7 @@
                     <children>
                         <ImageView fx:id="img_logo" fitHeight="70.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@../../../images/logo.png" />
+                                <Image url="@../gfx/logo.png" />
                             </image>
                             <HBox.margin>
                                 <Insets left="10.0" />
@@ -22,7 +23,7 @@
                         </ImageView>
                           <ImageView fx:id="img_profile" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
                               <image>
-                                  <Image url="@../../../images/profile.png" />
+                                  <Image url="@../gfx/profile.png" />
                               </image>
                           </ImageView>
                           <Label fx:id="user_name" text="not signed in" textFill="WHITE" HBox.hgrow="ALWAYS">
@@ -61,9 +62,9 @@
                   <children>
                         <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#back" pickOnBounds="true" preserveRatio="true" styleClass="btnPrev" />
                         <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnNext" />
-                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#home" pickOnBounds="true" preserveRatio="true" styleClass="btnHome"/>
-                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnLogin" onMouseClicked="#login"/>
-                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnMenu" onMouseClicked="#showContextMenu"/>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#home" pickOnBounds="true" preserveRatio="true" styleClass="btnHome" />
+                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#login" pickOnBounds="true" preserveRatio="true" styleClass="btnLogin" />
+                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#showContextMenu" pickOnBounds="true" preserveRatio="true" styleClass="btnMenu" />
                   </children>
               </HBox>
          </right>

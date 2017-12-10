@@ -91,31 +91,31 @@ public class InvoicesController extends ScreenController implements Initializabl
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnViewQuote.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnViewQuote.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnViewQuote.getStyleClass().add("btnDefault");
                                 btnViewQuote.setMinWidth(100);
                                 btnViewQuote.setMinHeight(35);
                                 HBox.setHgrow(btnViewQuote, Priority.ALWAYS);
 
-                                btnViewJob.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnViewJob.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnViewJob.getStyleClass().add("btnDefault");
                                 btnViewJob.setMinWidth(100);
                                 btnViewJob.setMinHeight(35);
                                 HBox.setHgrow(btnViewJob, Priority.ALWAYS);
 
-                                btnPDF.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnPDF.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
-                                btnEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnEmail.getStyleClass().add("btnDefault");
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -152,7 +152,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                                     QuoteManager.getInstance().setSelectedQuote(invoice.getJob().getQuote());
                                                     try
                                                     {
-                                                        if(screenManager.loadScreen(Screens.VIEW_QUOTE.getScreen(),getClass().getResource("../views/"+Screens.VIEW_QUOTE.getScreen())))
+                                                        if(screenManager.loadScreen(Screens.VIEW_QUOTE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
                                                         {
                                                             Platform.runLater(() -> screenManager.setScreen(Screens.VIEW_QUOTE.getScreen()));
                                                         }
@@ -168,7 +168,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                         /*QuoteManager.getInstance().setSelectedQuote(invoice.getJob().getQuote());
                                         try
                                         {
-                                            if(screenManager.loadScreen(Screens.VIEW_QUOTE.getScreen(),getClass().getResource("../views/"+Screens.VIEW_QUOTE.getScreen())))
+                                            if(screenManager.loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
                                                 screenManager.setScreen(Screens.VIEW_QUOTE.getScreen());
                                             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quote viewing screen.");
                                         } catch (IOException e)
@@ -196,7 +196,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                                     JobManager.getInstance().setSelected(invoice.getJob());
                                                     try
                                                     {
-                                                        if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
+                                                        if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_JOB.getScreen())))
                                                         {
                                                             Platform.runLater(() -> screenManager.setScreen(Screens.VIEW_JOB.getScreen()));
                                                         }
@@ -218,7 +218,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                         JobManager.getInstance().setSelected(invoice.getJob());
                                         try
                                         {
-                                            if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(),getClass().getResource("../views/"+Screens.VIEW_JOB.getScreen())))
+                                            if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_JOB.getScreen())))
                                                 screenManager.setScreen(Screens.VIEW_JOB.getScreen());
                                             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quote viewing screen.");
                                         } catch (IOException e)

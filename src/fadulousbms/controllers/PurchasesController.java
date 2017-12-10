@@ -70,7 +70,7 @@ public class PurchasesController extends ScreenController implements Initializab
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.RESOURCES.getScreen(),getClass().getResource("../views/"+Screens.RESOURCES.getScreen())))
+                        if(screenManager.loadScreen(Screens.RESOURCES.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.RESOURCES.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.RESOURCES.getScreen()));
@@ -98,7 +98,7 @@ public class PurchasesController extends ScreenController implements Initializab
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.ASSETS.getScreen(),getClass().getResource("../views/"+Screens.ASSETS.getScreen())))
+                        if(screenManager.loadScreen(Screens.ASSETS.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.ASSETS.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.ASSETS.getScreen()));
@@ -126,7 +126,7 @@ public class PurchasesController extends ScreenController implements Initializab
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.EXPENSES.getScreen(),getClass().getResource("../views/"+Screens.EXPENSES.getScreen())))
+                        if(screenManager.loadScreen(Screens.EXPENSES.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.EXPENSES.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.EXPENSES.getScreen()));

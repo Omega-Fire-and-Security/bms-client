@@ -84,7 +84,7 @@ public abstract class ScreenController
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.LOGIN.getScreen(),ScreenController.class.getResource("../views/"+Screens.LOGIN.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.LOGIN.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.LOGIN.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.LOGIN.getScreen());
             else IO.log("ScreenController", IO.TAG_ERROR, "could not load login screen.");
         } catch (IOException e)
@@ -98,7 +98,7 @@ public abstract class ScreenController
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.HOME.getScreen(),ScreenController.class.getResource("../views/"+Screens.HOME.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.HOME.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.HOME.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.HOME.getScreen());
             else IO.log("ScreenController", IO.TAG_ERROR, "could not load home screen.");
         } catch (IOException e)
@@ -124,7 +124,7 @@ public abstract class ScreenController
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.CREATE_ACCOUNT.getScreen(),getClass().getResource("../views/"+Screens.CREATE_ACCOUNT.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.CREATE_ACCOUNT.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.CREATE_ACCOUNT.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.CREATE_ACCOUNT.getScreen());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load account creation screen.");
         } catch (IOException e)
@@ -139,7 +139,7 @@ public abstract class ScreenController
         QuoteManager.getInstance().nullifySelected();
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.NEW_QUOTE.getScreen(),getClass().getResource("../views/"+Screens.NEW_QUOTE.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.NEW_QUOTE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_QUOTE.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.NEW_QUOTE.getScreen());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load new quotes screen.");
         } catch (IOException e)

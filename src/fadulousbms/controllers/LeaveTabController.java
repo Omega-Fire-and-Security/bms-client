@@ -75,13 +75,13 @@ public class LeaveTabController extends ScreenController implements Initializabl
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnApprove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnApprove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnApprove.getStyleClass().add("btnDefault");
                                 btnApprove.setMinWidth(100);
                                 btnApprove.setMinHeight(35);
                                 HBox.setHgrow(btnApprove, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -180,7 +180,7 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                 {
                                     try
                                     {
-                                        if(screenManager.loadScreen(Screens.HR.getScreen(),getClass().getResource("../views/"+Screens.HR.getScreen())))
+                                        if(screenManager.loadScreen(Screens.HR.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.HR.getScreen())))
                                         {
                                             //Platform.runLater(() ->
                                             screenManager.setScreen(Screens.HR.getScreen());

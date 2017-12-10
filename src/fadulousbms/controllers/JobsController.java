@@ -123,20 +123,20 @@ public class JobsController extends ScreenController implements Initializable
                             {
                                 super.updateItem(item, empty);
                                 btnView.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnView.getStyleClass().add("btnDefault");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
                                 btnUpload.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnUpload.getStyleClass().add("btnDefault");
                                 btnUpload.setMinWidth(130);
                                 btnUpload.setMinHeight(35);
                                 HBox.setHgrow(btnUpload, Priority.ALWAYS);
 
-                                //btnSign.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                //btnSign.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 //btnSign.getStyleClass().add("btnDefault");
                                 //btnSign.setStyle("-fx-border-radius: 20;");
                                 btnSign.setMinWidth(100);
@@ -145,42 +145,42 @@ public class JobsController extends ScreenController implements Initializable
                                 HBox.setHgrow(btnSign, Priority.ALWAYS);
 
                                 btnViewSigned.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnViewSigned.getStyleClass().add("btnDefault");
                                 btnViewSigned.setMinWidth(130);
                                 btnViewSigned.setMinHeight(35);
                                 HBox.setHgrow(btnViewSigned, Priority.ALWAYS);
 
                                 btnInvoice.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnInvoice.getStyleClass().add("btnDefault");
                                 btnInvoice.setMinWidth(100);
                                 btnInvoice.setMinHeight(35);
                                 HBox.setHgrow(btnInvoice, Priority.ALWAYS);
 
                                 btnPDF.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
                                 btnEmail.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnEmail.getStyleClass().add("btnAdd");
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
 
                                 btnEmailSigned.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnEmailSigned.getStyleClass().add("btnAdd");
                                 btnEmailSigned.setMinWidth(100);
                                 btnEmailSigned.setMinHeight(35);
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
 
                                 btnRemove.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -215,7 +215,7 @@ public class JobsController extends ScreenController implements Initializable
                                             if(JobManager.getInstance().getJobs()!=null)
                                                 JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(job.get_id()));
                                             else IO.log(getClass().getName(), IO.TAG_ERROR, "no jobs were found in the database." );
-                                            JobManager.getInstance().viewJob(JobManager.getInstance().getSelected());
+                                            viewJob(JobManager.getInstance().getSelected());
                                         } catch (ClassNotFoundException e)
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
@@ -356,7 +356,7 @@ public class JobsController extends ScreenController implements Initializable
                                                 if (ScreenManager.getInstance()
                                                         .loadScreen(Screens.OPERATIONS
                                                                 .getScreen(), getClass()
-                                                                .getResource("../views/" + Screens.OPERATIONS
+                                                                .getResource("views/" + Screens.OPERATIONS
                                                                         .getScreen())))
                                                 {
                                                     Platform.runLater(() -> ScreenManager
@@ -388,6 +388,42 @@ public class JobsController extends ScreenController implements Initializable
         {
             IO.log(JobsController.class.getName(), IO.TAG_ERROR, ex.getMessage());
         }
+    }
+
+    /**
+     * Method to view Job info in editable form.
+     * @param job Job object to exported to a PDF document.
+     */
+    public static void viewJob(Job job)
+    {
+        if(job==null)
+        {
+            IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
+            return;
+        }
+
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    JobManager.getInstance().setSelected(job);
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_JOB.getScreen())))
+                        {
+                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_JOB.getScreen()));
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load jobs viewer screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 
     private static void viewSignedJob(Job job)
@@ -532,7 +568,7 @@ public class JobsController extends ScreenController implements Initializable
 
         //View Job Menu item
         context_menu[0] = new RadialMenuItemCustom(30, "View Job", null, null, event ->
-                JobManager.getInstance().viewJob(JobManager.getInstance().getSelected()));
+                viewJob(JobManager.getInstance().getSelected()));
 
         //Sign Job menu item
         context_menu[1] = new RadialMenuItemCustom(30, "Sign Job", null, null, event ->

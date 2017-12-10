@@ -74,7 +74,7 @@ public class AccountingController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.PURCHASES.getScreen(),getClass().getResource("../views/"+Screens.PURCHASES.getScreen())))
+                        if(screenManager.loadScreen(Screens.PURCHASES.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.PURCHASES.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.PURCHASES.getScreen()));
@@ -102,7 +102,7 @@ public class AccountingController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.INVOICES.getScreen(),getClass().getResource("../views/"+Screens.INVOICES.getScreen())))
+                        if(screenManager.loadScreen(Screens.INVOICES.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.INVOICES.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.INVOICES.getScreen()));
@@ -190,7 +190,7 @@ public class AccountingController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.JOURNALS.getScreen(),getClass().getResource("../views/"+Screens.JOURNALS.getScreen())))
+                        if(screenManager.loadScreen(Screens.JOURNALS.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.JOURNALS.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.JOURNALS.getScreen()));
@@ -286,7 +286,7 @@ public class AccountingController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.JOURNALS.getScreen(),getClass().getResource("../views/"+Screens.JOURNALS.getScreen())))
+                        if(screenManager.loadScreen(Screens.JOURNALS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.JOURNALS.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.JOURNALS.getScreen()));
@@ -322,7 +322,7 @@ public class AccountingController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.ADDITIONAL_REVENUE.getScreen(),getClass().getResource("../views/"+Screens.ADDITIONAL_REVENUE.getScreen())))
+                        if(screenManager.loadScreen(Screens.ADDITIONAL_REVENUE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.ADDITIONAL_REVENUE.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.ADDITIONAL_REVENUE.getScreen()));
@@ -351,7 +351,7 @@ public class AccountingController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_ASSET.getScreen(),getClass().getResource("../views/"+Screens.NEW_ASSET.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_ASSET.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_ASSET.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.NEW_ASSET.getScreen()));
@@ -379,7 +379,7 @@ public class AccountingController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_EXPENSE.getScreen(),getClass().getResource("../views/"+Screens.NEW_EXPENSE.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_EXPENSE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_EXPENSE.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.NEW_EXPENSE.getScreen()));
@@ -407,7 +407,7 @@ public class AccountingController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_REVENUE.getScreen(),getClass().getResource("../views/"+Screens.NEW_REVENUE.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_REVENUE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_REVENUE.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.NEW_REVENUE.getScreen()));

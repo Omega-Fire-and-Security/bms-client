@@ -41,8 +41,8 @@ public class NewSupplierController extends ScreenController implements Initializ
     {
         txtName.textProperty().addListener((observable, oldValue, newValue) ->
         {
-            //TODO: remove spaces, and make lowercase
-            txtAccount.setText(newValue);
+            String account_name = newValue.replaceAll(" ","-");
+            txtAccount.setText(account_name.toLowerCase());
         });
     }
 
@@ -83,62 +83,62 @@ public class NewSupplierController extends ScreenController implements Initializ
         }
         if(!Validators.isValidNode(txtName, txtName.getText(), 1, ".+"))
         {
-            txtName.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtName.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtPhysical, txtPhysical.getText(), 1, ".+"))
         {
-            txtPhysical.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtPhysical.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtPostal, txtPostal.getText(), 1, ".+"))
         {
-            txtPostal.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtPostal.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
         {
-            txtTel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtTel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtFax, txtFax.getText(), 1, ".+"))
         {
-            txtFax.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtFax.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
         {
-            txtEmail.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtSpeciality, txtSpeciality.getText(), 1, ".+"))
         {
-            txtSpeciality.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtSpeciality.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtRegistration, txtRegistration.getText(), 1, ".+"))
         {
-            txtRegistration.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtRegistration.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
         {
-            txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtVat.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtAccount, txtAccount.getText(), 1, ".+"))
         {
-            txtAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(datePartnered, datePartnered.getValue()==null?"":datePartnered.getValue().toString(), 4, date_regex))
         {
-            datePartnered.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            datePartnered.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtWebsite, txtWebsite.getText(), 1, ".+"))
         {
-            txtWebsite.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtWebsite.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
 
@@ -216,7 +216,7 @@ public class NewSupplierController extends ScreenController implements Initializ
                 {
                     try
                     {
-                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(),getClass().getResource("../views/"+Screens.OPERATIONS.getScreen())))
+                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
                         {
                             //Platform.runLater(() ->
                             ScreenManager.getInstance().setScreen(Screens.OPERATIONS.getScreen());

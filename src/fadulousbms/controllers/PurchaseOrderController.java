@@ -167,7 +167,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                             {
                                 super.updateItem(item, empty);
                                 btnRemove.getStylesheets()
-                                        .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -289,7 +289,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnAdd");
-                    btnAdd.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnNewMaterial = new Button("New Material");
                     btnNewMaterial.setMinWidth(80);
@@ -297,13 +297,13 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnNewMaterial.setDefaultButton(true);
                     btnNewMaterial.getStyleClass().add("btnAdd");
                     btnNewMaterial.getStylesheets()
-                            .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                            .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     HBox hBox = new HBox(new Label("Resource: "), resourceComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -398,7 +398,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             return;
         }
 
-        cbxSuppliers.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxSuppliers.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if (cbxSuppliers.getValue() == null)
         {
             cbxSuppliers.getStyleClass().remove("form-control-default");
@@ -411,7 +411,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             cbxSuppliers.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if (cbxContactPerson.getValue() == null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -426,11 +426,11 @@ public class PurchaseOrderController extends OperationsController implements Ini
 
         /*if (!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
         {
-            txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtVat.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }*/
 
-        cbxAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if (cbxAccount.getValue() == null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");
@@ -754,20 +754,20 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnDefault");
-                    btnAdd.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnNewMaterial = new Button("New Material");
                     btnNewMaterial.setMinWidth(130);
                     btnNewMaterial.setMinHeight(40);
                     btnNewMaterial.setDefaultButton(true);
                     btnNewMaterial.getStyleClass().add("btnAdd");
-                    btnNewMaterial.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnNewMaterial.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     HBox hBox = new HBox(new Label("Material: "), resourceComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -864,7 +864,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnAdd");
-                    btnAdd.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnNew = new Button("New Asset");
                     btnNew.setMinWidth(80);
@@ -872,13 +872,13 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnNew.setDefaultButton(true);
                     btnNew.getStyleClass().add("btnAdd");
                     btnNew.getStylesheets()
-                            .add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                            .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
 
                     HBox hBox = new HBox(new Label("Asset: "), assetComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -955,7 +955,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
     {
         String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
 
-        cbxSuppliers.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxSuppliers.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxSuppliers.getValue()==null)
         {
             cbxSuppliers.getStyleClass().remove("form-control-default");
@@ -966,7 +966,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             cbxSuppliers.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxContactPerson.getValue()==null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -979,15 +979,15 @@ public class PurchaseOrderController extends OperationsController implements Ini
 
         /*if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
         {
-            txtVat.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtVat.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
         if(!Validators.isValidNode(txtAccount, txtAccount.getText(), 1, ".+"))
         {
-            txtAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }*/
-        cbxAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if (cbxAccount.getValue() == null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");
@@ -1133,7 +1133,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                                     {
                                         try
                                         {
-                                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_PURCHASE_ORDER.getScreen(),getClass().getResource("../views/"+Screens.VIEW_PURCHASE_ORDER.getScreen())))
+                                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_PURCHASE_ORDER.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_PURCHASE_ORDER.getScreen())))
                                             {
                                                 Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_PURCHASE_ORDER.getScreen()));
                                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load purchase order viewer screen.");
@@ -1242,7 +1242,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                 {
                     try
                     {
-                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(),getClass().getResource("../views/"+Screens.OPERATIONS.getScreen())))
+                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
                         {
                             //Platform.runLater(() ->
                             ScreenManager.getInstance().setScreen(Screens.OPERATIONS.getScreen());

@@ -127,7 +127,7 @@ public class FadulousBMS extends Application
             IO.log(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
         }
 
-        if(screen_mgr.loadScreen(Screens.LOGIN.getScreen(),getClass().getResource("views/"+Screens.LOGIN.getScreen())))
+        if(screen_mgr.loadScreen(Screens.LOGIN.getScreen(), getClass().getResource("views/"+Screens.LOGIN.getScreen())))
         {
             screen_mgr.setScreen(Screens.LOGIN.getScreen());
             HBox root = new HBox();

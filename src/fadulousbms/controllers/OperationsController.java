@@ -135,7 +135,7 @@ public class OperationsController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_CLIENT.getScreen(),getClass().getResource("../views/"+Screens.NEW_CLIENT.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_CLIENT.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_CLIENT.getScreen())))
                         {
                             //Platform.runLater(() ->
                             screenManager.setScreen(Screens.NEW_CLIENT.getScreen());
@@ -168,7 +168,7 @@ public class OperationsController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_SUPPLIER.getScreen(),getClass().getResource("../views/"+Screens.NEW_SUPPLIER.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_SUPPLIER.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_SUPPLIER.getScreen())))
                         {
                             //Platform.runLater(() ->
                             screenManager.setScreen(Screens.NEW_SUPPLIER.getScreen());
@@ -201,7 +201,7 @@ public class OperationsController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_RESOURCE.getScreen(),getClass().getResource("../views/"+Screens.NEW_RESOURCE.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_RESOURCE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_RESOURCE.getScreen())))
                         {
                             //Platform.runLater(() ->
                             screenManager.setScreen(Screens.NEW_RESOURCE.getScreen());
@@ -234,7 +234,7 @@ public class OperationsController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_QUOTE.getScreen(),getClass().getResource("../views/"+Screens.NEW_QUOTE.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_QUOTE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_QUOTE.getScreen())))
                         {
                             //Platform.runLater(() ->
                             screenManager.setScreen(Screens.NEW_QUOTE.getScreen());
@@ -261,7 +261,7 @@ public class OperationsController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.NEW_PURCHASE_ORDER.getScreen(),getClass().getResource("../views/"+Screens.NEW_PURCHASE_ORDER.getScreen())))
+                        if(screenManager.loadScreen(Screens.NEW_PURCHASE_ORDER.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_PURCHASE_ORDER.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.NEW_PURCHASE_ORDER.getScreen()));
@@ -290,7 +290,7 @@ public class OperationsController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.SUPPLIERS.getScreen(),getClass().getResource("../views/"+Screens.SUPPLIERS.getScreen())))
+                        if(screenManager.loadScreen(Screens.SUPPLIERS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.SUPPLIERS.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.SUPPLIERS.getScreen()));
@@ -318,7 +318,7 @@ public class OperationsController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.JOBS.getScreen(),getClass().getResource("../views/"+Screens.JOBS.getScreen())))
+                        if(screenManager.loadScreen(Screens.JOBS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.JOBS.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.JOBS.getScreen()));
@@ -346,7 +346,7 @@ public class OperationsController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.CLIENTS.getScreen(),getClass().getResource("../views/"+Screens.CLIENTS.getScreen())))
+                        if(screenManager.loadScreen(Screens.CLIENTS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.CLIENTS.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.CLIENTS.getScreen()));

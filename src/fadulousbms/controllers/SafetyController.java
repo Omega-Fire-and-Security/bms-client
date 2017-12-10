@@ -57,7 +57,7 @@ public class SafetyController extends ScreenController implements Initializable
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.SAFETY_FILES.getScreen(),getClass().getResource("../views/"+Screens.SAFETY_FILES.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.SAFETY_FILES.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.SAFETY_FILES.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.SAFETY_FILES.getScreen());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load safety files screen.");
         } catch (IOException e)

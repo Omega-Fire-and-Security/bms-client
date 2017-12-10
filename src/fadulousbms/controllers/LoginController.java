@@ -67,7 +67,7 @@ public class LoginController extends ScreenController implements Initializable
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.RESET_PWD.getScreen(),getClass().getResource("../views/"+Screens.RESET_PWD.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.RESET_PWD.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.RESET_PWD.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.RESET_PWD.getScreen());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load password reset screen.");
         } catch (IOException e)
@@ -103,7 +103,7 @@ public class LoginController extends ScreenController implements Initializable
                             {
                                 try
                                 {
-                                    if (screenManager.loadScreen(Screens.HOME.getScreen(), getClass().getResource("../views/" + Screens.HOME.getScreen())))
+                                    if (screenManager.loadScreen(Screens.HOME.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/" + Screens.HOME.getScreen())))
                                         screenManager.setScreen(Screens.HOME.getScreen());
                                     else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load home screen.");
                                 } catch (IOException e)

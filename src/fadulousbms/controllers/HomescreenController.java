@@ -94,7 +94,7 @@ public class HomescreenController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.OPERATIONS.getScreen(),getClass().getResource("../views/"+Screens.OPERATIONS.getScreen())))
+                        if(screenManager.loadScreen(Screens.OPERATIONS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
                         {
                             //Platform.runLater(() ->
                             screenManager.setScreen(Screens.OPERATIONS.getScreen());
@@ -179,7 +179,7 @@ public class HomescreenController extends ScreenController implements Initializa
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.HR.getScreen(),getClass().getResource("../views/"+Screens.HR.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.HR.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.HR.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.HR.getScreen());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load human resources screen.");
         } catch (IOException e)
@@ -202,7 +202,7 @@ public class HomescreenController extends ScreenController implements Initializa
                 {
                     try
                     {
-                        if(screenManager.loadScreen(Screens.ACCOUNTING.getScreen(),getClass().getResource("../views/"+Screens.ACCOUNTING.getScreen())))
+                        if(screenManager.loadScreen(Screens.ACCOUNTING.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.ACCOUNTING.getScreen())))
                         {
                             Platform.runLater(() ->
                                     screenManager.setScreen(Screens.ACCOUNTING.getScreen()));
@@ -222,7 +222,7 @@ public class HomescreenController extends ScreenController implements Initializa
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.FACILITIES.getScreen(),getClass().getResource("../views/"+Screens.FACILITIES.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.FACILITIES.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.FACILITIES.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.FACILITIES.getScreen());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load facilities screen.");
         } catch (IOException e)
@@ -236,7 +236,7 @@ public class HomescreenController extends ScreenController implements Initializa
     {
         try
         {
-            if(ScreenManager.getInstance().loadScreen(Screens.SETTINGS.getScreen(),getClass().getResource("../views/"+Screens.SETTINGS.getScreen())))
+            if(ScreenManager.getInstance().loadScreen(Screens.SETTINGS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.SETTINGS.getScreen())))
                 ScreenManager.getInstance().setScreen(Screens.SETTINGS.getScreen());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load settings screen.");
         } catch (IOException e)
