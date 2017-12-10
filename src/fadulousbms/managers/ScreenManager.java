@@ -69,13 +69,12 @@ public class ScreenManager extends StackPane
         super();
         try
         {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("../views/loading.fxml"));
+            FXMLLoader loader = new FXMLLoader(fadulousbms.FadulousBMS.class.getResource("views/loading.fxml"));
             loading_screen = loader.load();
             loading_screen_ctrl = loader.getController();
             //loading_screen_ctrl.setParent(this);
         } catch (IOException e)
         {
-            e.printStackTrace();
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
     }

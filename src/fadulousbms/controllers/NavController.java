@@ -31,7 +31,7 @@ public class NavController extends ScreenController implements Initializable
     @Override
     public void refreshView()
     {
-        try
+        /*try
         {
             //Render default profile image
             Image image = SwingFXUtils.toFXImage(ImageIO.read(new File("images/profile.png")), null);
@@ -41,8 +41,8 @@ public class NavController extends ScreenController implements Initializable
             image = SwingFXUtils.toFXImage(ImageIO.read(new File("images/logo.png")), null);
             img_logo.setImage(image);
 
-            /*//Render forward nav icon
-            image = SwingFXUtils.toFXImage(ImageIO.read(new File("images/chevron_right_black.png")), null);
+            //Render forward nav icon
+            /*image = SwingFXUtils.toFXImage(ImageIO.read(new File("images/chevron_right_black.png")), null);
             btnNext.setImage(image);
 
             //Render previous nav icon
@@ -51,12 +51,12 @@ public class NavController extends ScreenController implements Initializable
 
             //Render home nav icon
             image = SwingFXUtils.toFXImage(ImageIO.read(new File("images/home_black.png")), null);
-            btnHome.setImage(image);*/
+            btnHome.setImage(image);*
         } catch (IOException e)
         {
             e.printStackTrace();
             IO.log(getClass().getName(), IO.TAG_ERROR, "Could not load default profile image.");
-        }
+        }*/
 
         if (SessionManager.getInstance().getActive() != null)
         {

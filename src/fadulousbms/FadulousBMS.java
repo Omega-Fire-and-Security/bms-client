@@ -103,7 +103,6 @@ public class FadulousBMS extends Application
                     Files.delete(Paths.get("out/"));
                 } catch (IOException ex)
                 {
-                    ex.printStackTrace();
                     IO.log(JobsController.class.getName(), IO.TAG_ERROR, ex.getMessage());
                 }
             });
@@ -122,7 +121,7 @@ public class FadulousBMS extends Application
 
         try
         {
-            ScreenController.defaultProfileImage = ImageIO.read(new File("images/profile.png"));
+            ScreenController.defaultProfileImage = ImageIO.read(fadulousbms.FadulousBMS.class.getResourceAsStream("images/profile.png"));
         }catch (IOException ex)
         {
             IO.log(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);

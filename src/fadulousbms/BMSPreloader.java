@@ -84,7 +84,7 @@ public class BMSPreloader extends Preloader
         ImageView logo = new ImageView();
         try
         {
-            BufferedImage buff_image = ImageIO.read(new File("images/logo.png"));
+            BufferedImage buff_image = ImageIO.read(fadulousbms.FadulousBMS.class.getResourceAsStream("images/logo.png"));
             if(buff_image!=null)
             {
                 Image image = SwingFXUtils.toFXImage(buff_image, null);
@@ -95,6 +95,7 @@ public class BMSPreloader extends Preloader
         } catch (IOException e)
         {
             IO.logAndAlert("IO Error", e.getMessage(), IO.TAG_ERROR);
+            e.printStackTrace();
         }
 
         Pane logo_cont = new Pane(logo);
