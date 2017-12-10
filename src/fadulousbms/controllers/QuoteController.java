@@ -1381,6 +1381,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                     {
                         Job job = new Job();
                         job.setQuote_id(selected.get_id());
+                        job.setCreator(smgr.getActiveEmployee().getUsr());
                         /*if(JobManager.getInstance().getJobs()!=null)
                             job.setJob_number(JobManager.getInstance().getJobs().length);
                         else job.setJob_number(0);*/

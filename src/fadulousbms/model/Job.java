@@ -7,6 +7,7 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.QuoteManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -35,6 +36,7 @@ public class Job implements BusinessObject, Serializable
     private long job_number;
     private String invoice_id;
     private String quote_id;
+    private String creator;
     private boolean signed;
     private boolean marked;
     private String signed_job;
@@ -212,6 +214,32 @@ public class Job implements BusinessObject, Serializable
     {
         return new SimpleStringProperty(String.valueOf(job_completed));
     }*/
+    
+    public StringProperty creatorProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(getCreator()));
+    }
+
+    public String getCreator()
+    {
+        if(creator==null)
+            return "N/A";
+        else
+        {
+            EmployeeManager.getInstance().loadDataFromServer();
+            Employee employee = EmployeeManager.getInstance().getEmployees().get(creator);
+            if(employee!=null)
+                return employee.toString();
+            else return "N/A";
+        }
+    }
+
+    public String getCreatorID(){return this.creator;}
+
+    public void setCreator(String creator)
+    {
+        this.creator = creator;
+    }
 
     public void setSigned(boolean signed)
     {
@@ -347,6 +375,8 @@ public class Job implements BusinessObject, Serializable
             if(getSigned_job()!=null)
                 result.append("&" + URLEncoder.encode("signed_job","UTF-8") + "="
                         + URLEncoder.encode(getSigned_job(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
+                    + URLEncoder.encode(creator, "UTF-8"));
             if(date_logged>0)
                 result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
                         + URLEncoder.encode(String.valueOf(date_logged), "UTF-8"));
@@ -420,6 +450,9 @@ public class Job implements BusinessObject, Serializable
                 case "job_number":
                     job_number = Long.parseLong(String.valueOf(val));
                     break;
+                case "creator":
+                    creator = String.valueOf(val);
+                    break;
                 case "invoice_id":
                     invoice_id = (String)val;
                     break;
@@ -474,6 +507,8 @@ public class Job implements BusinessObject, Serializable
                 return getAssigned_employees();
             case "safety_catalogue":
                 return getSafety_catalogue();
+            case "creator":
+                return creator;
             default:
                 IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Job attribute '" + var + "'.");
                 return null;
