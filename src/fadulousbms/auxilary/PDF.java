@@ -101,6 +101,10 @@ public class PDF
 
     public static void createDocumentIndex(String title, FileMetadata[] fileMetadata, String path) throws IOException
     {
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+        
         // Create a new document with an empty page.
         final PDDocument document = new PDDocument();
         final PDPage page = new PDPage(PDRectangle.A4);
@@ -190,7 +194,6 @@ public class PDF
         }
 
         contents.close();
-
         document.save(path);
         document.close();
 
@@ -695,11 +698,15 @@ public class PDF
         contents.endText();
         contents.close();
 
-        String path = "bin/pdf/purchase_order_" + purchaseOrder.getNumber() + ".pdf";
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+        
+        String path = "out/pdf/purchase_order_" + purchaseOrder.getNumber() + ".pdf";
         int i=1;
         while(new File(path).exists())
         {
-            path = "bin/pdf/purchase_order_" + purchaseOrder.getNumber() + "." + i + ".pdf";
+            path = "out/pdf/purchase_order_" + purchaseOrder.getNumber() + "." + i + ".pdf";
             i++;
         }
 
@@ -1150,16 +1157,22 @@ public class PDF
         contents.endText();
         contents.close();
 
-        String path = "bin/pdf/quote_" + quote.get_id() + ".pdf";
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+        
+        String path = "out/pdf/quote_" + quote.get_id() + ".pdf";
         int i=1;
         while(new File(path).exists())
         {
-            path = "bin/pdf/quote_" + quote.get_id() + "." + i + ".pdf";
+            path = "out/pdf/quote_" + quote.get_id() + "." + i + ".pdf";
             i++;
         }
 
         //Files.delete(Paths.get("bin/pdf/quote_"+quote.get_id()+".pdf"));//delete previous versions
 
+        if(contents!=null)
+            contents.close();
         document.save(path);
         document.close();
 
@@ -1676,14 +1689,21 @@ public class PDF
         contents.endText();
         contents.close();
 
-        String path = "bin/pdf/invoice_" + job.get_id() + ".pdf";
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+        
+        String path = "out/pdf/invoice_" + job.get_id() + ".pdf";
         int i=1;
         while(new File(path).exists())
         {
-            path = "bin/pdf/invoice_" + job.get_id() + "." + i + ".pdf";
+            path = "out/pdf/invoice_" + job.get_id() + "." + i + ".pdf";
             i++;
         }
 
+        if(contents!=null)
+            contents.close();
+        
         document.save(path);
         document.close();
 
@@ -1950,11 +1970,15 @@ public class PDF
         contents.lineTo(w, line_pos-LINE_HEIGHT/2);
         contents.stroke();
 
-        String path = "bin/pdf/general_journal.pdf";
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+        
+        String path = "out/pdf/general_journal.pdf";
         int i=1;
         while(new File(path).exists())
         {
-            path = "bin/pdf/general_journal" + "." + i + ".pdf";
+            path = "out/pdf/general_journal" + "." + i + ".pdf";
             i++;
         }
 
@@ -2391,11 +2415,15 @@ public class PDF
             addTextToPageStream(contents, "page " + pages, PDType1Font.HELVETICA, 18, (w/2)-50, 30);
         }
 
-        String path = "bin/pdf/general_ledger.pdf";
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+        
+        String path = "out/pdf/general_ledger.pdf";
         int i=1;
         while(new File(path).exists())
         {
-            path = "bin/pdf/general_ledger" + "." + i + ".pdf";
+            path = "out/pdf/general_ledger" + "." + i + ".pdf";
             i++;
         }
 
@@ -2464,7 +2492,7 @@ public class PDF
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
-        PDPageContentStream contents;// = new PDPageContentStream(document, page);
+        PDPageContentStream contents = null;// = new PDPageContentStream(document, page);
 
         if(job.getAssigned_employees()!=null)
         {
@@ -2583,15 +2611,21 @@ public class PDF
             return null;
         }
 
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+        
         //TODO: fix this hack
-        String path = "bin/pdf/job_card_" + job.get_id() + ".pdf";
+        String path = "out/pdf/job_card_" + job.get_id() + ".pdf";
         int i=1;
         while(new File(path).exists())
         {
-            path = "bin/pdf/job_card_" + job.get_id() + "." + i + ".pdf";
+            path = "out/pdf/job_card_" + job.get_id() + "." + i + ".pdf";
             i++;
         }
 
+        if(contents!=null)
+            contents.close();
         document.save(path);
         document.close();
         return path;
