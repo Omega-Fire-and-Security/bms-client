@@ -318,8 +318,8 @@ public class ViewJobController extends ScreenController implements Initializable
                                         {
                                             try
                                             {
-                                                if (ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(), getClass()
-                                                                .getResource("../views/" + Screens.VIEW_JOB.getScreen())))
+                                                if (ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(), fadulousbms.FadulousBMS.class
+                                                                .getResource("views/" + Screens.VIEW_JOB.getScreen())))
                                                 {
                                                     Platform.runLater(() -> ScreenManager.getInstance()
                                                             .setScreen(Screens.VIEW_JOB.getScreen()));
