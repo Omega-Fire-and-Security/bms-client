@@ -96,7 +96,10 @@ public abstract class QuoteController extends ScreenController implements Initia
         //setup Quote default accounts
         cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
         cbxClients.valueProperty().addListener((observable, oldValue, newValue) ->
-                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()})));
+        {
+                if(newValue!=null)
+                    cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()}));
+        });
 
         refreshTotal();
         toggleVatExempt.selectedProperty().addListener((observable, oldValue, newValue) ->

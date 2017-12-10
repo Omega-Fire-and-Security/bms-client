@@ -84,43 +84,43 @@ public class EmployeesTabController extends ScreenController implements Initiali
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnView.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnView.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnView.getStyleClass().add("btnDefault");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
-                                btnUploadCV.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnUploadCV.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnUploadCV.getStyleClass().add("btnAdd");
                                 btnUploadCV.setMinWidth(130);
                                 btnUploadCV.setMinHeight(35);
                                 HBox.setHgrow(btnUploadCV, Priority.ALWAYS);
 
-                                btnViewCV.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnViewCV.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnViewCV.getStyleClass().add("btnDefault");
                                 btnViewCV.setMinWidth(130);
                                 btnViewCV.setMinHeight(35);
                                 HBox.setHgrow(btnViewCV, Priority.ALWAYS);
 
-                                btnUploadID.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnUploadID.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnUploadID.getStyleClass().add("btnAdd");
                                 btnUploadID.setMinWidth(130);
                                 btnUploadID.setMinHeight(35);
                                 HBox.setHgrow(btnUploadID, Priority.ALWAYS);
 
-                                btnViewID.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnViewID.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnViewID.getStyleClass().add("btnDefault");
                                 btnViewID.setMinWidth(130);
                                 btnViewID.setMinHeight(35);
                                 HBox.setHgrow(btnViewID, Priority.ALWAYS);
 
-                                btnUploadCertificate.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnUploadCertificate.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnUploadCertificate.getStyleClass().add("btnDefault");
                                 btnUploadCertificate.setMinWidth(100);
                                 btnUploadCertificate.setMinHeight(35);
                                 HBox.setHgrow(btnUploadCertificate, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
