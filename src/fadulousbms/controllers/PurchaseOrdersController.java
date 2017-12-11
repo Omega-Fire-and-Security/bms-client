@@ -112,10 +112,22 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
                                 btnEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnEmail.getStyleClass().add("btnDefault");
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
+                                if(!empty)
+                                {
+                                    if (getTableView().getItems().get(getIndex()).getStatus()==PurchaseOrderManager.PO_STATUS_APPROVED)
+                                    {
+                                        btnEmail.getStyleClass().add("btnAdd");
+                                        btnEmail.setDisable(false);
+                                    }
+                                    else
+                                    {
+                                        btnEmail.getStyleClass().add("btnDisabled");
+                                        btnEmail.setDisable(true);
+                                    }
+                                }
 
                                 btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");

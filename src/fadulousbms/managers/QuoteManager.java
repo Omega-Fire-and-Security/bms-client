@@ -586,9 +586,123 @@ public class QuoteManager extends BusinessObjectManager
             connection.disconnect();
         return false;
     }
-    public void emailQuote(Quote quote, Callback callback)
+
+    public static void emailQuote(Quote quote, Callback callback)
     {
-        System.out.println("QuoteManager>emailQuote: not implemented.");
+        if(quote==null)
+        {
+            IO.logAndAlert("Error", "Invalid Quote.", IO.TAG_ERROR);
+            return;
+        }
+
+        //upload Quote PDF to server
+        uploadQuotePDF(quote);
+
+        Stage stage = new Stage();
+        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Quote ["+quote.get_id()+"]");
+        stage.setMinWidth(320);
+        stage.setHeight(350);
+        stage.setAlwaysOnTop(true);
+
+        VBox vbox = new VBox(1);
+
+        final TextField txt_destination = new TextField();
+        txt_destination.setMinWidth(200);
+        txt_destination.setMaxWidth(Double.MAX_VALUE);
+        txt_destination.setPromptText("Type in email address/es separated by commas");
+        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, txt_destination);
+
+        final TextField txt_subject = new TextField();
+        txt_subject.setMinWidth(200);
+        txt_subject.setMaxWidth(Double.MAX_VALUE);
+        txt_subject.setPromptText("Type in an eMail subject");
+        HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
+
+        final TextField txt_quote_id = new TextField();
+        txt_quote_id.setMinWidth(200);
+        txt_quote_id.setMaxWidth(Double.MAX_VALUE);
+        txt_quote_id.setPromptText("Type in a message");
+        txt_quote_id.setEditable(false);
+        txt_quote_id.setText(String.valueOf(quote.get_id()));
+        HBox hbox_quote_id = CustomTableViewControls.getLabelledNode("Quote ID: ", 200, txt_quote_id);
+
+        final TextArea txt_message = new TextArea();
+        txt_message.setMinWidth(200);
+        txt_message.setMaxWidth(Double.MAX_VALUE);
+        HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
+
+        HBox submit;
+        submit = CustomTableViewControls.getSpacedButton("Send", event ->
+        {
+            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+            if(!Validators.isValidNode(txt_destination, txt_destination.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
+                return;
+
+            String str_destination = txt_destination.getText();
+            String str_subject = txt_subject.getText();
+            String str_message = txt_message.getText();
+
+            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new AbstractMap.SimpleEntry<>("quote_id", quote.get_id()));
+            params.add(new AbstractMap.SimpleEntry<>("to_email", str_destination));
+            params.add(new AbstractMap.SimpleEntry<>("subject", str_subject));
+            params.add(new AbstractMap.SimpleEntry<>("message", str_message));
+            try
+            {
+                //send email
+                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                if(SessionManager.getInstance().getActive()!=null)
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
+                            .getSessionId()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                } else
+                {
+                    IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
+                    return;
+                }
+
+                HttpURLConnection connection = RemoteComms.postData("/api/quote/mailto", params, headers);
+                if(connection!=null)
+                {
+                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                    {
+                        IO.logAndAlert("Success", "Successfully emailed quote to ["+txt_destination.getText()+"]!", IO.TAG_INFO);
+                        if(callback!=null)
+                            callback.call(null);
+                    }else{
+                        IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                    }
+                    connection.disconnect();
+                }
+            } catch (IOException e)
+            {
+                IO.log(QuoteManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        });
+
+        //Add form controls vertically on the stage
+        vbox.getChildren().add(destination);
+        vbox.getChildren().add(subject);
+        vbox.getChildren().add(hbox_quote_id);
+        vbox.getChildren().add(message);
+        vbox.getChildren().add(submit);
+
+        //Setup scene and display stage
+        Scene scene = new Scene(vbox);
+        File fCss = new File("src/fadulousbms/styles/home.css");
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+
+        stage.setScene(scene);
+        stage.show();
+        stage.centerOnScreen();
+        stage.setResizable(true);
     }
 
     public void requestQuoteApproval(Quote quote, Callback callback)
@@ -674,14 +788,6 @@ public class QuoteManager extends BusinessObjectManager
         txt_subject.setText("QUOTE ["+quote.get_id()+"] APPROVAL REQUEST");
         HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
 
-        /*final TextField txt_job_id = new TextField();
-        txt_job_id.setMinWidth(200);
-        txt_job_id.setMaxWidth(Double.MAX_VALUE);
-        txt_job_id.setPromptText("Type in a message");
-        txt_job_id.setEditable(false);
-        txt_job_id.setText(String.valueOf(quote.get_id()));
-        HBox hbox_job_id = CustomTableViewControls.getLabelledNode("Quote ID: ", 200, txt_job_id);*/
-
         final TextArea txt_message = new TextArea();
         txt_message.setMinWidth(200);
         txt_message.setMaxWidth(Double.MAX_VALUE);
@@ -726,22 +832,22 @@ public class QuoteManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/quote/mailto", params, headers);
+                HttpURLConnection connection = RemoteComms.postData("/api/quote/request_approval", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
-                        IO.logAndAlert("Success", "Successfully emailed quote to ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
+                        //TODO: CC self
+                        IO.logAndAlert("Success", "Successfully requested quote approval from ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
                         if(callback!=null)
                             callback.call(null);
-                    }else{
+                    } else {
                         IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                     }
                     connection.disconnect();
                 }
             } catch (IOException e)
             {
-                e.printStackTrace();
                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
             }
         });
@@ -766,7 +872,7 @@ public class QuoteManager extends BusinessObjectManager
         //Add form controls vertically on the stage
         vbox.getChildren().add(destination);
         vbox.getChildren().add(subject);
-        //vbox.getChildren().add(hbox_job_id);
+        //vbox.getChildren().add(hbox_quote_id);
         vbox.getChildren().add(message);
         vbox.getChildren().add(submit);
 
@@ -782,7 +888,7 @@ public class QuoteManager extends BusinessObjectManager
         stage.setResizable(true);
     }
 
-    public void uploadQuotePDF(Quote quote)
+    public static void uploadQuotePDF(Quote quote)
     {
         if(quote==null)
         {
@@ -816,24 +922,22 @@ public class QuoteManager extends BusinessObjectManager
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                                 RemoteComms.uploadFile("/api/quote/upload/" + quote.get_id(), headers, buffer);
-                                IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded quote [#" + quote
+                                IO.log(QuoteManager.class.getName(), IO.TAG_INFO, "\n uploaded quote [#" + quote
                                         .get_id() + "], file size: [" + buffer.length + "] bytes.");
-                            }
-                            else
+                            } else
                             {
-                                IO.logAndAlert(getClass().getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
+                                IO.logAndAlert(QuoteManager.class.getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
                             }
-                        }
-                        else
+                        } else
                         {
-                            IO.log(getClass().getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
+                            IO.log(QuoteManager.class.getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
                         }
-                    } else IO.log(getClass().getName(), "Could not get valid path for created quote pdf.", IO.TAG_ERROR);
-                }catch (IOException e)
+                    } else IO.log(QuoteManager.class.getName(), "Could not get valid path for created quote pdf.", IO.TAG_ERROR);
+                } catch (IOException e)
                 {
-                    IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+                    IO.log(QuoteManager.class.getName(), e.getMessage(), IO.TAG_ERROR);
                 }
-            }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 }

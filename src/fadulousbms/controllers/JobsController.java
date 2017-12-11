@@ -167,17 +167,40 @@ public class JobsController extends ScreenController implements Initializable
 
                                 btnEmail.getStylesheets()
                                         .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnEmail.getStyleClass().add("btnAdd");
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
+                                if(!empty)
+                                {
+                                    if (getTableView().getItems().get(getIndex()).isSigned())
+                                    {
+                                        btnEmail.getStyleClass().add("btnDefault");
+                                        btnEmail.setDisable(false);
+                                    } else
+                                    {
+                                        btnEmail.getStyleClass().add("btnDisabled");
+                                        btnEmail.setDisable(true);
+                                    }
+                                }
 
                                 btnEmailSigned.getStylesheets()
                                         .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnEmailSigned.getStyleClass().add("btnAdd");
                                 btnEmailSigned.setMinWidth(100);
                                 btnEmailSigned.setMinHeight(35);
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
+                                if(!empty)
+                                {
+                                    if (getTableView().getItems().get(getIndex()).isSigned())
+                                    {
+                                        btnEmailSigned.getStyleClass().add("btnAdd");
+                                        btnEmailSigned.setDisable(false);
+                                    }
+                                    else
+                                    {
+                                        btnEmailSigned.getStyleClass().add("btnDisabled");
+                                        btnEmailSigned.setDisable(true);
+                                    }
+                                }
 
                                 btnRemove.getStylesheets()
                                         .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
@@ -190,8 +213,7 @@ public class JobsController extends ScreenController implements Initializable
                                 {
                                     setGraphic(null);
                                     setText(null);
-                                }
-                                else
+                                } else
                                 {
                                     HBox hBox = new HBox(btnView, btnUpload, btnSign, btnViewSigned, btnInvoice, btnPDF, btnEmail, btnEmailSigned, btnRemove);
                                     hBox.setMaxWidth(Double.MAX_VALUE);

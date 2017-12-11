@@ -130,10 +130,22 @@ public class QuotesController extends OperationsController implements Initializa
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
                                 btnEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnEmail.getStyleClass().add("btnDefault");
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
+                                if(!empty)
+                                {
+                                    if (getTableView().getItems().get(getIndex()).getStatus()==PurchaseOrderManager.PO_STATUS_APPROVED)
+                                    {
+                                        btnEmail.getStyleClass().add("btnAdd");
+                                        btnEmail.setDisable(false);
+                                    }
+                                    else
+                                    {
+                                        btnEmail.getStyleClass().add("btnDisabled");
+                                        btnEmail.setDisable(true);
+                                    }
+                                }
 
                                 btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
@@ -204,7 +216,9 @@ public class QuotesController extends OperationsController implements Initializa
                                     btnEmail.setOnAction(event ->
                                     {
                                         Quote quote = getTableView().getItems().get(getIndex());
-                                        //QuoteManager.getInstance().emailQuote(quote, null);
+                                        if(quote!=null)
+                                            QuoteManager.getInstance().emailQuote(quote, null);
+                                        else IO.logAndAlert("Error", "Quote object is null.", IO.TAG_ERROR);
                                     });
 
                                     btnRemove.setOnAction(event ->

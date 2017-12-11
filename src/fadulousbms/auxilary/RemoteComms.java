@@ -30,7 +30,7 @@ import java.util.ArrayList;
  */
 public class RemoteComms
 {
-    public static String host = "http://192.168.0.102:9000";
+    public static String host = "http://192.168.0.103:9000";
     public static final String TAG = "RemoteComms";
 
     public static Session auth(String usr, String pwd) throws IOException, LoginException
