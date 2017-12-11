@@ -31,7 +31,7 @@ public class ViewPurchaseOrderController extends PurchaseOrderController
                 cbxSuppliers.setValue(PurchaseOrderManager.getInstance().getSelected().getSupplier());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid supplier.");
             //set selected supplier contact person combo box value
-            if(PurchaseOrderManager.getInstance().getSelected().getSupplier()!=null)
+            if(PurchaseOrderManager.getInstance().getSelected().getContact_person()!=null)
                 cbxContactPerson.setValue(PurchaseOrderManager.getInstance().getSelected().getContact_person());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid contact person.");
 
