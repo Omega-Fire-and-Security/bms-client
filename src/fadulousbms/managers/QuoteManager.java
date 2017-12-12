@@ -34,6 +34,7 @@ public class QuoteManager extends BusinessObjectManager
     private long timestamp;
     public static final String ROOT_PATH = "cache/quotes/";
     public String filename = "";
+    public int selected_quote_sibling_cursor = 0;
     public static final double VAT = 14.0;
 
     private QuoteManager()
@@ -104,8 +105,13 @@ public class QuoteManager extends BusinessObjectManager
         if(quote!=null)
         {
             this.selected_quote = quote;
-            IO.log(getClass().getName(), IO.TAG_INFO, "set selected quote to: " + selected_quote);
-        }else IO.log(getClass().getName(), IO.TAG_ERROR, "quote to be set as selected is null.");
+            IO.log(getClass().getName(), IO.TAG_INFO, "set selected quote to: " + selected_quote.get_id());
+            //get selected Quote's siblings ordered by revision number
+            Quote[] siblings = selected_quote.getSiblings("revision");
+            if(siblings!=null)
+                this.selected_quote_sibling_cursor = siblings.length-1;//set cursor to point to latest revision
+            else IO.log(getClass().getName(), IO.TAG_WARN, "selected Quote has no siblings. Should return self as first arg, parent (if any) as 2nd arg, then other siblings.");
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "quote to be set as selected is null.");
     }
 
     public void setSelectedQuote(String quote_id)
@@ -262,6 +268,127 @@ public class QuoteManager extends BusinessObjectManager
         if(selected_quote!=null)
             PDF.createQuotePdf(selected_quote);
         else IO.logAndAlert("Error", "Please choose a valid quote.", IO.TAG_ERROR);
+    }
+
+    public void createQuote(Quote quote, ObservableList<QuoteItem> quoteItems, ObservableList<Employee> quoteReps, Callback callback) throws IOException
+    {
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        if(SessionManager.getInstance().getActive()!=null)
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+        else
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+
+        //create new quote on database
+        HttpURLConnection connection = RemoteComms.postData("/api/quote/add", quote.asUTFEncodedString(), headers);
+        if(connection!=null)
+        {
+            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+            {
+                String response = IO.readStream(connection.getInputStream());
+                IO.log(getClass().getName(), IO.TAG_INFO, "created quote["+response+"]. Adding representatives and resources to quote.");
+
+                if(response==null)
+                {
+                    IO.logAndAlert("New Quote Creation Error", "Invalid server response.", IO.TAG_ERROR);
+                    return;
+                }
+                if(response.isEmpty())
+                {
+                    IO.logAndAlert("New Quote Creation Error", "Invalid server response.", IO.TAG_ERROR);
+                    return;
+                }
+
+                //Close connection
+                if(connection!=null)
+                    connection.disconnect();
+                    /* Add Quote Representatives/Employees to Quote on database*/
+
+                boolean added_all_quote_reps = true;
+                for(Employee employee : quoteReps)
+                {
+                    //prepare parameters for quote resources.
+                    ArrayList params = new ArrayList<>();
+                    params.add(new AbstractMap.SimpleEntry<>("quote_id", response));
+                    params.add(new AbstractMap.SimpleEntry<>("usr", employee.getUsr()));
+                    added_all_quote_reps = QuoteManager.getInstance().createQuoteRep(response, params, headers);
+                }
+                if(!added_all_quote_reps)
+                    IO.logAndAlert("New Quote Representative Creation Failure", "Could not add representatives to quote, however, the quote["+response+"] has been created.", IO.TAG_INFO);
+
+
+                //Close connection
+                if(connection!=null)
+                    connection.disconnect();
+                    /* Add Quote Resources to Quote on database */
+
+                boolean added_all_quote_items = true;
+                for(QuoteItem quoteItem : quoteItems)
+                {
+                    //prepare parameters for quote resources.
+                    ArrayList params = new ArrayList<>();
+                    params.add(new AbstractMap.SimpleEntry<>("quote_id", response));
+                    params.add(new AbstractMap.SimpleEntry<>("item_number", quoteItem.getItem_number()));
+                    params.add(new AbstractMap.SimpleEntry<>("resource_id", quoteItem.getResource().get_id()));
+                    params.add(new AbstractMap.SimpleEntry<>("markup", quoteItem.getMarkup()));
+                    params.add(new AbstractMap.SimpleEntry<>("unit_cost", quoteItem.getUnit_cost()));
+                    params.add(new AbstractMap.SimpleEntry<>("quantity", quoteItem.getQuantity()));
+                    params.add(new AbstractMap.SimpleEntry<>("additional_costs", quoteItem.getAdditional_costs()));
+                    //added_all_quote_items = QuoteManager.getInstance().createQuoteItem(response, params, headers);
+
+                    quoteItem.setQuote_id(response);
+
+                    connection = RemoteComms.postData("/api/quote/resource/add", quoteItem.asUTFEncodedString(), headers);
+                    if (connection != null)
+                    {
+                        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
+                        {
+                            IO.log(getClass().getName(), IO.TAG_INFO, "Successfully added a new quote["+response+"] item.");
+                        } else
+                        {
+                            added_all_quote_items = false;
+                            //Get error message
+                            String msg = IO.readStream(connection.getErrorStream());
+                            IO.logAndAlert("Error " + String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
+                        }
+                    }else IO.logAndAlert("New Quote Item Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
+                }
+                if(added_all_quote_items && added_all_quote_reps)
+                {
+                    try
+                    {
+                        //set selected quote
+                        QuoteManager.getInstance().reloadDataFromServer();
+                        QuoteManager.getInstance().setSelectedQuote(response);
+
+                        IO.logAndAlert("New Quote Creation Success", "Successfully created a new quote.", IO.TAG_INFO);
+                        if(callback!=null)
+                            callback.call(response);
+                    }catch (MalformedURLException ex)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                        IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
+                    }catch (ClassNotFoundException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
+                    }catch (IOException ex)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                        IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
+                    }
+                } else IO.logAndAlert("New Quote Creation Failure", "Could not add items to quote.", IO.TAG_ERROR);
+            } else
+            {
+                //Get error message
+                String msg = IO.readStream(connection.getErrorStream());
+                IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
+            }
+            if(connection!=null)
+                connection.disconnect();
+        } else IO.logAndAlert("New Quote Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
     }
 
     public void updateQuote(Quote quote, ObservableList<QuoteItem> quoteItems, ObservableList<Employee> quoteReps)

@@ -6,8 +6,10 @@ import com.google.gson.JsonSyntaxException;
 import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
+import fadulousbms.model.BusinessObject;
 import fadulousbms.model.FileMetadata;
 import fadulousbms.model.Message;
+import fadulousbms.model.Transaction;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -23,7 +25,7 @@ import java.util.ArrayList;
 /**
  * Created by ghost on 2017/01/28.
  */
-public class IO
+public class IO<T extends BusinessObject>
 {
 
     public static final String TAG_INFO = "info";
@@ -39,6 +41,39 @@ public class IO
     }
 
     public static IO getInstance(){return io;}
+
+    public void quickSort(T arr[], int left, int right, String comparator)
+    {
+        int index = partition(arr, left, right, comparator);
+        if (left < index - 1)
+            quickSort(arr, left, index - 1, comparator);
+        if (index < right)
+            quickSort(arr, index, right, comparator);
+    }
+
+    public int partition(T arr[], int left, int right, String comparator) throws ClassCastException
+    {
+        int i = left, j = right;
+        T tmp;
+        double pivot = (Double) arr[(left + right) / 2].get(comparator);
+
+        while (i <= j)
+        {
+            while ((Double) arr[i].get(comparator) < pivot)
+                i++;
+            while ((Double) arr[j].get(comparator) > pivot)
+                j--;
+            if (i <= j)
+            {
+                tmp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = tmp;
+                i++;
+                j--;
+            }
+        }
+        return i;
+    }
 
     public void init(ScreenManager screenManager)
     {

@@ -2,8 +2,10 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.PDF;
 import fadulousbms.managers.ClientManager;
 import fadulousbms.managers.EmployeeManager;
+import fadulousbms.managers.QuoteManager;
 import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -31,8 +33,10 @@ public class Quote implements BusinessObject, Serializable
     private double revision;
     private String extra;
     private int status;
+    private String parent;
     private QuoteItem[] resources;
     private QuoteRep[] representatives;
+    private int rev_cursor = -1;
     //public static double VAT = 14.0;
     private boolean marked;
     public static final String TAG = "Quote";
@@ -153,6 +157,16 @@ public class Quote implements BusinessObject, Serializable
         this.status = status;
     }
 
+    public int getCursor()
+    {
+        return rev_cursor;
+    }
+
+    public void setCursor(int cursor)
+    {
+        this.rev_cursor = cursor;
+    }
+
     public StringProperty vatProperty()
     {
         return new SimpleStringProperty(String.valueOf(getVat()));
@@ -204,6 +218,29 @@ public class Quote implements BusinessObject, Serializable
     public void setCreator(String creator)
     {
         this.creator = creator;
+    }
+
+    public StringProperty parentProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(getParentID()));
+    }
+
+    public Quote getParent()
+    {
+        if(parent==null)
+            return null;
+        else
+        {
+            QuoteManager.getInstance().loadDataFromServer();
+            return QuoteManager.getInstance().getQuotes().get(parent);
+        }
+    }
+
+    public String getParentID(){return this.parent;}
+
+    public void setParent(String parent)
+    {
+        this.parent= parent;
     }
 
     public StringProperty revisionProperty(){return new SimpleStringProperty(String.valueOf(revision));}
@@ -305,6 +342,74 @@ public class Quote implements BusinessObject, Serializable
         return null;
     }
 
+    public Quote getRoot()
+    {
+        Quote quote = this;
+        while(quote.getParent()!=null)
+            quote=quote.getParent();
+        return quote;
+    }
+
+    public HashMap<Double, Quote> getSiblingsMap()
+    {
+        HashMap<Double, Quote> siblings = new HashMap<>();
+        siblings.put(this.getRevision(), this);//make self be first child of requested siblings
+        if(getParent()!=null)
+        {
+            QuoteManager.getInstance().loadDataFromServer();
+            siblings.put(getParent().getRevision(), getParent());//make parent be second child of requested siblings
+            if (QuoteManager.getInstance().getQuotes() != null)
+            {
+                for (Quote quote : QuoteManager.getInstance().getQuotes().values())
+                    if (getParentID().equals(quote.getParentID()))
+                        siblings.put(quote.getRevision(), quote);
+            }
+            else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "quote ["+get_id()+"] has no parent.");
+        return siblings;
+    }
+
+    public Quote[] getSiblings(String comparator)
+    {
+        HashMap<Double, Quote> siblings = getSiblingsMap();
+        Quote[] siblings_arr = new Quote[siblings.size()];
+        siblings.values().toArray(siblings_arr);
+        if(siblings_arr!=null)
+            if(siblings_arr.length>0)
+            {
+                IO.getInstance().quickSort(siblings_arr, 0, siblings_arr.length - 1, comparator);
+                return siblings_arr;
+            }
+        return null;
+    }
+
+    public HashMap<Double, Quote> getChildrenMap()
+    {
+        HashMap<Double, Quote> children = new HashMap<>();
+        QuoteManager.getInstance().loadDataFromServer();
+        if (QuoteManager.getInstance().getQuotes() != null)
+        {
+            for (Quote quote : QuoteManager.getInstance().getQuotes().values())
+                if (get_id().equals(quote.getParentID()))
+                    children.put(quote.getRevision(), quote);
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
+        return children;
+    }
+
+    public Quote[] getChildren(String comparator)
+    {
+        HashMap<Double, Quote> children = getChildrenMap();
+        Quote[] children_arr = new Quote[children.size()];
+        children.values().toArray(children_arr);
+        if(children_arr!=null)
+            if(children_arr.length>0)
+            {
+                IO.getInstance().quickSort(children_arr, 0, children_arr.length - 1, comparator);
+                return children_arr;
+            }
+        return null;
+    }
+
     public SimpleStringProperty quoteProperty()
     {
         if(this!=null)
@@ -351,6 +456,9 @@ public class Quote implements BusinessObject, Serializable
                     + URLEncoder.encode(account_name, "UTF-8"));
             result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
                     + URLEncoder.encode(creator, "UTF-8"));
+            if(parent!=null)
+                result.append("&" + URLEncoder.encode("parent","UTF-8") + "="
+                        + URLEncoder.encode(parent, "UTF-8"));
             result.append("&" + URLEncoder.encode("revision","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(revision), "UTF-8"));
             if(extra!=null)
@@ -399,6 +507,9 @@ public class Quote implements BusinessObject, Serializable
                 case "creator":
                     creator = String.valueOf(val);
                     break;
+                case "parent":
+                    parent = String.valueOf(val);
+                    break;
                 case "revision":
                     revision = Integer.parseInt(String.valueOf(val));
                     break;
@@ -440,6 +551,8 @@ public class Quote implements BusinessObject, Serializable
                 return status;
             case "creator":
                 return creator;
+            case "parent":
+                return parent;
             case "vat":
                 return vat;
             case "account_name":

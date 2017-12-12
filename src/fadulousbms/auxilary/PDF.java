@@ -1710,40 +1710,6 @@ public class PDF
         return path;
     }
 
-    static int partition(Transaction arr[], int left, int right)
-    {
-        int i = left, j = right;
-        Transaction tmp;
-        double pivot = arr[(left + right) / 2].getDate();
-
-        while (i <= j)
-        {
-            while (arr[i].getDate() < pivot)
-                i++;
-            while (arr[j].getDate() > pivot)
-                j--;
-            if (i <= j)
-            {
-                tmp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = tmp;
-                i++;
-                j--;
-            }
-        }
-
-        return i;
-    }
-
-    public static void quickSort(Transaction transactions[], int left, int right)
-    {
-        int index = partition(transactions, left, right);
-        if (left < index - 1)
-            quickSort(transactions, left, index - 1);
-        if (index < right)
-            quickSort(transactions, index, right);
-    }
-
     public static void createGeneralJournalPdf(long start, long end) throws IOException
     {
         //Init managers and load data to memory
@@ -1769,7 +1735,7 @@ public class PDF
         Transaction[] transactions_arr = new Transaction[transactions.size()];
         transactions.toArray(transactions_arr);
         long start_ms = System.currentTimeMillis();
-        quickSort(transactions_arr, 0, transactions.size()-1);
+        IO.getInstance().quickSort(transactions_arr, 0, transactions.size()-1, "date");
         //Arrays.sort(transactions_arr);
         //transactions_arr = selectionSort(transactions_arr);
         IO.log("PDF Creator> generateGeneralJournal",IO.TAG_INFO, "Sorted in: "+ (System.currentTimeMillis()-start_ms) + "ms");
@@ -2087,7 +2053,7 @@ public class PDF
         Transaction[] transactions_arr = new Transaction[transactions.size()];
         transactions.toArray(transactions_arr);
         long start_ms = System.currentTimeMillis();
-        quickSort(transactions_arr, 0, transactions.size()-1);
+        IO.getInstance().quickSort(transactions_arr, 0, transactions.size()-1, "date");
         //Arrays.sort(transactions_arr);
         //transactions_arr = selectionSort(transactions_arr);
         System.out.println("Sorted in: "+ (System.currentTimeMillis()-start_ms) + "ms");

@@ -6,7 +6,7 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" minWidth="650.0" styleClass="border-pane" stylesheets="@../styles/home.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mvg.controllers.SettingsController">
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" minWidth="650.0" styleClass="border-pane" stylesheets="@../styles/home.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.SettingsController">
    <center>
       <StackPane BorderPane.alignment="CENTER">
          <children>
@@ -27,7 +27,7 @@
                                        </image></ImageView>
                                  </center>
                                  <bottom>
-                                    <Button minHeight="40.0" minWidth="140.0" mnemonicParsing="false" onMouseClicked="#changeLogo" text="Change logo" BorderPane.alignment="CENTER" />
+                                    <Button minHeight="40.0" minWidth="140.0" mnemonicParsing="false" text="Change logo" BorderPane.alignment="CENTER" />
                                  </bottom>
                               </BorderPane>
                            </center>
@@ -54,7 +54,7 @@
                         </HBox>
                         <BorderPane>
                            <center>
-                              <Button mnemonicParsing="false" onMouseClicked="#applySettings" prefHeight="60.0" prefWidth="150.0" text="Apply" BorderPane.alignment="CENTER">
+                              <Button mnemonicParsing="false" prefHeight="60.0" prefWidth="150.0" text="Apply" BorderPane.alignment="CENTER">
                                  <BorderPane.margin>
                                     <Insets bottom="20.0" />
                                  </BorderPane.margin>

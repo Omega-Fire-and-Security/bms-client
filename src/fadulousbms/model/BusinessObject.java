@@ -1,7 +1,5 @@
 package fadulousbms.model;
 
-import java.lang.annotation.Native;
-
 /**
  * Created by ghost on 2017/01/04.
  */

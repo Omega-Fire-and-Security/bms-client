@@ -56,7 +56,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     protected ComboBox<Employee> cbxContactPerson;
     @FXML
-    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtExtra;
+    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtRevision,txtBase,txtExtra;
     //@FXML
     //protected Slider vatSlider;
     @FXML
@@ -1092,7 +1092,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         quote.setContact_person_id(cbxContactPerson.getValue().getUsr());
         quote.setSitename(txtSite.getText());
         quote.setRequest(txtRequest.getText());
-        quote.setStatus(0);
+        quote.setStatus(Quote.STATUS_PENDING);
         quote.setAccount_name(cbxAccount.getValue());
         quote.setCreator(SessionManager.getInstance().getActive().getUsername());
         quote.setRevision(1.0);
@@ -1107,108 +1107,163 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         try
         {
-            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            if(SessionManager.getInstance().getActive()!=null)
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
-            else
+            QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblSaleReps
+                    .getItems(), new Callback()
             {
-                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                return;
-            }
-
-            //create new quote on database
-            HttpURLConnection connection = RemoteComms.postData("/api/quote/add", quote.asUTFEncodedString(), headers);
-            if(connection!=null)
-            {
-                if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                @Override
+                public Object call(Object quote_id)
                 {
-                    String response = IO.readStream(connection.getInputStream());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "created quote["+response+"]. Adding representatives and resources to quote.");
-
-                    if(response==null)
+                    ScreenManager.getInstance().showLoadingScreen(param ->
                     {
-                        IO.logAndAlert("New Quote Creation Error", "Invalid server response.", IO.TAG_ERROR);
-                        return;
-                    }
-                    if(response.isEmpty())
-                    {
-                        IO.logAndAlert("New Quote Creation Error", "Invalid server response.", IO.TAG_ERROR);
-                        return;
-                    }
-                    txtQuoteId.setText(response);
-
-                    //Close connection
-                    if(connection!=null)
-                        connection.disconnect();
-                    /* Add Quote Representatives/Employees to Quote on database*/
-
-                    boolean added_all_quote_reps = true;
-                    for(Employee employee : quoteReps)
-                    {
-                        //prepare parameters for quote resources.
-                        ArrayList params = new ArrayList<>();
-                        params.add(new AbstractMap.SimpleEntry<>("quote_id", response));
-                        params.add(new AbstractMap.SimpleEntry<>("usr", employee.getUsr()));
-                        added_all_quote_reps = QuoteManager.getInstance().createQuoteRep(response, params, headers);
-                    }
-                    if(!added_all_quote_reps)
-                        IO.logAndAlert("New Quote Representative Creation Failure", "Could not add representatives to quote, however, the quote["+response+"] has been created.", IO.TAG_INFO);
-
-
-                    //Close connection
-                    if(connection!=null)
-                        connection.disconnect();
-                    /* Add Quote Resources to Quote on database */
-
-                    boolean added_all_quote_items = true;
-                    for(QuoteItem quoteItem : tblQuoteItems.getItems())
-                    {
-                        //prepare parameters for quote resources.
-                        ArrayList params = new ArrayList<>();
-                        params.add(new AbstractMap.SimpleEntry<>("quote_id", response));
-                        params.add(new AbstractMap.SimpleEntry<>("item_number", quoteItem.getItem_number()));
-                        params.add(new AbstractMap.SimpleEntry<>("resource_id", quoteItem.getResource().get_id()));
-                        params.add(new AbstractMap.SimpleEntry<>("markup", quoteItem.getMarkup()));
-                        params.add(new AbstractMap.SimpleEntry<>("unit_cost", quoteItem.getUnit_cost()));
-                        params.add(new AbstractMap.SimpleEntry<>("quantity", quoteItem.getQuantity()));
-                        params.add(new AbstractMap.SimpleEntry<>("additional_costs", quoteItem.getAdditional_costs()));
-                        //added_all_quote_items = QuoteManager.getInstance().createQuoteItem(response, params, headers);
-
-                        quoteItem.setQuote_id(response);
-
-                        connection = RemoteComms.postData("/api/quote/resource/add", quoteItem.asUTFEncodedString(), headers);
-                        if (connection != null)
+                        new Thread(new Runnable()
                         {
-                            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
+                            @Override
+                            public void run()
                             {
-                                IO.log(getClass().getName(), IO.TAG_INFO, "Successfully added a new quote["+response+"] item.");
-                            } else
-                            {
-                                added_all_quote_items = false;
-                                //Get error message
-                                String msg = IO.readStream(connection.getErrorStream());
-                                IO.logAndAlert("Error " + String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
+                                try
+                                {
+                                    if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
+                                    {
+                                        //Platform.runLater(() ->
+                                        ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen());
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load view quote screen.");
+                                } catch (IOException e)
+                                {
+                                    e.printStackTrace();
+                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                }
                             }
-                        }else IO.logAndAlert("New Quote Item Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
-                    }
-                    if(added_all_quote_items && added_all_quote_reps)
-                    {
-                        try
-                        {
-                            //set selected quote
-                            //quote.set_id(response);
-                            QuoteManager.getInstance().reloadDataFromServer();
-                            QuoteManager.getInstance().setSelectedQuote(response);
+                        }).start();
+                        return null;
+                    });
+                    txtQuoteId.setText(quote_id.toString());
+                    return null;
+                }
+            });
+        } catch (IOException e)
+        {
+            IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+        }
+    }
 
-                            IO.logAndAlert("New Quote Creation Success", "Successfully created a new quote.", IO.TAG_INFO);
-                            itemsModified = false;
-                            /*new Thread(() ->
+    @FXML
+    public void updateQuote()
+    {
+        cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        if(cbxClients.getValue()==null)
+        {
+            cbxClients.getStyleClass().remove("form-control-default");
+            cbxClients.getStyleClass().add("control-input-error");
+            return;
+        }else{
+            cbxClients.getStyleClass().remove("control-input-error");
+            cbxClients.getStyleClass().add("form-control-default");
+        }
+
+        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        if(cbxContactPerson.getValue()==null)
+        {
+            cbxContactPerson.getStyleClass().remove("form-control-default");
+            cbxContactPerson.getStyleClass().add("control-input-error");
+            return;
+        } else {
+            cbxContactPerson.getStyleClass().remove("control-input-error");
+            cbxContactPerson.getStyleClass().add("form-control-default");
+        }
+
+        if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
+        {
+            txtCell.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            return;
+        }
+        if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
+        {
+            txtTel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            return;
+        }
+        if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
+        {
+            txtEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            return;
+        }
+        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        if(cbxAccount.getValue()==null)
+        {
+            cbxAccount.getStyleClass().remove("form-control-default");
+            cbxAccount.getStyleClass().add("control-input-error");
+            return;
+        }else{
+            cbxAccount.getStyleClass().remove("control-input-error");
+            cbxAccount.getStyleClass().add("form-control-default");
+        }
+
+        if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
+        {
+            txtSite.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            return;
+        }
+        if(!Validators.isValidNode(txtRequest, txtRequest.getText(), 1, ".+"))
+        {
+            txtRequest.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            return;
+        }
+
+        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        if(selected!=null)
+        {
+            // create a new Quote with selected Quote as parent and +1 revision number
+            Quote quote = new Quote();
+            quote.setClient_id(cbxClients.getValue().get_id());
+            quote.setContact_person_id(cbxContactPerson.getValue().getUsr());
+            quote.setSitename(txtSite.getText());
+            quote.setRequest(txtRequest.getText());
+            quote.setAccount_name(cbxAccount.getValue());
+            quote.setStatus(Quote.STATUS_PENDING);
+            quote.setAccount_name(cbxAccount.getValue());
+            quote.setCreator(SessionManager.getInstance().getActive().getUsername());
+            quote.setRevision(1.0);//set default revision number
+            //get selected Quote's siblings sorted by revision number
+            Quote[] quote_revisions = selected.getSiblings("revision");
+            if(quote_revisions!=null)
+                if(quote_revisions.length>0)
+                    quote.setRevision(quote_revisions[quote_revisions.length-1].getRevision()+1);//get revision # of last Quote +1
+            //set parent of new Quote to be the root Quote of the selected Quote, if is root/base then use selected Quote
+            if(selected.getRoot()!=null)
+                quote.setParent(selected.getRoot().get_id());
+            else quote.setParent(selected.get_id());
+
+            if(toggleVatExempt.isSelected())
+                quote.setVat(0);
+            else quote.setVat(QuoteManager.VAT);
+
+            if(txtExtra!=null)
+                if(txtExtra.getText()!=null)
+                    quote.setExtra(txtExtra.getText());
+
+            try
+            {
+                QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblSaleReps.getItems(), new Callback()
+                {
+                    @Override
+                    public Object call(Object quote_id)
+                    {
+                        //on successful Quote creation refresh model & UI
+                        ScreenManager.getInstance().showLoadingScreen(param ->
+                        {
+                            try
                             {
-                                refreshModel();
-                                Platform.runLater(() -> refreshView());
-                            }).start();*/
-                            ScreenManager.getInstance().showLoadingScreen(param ->
-                            {
+                                //refresh Quote Model
+                                QuoteManager.getInstance().reloadDataFromServer();
+
+                                //update selected Quote
+                                if(QuoteManager.getInstance().getQuotes()!=null)
+                                {
+                                    Quote new_selected = QuoteManager.getInstance().getQuotes().get(quote_id);
+                                    IO.log(getClass().getName(), IO.TAG_INFO, "setting selected quote to: " + quote_id + " revision: " + new_selected.getRevision());
+                                    QuoteManager.getInstance().setSelectedQuote(new_selected);
+                                }
+
+                                //refresh GUI
                                 new Thread(new Runnable()
                                 {
                                     @Override
@@ -1228,39 +1283,34 @@ public abstract class QuoteController extends ScreenController implements Initia
                                         }
                                     }
                                 }).start();
-                                return null;
-                            });
-                        }catch (MalformedURLException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                        }catch (ClassNotFoundException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                        }catch (IOException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                        }
-                    } else IO.logAndAlert("New Quote Creation Failure", "Could not add items to quote.", IO.TAG_ERROR);
-                } else
-                {
-                    //Get error message
-                    String msg = IO.readStream(connection.getErrorStream());
-                    IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
-                }
-                if(connection!=null)
-                    connection.disconnect();
-            } else IO.logAndAlert("New Quote Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
-        } catch (IOException e)
-        {
-            IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
-        }
+                            }catch (MalformedURLException ex)
+                            {
+                                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                                IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
+                            }catch (ClassNotFoundException e)
+                            {
+                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
+                            }catch (IOException ex)
+                            {
+                                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                                IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
+                            }
+                            return null;
+                        });
+                        txtQuoteId.setText(quote_id.toString());
+                        return null;
+                    }
+                });
+            } catch (IOException e)
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 
     @FXML
-    public void updateQuote()
+    public void updateQuoteLegacy()
     {
         cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxClients.getValue()==null)
