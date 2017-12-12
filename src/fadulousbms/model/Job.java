@@ -286,7 +286,11 @@ public class Job implements BusinessObject, Serializable
     {
         QuoteManager.getInstance().initialize();
         if(QuoteManager.getInstance().getQuotes()!=null)
-            return QuoteManager.getInstance().getQuotes().get(quote_id);
+        {
+            //return latest revision
+            Quote[] revisions = QuoteManager.getInstance().getQuotes().get(quote_id).getSiblings("revision");
+            return revisions[revisions.length-1];
+        }
         else IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, "No quotes were found on the database.");
         return null;
     }

@@ -5,6 +5,7 @@
  */
 package fadulousbms.controllers;
 
+import fadulousbms.FadulousBMS;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
@@ -377,8 +378,7 @@ public class JobsController extends ScreenController implements Initializable
                                                 //TODO: show Invoices tab
                                                 if (ScreenManager.getInstance()
                                                         .loadScreen(Screens.OPERATIONS
-                                                                .getScreen(), getClass()
-                                                                .getResource("views/" + Screens.OPERATIONS
+                                                                .getScreen(), FadulousBMS.class.getResource("views/" + Screens.OPERATIONS
                                                                         .getScreen())))
                                                 {
                                                     Platform.runLater(() -> ScreenManager
@@ -452,14 +452,14 @@ public class JobsController extends ScreenController implements Initializable
     {
         if(job==null)
         {
-            IO.logAndAlert("Error", "Invalid job object passed.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "Selected Job object is invalid.", IO.TAG_ERROR);
             return;
         }
-        if(!job.isSigned())
+        /*if(!job.isSigned())
         {
-            IO.logAndAlert("Error", "Job object passed has not been signed yet.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "Selected Job object has not been signed yet.", IO.TAG_ERROR);
             return;
-        }
+        }*/
 
         //Validate session - also done on server-side don't worry ;)
         SessionManager smgr = SessionManager.getInstance();

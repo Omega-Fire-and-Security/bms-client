@@ -352,28 +352,54 @@ public class JobManager extends BusinessObjectManager
      */
     public static void signJob(Job job, Callback callback)
     {
+        if(job==null)
+        {
+            IO.logAndAlert("Error: Invalid Job", "Selected Job object is invalid.", IO.TAG_ERROR);
+            return;
+        }
+        if(job.getDate_started()<=0)
+        {
+            IO.logAndAlert("Error: Job Start Date Invalid", "Selected Job has not been started yet.", IO.TAG_ERROR);
+            return;
+        }
+        if(job.getDate_completed()<=0)
+        {
+            IO.logAndAlert("Error: Job Not Completed", "Selected Job has not been completed yet.", IO.TAG_ERROR);
+            return;
+        }
+        if(job.getDate_started()>job.getDate_completed())
+        {
+            IO.logAndAlert("Error: Job Start Date Invalid", "Selected Job's start date is later than completion date.", IO.TAG_ERROR);
+            return;
+        }
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
         Session active = SessionManager.getInstance().getActive();
         try
         {
             if (active != null)
             {
-                if (!active.isExpired())
+                if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
                 {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
-                    HttpURLConnection conn = RemoteComms.postData("/api/job/sign/" + job.get_id(),"", headers);
-                    if(conn!=null)
+                    if (!active.isExpired())
                     {
-                        if(conn.getResponseCode()==HttpURLConnection.HTTP_OK)
+                        headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
+                        HttpURLConnection conn = RemoteComms.postData("/api/job/sign/" + job.get_id(), "", headers);
+                        if (conn != null)
                         {
-                            IO.logAndAlert("Success", "Successfully signed job[" + job.get_id()+"]", IO.TAG_ERROR);
-                            if(callback!=null)
-                                callback.call(null);
-                        } else IO.logAndAlert("Error", "Could not sign job["+job.get_id()+"]: "+IO.readStream(conn.getErrorStream()), IO.TAG_ERROR);
-                        conn.disconnect();
-                    }
-                } else IO.showMessage("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
-            } else IO.showMessage("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
+                            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                            {
+                                IO.logAndAlert("Success", "Successfully signed job[" + job
+                                        .get_id() + "]", IO.TAG_ERROR);
+                                if (callback != null)
+                                    callback.call(null);
+                            }
+                            else IO.logAndAlert("Error", "Could not sign job[" + job.get_id() + "]: " + IO
+                                    .readStream(conn.getErrorStream()), IO.TAG_ERROR);
+                            conn.disconnect();
+                        }
+                    } else IO.logAndAlert("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                } else IO.logAndAlert("Error: Unauthorised", "Active session is not authorised to perform this action.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
         }catch (IOException e)
         {
             IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
