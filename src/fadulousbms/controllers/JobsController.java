@@ -142,6 +142,16 @@ public class JobsController extends ScreenController implements Initializable
                                 //btnSign.setStyle("-fx-border-radius: 20;");
                                 btnSign.setMinWidth(100);
                                 btnSign.setMinHeight(35);
+                                btnSign.setDisable(true);
+                                if(SessionManager.getInstance().getActiveEmployee()!=null)
+                                {
+                                    //disable sign button if not authorised
+                                    if (SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
+                                    {
+                                        //btnSign.getStyleClass().add("btnDefault");
+                                        btnSign.setDisable(false);
+                                    } else btnSign.getStyleClass().add("btnDisabled");
+                                } else IO.logAndAlert("Error", "No valid active employee session found, please log in.", IO.TAG_ERROR);
 
                                 HBox.setHgrow(btnSign, Priority.ALWAYS);
 
@@ -531,58 +541,6 @@ public class JobsController extends ScreenController implements Initializable
             } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
-
-    /*private static void viewSignedJob(Job job)
-    {
-        if(job==null)
-        {
-            IO.logAndAlert("Error", "Invalid job object passed.", IO.TAG_ERROR);
-            return;
-        }
-        if(job.getSigned_job()==null)
-        {
-            IO.logAndAlert("Error", "could not find signed job card for selected job [#"+job.getJob_number()+"].", IO.TAG_ERROR);
-            return;
-        }
-
-        try
-        {
-            //String filename = String.valueOf(bo.get(property));
-            long start = System.currentTimeMillis();
-
-            byte[] file = Base64.getDecoder().decode(job.getSigned_job());
-            if (file != null)
-            {
-                //long ellapsed = System.currentTimeMillis()-start;
-                //IO.log(JobsController.class.getName(), IO.TAG_INFO, "File ["+job.get_id()+".pdf] download complete, size: "+file.length+" bytes in "+ellapsed+"msec.");
-                PDFViewer pdfViewer = PDFViewer.getInstance();
-                pdfViewer.setVisible(true);
-
-                //String local_filename = filename.substring(filename.lastIndexOf('/')+1);
-                String local_filename = job.get_id() + "_signed.pdf";
-                if(new File("out/"+local_filename).exists())
-                    Files.delete(new File("out/"+local_filename).toPath());
-                FileOutputStream out = new FileOutputStream(new File("out/"+local_filename));
-                out.write(file, 0, file.length);
-                out.flush();
-                out.close();
-
-                IO.log(JobsController.class.getName(), IO.TAG_INFO, "serialized signed job ["+job.get_id()+"] to path [out/"+local_filename+"], size: "+file.length+" bytes. launching PDF viewer.");
-                //pdfViewer.doOpen("bin/" + filename + ".bin");
-                pdfViewer.doOpen("out/"+local_filename);
-                //Clean up
-                Files.delete(Paths.get("out/"+local_filename));
-            } else
-            {
-                IO.logAndAlert("File Downloader", "File '" + job.get_id() + "_signed.pdf' could not be downloaded because the active session has expired.", IO.TAG_ERROR);
-            }
-        }catch (IOException e)
-        {
-            IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
-        }
-    }*/
-
-
 
     public static RadialMenuItem[] getContextMenu()
     {

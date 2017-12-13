@@ -84,10 +84,19 @@ public class LeaveTabController extends ScreenController implements Initializabl
                             {
                                 super.updateItem(item, empty);
                                 btnApprove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnApprove.getStyleClass().add("btnDefault");
                                 btnApprove.setMinWidth(100);
                                 btnApprove.setMinHeight(35);
                                 HBox.setHgrow(btnApprove, Priority.ALWAYS);
+                                btnApprove.setDisable(true);
+                                if(SessionManager.getInstance().getActiveEmployee()!=null)
+                                {
+                                    //disable approve button if not authorised
+                                    if (SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
+                                    {
+                                        btnApprove.getStyleClass().add("btnDefault");
+                                        btnApprove.setDisable(false);
+                                    } else btnApprove.getStyleClass().add("btnDisabled");
+                                } else IO.logAndAlert("Error", "No valid active employee session found, please log in.", IO.TAG_ERROR);
 
                                 btnRequestApproval.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRequestApproval.getStyleClass().add("btnDefault");
@@ -114,10 +123,21 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                 HBox.setHgrow(btnViewSigned, Priority.ALWAYS);
 
                                 btnEmailSigned.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnEmailSigned.getStyleClass().add("btnDefault");
                                 btnEmailSigned.setMinWidth(100);
                                 btnEmailSigned.setMinHeight(35);
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
+                                if(!empty)
+                                {
+                                    if (getTableView().getItems().get(getIndex()).getStatus()>=Leave.STATUS_APPROVED)
+                                    {
+                                        btnEmailSigned.getStyleClass().add("btnDefault");
+                                        btnEmailSigned.setDisable(false);
+                                    } else
+                                    {
+                                        btnEmailSigned.getStyleClass().add("btnDisabled");
+                                        btnEmailSigned.setDisable(true);
+                                    }
+                                }
 
                                 btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");

@@ -153,7 +153,7 @@ public class OvertimeTabController extends ScreenController implements Initializ
         try
         {
             OvertimeManager.getInstance().reloadDataFromServer();
-            JobManager.getInstance().loadDataFromServer();
+            JobManager.getInstance().reloadDataFromServer();
         } catch (ClassNotFoundException e)
         {
             e.printStackTrace();

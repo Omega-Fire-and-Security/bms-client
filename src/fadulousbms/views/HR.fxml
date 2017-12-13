@@ -29,24 +29,16 @@
                         <Insets bottom="40.0" left="70.0" right="70.0" top="40.0" />
                      </BorderPane.margin>
                      <children>
-                        <BorderPane onMouseClicked="#employeesClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                           <center>
-                              <Label maxHeight="-Infinity" minWidth="-Infinity" text="Employees" BorderPane.alignment="CENTER">
-                                 <font>
-                                    <Font name="FreeSans" size="40.0" />
-                                 </font></Label>
-                           </center>
-                        </BorderPane>
-                        <BorderPane onMouseClicked="#leaveClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1">
+                        <BorderPane onMouseClicked="#leaveClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn">
                            <center>
                               <Label text="Leave" BorderPane.alignment="CENTER">
                                  <font>
-                                    <Font size="28.0" />
+                                    <Font size="29.0" />
                                  </font>
                               </Label>
                            </center>
                         </BorderPane>
-                        <BorderPane onMouseClicked="#overtimeClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn">
+                        <BorderPane onMouseClicked="#overtimeClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1">
                            <center>
                               <Label alignment="CENTER" contentDisplay="CENTER" text="Overtime" BorderPane.alignment="CENTER">
                                  <font>
@@ -56,19 +48,27 @@
                            </center>
                         </BorderPane>
                         <BorderPane onMouseClicked="#payrollClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.rowIndex="1">
+                            <center>
+                                <Label text="Payroll" BorderPane.alignment="CENTER">
+                                    <font>
+                                        <Font size="29.0" />
+                                    </font>
+                                </Label>
+                            </center>
+                        </BorderPane>
+                        <BorderPane onMouseClicked="#employeesClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="1">
                            <center>
-                              <Label text="Payroll" BorderPane.alignment="CENTER">
+                              <Label maxHeight="-Infinity" minWidth="-Infinity" text="Employees" BorderPane.alignment="CENTER">
                                  <font>
-                                    <Font size="32.0" />
-                                 </font>
-                              </Label>
+                                    <Font name="FreeSans" size="29.0" />
+                                 </font></Label>
                            </center>
                         </BorderPane>
                         <BorderPane onMouseClicked="#policyClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.rowIndex="2">
                            <center>
                               <Label text="Policy" BorderPane.alignment="CENTER">
                                  <font>
-                                    <Font size="31.0" />
+                                    <Font size="29.0" />
                                  </font>
                               </Label>
                            </center>
