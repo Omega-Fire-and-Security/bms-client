@@ -290,12 +290,12 @@ public class PDF
         addTextToPageStream(contents, "Leave Application", 16,(int)(w/2)-70, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "DATE: ", 16,10, line_pos);
-        addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getDate_logged()*1000)), 16,(int)w-40, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
+        addTextToPageStream(contents, "DATE LOGGED: ", 16,10, line_pos);
+        addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getDate_logged()*1000)), 16,(int)w/2+100, line_pos);
+        line_pos-=LINE_HEIGHT*2;//next 2nd line
 
         addTextToPageStream(contents, "I "+leave.getEmployee().toString() + " hereby wish to apply for leave as indicated below.", PDType1Font.TIMES_ITALIC, 16 ,10, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
+        line_pos-=LINE_HEIGHT*2;//next 2nd line
 
         //Create column headings
         addTextToPageStream(contents,"Type", 14,10, line_pos);
@@ -335,13 +335,14 @@ public class PDF
                 status="ARCHIVED";
                 break;
         }
-        addTextToPageStream(contents, "STATUS: ", 16,10, line_pos);
-        addTextToPageStream(contents, status, 16,(int)w-40, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
+        addTextToPageStream(contents, "STATUS: ", 14,10, line_pos);
+        addTextToPageStream(contents, status, 14,(int)w/2+100, line_pos);
+        line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "IF DENIED, REASON WILL BE STATED BELOW: ", 16,10, line_pos);
+        addTextToPageStream(contents, "IF DENIED, REASON WILL BE STATED BELOW: ", 14,10, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents, leave.getExtra(), 16, 15, line_pos);
+        if(leave.getExtra()!=null)
+            addTextToPageStream(contents, leave.getExtra(), 16, 15, line_pos);
 
         line_pos-=LINE_HEIGHT*3;//next 3rd line
         addTextToPageStream(contents, "Applicant's Signature", 16,10, line_pos);
@@ -349,11 +350,14 @@ public class PDF
         contents.endText();
 
         //draw first signature line
+        contents.setStrokingColor(Color.BLACK);
         contents.moveTo(10, line_pos+LINE_HEIGHT+5);
-        contents.lineTo(50, line_pos+LINE_HEIGHT+5);
+        contents.lineTo(120, line_pos+LINE_HEIGHT+5);
+        contents.stroke();
         //draw second signature line
         contents.moveTo(200, line_pos+LINE_HEIGHT+5);
-        contents.lineTo(250, line_pos+LINE_HEIGHT+5);
+        contents.lineTo(320, line_pos+LINE_HEIGHT+5);
+        contents.stroke();
 
         String path = "out/pdf/leave_" + leave.get_id() + ".pdf";
         int i=1;
@@ -1320,6 +1324,7 @@ public class PDF
         }
         Job job = invoice.getJob();
         Quote quote = invoice.getJob().getQuote();
+        //Quote[] quotes = invoice.getJob().getQuote().getSiblings("revision");
         //Prepare PDF data from database.
         //Load Invoice Client
         Client client = invoice.getJob().getQuote().getClient();
