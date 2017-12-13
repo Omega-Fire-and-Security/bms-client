@@ -21,13 +21,8 @@ import org.apache.pdfbox.rendering.PageDrawer;
 import org.apache.pdfbox.rendering.PageDrawerParameters;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
-
 import javax.print.*;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.image.BufferedImage;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -283,7 +278,7 @@ public class PDF
         /** draw horizontal lines **/
         drawHorzLines(contents, line_pos, (int)w, page_margins);
         /** draw vertical lines **/
-        final int[] col_positions = {75, (int)((w / 2) + 100), (int)((w / 2) + 200)};
+        final int[] col_positions = {(int)((w / 2)), (int)((w / 2) + 100), (int)((w / 2) + 200)};
         drawVertLines(contents, col_positions, line_pos-LINE_HEIGHT);
         line_pos = (int)h-logo_h-LINE_HEIGHT;
 
@@ -293,6 +288,13 @@ public class PDF
         line_pos-=10;
         //Heading text
         addTextToPageStream(contents, "Leave Application", 16,(int)(w/2)-70, line_pos);
+        line_pos-=LINE_HEIGHT*2;//next 2nd line
+
+        addTextToPageStream(contents, "DATE: ", 16,10, line_pos);
+        addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getDate_logged()*1000)), 16,(int)w-40, line_pos);
+        line_pos-=LINE_HEIGHT;//next line
+
+        addTextToPageStream(contents, "I "+leave.getEmployee().toString() + " hereby wish to apply for leave as indicated below.", PDType1Font.TIMES_ITALIC, 16 ,10, line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
         //Create column headings
@@ -309,15 +311,49 @@ public class PDF
         addTextToPageStream(contents, String.valueOf(leave.getType()), 14, 10, line_pos);
 
         if(leave.getStart_date()>0)
-            addTextToPageStream(contents, (new SimpleDateFormat("yyyy-DD-mm").format(leave.getStart_date()*1000)), 12, col_positions[0]+5, line_pos);
+            addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getStart_date()*1000)), 12, col_positions[0]+5, line_pos);
         else addTextToPageStream(contents, "N/A", 12, col_positions[0]+5, line_pos);
         if(leave.getEnd_date()>0)
-            addTextToPageStream(contents, (new SimpleDateFormat("yyyy-DD-mm").format(leave.getEnd_date()*1000)), 12, col_positions[1]+5, line_pos);
+            addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getEnd_date()*1000)), 12, col_positions[1]+5, line_pos);
         else addTextToPageStream(contents, "N/A", 12, col_positions[1]+5, line_pos);
 
         long diff = leave.getEnd_date()-leave.getStart_date();//in epoch seconds
         long days = diff/60/60/24;
         addTextToPageStream(contents, String.valueOf(days), 12, col_positions[2]+5, line_pos);
+
+        line_pos-=LINE_HEIGHT*2;//next 2nd line
+        String status = "N/A";
+        switch (leave.getStatus())
+        {
+            case Leave.STATUS_PENDING:
+                status="PENDING";
+                break;
+            case Leave.STATUS_APPROVED:
+                status="GRANTED";
+                break;
+            case Leave.STATUS_ARCHIVED:
+                status="ARCHIVED";
+                break;
+        }
+        addTextToPageStream(contents, "STATUS: ", 16,10, line_pos);
+        addTextToPageStream(contents, status, 16,(int)w-40, line_pos);
+        line_pos-=LINE_HEIGHT;//next line
+
+        addTextToPageStream(contents, "IF DENIED, REASON WILL BE STATED BELOW: ", 16,10, line_pos);
+        line_pos-=LINE_HEIGHT;//next line
+        addTextToPageStream(contents, leave.getExtra(), 16, 15, line_pos);
+
+        line_pos-=LINE_HEIGHT*3;//next 3rd line
+        addTextToPageStream(contents, "Applicant's Signature", 16,10, line_pos);
+        addTextToPageStream(contents, "Manager Signature", 16, 200, line_pos);
+        contents.endText();
+
+        //draw first signature line
+        contents.moveTo(10, line_pos+LINE_HEIGHT+5);
+        contents.lineTo(50, line_pos+LINE_HEIGHT+5);
+        //draw second signature line
+        contents.moveTo(200, line_pos+LINE_HEIGHT+5);
+        contents.lineTo(250, line_pos+LINE_HEIGHT+5);
 
         String path = "out/pdf/leave_" + leave.get_id() + ".pdf";
         int i=1;
@@ -327,7 +363,6 @@ public class PDF
             i++;
         }
 
-        contents.endText();
         contents.close();
         document.save(path);
         document.close();

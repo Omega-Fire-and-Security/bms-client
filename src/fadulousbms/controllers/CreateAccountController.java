@@ -57,11 +57,6 @@ public class CreateAccountController extends ScreenController implements Initial
     @Override
     public void refreshView()
     {
-        Employee e = SessionManager.getInstance().getActiveEmployee();
-        if(e!=null)
-            this.getUserNameLabel().setText(e.getFirstname() + " " + e.getLastname());
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
-
         cbxAccessLevel.setItems(FXCollections.observableArrayList(access_levels));
     }
 
@@ -76,16 +71,6 @@ public class CreateAccountController extends ScreenController implements Initial
     @Override
     public void initialize(URL url, ResourceBundle rb) 
     {
-        try
-        {
-            BufferedImage bufferedImage;
-            bufferedImage = ImageIO.read(new File("images/profile.png"));
-            Image image = SwingFXUtils.toFXImage(bufferedImage, null);
-            this.getProfileImageView().setImage(image);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        }
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()
