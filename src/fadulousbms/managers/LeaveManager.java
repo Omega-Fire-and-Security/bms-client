@@ -9,9 +9,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -146,6 +148,29 @@ public class LeaveManager extends BusinessObjectManager
         }
     }
 
+    public static void viewPDF(Leave leave)
+    {
+        if(leave!=null)
+        {
+            try
+            {
+                String path = PDF.createLeaveApplicationPDF(leave);
+
+                if(path!=null)
+                {
+                    PDFViewer pdfViewer = PDFViewer.getInstance();
+                    pdfViewer.setVisible(true);
+                    pdfViewer.doOpen(path);
+                } else IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, "could not get a valid path for generated leave application PDF for user ["+leave.getUsr()+"].");
+            } catch (IOException e)
+            {
+                IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        }else{
+            IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, "Leave object is null");
+        }
+    }
+
     public void newLeaveApplicationWindow(Employee employee, Callback callback)
     {
         if (employee == null)
@@ -168,6 +193,13 @@ public class LeaveManager extends BusinessObjectManager
         txt_employee.setEditable(false);
         txt_employee.setText(employee.toString());
         HBox employee_container = CustomTableViewControls.getLabelledNode("Employee: ", 200, txt_employee);
+
+        final ComboBox<String> cbx_type = new ComboBox<>();
+        cbx_type.setMinWidth(200);
+        cbx_type.setMaxWidth(Double.MAX_VALUE);
+        cbx_type.setEditable(false);
+        cbx_type.setItems(FXCollections.observableArrayList(Leave.TYPES));
+        HBox type_container = CustomTableViewControls.getLabelledNode("Leave Type: ", 200, cbx_type);
 
         final DatePicker dpk_start_date = new DatePicker();
         dpk_start_date.setMinWidth(200);
@@ -194,21 +226,19 @@ public class LeaveManager extends BusinessObjectManager
         {
             String date_regex = "\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
 
-            if (!Validators
-                    .isValidNode(dpk_start_date, dpk_start_date.getValue() == null ? "" : dpk_start_date
-                            .getValue().toString(), 4, date_regex))
+            if (!Validators.isValidNode(cbx_type, cbx_type.getValue() == null ? "" : cbx_type.getValue(), ".+"))
                 return;
-            if (!Validators
-                    .isValidNode(dpk_end_date, dpk_end_date.getValue() == null ? "" : dpk_end_date
-                            .getValue().toString(), 4, date_regex))
+            if (!Validators.isValidNode(dpk_start_date, dpk_start_date.getValue() == null ? "" : dpk_start_date.getValue().toString(), 4, date_regex))
                 return;
-
+            if (!Validators.isValidNode(dpk_end_date, dpk_end_date.getValue() == null ? "" : dpk_end_date.getValue().toString(), 4, date_regex))
+                return;
             long start_date_in_sec = dpk_start_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
             long end_date_in_sec = dpk_end_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
             String str_other = txt_other.getText();
 
             ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
             params.add(new AbstractMap.SimpleEntry<>("usr", SessionManager.getInstance().getActiveEmployee().getUsr()));
+            params.add(new AbstractMap.SimpleEntry<>("type", cbx_type.getValue()));
             params.add(new AbstractMap.SimpleEntry<>("start_date", String.valueOf(start_date_in_sec)));
             params.add(new AbstractMap.SimpleEntry<>("end_date", String.valueOf(end_date_in_sec)));
 
@@ -252,6 +282,7 @@ public class LeaveManager extends BusinessObjectManager
 
         //Add form controls vertically on the stage
         vbox.getChildren().add(employee_container);
+        vbox.getChildren().add(type_container);
         vbox.getChildren().add(start_date_container);
         vbox.getChildren().add(end_date_container);
         vbox.getChildren().add(other);
@@ -269,6 +300,419 @@ public class LeaveManager extends BusinessObjectManager
         stage.setScene(scene);
         stage.show();
         stage.centerOnScreen();
+    }
+
+    /**
+     * Method to upload a Leave application (in PDF format) to the server.
+     * @param leave_id identifier of Leave object to be uploaded.
+     */
+    public static void uploadSigned(String leave_id)
+    {
+        //Validate session - also done on server-side don't worry ;)
+        SessionManager smgr = SessionManager.getInstance();
+        if(smgr.getActive()!=null)
+        {
+            if(!smgr.getActive().isExpired())
+            {
+                try
+                {
+                    FileChooser fileChooser = new FileChooser();
+                    File f = fileChooser.showOpenDialog(null);
+                    if (f != null)
+                    {
+                        if (f.exists())
+                        {
+                            FileInputStream in = new FileInputStream(f);
+                            byte[] buffer = new byte[(int) f.length()];
+                            in.read(buffer, 0, buffer.length);
+                            in.close();
+
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
+
+                            RemoteComms.uploadFile("/api/leave_record/signed/upload/" + leave_id, headers, buffer);
+                            IO.log(LeaveManager.class.getName(), IO.TAG_INFO, "\n uploaded signed leave application ["+leave_id+"], file size: [" + buffer.length + "] bytes.");
+                        } else
+                        {
+                            IO.logAndAlert(LeaveManager.class.getName(), "File not found.", IO.TAG_ERROR);
+                        }
+                    } else
+                    {
+                        IO.log(LeaveManager.class.getName(), "File object is null.", IO.TAG_ERROR);
+                    }
+                }catch (IOException e)
+                {
+                    IO.log(LeaveManager.class.getName(), e.getMessage(), IO.TAG_ERROR);
+                }
+            }else IO.logAndAlert("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        }else IO.logAndAlert("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    /**
+     * Method to upload a Leave application (in PDF format) to the server.
+     * @param leave Leave object to be uploaded.
+     */
+    public static void uploadPDF(Leave leave)
+    {
+        if(leave==null)
+        {
+            IO.logAndAlert("Error", "Invalid Leave object passed.", IO.TAG_ERROR);
+            return;
+        }
+        //Validate session - also done on server-side don't worry ;)
+        SessionManager smgr = SessionManager.getInstance();
+        if(smgr.getActive()!=null)
+        {
+            if(!smgr.getActive().isExpired())
+            {
+                try
+                {
+                    String path = PDF.createLeaveApplicationPDF(leave);
+                    if(path!=null)
+                    {
+                        File f = new File(path);
+                        if (f != null)
+                        {
+                            if (f.exists())
+                            {
+                                FileInputStream in = new FileInputStream(f);
+                                byte[] buffer = new byte[(int) f.length()];
+                                in.read(buffer, 0, buffer.length);
+                                in.close();
+
+                                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance()
+                                        .getActive().getSessionId()));
+                                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
+
+                                RemoteComms.uploadFile("/api/leave_record/upload/" + leave.get_id(), headers, buffer);
+                                IO.log(LeaveManager.class.getName(), IO.TAG_INFO, "\n uploaded leave application [#" + leave.get_id()
+                                        + "], file size: [" + buffer.length + "] bytes.");
+                            } else {
+                                IO.logAndAlert(LeaveManager.class.getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
+                            }
+                        } else
+                        {
+                            IO.log(LeaveManager.class.getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
+                        }
+                    } else IO.log(LeaveManager.class.getName(), "Could not get valid path for created leave application PDF.", IO.TAG_ERROR);
+                } catch (IOException e)
+                {
+                    IO.log(LeaveManager.class.getName(), e.getMessage(), IO.TAG_ERROR);
+                }
+            } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    /**
+     * Method to send eMail containing Leave application (PDF) and a URL to sign the Leave.
+     * @param leave Leave object to be signed.
+     * @param callback Callback to be executed on successful request.
+     */
+    public static void requestApproval(Leave leave, Callback callback)
+    {
+        if(leave==null)
+        {
+            IO.logAndAlert("Error", "Invalid Leave object.", IO.TAG_ERROR);
+            return;
+        }
+        if(LeaveManager.getInstance().getLeaveRecords()==null)
+        {
+            IO.logAndAlert("Error", "Could not find any leave applications in the system.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Error: Invalid Session", "Could not find any valid sessions.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Error: Session Expired", "The active session has expired.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActiveEmployee()==null)
+        {
+            IO.logAndAlert("Error: Invalid Employee Session", "Could not find any active employee sessions.", IO.TAG_ERROR);
+            return;
+        }
+
+        //upload Leave PDF to server
+        uploadPDF(leave);
+
+        Stage stage = new Stage();
+        stage.setTitle(Globals.APP_NAME.getValue() + " - Request Leave Application Approval");
+        stage.setMinWidth(320);
+        stage.setHeight(350);
+        stage.setAlwaysOnTop(true);
+
+        VBox vbox = new VBox(1);
+
+        //gather list of Employees with enough clearance to sign leaves
+        ArrayList<Employee> lst_auth_employees = new ArrayList<>();
+        for(Employee employee: EmployeeManager.getInstance().getEmployees().values())
+            if(employee.getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
+                lst_auth_employees.add(employee);
+
+        if(lst_auth_employees==null)
+        {
+            IO.logAndAlert("Error", "Could not find any employee with the required access rights to approval the leave application.", IO.TAG_ERROR);
+            return;
+        }
+
+        final ComboBox<Employee> cbx_destination = new ComboBox(FXCollections.observableArrayList(lst_auth_employees));
+        cbx_destination.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
+        {
+            @Override
+            public ListCell<Employee> call(ListView<Employee> param)
+            {
+                return new ListCell<Employee>()
+                {
+                    @Override
+                    protected void updateItem(Employee employee, boolean empty)
+                    {
+                        if(employee!=null && !empty)
+                        {
+                            super.updateItem(employee, empty);
+                            setText(employee.toString() + " <" + employee.getEmail() + ">");
+                        }
+                    }
+                };
+            }
+        });
+        cbx_destination.setMinWidth(200);
+        cbx_destination.setMaxWidth(Double.MAX_VALUE);
+        cbx_destination.setPromptText("Pick a recipient");
+        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, cbx_destination);
+
+        final TextField txt_subject = new TextField();
+        txt_subject.setMinWidth(200);
+        txt_subject.setMaxWidth(Double.MAX_VALUE);
+        txt_subject.setPromptText("Type in an eMail subject");
+        txt_subject.setText("LEAVE APPLICATION APPROVAL REQUEST["+leave.getEmployee()+"]");
+        HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
+
+        final TextArea txt_message = new TextArea();
+        txt_message.setMinWidth(200);
+        txt_message.setMaxWidth(Double.MAX_VALUE);
+        HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
+
+        HBox submit;
+        submit = CustomTableViewControls.getSpacedButton("Send", event ->
+        {
+            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+            //TODO: check this
+            if(!Validators.isValidNode(cbx_destination, cbx_destination.getValue()==null?"":cbx_destination.getValue().getEmail(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
+                return;
+
+            String msg = txt_message.getText();
+
+            //convert all new line chars to HTML break-lines
+            msg = msg.replaceAll("\\n", "<br/>");
+
+            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new AbstractMap.SimpleEntry<>("leave_record_id", leave.get_id()));
+            params.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
+            params.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("message", msg));
+
+            try
+            {
+                //send email
+                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                if(SessionManager.getInstance().getActive()!=null)
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
+                            .getSessionId()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                } else
+                {
+                    IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
+                    return;
+                }
+
+                HttpURLConnection connection = RemoteComms.postData("/api/leave_record/request_approval", params, headers);
+                if(connection!=null)
+                {
+                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                    {
+                        //TODO: CC self
+                        IO.logAndAlert("Success", "Successfully requested leave application approval from ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
+                        if(callback!=null)
+                            callback.call(null);
+                    } else {
+                        IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                    }
+                    connection.disconnect();
+                }
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+                IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        });
+
+        cbx_destination.valueProperty().addListener((observable, oldValue, newValue) ->
+        {
+            if(newValue==null)
+            {
+                IO.log(LeaveManager.class.getName(), "invalid destination address.", IO.TAG_ERROR);
+                return;
+            }
+            Employee sender = SessionManager.getInstance().getActiveEmployee();
+            String title = null;
+            if(newValue.getGender()!=null)
+                title = newValue.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";
+            String msg = "Good day " + title + " " + newValue.getLastname() + ",\n\nCould you please assist me" +
+                    " by approving this leave application for "  + leave.getEmployee() + ".\nThank you.\n\nBest Regards,\n"
+                    + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
+            txt_message.setText(msg);
+        });
+
+        //Add form controls vertically on the stage
+        vbox.getChildren().add(destination);
+        vbox.getChildren().add(subject);
+        //vbox.getChildren().add(hbox_leave_id);
+        vbox.getChildren().add(message);
+        vbox.getChildren().add(submit);
+
+        //Setup scene and display stage
+        Scene scene = new Scene(vbox);
+        File fCss = new File("src/fadulousbms/styles/home.css");
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+
+        stage.setScene(scene);
+        stage.show();
+        stage.centerOnScreen();
+        stage.setResizable(true);
+    }
+
+    /**
+     * Method to email a signed copy of the Leave application to any specified recipient.
+     * @param leave Leave object to be emailed.
+     * @param callback Callback to be executed on successful request.
+     */
+    public static void emailSigned(Leave leave, Callback callback)
+    {
+        if(leave==null)
+        {
+            IO.logAndAlert("Error", "Invalid Leave object passed.", IO.TAG_ERROR);
+            return;
+        }
+        //valid data - move on ...
+        Stage stage = new Stage();
+        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Signed Leave Application ["+leave.get_id()+"]");
+        stage.setMinWidth(320);
+        stage.setHeight(350);
+        stage.setAlwaysOnTop(true);
+
+        VBox vbox = new VBox(1);
+
+        final TextField txt_destination = new TextField();
+        txt_destination.setMinWidth(200);
+        txt_destination.setMaxWidth(Double.MAX_VALUE);
+        txt_destination.setPromptText("Type in email address/es separated by commas");
+        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, txt_destination);
+
+        final TextField txt_subject = new TextField();
+        txt_subject.setMinWidth(200);
+        txt_subject.setMaxWidth(Double.MAX_VALUE);
+        txt_subject.setPromptText("Type in an eMail subject");
+        HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
+
+        final TextField txt_leave_id = new TextField();
+        txt_leave_id.setMinWidth(200);
+        txt_leave_id.setMaxWidth(Double.MAX_VALUE);
+        txt_leave_id.setPromptText("Type in a message");
+        txt_leave_id.setEditable(false);
+        txt_leave_id.setText(leave.get_id());
+        HBox hbox_leave_id = CustomTableViewControls.getLabelledNode("Leave ID: ", 200, txt_leave_id);
+
+        final TextArea txt_message = new TextArea();
+        txt_message.setMinWidth(200);
+        txt_message.setMaxWidth(Double.MAX_VALUE);
+        HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
+
+        HBox submit;
+        submit = CustomTableViewControls.getSpacedButton("Send", event ->
+        {
+            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+            if(!Validators.isValidNode(txt_destination, txt_destination.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
+                return;
+            if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
+                return;
+
+            String str_destination = txt_destination.getText();
+            String str_subject = txt_subject.getText();
+            String str_message = txt_message.getText();
+
+            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new AbstractMap.SimpleEntry<>("leave_record_id", leave.get_id()));
+            params.add(new AbstractMap.SimpleEntry<>("to_email", str_destination));
+            params.add(new AbstractMap.SimpleEntry<>("subject", str_subject));
+            params.add(new AbstractMap.SimpleEntry<>("message", str_message));
+            //params.add(new AbstractMap.SimpleEntry<>("signed_leave_object", leave.getSigned_leave()));
+
+            try
+            {
+                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                if(SessionManager.getInstance().getActive()!=null)
+                {
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
+                            .getSessionId()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                } else
+                {
+                    IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
+                    return;
+                }
+
+                HttpURLConnection connection = RemoteComms.postData("/api/leave_record/signed/mailto", params, headers);
+                if(connection!=null)
+                {
+                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                    {
+                        IO.logAndAlert("Success", "Successfully emailed signed leave application to: " + txt_destination.getText(), IO.TAG_INFO);
+                        if(callback!=null)
+                            callback.call(null);
+                    }else{
+                        IO.logAndAlert( "ERROR: " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                    }
+                    connection.disconnect();
+                }
+            } catch (IOException e)
+            {
+                IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        });
+
+        //Add form controls vertically on the stage
+        vbox.getChildren().add(destination);
+        vbox.getChildren().add(subject);
+        vbox.getChildren().add(hbox_leave_id);
+        vbox.getChildren().add(message);
+        vbox.getChildren().add(submit);
+
+        //Setup scene and display stage
+        Scene scene = new Scene(vbox);
+        File fCss = new File("src/fadulousbms/styles/home.css");
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+
+        stage.setScene(scene);
+        stage.show();
+        stage.centerOnScreen();
+        stage.setResizable(true);
     }
 
     public static void approveLeave(Leave leave, Callback callback)

@@ -4,6 +4,7 @@ import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.Employee;
+import fadulousbms.model.Screens;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -45,7 +46,7 @@ public class HRController extends ScreenController implements Initializable
     public void initialize(URL url, ResourceBundle rb)
     {
         //set default selected tab, HR->Employees
-        if(hrTabs.getTabs()!=null)
+        /*if(hrTabs.getTabs()!=null)
             if(hrTabs.getTabs().size()>0)
                 selected_tab = hrTabs.getTabs().get(0);
 
@@ -59,8 +60,8 @@ public class HRController extends ScreenController implements Initializable
             {
                 OperationsController.setSelectedTab(newValue);
                 IO.log(getClass().getName(), IO.TAG_INFO, "selected tab: " + newValue.getText());
-            }*/
-        });
+            }*
+        });*/
     }
 
     public static void setSelectedTab(Tab tab)
@@ -122,6 +123,77 @@ public class HRController extends ScreenController implements Initializable
 
         } else IO.log(getClass().getName(), IO.TAG_ERROR, "selected tab is null");
         return context_menu;
+    }
+
+    @FXML
+    public void employeesClick()
+    {
+        try
+        {
+            if(ScreenManager.getInstance().loadScreen(Screens.EMPLOYEES.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.EMPLOYEES.getScreen())))
+                ScreenManager.getInstance().setScreen(Screens.EMPLOYEES.getScreen());
+            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load human resources' employees screen.");
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    @FXML
+    public void leaveClick()
+    {
+        try
+        {
+            if(ScreenManager.getInstance().loadScreen(Screens.LEAVE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.LEAVE.getScreen())))
+                ScreenManager.getInstance().setScreen(Screens.LEAVE.getScreen());
+            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load human resources' leave applications screen.");
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    @FXML
+    public void overtimeClick()
+    {
+        try
+        {
+            if(ScreenManager.getInstance().loadScreen(Screens.OVERTIME.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OVERTIME.getScreen())))
+                ScreenManager.getInstance().setScreen(Screens.OVERTIME.getScreen());
+            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load human resources' overtime applications screen.");
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    @FXML
+    public void payrollClick()
+    {
+        try
+        {
+            if(ScreenManager.getInstance().loadScreen(Screens.PAYROLL.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.PAYROLL.getScreen())))
+                ScreenManager.getInstance().setScreen(Screens.PAYROLL.getScreen());
+            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load human resources' payroll screen.");
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    @FXML
+    public void policyClick()
+    {
+        try
+        {
+            if(ScreenManager.getInstance().loadScreen(Screens.POLICY.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.POLICY.getScreen())))
+                ScreenManager.getInstance().setScreen(Screens.POLICY.getScreen());
+            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load human resources' policy screen.");
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
     }
 
     @FXML

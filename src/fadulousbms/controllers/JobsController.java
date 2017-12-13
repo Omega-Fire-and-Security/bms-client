@@ -483,13 +483,13 @@ public class JobsController extends ScreenController implements Initializable
                         PDFViewer pdfViewer = PDFViewer.getInstance();
                         pdfViewer.setVisible(true);
 
-                        //String local_filename = filename.substring(filename.lastIndexOf('/')+1);
                         String local_filename = job.get_id() + "_signed.pdf";
+                        String local_path = "out/pdf/" + local_filename;
                         /*if (new File("out/" + local_filename).exists())
                             Files.delete(new File("out/" + local_filename).toPath());*/
                         //TODO: fix this hack
                         int i = 1;
-                        File f = new File("out/" + local_filename);
+                        File f = new File(local_path);
                         if (f.exists())
                         {
                             if (f.delete())
@@ -499,24 +499,24 @@ public class JobsController extends ScreenController implements Initializable
                             {
                                 IO.log(JobsController.class.getName(), IO.TAG_WARN, "could not delete file ["+f.getAbsolutePath()+"]");
                                 //get new filename
-                                while((f=new File("out/"+local_filename)).exists())
+                                while((f=new File(local_path)).exists())
                                 {
-                                    local_filename = job.get_id() + "_signed." + i + ".pdf";
+                                    local_path = "out/pdf/"+job.get_id() + "_signed." + i + ".pdf";
                                     i++;
                                 }
                             }
                         }
 
-                        FileOutputStream out = new FileOutputStream(new File("out/" + local_filename));
+                        FileOutputStream out = new FileOutputStream(new File(local_path));
                         out.write(file, 0, file.length);
                         out.flush();
                         out.close();
 
                         IO.log(JobsController.class.getName(), IO.TAG_INFO, "downloaded signed job [" + job.get_id()
-                                +"] to path [out/" + local_filename + "], size: " + file.length + " bytes, in "+ellapsed
+                                +"] to path [" + local_path + "], size: " + file.length + " bytes, in "+ellapsed
                                 +" msec. launching PDF viewer.");
 
-                        pdfViewer.doOpen("out/" + local_filename);
+                        pdfViewer.doOpen(local_path);
                     }
                     else
                     {

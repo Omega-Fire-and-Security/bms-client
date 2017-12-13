@@ -251,6 +251,90 @@ public class PDF
             contents.beginText();
     }
 
+    public static String createLeaveApplicationPDF(Leave leave) throws IOException
+    {
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+
+        // Create a new document with an empty page.
+        final PDDocument document = new PDDocument();
+        final PDPage page = new PDPage(PDRectangle.A4);
+
+        final float w = page.getBBox().getWidth();
+        final float h = page.getBBox().getHeight();
+
+        //Add page to document
+        document.addPage(page);
+
+        // Adobe Acrobat uses Helvetica as a default font and
+        // stores that under the name '/Helv' in the resources dictionary
+        PDFont font = PDType1Font.HELVETICA;
+        PDResources resources = new PDResources();
+        resources.put(COSName.getPDFName("Helv"), font);
+
+        PDPageContentStream contents = new PDPageContentStream(document, page);
+        int logo_h = 60;
+        PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        contents.drawImage(logo, (w/2)-80, 770, 160, logo_h);
+
+        int line_pos = (int)h-logo_h-LINE_HEIGHT;
+
+        /** draw horizontal lines **/
+        drawHorzLines(contents, line_pos, (int)w, page_margins);
+        /** draw vertical lines **/
+        final int[] col_positions = {75, (int)((w / 2) + 100), (int)((w / 2) + 200)};
+        drawVertLines(contents, col_positions, line_pos-LINE_HEIGHT);
+        line_pos = (int)h-logo_h-LINE_HEIGHT;
+
+        /** begin text from the top**/
+        contents.beginText();
+        contents.setFont(font, 12);
+        line_pos-=10;
+        //Heading text
+        addTextToPageStream(contents, "Leave Application", 16,(int)(w/2)-70, line_pos);
+        line_pos-=LINE_HEIGHT;//next line
+
+        //Create column headings
+        addTextToPageStream(contents,"Type", 14,10, line_pos);
+        addTextToPageStream(contents,"From", 14, col_positions[0]+10, line_pos);
+        addTextToPageStream(contents,"Till", 14,col_positions[1]+10, line_pos);
+        addTextToPageStream(contents,"Total Days", 14,col_positions[2]+10, line_pos);
+
+        contents.endText();
+        line_pos-=LINE_HEIGHT;//next line
+
+        //int pos = line_pos;
+        contents.beginText();
+        addTextToPageStream(contents, String.valueOf(leave.getType()), 14, 10, line_pos);
+
+        if(leave.getStart_date()>0)
+            addTextToPageStream(contents, (new SimpleDateFormat("yyyy-DD-mm").format(leave.getStart_date()*1000)), 12, col_positions[0]+5, line_pos);
+        else addTextToPageStream(contents, "N/A", 12, col_positions[0]+5, line_pos);
+        if(leave.getEnd_date()>0)
+            addTextToPageStream(contents, (new SimpleDateFormat("yyyy-DD-mm").format(leave.getEnd_date()*1000)), 12, col_positions[1]+5, line_pos);
+        else addTextToPageStream(contents, "N/A", 12, col_positions[1]+5, line_pos);
+
+        long diff = leave.getEnd_date()-leave.getStart_date();//in epoch seconds
+        long days = diff/60/60/24;
+        addTextToPageStream(contents, String.valueOf(days), 12, col_positions[2]+5, line_pos);
+
+        String path = "out/pdf/leave_" + leave.get_id() + ".pdf";
+        int i=1;
+        while(new File(path).exists())
+        {
+            path = "out/pdf/leave_" + leave.get_id() + "." + i + ".pdf";
+            i++;
+        }
+
+        contents.endText();
+        contents.close();
+        document.save(path);
+        document.close();
+
+        return path;
+    }
+
     public static String createPurchaseOrderPdf(PurchaseOrder purchaseOrder) throws IOException
     {
         if(purchaseOrder==null)

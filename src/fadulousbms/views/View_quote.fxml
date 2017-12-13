@@ -155,8 +155,6 @@
                   <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
@@ -165,7 +163,7 @@
                <children>
                   <Label text="Quote ID" GridPane.rowIndex="1" />
                   <Label text="Date Generated" GridPane.rowIndex="2" />
-                  <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" text="Sale Consultants" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                  <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" text="Sale Consultants" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                      <font>
                         <Font name="System Bold" size="17.0" />
                      </font></Label>
@@ -180,7 +178,7 @@
                         <Font name="System Bold" size="17.0" />
                      </font>
                   </Label>
-                  <TableView fx:id="tblSaleReps" editable="true" minHeight="100.0" tableMenuButtonVisible="true" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS">
+                  <TableView fx:id="tblSaleReps" editable="true" minHeight="100.0" tableMenuButtonVisible="true" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS">
                     <columns>
                       <TableColumn fx:id="colFirstname" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="First Name">
                           <cellValueFactory>
@@ -199,29 +197,6 @@
                         <Insets top="20.0" />
                      </GridPane.margin>
                   </TableView>
-                  <Label text="Base Quote" GridPane.rowIndex="4" />
-                  <Label text="Revision" GridPane.rowIndex="3" />
-                  <TextField fx:id="txtRevision" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                     <children>
-                        <TextField fx:id="txtBase" editable="false" minHeight="35.0" minWidth="70.0">
-                           <HBox.margin>
-                              <Insets right="5.0" />
-                           </HBox.margin>
-                        </TextField>
-                        <Button minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#viewBase" styleClass="btnDefault" stylesheets="@../styles/home.css" text="View Base">
-                           <HBox.margin>
-                              <Insets right="5.0" />
-                           </HBox.margin>
-                        </Button>
-                        <Button fx:id="viewLatest" layoutX="164.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#prevRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Previous Revision">
-                           <HBox.margin>
-                              <Insets right="10.0" />
-                           </HBox.margin>
-                        </Button>
-                        <Button minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#nextRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Next Revision" />
-                     </children>
-                  </HBox>
                </children>
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

@@ -22,9 +22,11 @@ public class Leave implements BusinessObject, Serializable
     private long return_date;
     private long date_logged;
     private int status;
+    private String type;
     private String extra;
     private boolean marked;
     public static final String TAG = "Leave";
+    public static String[] TYPES = {"ANNUAL", "SICK", "UNPAID", "FAMILY RESPONSIBILITY - See BCEA for definition"};
     public static final int STATUS_PENDING =0;
     public static final int STATUS_APPROVED =1;
     public static final int STATUS_ARCHIVED =2;
@@ -148,6 +150,18 @@ public class Leave implements BusinessObject, Serializable
         this.status= status;
     }
 
+    public StringProperty typeProperty(){return new SimpleStringProperty(getType());}
+
+    public String getType()
+    {
+        return type;
+    }
+
+    public void setType(String type)
+    {
+        this.type = type;
+    }
+
     public StringProperty extraProperty(){return new SimpleStringProperty(getExtra());}
 
     public String getExtra()
@@ -193,6 +207,8 @@ public class Leave implements BusinessObject, Serializable
         {
             result.append(URLEncoder.encode("usr","UTF-8") + "="
                     + URLEncoder.encode(usr, "UTF-8"));
+            result.append("&" + URLEncoder.encode("type","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(getType()), "UTF-8"));
             if(getStatus()>0)
                 result.append("&" + URLEncoder.encode("status","UTF-8") + "="
                         + URLEncoder.encode(String.valueOf(getStatus()), "UTF-8"));
@@ -242,6 +258,9 @@ public class Leave implements BusinessObject, Serializable
                 case "status":
                     setStatus(Integer.parseInt(String.valueOf(val)));
                     break;
+                case "type":
+                    setType((String)val);
+                    break;
                 case "extra":
                     setExtra((String)val);
                     break;
@@ -274,6 +293,8 @@ public class Leave implements BusinessObject, Serializable
                 return getDate_logged();
             case "status":
                 return getStatus();
+            case "type":
+                return getType();
             case "extra":
                 return getExtra();
             default:

@@ -1,7 +1,6 @@
 package fadulousbms.controllers;
 
-import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
+import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -17,8 +16,12 @@ import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 /**
@@ -43,11 +46,11 @@ public class LeaveTabController extends ScreenController implements Initializabl
         colEmployee.setMinWidth(100);
         colEmployee.setCellValueFactory(new PropertyValueFactory<>("employee"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colStartDate, "start_date", "/api/leave");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colEndDate, "end_date", "/api/leave");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colReturnDate, "return_date", "/api/leave");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", "/api/leave");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/api/leave");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colStartDate, "start_date", "/api/leave_record");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colEndDate, "end_date", "/api/leave_record");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colReturnDate, "return_date", "/api/leave_record");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", "/api/leave_record");
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/api/leave_record");
 
         if(LeaveManager.getInstance().getLeaveRecords()!=null)
         {
@@ -69,6 +72,11 @@ public class LeaveTabController extends ScreenController implements Initializabl
                         final TableCell<Leave, String> cell = new TableCell<Leave, String>()
                         {
                             final Button btnApprove = new Button("Approve");
+                            final Button btnPDF = new Button("View As PDF");
+                            final Button btnUpload = new Button("Upload Signed");
+                            final Button btnRequestApproval = new Button("Request Approval");
+                            final Button btnViewSigned = new Button("View Signed");
+                            final Button btnEmailSigned = new Button("eMail Signed");
                             final Button btnRemove = new Button("Delete");
 
                             @Override
@@ -80,6 +88,36 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                 btnApprove.setMinWidth(100);
                                 btnApprove.setMinHeight(35);
                                 HBox.setHgrow(btnApprove, Priority.ALWAYS);
+
+                                btnRequestApproval.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRequestApproval.getStyleClass().add("btnDefault");
+                                btnRequestApproval.setMinWidth(100);
+                                btnRequestApproval.setMinHeight(35);
+                                HBox.setHgrow(btnRequestApproval, Priority.ALWAYS);
+
+                                btnPDF.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnPDF.getStyleClass().add("btnDefault");
+                                btnPDF.setMinWidth(100);
+                                btnPDF.setMinHeight(35);
+                                HBox.setHgrow(btnPDF, Priority.ALWAYS);
+
+                                btnUpload.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnUpload.getStyleClass().add("btnAdd");
+                                btnUpload.setMinWidth(100);
+                                btnUpload.setMinHeight(35);
+                                HBox.setHgrow(btnUpload, Priority.ALWAYS);
+
+                                btnViewSigned.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnViewSigned.getStyleClass().add("btnDefault");
+                                btnViewSigned.setMinWidth(100);
+                                btnViewSigned.setMinHeight(35);
+                                HBox.setHgrow(btnViewSigned, Priority.ALWAYS);
+
+                                btnEmailSigned.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnEmailSigned.getStyleClass().add("btnDefault");
+                                btnEmailSigned.setMinWidth(100);
+                                btnEmailSigned.setMinHeight(35);
+                                HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
 
                                 btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
@@ -93,7 +131,7 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnApprove, btnRemove);
+                                    HBox hBox = new HBox(btnApprove, btnRequestApproval, btnPDF, btnUpload, btnViewSigned, btnEmailSigned, btnRemove);
                                     hBox.setMaxWidth(Double.MAX_VALUE);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
                                     Leave leave = getTableView().getItems().get(getIndex());
@@ -108,6 +146,52 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                                 }).start();
                                                 return null;
                                             }));
+
+                                    btnPDF.setOnAction(event ->
+                                    {
+                                        try
+                                        {
+                                            LeaveManager.getInstance().reloadDataFromServer();
+                                            if (leave == null)
+                                            {
+                                                IO.logAndAlert("Error " + getClass()
+                                                        .getName(), "Leave object is not set", IO.TAG_ERROR);
+                                                return;
+                                            }
+                                            //update selected leave object on respective manager
+                                            if(LeaveManager.getInstance().getLeaveRecords()!=null)
+                                                LeaveManager.getInstance().setSelected(LeaveManager.getInstance().getLeaveRecords().get(leave.get_id()));
+                                            else IO.log(getClass().getName(), IO.TAG_ERROR, "no leave applications were found in the database." );
+
+                                            LeaveManager.getInstance().viewPDF(leave);
+                                        } catch (ClassNotFoundException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
+                                    });
+
+                                    btnUpload.setOnAction(event ->
+                                    {
+                                        if (leave == null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(),
+                                                    "Leave application object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        LeaveManager.getInstance().uploadSigned(leave.get_id());
+                                    });
+
+                                    btnViewSigned.setOnAction(event ->
+                                            viewSignedLeaveApplication(leave));
+
+                                    btnRequestApproval.setOnAction(event ->
+                                            LeaveManager.getInstance().requestApproval(leave, null));
+
+                                    btnEmailSigned.setOnAction(event ->
+                                            LeaveManager.getInstance().emailSigned(leave, null));
 
                                     btnRemove.setOnAction(event ->
                                     {
@@ -157,6 +241,84 @@ public class LeaveTabController extends ScreenController implements Initializabl
             e.printStackTrace();
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
+    }
+
+    private static void viewSignedLeaveApplication(Leave leave)
+    {
+        if(leave==null)
+        {
+            IO.logAndAlert("Error", "Selected Leave object is invalid.", IO.TAG_ERROR);
+            return;
+        }
+
+        //Validate session - also done on server-side don't worry ;)
+        SessionManager smgr = SessionManager.getInstance();
+        if(smgr.getActive()!=null)
+        {
+            if (!smgr.getActive().isExpired())
+            {
+                try
+                {
+                    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+
+                    //String filename = String.valueOf(bo.get(property));
+                    long start = System.currentTimeMillis();
+                    byte[] file = RemoteComms.sendFileRequest("/api/leave_record/signed/" + leave.get_id(), headers);
+
+                    if (file != null)
+                    {
+                        long ellapsed = System.currentTimeMillis() - start;
+                        PDFViewer pdfViewer = PDFViewer.getInstance();
+                        pdfViewer.setVisible(true);
+
+                        String local_filename = leave.get_id() + "_signed.pdf";
+                        String local_path = "out/pdf/" + local_filename;
+                        /*if (new File("out/" + local_filename).exists())
+                            Files.delete(new File("out/" + local_filename).toPath());*/
+                        //TODO: fix this hack
+                        int i = 1;
+                        File f = new File(local_path);
+                        if (f.exists())
+                        {
+                            if (f.delete())
+                                IO.log(JobsController.class.getName(), IO.TAG_INFO, "deleted file [" + f
+                                        .getAbsolutePath() + "]");
+                            else
+                            {
+                                IO.log(JobsController.class.getName(), IO.TAG_WARN, "could not delete file ["+f.getAbsolutePath()+"]");
+                                //get new filename
+                                while((f=new File(local_path)).exists())
+                                {
+                                    local_path = "out/pdf/"+leave.get_id() + "_signed." + i + ".pdf";
+                                    i++;
+                                }
+                            }
+                        }
+
+                        FileOutputStream out = new FileOutputStream(new File(local_path));
+                        out.write(file, 0, file.length);
+                        out.flush();
+                        out.close();
+
+                        IO.log(JobsController.class.getName(), IO.TAG_INFO, "downloaded signed leave application [" + leave.get_id()
+                                +"] to path [" + local_path + "], size: " + file.length + " bytes, in "+ellapsed
+                                +" msec. launching PDF viewer.");
+
+                        pdfViewer.doOpen(local_path);
+                    }
+                    else
+                    {
+                        IO.logAndAlert("File Downloader", "Signed leave application '" + leave.get_id()
+                                +"' for user ["+leave.getUsr()+"] could not be downloaded.", IO.TAG_ERROR);
+                    }
+                } catch (IOException e)
+                {
+                    IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("Error", "Could not download signed leave application for user ["+leave.getUsr()+"]: " + e.getMessage(), IO.TAG_ERROR);
+                }
+            } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
     public static RadialMenuItem[] getContextMenu()

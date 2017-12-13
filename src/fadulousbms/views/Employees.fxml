@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.HRController">
+   <children>
+      <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+         <children>
+            <MenuBar HBox.hgrow="ALWAYS">
+               <menus>
+                  <Menu mnemonicParsing="false" text="File">
+                     <items>
+                        <MenuItem mnemonicParsing="false" text="New Employee" />
+                        <MenuItem mnemonicParsing="false" onAction="#overtimeApplication" text="Overtime Application" />
+                        <MenuItem mnemonicParsing="false" onAction="#leaveApplication" text="Leave Application" />
+                        <MenuItem mnemonicParsing="false" text="Close" />
+                     </items>
+                  </Menu>
+                  <Menu mnemonicParsing="false" text="Selected">
+                     <items>
+                        <MenuItem mnemonicParsing="false" text="View" />
+                        <MenuItem mnemonicParsing="false" text="Upload CV" />
+                        <MenuItem mnemonicParsing="false" text="Deactivate" />
+                     </items>
+                  </Menu>
+                  <Menu mnemonicParsing="false" text="Help">
+                     <items>
+                        <MenuItem mnemonicParsing="false" text="About" />
+                     </items>
+                  </Menu>
+               </menus>
+            </MenuBar>
+         </children>
+      </HBox>
+      <fx:include source="SystemNav.fxml"/>
+      <TabPane fx:id="hrTabs" id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
+         <tabs>
+             <fx:include source="EmployeesTab.fxml"/>
+             <!--<fx:include source="OvertimeTab.fxml"/>
+             <fx:include source="LeaveTab.fxml"/>
+             <fx:include source="PayrollTab.fxml"/>
+             <fx:include source="PolicyTab.fxml"/>-->
+         </tabs>
+      </TabPane>
+      <HBox>
+         <children>
+            <Label text="Server Status:" />
+            <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+            <Label fx:id="lblOutput" text="console output">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+   </children>
+</VBox>
