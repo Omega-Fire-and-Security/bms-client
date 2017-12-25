@@ -11,43 +11,11 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/01/13.
  */
-public class Type implements BusinessObject, Serializable
+public class Type extends BusinessObject implements Serializable
 {
-    private String _id;
     private String type_name;
     private String type_description;
     private String other;
-    private boolean marked;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty type_nameProperty(){return new SimpleStringProperty(type_name);}
 
@@ -123,12 +91,6 @@ public class Type implements BusinessObject, Serializable
     }
 
     @Override
-    public String apiEndpoint()
-    {
-        return "/api/resource/type";
-    }
-
-    @Override
     public String asUTFEncodedString()
     {
         //Return encoded URL parameters in UTF-8 charset
@@ -155,5 +117,11 @@ public class Type implements BusinessObject, Serializable
     public String toString()
     {
         return this.type_name;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/resource/type";
     }
 }

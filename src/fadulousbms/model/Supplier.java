@@ -11,9 +11,8 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/01/03.
  */
-public class Supplier implements BusinessObject, Serializable
+public class Supplier extends BusinessObject implements Serializable
 {
-    private String _id;
     private String supplier_name;
     private String physical_address;
     private String postal_address;
@@ -24,41 +23,10 @@ public class Supplier implements BusinessObject, Serializable
     private boolean active;
     private long date_partnered;
     private String website;
-    private String registration;
-    private String vat;
+    private String registration_number;
+    private String vat_number;
     private String account_name;
     private String other;
-    private boolean marked;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty supplier_nameProperty(){return new SimpleStringProperty(supplier_name);}
 
@@ -168,16 +136,16 @@ public class Supplier implements BusinessObject, Serializable
         this.website = website;
     }
 
-    public StringProperty registrationProperty(){return new SimpleStringProperty(getRegistration());}
+    public StringProperty registration_numberProperty(){return new SimpleStringProperty(getRegistration_number());}
 
-    public String getRegistration()
+    public String getRegistration_number()
     {
-        return registration;
+        return registration_number;
     }
 
-    public void setRegistration(String registration)
+    public void setRegistration_number(String registration_number)
     {
-        this.registration = registration;
+        this.registration_number = registration_number;
     }
 
     public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
@@ -192,16 +160,16 @@ public class Supplier implements BusinessObject, Serializable
         this.account_name = account_name;
     }
 
-    public StringProperty vatProperty(){return new SimpleStringProperty(getVat());}
+    public StringProperty vat_numberProperty(){return new SimpleStringProperty(getVat_number());}
 
-    public String getVat()
+    public String getVat_number()
     {
-        return vat;
+        return vat_number;
     }
 
-    public void setVat(String vat)
+    public void setVat_number(String vat_number)
     {
-        this.vat = vat;
+        this.vat_number = vat_number;
     }
 
     public StringProperty contact_emailProperty(){return new SimpleStringProperty(contact_email);}
@@ -256,11 +224,11 @@ public class Supplier implements BusinessObject, Serializable
                 case "speciality":
                     setSpeciality((String)val);
                     break;
-                case "registration":
-                    setRegistration((String)val);
+                case "registration_number":
+                    setRegistration_number((String)val);
                     break;
-                case "vat":
-                    setVat((String)val);
+                case "vat_number":
+                    setVat_number((String)val);
                     break;
                 case "account_name":
                     setAccount_name((String)val);
@@ -306,10 +274,10 @@ public class Supplier implements BusinessObject, Serializable
                 return getContact_email();
             case "speciality":
                 return getSpeciality();
-            case "registration":
-                return getRegistration();
-            case "vat":
-                return getVat();
+            case "registration_number":
+                return getRegistration_number();
+            case "vat_number":
+                return getVat_number();
             case "account_name":
                 return getAccount_name();
             case "date_partnered":
@@ -324,12 +292,6 @@ public class Supplier implements BusinessObject, Serializable
                 IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Supplier attribute '" + var + "'.");
                 return null;
         }
-    }
-
-    @Override
-    public String apiEndpoint()
-    {
-        return "/api/supplier";
     }
 
     @Override
@@ -354,10 +316,10 @@ public class Supplier implements BusinessObject, Serializable
                     + URLEncoder.encode(contact_email, "UTF-8"));
             result.append("&" + URLEncoder.encode("speciality","UTF-8") + "="
                     + URLEncoder.encode(speciality, "UTF-8"));
-            result.append("&" + URLEncoder.encode("registration","UTF-8") + "="
-                    + URLEncoder.encode(registration, "UTF-8"));
-            result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(getVat()), "UTF-8"));
+            result.append("&" + URLEncoder.encode("registration_number","UTF-8") + "="
+                    + URLEncoder.encode(registration_number, "UTF-8"));
+            result.append("&" + URLEncoder.encode("vat_number","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(getVat_number()), "UTF-8"));
             result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(getAccount_name()), "UTF-8"));
             if(date_partnered>0)
@@ -383,5 +345,11 @@ public class Supplier implements BusinessObject, Serializable
     public String toString()
     {
         return supplier_name;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/supplier";
     }
 }

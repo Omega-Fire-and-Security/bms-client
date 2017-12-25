@@ -11,9 +11,8 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/01/21.
  */
-public class Revenue implements BusinessObject, Serializable
+public class Revenue extends BusinessObject implements Serializable
 {
-    private String _id;
     private String revenue_title;
     private String revenue_description;
     private double revenue_value;
@@ -22,51 +21,7 @@ public class Revenue implements BusinessObject, Serializable
     private String account;
     private String other;
     private Employee creator_employee;
-    private boolean marked;
     public static final String TAG = "Revenue";
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    /**
-     * Function to get identifier of Quote object.
-     * @return Quote identifier.
-     */
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    /**
-     * Method to assign identifier to this object.
-     * @param _id identifier to be assigned to this object.
-     */
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-
-    /**
-     * Function to get a shortened identifier of this object.
-     * @return The shortened identifier.
-     */
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty revenue_titleProperty()
     {
@@ -225,7 +180,7 @@ public class Revenue implements BusinessObject, Serializable
         switch (var.toLowerCase())
         {
             case "_id":
-                return _id;
+                return get_id();
             case "revenue_title":
                 return revenue_title;
             case "revenue_description":
@@ -244,12 +199,6 @@ public class Revenue implements BusinessObject, Serializable
                 IO.log(getClass().getName(), IO.TAG_ERROR,"unknown Revenue attribute '" + var + "'.");
                 return null;
         }
-    }
-
-    @Override
-    public String apiEndpoint()
-    {
-        return "/api/revenue";
     }
 
     @Override
@@ -288,5 +237,11 @@ public class Revenue implements BusinessObject, Serializable
     public String toString()
     {
         return this.revenue_title;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/api/revenue";
     }
 }

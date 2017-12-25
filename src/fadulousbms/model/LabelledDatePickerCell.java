@@ -104,8 +104,8 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
         {
             if(date>0)
             {
-                datePicker.setValue(LocalDate.parse(formatter.format(new Date(date * 1000))));
-                //setText(formatter.format(new Date(date*1000)));
+                datePicker.setValue(LocalDate.parse(formatter.format(new Date(date))));
+                //setText(formatter.format(new Date(date)));
                 setGraphic(datePicker);
             }else{
                 setGraphic(label);

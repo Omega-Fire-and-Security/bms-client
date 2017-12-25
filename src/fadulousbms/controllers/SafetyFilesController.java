@@ -157,7 +157,7 @@ public class SafetyFilesController extends ScreenController implements Initializ
                             in.close();
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
                             headers.add(new AbstractMap.SimpleEntry<>("Filename", f.getName()));
                             RemoteComms.uploadFile("/api/upload", headers, buffer);
@@ -193,7 +193,7 @@ public class SafetyFilesController extends ScreenController implements Initializ
             if(!smgr.getActive().isExpired())
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                 try
                 {

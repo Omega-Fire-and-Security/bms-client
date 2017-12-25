@@ -129,7 +129,9 @@ public class CreateAccountController extends ScreenController implements Initial
 
                 try
                 {
-                    HttpURLConnection connection = RemoteComms.postData("/api/employee/add", params, null);
+                    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                    headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+                    HttpURLConnection connection = RemoteComms.putJSONData("/employees", params, headers);
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                     {
                         IO.logAndAlert("Account Creation Success", IO.readStream(connection.getInputStream()), IO.TAG_INFO);

@@ -13,9 +13,8 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/01/21.
  */
-public class Leave implements BusinessObject, Serializable
+public class Leave extends BusinessObject implements Serializable
 {
-    private String _id;
     private String usr;
     private long start_date;
     private long end_date;
@@ -24,54 +23,11 @@ public class Leave implements BusinessObject, Serializable
     private int status;
     private String type;
     private String extra;
-    private boolean marked;
     public static final String TAG = "Leave";
     public static String[] TYPES = {"ANNUAL", "SICK", "UNPAID", "FAMILY RESPONSIBILITY - See BCEA for definition"};
     public static final int STATUS_PENDING =0;
     public static final int STATUS_APPROVED =1;
     public static final int STATUS_ARCHIVED =2;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    /**
-     * Function to get identifier of Quote object.
-     * @return Quote identifier.
-     */
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    /**
-     * Method to assign identifier to this object.
-     * @param _id identifier to be assigned to this object.
-     */
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    /**
-     * Function to get a shortened identifier of this object.
-     * @return The shortened identifier.
-     */
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
 
@@ -193,50 +149,6 @@ public class Leave implements BusinessObject, Serializable
     }
 
     @Override
-    public String apiEndpoint()
-    {
-        return "/api/leave_record";
-    }
-
-    @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("usr","UTF-8") + "="
-                    + URLEncoder.encode(usr, "UTF-8"));
-            result.append("&" + URLEncoder.encode("type","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(getType()), "UTF-8"));
-            if(getStatus()>0)
-                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getStatus()), "UTF-8"));
-            if(getStart_date()>0)
-                result.append("&" + URLEncoder.encode("start_date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getStart_date()), "UTF-8"));
-            if(getEnd_date()>0)
-                result.append("&" + URLEncoder.encode("end_date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getEnd_date()), "UTF-8"));
-            if(getReturn_date()>0)
-                result.append("&" + URLEncoder.encode("return_date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getReturn_date()), "UTF-8"));
-            if(getDate_logged()>0)
-                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
-            if(getExtra()!=null)
-                if(!getExtra().isEmpty())
-                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
-                            + URLEncoder.encode(getExtra(), "UTF-8"));
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
     public void parse(String var, Object val)
     {
         try
@@ -302,4 +214,49 @@ public class Leave implements BusinessObject, Serializable
                 return null;
         }
     }
+
+    @Override
+    public String asUTFEncodedString()
+    {
+        //Return encoded URL parameters in UTF-8 charset
+        StringBuilder result = new StringBuilder();
+        try
+        {
+            result.append(URLEncoder.encode("usr","UTF-8") + "="
+                    + URLEncoder.encode(usr, "UTF-8"));
+            result.append("&" + URLEncoder.encode("type","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(getType()), "UTF-8"));
+            if(getStatus()>0)
+                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getStatus()), "UTF-8"));
+            if(getStart_date()>0)
+                result.append("&" + URLEncoder.encode("start_date","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getStart_date()), "UTF-8"));
+            if(getEnd_date()>0)
+                result.append("&" + URLEncoder.encode("end_date","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getEnd_date()), "UTF-8"));
+            if(getReturn_date()>0)
+                result.append("&" + URLEncoder.encode("return_date","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getReturn_date()), "UTF-8"));
+            if(getDate_logged()>0)
+                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
+            if(getExtra()!=null)
+                if(!getExtra().isEmpty())
+                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
+                            + URLEncoder.encode(getExtra(), "UTF-8"));
+            return result.toString();
+        } catch (UnsupportedEncodingException e)
+        {
+            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/leave_record";
+    }
+
 }

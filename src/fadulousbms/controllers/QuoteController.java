@@ -26,7 +26,6 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -97,8 +96,14 @@ public abstract class QuoteController extends ScreenController implements Initia
         cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
         cbxClients.valueProperty().addListener((observable, oldValue, newValue) ->
         {
-                if(newValue!=null)
-                    cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()}));
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>Selected client id: " + newValue.get_id());
+            if(newValue!=null)
+                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()}));
+            if(newValue!=null)
+            {
+                txtFax.setText(newValue.getFax());
+                itemsModified=true;
+            }
         });
 
         refreshTotal();
@@ -236,7 +241,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         });
         cbxClients.setButtonCell(null);
         cbxClients.setItems(FXCollections.observableArrayList(ClientManager.getInstance().getClients().values()));
-        cbxClients.setOnAction(event ->
+        /*cbxClients.setOnAction(event ->
         {
             if(cbxClients.getValue()!=null)
             {
@@ -244,7 +249,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                 itemsModified=true;
             }
             //else IO.logAndAlert("Invalid Client", "Client company selected is invalid.", IO.TAG_ERROR);
-        });
+        });*/
 
         cbxContactPerson.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
         {
@@ -1094,7 +1099,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         quote.setRequest(txtRequest.getText());
         quote.setStatus(Quote.STATUS_PENDING);
         quote.setAccount_name(cbxAccount.getValue());
-        quote.setCreator(SessionManager.getInstance().getActive().getUsername());
+        quote.setCreator(SessionManager.getInstance().getActive().getUsr());
         quote.setRevision(1.0);
 
         if(toggleVatExempt.isSelected())
@@ -1107,8 +1112,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         try
         {
-            QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblSaleReps
-                    .getItems(), new Callback()
+            QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblSaleReps.getItems(), new Callback()
             {
                 @Override
                 public Object call(Object quote_id)
@@ -1220,7 +1224,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             quote.setAccount_name(cbxAccount.getValue());
             quote.setStatus(Quote.STATUS_PENDING);
             quote.setAccount_name(cbxAccount.getValue());
-            quote.setCreator(SessionManager.getInstance().getActive().getUsername());
+            quote.setCreator(SessionManager.getInstance().getActive().getUsr());
             quote.setRevision(1.0);//set default revision number
             //get selected Quote's siblings sorted by revision number
             Quote[] quote_revisions = selected.getSiblings("revision");
@@ -1229,8 +1233,8 @@ public abstract class QuoteController extends ScreenController implements Initia
                     quote.setRevision(quote_revisions[quote_revisions.length-1].getRevision()+1);//get revision # of last Quote +1
             //set parent of new Quote to be the root Quote of the selected Quote, if is root/base then use selected Quote
             if(selected.getRoot()!=null)
-                quote.setParent(selected.getRoot().get_id());
-            else quote.setParent(selected.get_id());
+                quote.setParent_id(selected.getRoot().get_id());
+            else quote.setParent_id(selected.get_id());
 
             if(toggleVatExempt.isSelected())
                 quote.setVat(0);

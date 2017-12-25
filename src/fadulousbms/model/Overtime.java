@@ -1,13 +1,10 @@
 package fadulousbms.model;
 
-import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.JobManager;
-import fadulousbms.managers.ResourceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import jdk.nashorn.internal.scripts.JO;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -17,9 +14,8 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/01/21.
  */
-public class Overtime implements BusinessObject, Serializable
+public class Overtime extends BusinessObject implements Serializable
 {
-    private String _id;
     private String usr;
     private String job_id;
     private long date;
@@ -28,53 +24,10 @@ public class Overtime implements BusinessObject, Serializable
     private long date_logged;
     private int status;
     private String extra;
-    private boolean marked;
     public static final String TAG = "Overtime";
     public static final int STATUS_PENDING =0;
     public static final int STATUS_APPROVED =1;
     public static final int STATUS_ARCHIVED =2;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    /**
-     * Function to get identifier of Quote object.
-     * @return Quote identifier.
-     */
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    /**
-     * Method to assign identifier to this object.
-     * @param _id identifier to be assigned to this object.
-     */
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    /**
-     * Function to get a shortened identifier of this object.
-     * @return The shortened identifier.
-     */
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
 
@@ -217,50 +170,6 @@ public class Overtime implements BusinessObject, Serializable
     }
 
     @Override
-    public String apiEndpoint()
-    {
-        return "/api/overtime_record";
-    }
-
-    @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("usr","UTF-8") + "="
-                    + URLEncoder.encode(usr, "UTF-8"));
-            result.append("&" + URLEncoder.encode("job_id","UTF-8") + "="
-                    + URLEncoder.encode(job_id, "UTF-8"));
-            if(getStatus()>0)
-                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getStatus()), "UTF-8"));
-            if(getDate()>0)
-                result.append("&" + URLEncoder.encode("date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate()), "UTF-8"));
-            if(getTime_in()>0)
-                result.append("&" + URLEncoder.encode("time_in","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getTime_in()), "UTF-8"));
-            if(getTime_out()>0)
-                result.append("&" + URLEncoder.encode("time_out","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getTime_out()), "UTF-8"));
-            if(getDate_logged()>0)
-                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
-            if(getExtra()!=null)
-                if(!getExtra().isEmpty())
-                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
-                            + URLEncoder.encode(getExtra(), "UTF-8"));
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
     public void parse(String var, Object val)
     {
         try
@@ -329,4 +238,49 @@ public class Overtime implements BusinessObject, Serializable
                 return null;
         }
     }
+
+    @Override
+    public String asUTFEncodedString()
+    {
+        //Return encoded URL parameters in UTF-8 charset
+        StringBuilder result = new StringBuilder();
+        try
+        {
+            result.append(URLEncoder.encode("usr","UTF-8") + "="
+                    + URLEncoder.encode(usr, "UTF-8"));
+            result.append("&" + URLEncoder.encode("job_id","UTF-8") + "="
+                    + URLEncoder.encode(job_id, "UTF-8"));
+            if(getStatus()>0)
+                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getStatus()), "UTF-8"));
+            if(getDate()>0)
+                result.append("&" + URLEncoder.encode("date","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getDate()), "UTF-8"));
+            if(getTime_in()>0)
+                result.append("&" + URLEncoder.encode("time_in","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getTime_in()), "UTF-8"));
+            if(getTime_out()>0)
+                result.append("&" + URLEncoder.encode("time_out","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getTime_out()), "UTF-8"));
+            if(getDate_logged()>0)
+                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
+            if(getExtra()!=null)
+                if(!getExtra().isEmpty())
+                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
+                            + URLEncoder.encode(getExtra(), "UTF-8"));
+            return result.toString();
+        } catch (UnsupportedEncodingException e)
+        {
+            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/overtime_record";
+    }
+
 }

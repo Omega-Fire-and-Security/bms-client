@@ -41,15 +41,11 @@ import java.util.logging.Logger;
  */
 public class ResourceManager extends BusinessObjectManager
 {
-    //private Resource[] resources;
     private HashMap<String, Resource> resources;//resources that have been approved/acquired/delivered
     private HashMap<String, Resource> all_resources;
     private Resource selected;
     private Gson gson;
     private static ResourceManager resource_manager = new ResourceManager();
-
-    //public static final String[] RESOURCE_TYPES = {"VEHICLE", "EQUIPMENT"};
-    //private ResourceType[] resource_types;
     private HashMap<String, ResourceType> resource_types;
     public static final String TAG = "ResourceManager";
     public static final String ROOT_PATH = "cache/resources/";
@@ -136,11 +132,11 @@ public class ResourceManager extends BusinessObjectManager
             {
                 gson = new GsonBuilder().create();
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                 //Get Timestamp
                 String timestamp_json = RemoteComms
-                        .sendGetRequest("/api/timestamp/resources_timestamp", headers);
+                        .sendGetRequest("/timestamp/resources_timestamp", headers);
                 Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                 if (cntr_timestamp != null)
                 {
@@ -156,38 +152,56 @@ public class ResourceManager extends BusinessObjectManager
 
                 if (!isSerialized(ROOT_PATH + filename))
                 {
-                    String resources_json = RemoteComms.sendGetRequest("/api/resources", headers);
-                    Resource[] arr_resources = gson.fromJson(resources_json, Resource[].class);
-                    resources = new HashMap<>();
-                    all_resources = new HashMap<>();
-                    for (Resource res : arr_resources)
+                    String resources_json = RemoteComms.sendGetRequest("/resources", headers);
+                    ResourceServerObject resources_server_object = gson.fromJson(resources_json, ResourceServerObject.class);
+
+                    if(resources_server_object!=null)
                     {
-                        all_resources.put(res.get_id(), res);
-                        if (res.getDate_acquired() > 0)
-                            resources.put(res.get_id(), res);
-                        else IO.log(getClass()
-                                .getName(), IO.TAG_WARN, "material [" + res + "] has not been approved yet. [date_acquired not set]");
-                    }
+                        if(resources_server_object.get_embedded()!=null)
+                        {
+                            Resource[] resources_arr = resources_server_object.get_embedded().getResources();
+
+                            resources = new HashMap();
+                            all_resources = new HashMap();
+                            if (resources_arr != null)
+                            {
+                                for (Resource res : resources_arr)
+                                {
+                                    all_resources.put(res.get_id(), res);
+                                    if (res.getDate_acquired() > 0)
+                                        resources.put(res.get_id(), res);
+                                    else IO.log(getClass().getName(), IO.TAG_WARN, "material [" + res + "] has not been approved yet. [date_acquired not set]");
+                                }
+                            } else IO.log(getClass().getName(), IO.TAG_WARN, "no resources found in database.");
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources in database.");
+                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceServerObject (containing Resource objects & other metadata) is null");
 
 
-                    String resource_types_json = RemoteComms.sendGetRequest("/api/resource/types", headers);
-                    ResourceType[] resourcetypes = gson.fromJson(resource_types_json, ResourceType[].class);
-                    resource_types = new HashMap<>();
-                    for (ResourceType resourceType : resourcetypes)
-                        resource_types.put(resourceType.get_id(), resourceType);
+                    String resource_types_json = RemoteComms.sendGetRequest("/resources/types", headers);
+                    ResourceTypeServerObject resourceTypeServerObject = gson.fromJson(resource_types_json, ResourceTypeServerObject.class);
+                    if(resourceTypeServerObject!=null)
+                    {
+                        if(resourceTypeServerObject.get_embedded()!=null)
+                        {
+                            ResourceType[] resource_types_arr = resourceTypeServerObject.get_embedded()
+                                    .getResource_types();
+
+                            resource_types = new HashMap<>();
+                            for (ResourceType resource_type : resource_types_arr)
+                                resource_types.put(resource_type.get_id(), resource_type);
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resource Types in the database.");
+                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceTypeServerObject (containing ResourceType objects & other metadata) is null");
 
                     IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of materials.");
 
                     this.serialize(ROOT_PATH + filename, all_resources);
                     this.serialize(ROOT_PATH + "resource_types.dat", resource_types);
-                }
-                else
+                } else
                 {
                     IO.log(this.getClass()
                             .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                     all_resources = (HashMap<String, Resource>) this.deserialize(ROOT_PATH + filename);
-                    resource_types = (HashMap<String, ResourceType>) this
-                            .deserialize(ROOT_PATH + "resource_types.dat");
+                    resource_types = (HashMap<String, ResourceType>) this.deserialize(ROOT_PATH + "resource_types.dat");
 
                     resources = new HashMap<>();
                     if (all_resources != null)
@@ -381,7 +395,7 @@ public class ResourceManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -509,7 +523,7 @@ public class ResourceManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);
@@ -572,5 +586,65 @@ public class ResourceManager extends BusinessObjectManager
 
         stage.setScene(scene);
         stage.show();
+    }
+
+    class ResourceServerObject extends ServerObject
+    {
+        private ResourceServerObject.Embedded _embedded;
+
+        ResourceServerObject.Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(ResourceServerObject.Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Resource[] resources;
+
+            public Resource[] getResources()
+            {
+                return resources;
+            }
+
+            public void setResources(Resource[] resources)
+            {
+                this.resources = resources;
+            }
+        }
+    }
+
+    class ResourceTypeServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private ResourceType[] resource_types;
+
+            public ResourceType[] getResource_types()
+            {
+                return resource_types;
+            }
+
+            public void setResource_types(ResourceType[] resource_types)
+            {
+                this.resource_types = resource_types;
+            }
+        }
     }
 }

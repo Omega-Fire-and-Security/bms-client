@@ -125,11 +125,11 @@ public class PurchaseOrderManager extends BusinessObjectManager
             {
                 gson = new GsonBuilder().create();
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                 //Get Timestamp
                 String timestamp_json = RemoteComms
-                        .sendGetRequest("/api/timestamp/purchase_orders_timestamp", headers);
+                        .sendGetRequest("/timestamp/purchase_orders_timestamp", headers);
                 Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                 if (cntr_timestamp != null)
                 {
@@ -145,59 +145,73 @@ public class PurchaseOrderManager extends BusinessObjectManager
 
                 if (!isSerialized(ROOT_PATH + filename))
                 {
-                    String purchaseorders_json = RemoteComms.sendGetRequest("/api/purchaseorders", headers);
-                    PurchaseOrder[] purchase_orders_arr = gson
-                            .fromJson(purchaseorders_json, PurchaseOrder[].class);
+                    String purchaseorders_json = RemoteComms.sendGetRequest("/purchaseorders", headers);
+                    PurchaseOrderServerObject purchaseOrderServerObject= gson.fromJson(purchaseorders_json, PurchaseOrderServerObject.class);
+                    if(purchaseOrderServerObject!=null)
+                    {
+                        if(purchaseOrderServerObject.get_embedded()!=null)
+                        {
+                            PurchaseOrder[] purchase_orders_arr = purchaseOrderServerObject.get_embedded()
+                                    .getPurchaseOrders();
 
-                    purchaseOrders = new HashMap();
-                    for (PurchaseOrder po : purchase_orders_arr)
-                        purchaseOrders.put(po.get_id(), po);
+                            if (purchase_orders_arr != null)
+                            {
+                                purchaseOrders = new HashMap<>();
+                                for (PurchaseOrder purchaseOrder : purchase_orders_arr)
+                                    purchaseOrders.put(purchaseOrder.get_id(), purchaseOrder);
+                            }
+                            else IO.log(getClass().getName(), IO.TAG_WARN, "no purchase orders found in database.");
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Purchase Orders in database.");
+                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderServerObject (containing PurchaseOrder objects & other metadata) is null");
+
                     if (purchaseOrders != null)
                     {
                         for (PurchaseOrder po : purchaseOrders.values())
                         {
+                            ArrayList<PurchaseOrderItem> purchaseOrderItems = new ArrayList<>();
+
                             //get po items from server and set them to local object
-                            String purchase_order_items_json = RemoteComms
-                                    .sendGetRequest("/api/purchaseorder/items/" + po.get_id(), headers);
-                            PurchaseOrderResource[] purchaseOrderResources = gson
-                                    .fromJson(purchase_order_items_json, PurchaseOrderResource[].class);
+                            String purchase_order_items_json = RemoteComms.sendGetRequest("/purchaseorders/resources/" + po.get_id(), headers);
+                            PurchaseOrderResourceServerObject purchaseOrderResourceServerObject= gson.fromJson(purchase_order_items_json, PurchaseOrderResourceServerObject.class);
+                            if(purchaseOrderResourceServerObject!=null)
+                            {
+                                if(purchaseOrderResourceServerObject.get_embedded()!=null)
+                                {
+                                    PurchaseOrderResource[] purchase_order_resources_arr = purchaseOrderResourceServerObject
+                                            .get_embedded().getPurchase_order_resources();
+                                    purchaseOrderItems
+                                            .addAll(FXCollections.observableArrayList(purchase_order_resources_arr));
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources for PO #"+ po.get_id());
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderResourceServerObject (containing PurchaseOrderResource objects & other metadata) is null");
 
                             String purchase_order_assets_json = RemoteComms
-                                    .sendGetRequest("/api/purchaseorder/assets/" + po.get_id(), headers);
-                            PurchaseOrderAsset[] purchaseOrderAssets = gson
-                                    .fromJson(purchase_order_assets_json, PurchaseOrderAsset[].class);
-
-                            PurchaseOrderItem[] purchaseOrderItems = new PurchaseOrderItem[purchaseOrderResources.length + purchaseOrderAssets.length];
-                            int i = 0;
-
-                            for (PurchaseOrderResource item : purchaseOrderResources)
+                                    .sendGetRequest("/purchaseorders/assets/" + po.get_id(), headers);
+                            PurchaseOrderAssetServerObject purchaseOrderAssetServerObject= gson.fromJson(purchase_order_assets_json, PurchaseOrderAssetServerObject.class);
+                            if(purchaseOrderAssetServerObject!=null)
                             {
-                                //String resource_json = RemoteComms.sendGetRequest("/api/resource/" + item.getItem_id(), headers);
-                                //System.out.println("po resource json: " + resource_json);
-                                //item.setItem(gson.fromJson(resource_json, Resource.class));
-                                //item.setType(Resource.class.getName());
-                                purchaseOrderItems[i] = item;
-                                i++;
-                            }
+                                if(purchaseOrderAssetServerObject.get_embedded()!=null)
+                                {
+                                    PurchaseOrderAsset[] purchase_order_assets_arr = purchaseOrderAssetServerObject
+                                            .get_embedded().getPurchase_order_assets();
+                                    purchaseOrderItems
+                                            .addAll(FXCollections.observableArrayList(purchase_order_assets_arr));
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Assets for PO #"+ po.get_id());
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderAssetServerObject (containing PurchaseOrderAsset objects & other metadata) is null");
 
-                            for (PurchaseOrderItem item : purchaseOrderAssets)
+
+                            if(!purchaseOrderItems.isEmpty())
                             {
-                                //String asset_json = RemoteComms.sendGetRequest("/api/asset/" + item.getItem_id(), headers);
-                                //item.setItem(gson.fromJson(asset_json, Asset.class));
-                                purchaseOrderItems[i] = item;
-                                i++;
-                            }
-                            po.setItems(purchaseOrderItems);
+                                PurchaseOrderItem[] po_items_arr = new PurchaseOrderItem[purchaseOrderItems.size()];
+                                purchaseOrderItems.toArray(po_items_arr);
+                                po.setItems(po_items_arr);
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "PO #"+po.getNumber()+" has no items.");
                         }
                     }
                     IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of purchase orders.");
-
                     this.serialize(ROOT_PATH + filename, purchaseOrders);
-                }
-                else
+                } else
                 {
-                    IO.log(this.getClass()
-                            .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                    IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                     purchaseOrders = (HashMap<String, PurchaseOrder>) this.deserialize(ROOT_PATH + filename);
                 }
             } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
@@ -276,7 +290,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                            .getSession_id()));
                     params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
@@ -441,7 +455,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                            .getSession_id()));
                     params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
@@ -536,7 +550,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
 
                                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance()
-                                        .getActive().getSessionId()));
+                                        .getActive().getSession_id()));
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                                 RemoteComms.uploadFile("/api/purchaseorder/upload/" + purchaseOrder.get_id(), headers, buffer);
@@ -557,5 +571,95 @@ public class PurchaseOrderManager extends BusinessObjectManager
                 }
             } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    class PurchaseOrderServerObject extends ServerObject
+    {
+        private PurchaseOrderServerObject.Embedded _embedded;
+
+        PurchaseOrderServerObject.Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(PurchaseOrderServerObject.Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private PurchaseOrder[] purchaseorders;
+
+            public PurchaseOrder[] getPurchaseOrders()
+            {
+                return purchaseorders;
+            }
+
+            public void setPurchaseOrder(PurchaseOrder[] purchaseorders)
+            {
+                this.purchaseorders = purchaseorders;
+            }
+        }
+    }
+
+    class PurchaseOrderAssetServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private PurchaseOrderAsset[] purchase_order_assets;
+
+            public PurchaseOrderAsset[] getPurchase_order_assets()
+            {
+                return purchase_order_assets;
+            }
+
+            public void setPurchase_order_assets(PurchaseOrderAsset[] purchase_order_assets)
+            {
+                this.purchase_order_assets = purchase_order_assets;
+            }
+        }
+    }
+
+    class PurchaseOrderResourceServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private PurchaseOrderResource[] purchase_order_resources;
+
+            public PurchaseOrderResource[] getPurchase_order_resources()
+            {
+                return purchase_order_resources;
+            }
+
+            public void setPurchase_order_resources(PurchaseOrderResource[] purchase_order_resources)
+            {
+                this.purchase_order_resources = purchase_order_resources;
+            }
+        }
     }
 }

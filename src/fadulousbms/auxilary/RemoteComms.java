@@ -30,66 +30,34 @@ import java.util.ArrayList;
  */
 public class RemoteComms
 {
-    public static String host = "http://192.168.43.31:9000";//192.168.0.103//95.85.57.110
+    public static String host = "http://localhost:8080";//192.168.0.103//95.85.57.110
     public static final String TAG = "RemoteComms";
 
     public static Session auth(String usr, String pwd) throws IOException, LoginException
     {
-        ArrayList<AbstractMap.SimpleEntry<String,String>> data = new ArrayList<>();
+        /*ArrayList<AbstractMap.SimpleEntry<String,String>> data = new ArrayList<>();
         data.add(new AbstractMap.SimpleEntry<>("usr",usr));
-        data.add(new AbstractMap.SimpleEntry<>("pwd",pwd));
-        HttpURLConnection connObj = postData("/api/auth", data, null);
+        data.add(new AbstractMap.SimpleEntry<>("pwd",pwd));*/
+
+        ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+        headers.add(new AbstractMap.SimpleEntry<>("usr", usr));
+        headers.add(new AbstractMap.SimpleEntry<>("pwd", pwd));
+        HttpURLConnection connObj = putJSONData("/auth", null, headers);
         
         if(connObj.getResponseCode()==200)
         {
-            String cookie = connObj.getHeaderField("Set-Cookie");
-            if(cookie!=null)
+            //String cookie = connObj.getHeaderField("Set-Cookie");
+            String session_str = IO.readStream(connObj.getInputStream());
+            Session session = new GsonBuilder().create().fromJson(session_str, Session.class);
+            if(session!=null)
             {
-                String[] cookie_attrs = cookie.split(";");
-                if(cookie_attrs.length>=3)
-                {
-                    String session_id="";//cookie_attrs[0];
-                    int date=0, ttl=0;
-                    for(String attr: cookie_attrs)
-                    {
-                        if(attr.contains("="))
-                        {
-                            String key = attr.split("=")[0];
-                            String val = attr.split("=")[1];
-                            switch(key.toUpperCase())
-                            {
-                                case "SESSION":
-                                    session_id = val;
-                                    break;
-                                case "DATE":
-                                    date = (int)Double.parseDouble(val);
-                                    break;
-                                case "TTL":
-                                    ttl = Integer.parseInt(val);
-                                    break;
-                                default:
-                                    IO.log("User Authenticator", IO.TAG_ERROR, "Unknown cookie attribute: " + key);
-                                    break;
-                            }
-                        }else{
-                            //throw new LoginException("Cookie attributes are invalid. Missing '='.");
-                            IO.logAndAlert("Authentication Error", "Cookie attributes are invalid. Missing '='.", IO.TAG_ERROR);
-                        }
-                    }
-
                     IO.log("User Authenticator", IO.TAG_INFO, "successfully signed in.");
-
-                    Session session = new Session(usr, session_id, date, ttl);
                     connObj.disconnect();
                     return session;
-                }else{
-                    connObj.disconnect();
-                    IO.logAndAlert("Authentication Error", "Cookie attributes are invalid. Not enough attributes. Must be >= 3.", IO.TAG_ERROR);
-                    //throw new LoginException("Cookie attributes are invalid. Not enough attributes. Must be >= 3.");
-                }
             }else{
                 connObj.disconnect();
-                IO.logAndAlert("Authentication Error", "Cookie object is not set.", IO.TAG_ERROR);
+                IO.logAndAlert("Authentication Error", "Could not parse Session JSON object.", IO.TAG_ERROR);
                //throw new LoginException("Cookie object is not set.");
             }
         }else{
@@ -260,6 +228,143 @@ public class RemoteComms
         return httpConn;
     }
 
+    public static HttpURLConnection putURLEncodedData(String function, ArrayList<AbstractMap.SimpleEntry<String,String>> params, ArrayList<AbstractMap.SimpleEntry<String,String>> headers) throws IOException
+    {
+        URL urlConn = new URL(host + function);
+        HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
+        if(headers!=null)
+            for(AbstractMap.SimpleEntry<String,String> header:headers)
+                httpConn.setRequestProperty(header.getKey() , header.getValue());
+        httpConn.setReadTimeout(10000);
+        httpConn.setConnectTimeout(15000);
+        httpConn.setRequestMethod("PUT");
+        httpConn.setDoInput(true);
+        httpConn.setDoOutput(true);
+
+        //Encode body data in UTF-8 charset
+        StringBuilder result = new StringBuilder();
+        for(int i=0;i<params.size();i++)
+        {
+            AbstractMap.SimpleEntry<String,String> entry = params.get(i);
+            if(entry!=null)
+            {
+                if(entry.getKey()!=null && entry.getValue()!=null)
+                {
+                    result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                    result.append("=");
+                    result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                    result.append((i != params.size() - 1 ? "&" : ""));//add ampersand if not last param
+                }else return null;
+            }else return null;
+        }
+
+        IO.log(TAG, IO.TAG_INFO, String.format("%s %s HTTP/1.1\nHost: %s", httpConn.getRequestMethod(), function, host));
+
+        //Write to server
+        OutputStream os = httpConn.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+        writer.write(result.toString());
+        writer.flush();
+        writer.close();
+        os.close();
+
+        //httpConn.connect();
+
+        /*Scanner scn = new Scanner(new InputStreamReader(httpConn.getErrorStream()));
+        String resp = "";
+        while(scn.hasNext())
+            resp+=scn.nextLine();
+        System.err.println(resp);*
+        String resp = httpConn.getHeaderField("Set-Cookie");
+        System.err.println(resp);*/
+
+        return httpConn;
+    }
+
+    public static HttpURLConnection putJSONData(String function, ArrayList<AbstractMap.SimpleEntry<String,String>> params, ArrayList<AbstractMap.SimpleEntry<String,String>> headers) throws IOException
+    {
+        URL urlConn = new URL(host + function);
+        HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
+        if(headers!=null)
+            for(AbstractMap.SimpleEntry<String,String> header:headers)
+                httpConn.setRequestProperty(header.getKey() , header.getValue());
+        httpConn.setReadTimeout(10000);
+        httpConn.setConnectTimeout(15000);
+        httpConn.setRequestMethod("PUT");
+        httpConn.setDoInput(true);
+        httpConn.setDoOutput(true);
+
+        //Encode body data in UTF-8 charset
+        StringBuilder result = new StringBuilder("{");
+        if(params!=null)
+        {
+            for (int i = 0; i < params.size(); i++)
+            {
+                AbstractMap.SimpleEntry<String, String> entry = params.get(i);
+                if (entry != null)
+                {
+                    if (entry.getKey() != null && entry.getValue() != null)
+                    {
+                        result.append("\"" + entry.getKey() + "\"");
+                        result.append(":");
+                        result.append("\"" + entry.getValue() + "\"");
+                        result.append((i != params.size() - 1 ? "," : ""));//add comma if not last param
+                    }
+                    else return null;
+                }
+                else return null;
+            }
+        }
+        result.append("}");
+        IO.log(TAG, IO.TAG_INFO, String.format("%s %s HTTP/1.1\nHost: %s", httpConn.getRequestMethod(), function, host));
+
+        //Write to server
+        OutputStream os = httpConn.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+        writer.write(result.toString());
+        writer.flush();
+        writer.close();
+        os.close();
+
+        //httpConn.connect();
+
+        /*Scanner scn = new Scanner(new InputStreamReader(httpConn.getErrorStream()));
+        String resp = "";
+        while(scn.hasNext())
+            resp+=scn.nextLine();
+        System.err.println(resp);*
+        String resp = httpConn.getHeaderField("Set-Cookie");
+        System.err.println(resp);*/
+
+        return httpConn;
+    }
+
+    public static HttpURLConnection putJSON(String function, String object, ArrayList<AbstractMap.SimpleEntry<String,String>> headers) throws IOException
+    {
+        URL urlConn = new URL(host + function);
+        HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
+        if(headers!=null)
+            for(AbstractMap.SimpleEntry<String,String> header:headers)
+                httpConn.setRequestProperty(header.getKey() , header.getValue());
+        httpConn.setReadTimeout(10000);
+        httpConn.setConnectTimeout(15000);
+        httpConn.setRequestMethod("PUT");
+        httpConn.setDoInput(true);
+        httpConn.setDoOutput(true);
+
+        IO.log(TAG, IO.TAG_INFO, String.format("PUT %s HTTP/1.1\nHost: %s", function, host));
+
+        //Write to server
+        OutputStream os = httpConn.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+        writer.write(object);
+        writer.flush();
+        writer.close();
+        os.close();
+
+        return httpConn;
+    }
+
     public static HttpURLConnection postData(String function, String object, ArrayList<AbstractMap.SimpleEntry<String,String>> headers) throws IOException
     {
         URL urlConn = new URL(host + function);
@@ -297,7 +402,7 @@ public class RemoteComms
 
                 if(id!=null)
                 {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                     try
                     {
                         HttpURLConnection connection = RemoteComms.postData(api_method + "/update/" + id, bo.asUTFEncodedString(), headers);

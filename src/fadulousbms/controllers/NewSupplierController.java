@@ -1,13 +1,10 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -151,8 +148,8 @@ public class NewSupplierController extends ScreenController implements Initializ
         supplier.setFax(txtFax.getText());
         supplier.setContact_email(txtEmail.getText());
         supplier.setSpeciality(txtSpeciality.getText());
-        supplier.setRegistration(txtRegistration.getText());
-        supplier.setVat(txtVat.getText());
+        supplier.setRegistration_number(txtRegistration.getText());
+        supplier.setVat_number(txtVat.getText());
         supplier.setAccount_name(txtAccount.getText());
         supplier.setDate_partnered(datePartnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         supplier.setWebsite(txtWebsite.getText());
@@ -164,7 +161,7 @@ public class NewSupplierController extends ScreenController implements Initializ
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new supplier on database
             HttpURLConnection connection = RemoteComms.postData("/api/supplier/add", supplier.asUTFEncodedString(), headers);

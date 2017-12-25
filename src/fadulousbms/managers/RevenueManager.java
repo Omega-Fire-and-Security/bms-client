@@ -5,20 +5,23 @@ import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.Counters;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
+import fadulousbms.auxilary.ServerObject;
 import fadulousbms.model.Employee;
+import fadulousbms.model.Overtime;
 import fadulousbms.model.Revenue;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/09/15.
  */
 public class RevenueManager extends BusinessObjectManager
 {
-    private Revenue[] revenues = null;
+    private HashMap<String,Revenue> revenues = null;
     private static RevenueManager revenue_manager = new RevenueManager();
     private ScreenManager screenManager = null;
     private Revenue selected_revenue;
@@ -52,9 +55,9 @@ public class RevenueManager extends BusinessObjectManager
 
                     gson = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
                     //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/api/timestamp/revenues_timestamp", headers);
+                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/revenues_timestamp", headers);
                     Counters cnt_timestamp = gson.fromJson(timestamp_json, Counters.class);
                     if (cnt_timestamp != null)
                     {
@@ -69,51 +72,42 @@ public class RevenueManager extends BusinessObjectManager
                     if (!this.isSerialized(ROOT_PATH+filename))
                     {
                         //Load Revenue
-                        String expenses_json = RemoteComms.sendGetRequest("/api/revenues", headers);
-                        revenues = gson.fromJson(expenses_json, Revenue[].class);
-
-                        if (revenues != null)
+                        String revenues_json = RemoteComms.sendGetRequest("/revenues", headers);
+                        RevenueServerObject revenueServerObject = gson.fromJson(revenues_json, RevenueServerObject.class);
+                        if (revenueServerObject != null)
                         {
-                            for (Revenue revenue : revenues)
+                            if(revenueServerObject.get_embedded()!=null)
                             {
-                                //Set Expense creator
-                                for (Employee employee : (Employee[]) EmployeeManager.getInstance().getEmployees().values().toArray())
-                                {
-                                    if (employee.getUsr().equals(revenue.getCreator()))
-                                    {
-                                        revenue.setCreator(employee);
-                                        break;
-                                    }
-                                }
-                            }
-                            IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of revenues.");
-                            this.serialize(ROOT_PATH+filename, revenues);
-                        }else{
-                            IO.log(getClass().getName(), IO.TAG_ERROR, "revenues object is null.");
-                            IO.showMessage("No additional revenue", "no additional revenue found in database.", IO.TAG_ERROR);
-                        }
-                    }else{
+                                Revenue[] revenues_arr = revenueServerObject.get_embedded().getRevenues();
+
+                                revenues = new HashMap<>();
+                                for (Revenue revenue : revenues_arr)
+                                    revenues.put(revenue.get_id(), revenue);
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Revenues in database.");
+                        } else IO.log(getClass().getName(), IO.TAG_WARN, "no revenue records found in the database.");
+
+                        IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of revenues.");
+                        this.serialize(ROOT_PATH+filename, revenues);
+                    } else
+                    {
                         IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object ["+ROOT_PATH+filename+"] on local disk is already up-to-date.");
-                        revenues = (Revenue[]) this.deserialize(ROOT_PATH+filename);
+                        revenues = (HashMap<String,Revenue>) this.deserialize(ROOT_PATH+filename);
                     }
-                }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-            }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
-        }catch (MalformedURLException ex)
+                } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Invalid Session", "No valid active sessions found.", IO.TAG_ERROR);
+        } catch (MalformedURLException ex)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
+            IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
+        } catch (ClassNotFoundException e)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
+            IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+        } catch (IOException ex)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
         }
     }
 
-    public Revenue[] getRevenues()
+    public HashMap<String,Revenue> getRevenues()
     {
         return revenues;
     }
@@ -129,7 +123,7 @@ public class RevenueManager extends BusinessObjectManager
 
     public void setSelected(String revenue_id)
     {
-        for(Revenue revenue : revenues)
+        for(Revenue revenue : revenues.values())
         {
             if(revenue.get_id().equals(revenue_id))
             {
@@ -141,5 +135,35 @@ public class RevenueManager extends BusinessObjectManager
     public Revenue getSelected()
     {
         return selected_revenue;
+    }
+
+    class RevenueServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Revenue[] revenues;
+
+            public Revenue[] getRevenues()
+            {
+                return revenues;
+            }
+
+            public void setRevenues(Revenue[] revenues)
+            {
+                this.revenues = revenues;
+            }
+        }
     }
 }

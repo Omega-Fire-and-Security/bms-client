@@ -4,20 +4,21 @@ import fadulousbms.auxilary.IO;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 /**
- * Created by ghost on 2017/01/28.
+ * Created by ghost on 2017/01/29.
  */
-public class QuoteResource implements BusinessObject
+public class QuoteRep implements BusinessObject, Serializable
 {
     private String _id;
     private String quote_id;
-    private String resource_id;
-    private double markup;
+    private String usr;
+    private Employee employee;
     private boolean marked;
-    public static final String TAG = "QuoteResource";
+    public static final String TAG = "QuoteRep";
 
     public StringProperty idProperty(){return new SimpleStringProperty(_id);}
 
@@ -49,7 +50,6 @@ public class QuoteResource implements BusinessObject
     @Override
     public void setMarked(boolean marked){this.marked=marked;}
 
-
     private StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
 
     public String getQuote_id()
@@ -62,29 +62,21 @@ public class QuoteResource implements BusinessObject
         this.quote_id = quote_id;
     }
 
-    private StringProperty resource_idProperty(){return new SimpleStringProperty(resource_id);}
+    private StringProperty usrProperty(){return new SimpleStringProperty(usr);}
 
-    public String getResource_id()
+    public String getUsr()
     {
-        return resource_id;
+        return usr;
     }
 
-    public void setResource_id(String resource_id)
+    public void setUsr(String employee_id)
     {
-        this.resource_id = resource_id;
+        this.usr = employee_id;
     }
 
-    private StringProperty markupProperty(){return new SimpleStringProperty(String.valueOf(markup));}
+    public void setUser(Employee employee){this.employee=employee;}
 
-    public double getMarkup()
-    {
-        return markup;
-    }
-
-    public void setMarkup(double markup)
-    {
-        this.markup = markup;
-    }
+    public Employee getUser(){return this.employee;}
 
     @Override
     public void parse(String var, Object val)
@@ -96,14 +88,11 @@ public class QuoteResource implements BusinessObject
                 case "quote_id":
                     quote_id = String.valueOf(val);
                     break;
-                case "resource_id":
-                    resource_id = String.valueOf(val);
-                    break;
-                case "markup":
-                    markup = Double.parseDouble((String)val);
+                case "usr":
+                    usr = String.valueOf(val);
                     break;
                 default:
-                    System.err.println("Unknown QuoteResource attribute '" + var + "'.");
+                    System.err.println("Unknown QuoteRep attribute '" + var + "'.");
                     break;
             }
         }catch (NumberFormatException e)
@@ -119,12 +108,10 @@ public class QuoteResource implements BusinessObject
         {
             case "quote_id":
                 return quote_id;
-            case "resource_id":
-                return resource_id;
-            case "markup":
-                return markup;
+            case "usr":
+                return usr;
             default:
-                System.err.println("Unknown QuoteResource attribute '" + var + "'.");
+                System.err.println("Unknown QuoteRep attribute '" + var + "'.");
                 return null;
         }
     }
@@ -138,10 +125,8 @@ public class QuoteResource implements BusinessObject
         {
             result.append(URLEncoder.encode("quote_id","UTF-8") + "="
                     + URLEncoder.encode(quote_id, "UTF-8") + "&");
-            result.append(URLEncoder.encode("resource_id","UTF-8") + "="
-                    + URLEncoder.encode(resource_id, "UTF-8") + "&");
-            result.append(URLEncoder.encode("markup","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(markup), "UTF-8") + "&");
+            result.append(URLEncoder.encode("usr","UTF-8") + "="
+                    + URLEncoder.encode(usr, "UTF-8") + "&");
 
             return result.toString();
         } catch (UnsupportedEncodingException e)
@@ -154,6 +139,6 @@ public class QuoteResource implements BusinessObject
     @Override
     public String apiEndpoint()
     {
-        return "/api/quote/resource";
+        return "/quote/rep";
     }
 }

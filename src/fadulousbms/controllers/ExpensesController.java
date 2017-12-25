@@ -145,7 +145,7 @@ public class ExpensesController extends ScreenController implements Initializabl
 
         tblExpenses.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 ExpenseManager.getInstance().setSelected(tblExpenses.getSelectionModel().getSelectedItem()));
-        tblExpenses.setItems(FXCollections.observableArrayList(ExpenseManager.getInstance().getExpenses()));
+        tblExpenses.setItems(FXCollections.observableArrayList(ExpenseManager.getInstance().getExpenses().values()));
     }
 
     @Override

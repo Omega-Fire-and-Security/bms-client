@@ -26,7 +26,6 @@ public class SessionManager
     private static final SessionManager sess_mgr = new SessionManager();
     private List<Session> sessions = new ArrayList<Session>();
     private Session active;
-    private Employee active_employee;
     public static final String TAG = "SessionManager";
     
     private SessionManager(){};
@@ -40,56 +39,29 @@ public class SessionManager
     {
         if(session==null)
             return;
-        Session s = getUserSession(session.getUsername());
+        Session s = getUserSession(session.getUsr());
         if(s!=null)
         {
             s.setDate(session.getDate());
-            s.setSessionId(session.getSessionId());
+            s.setSession_id(session.getSession_id());
             s.setTtl(session.getTtl());
             setActive(s);
-        }
-        else{
+        } else
+        {
             sessions.add(session);
             setActive(session);
         }
-        try 
-        {
-            Session active_sess = getActive();
-            if(active_sess!=null)
-            {
-                ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", active_sess.getSessionId()));
-                String employee_json = RemoteComms.sendGetRequest("/api/employee/" + active_sess.getUsername(), headers);
-                if(employee_json!=null)
-                {
-                    if(!employee_json.equals("[]") && !employee_json.equals("null"))
-                    {
-                        Gson gson = new GsonBuilder().create();
-                        Employee e = gson.fromJson(employee_json, Employee.class);
-                        setActiveEmployee(e);
-                    }else{
-                        JOptionPane.showMessageDialog(null, "No user was found that matches the given credentials.","Invalid Credentials", JOptionPane.ERROR_MESSAGE);
-                    }
-                }else{
-                    JOptionPane.showMessageDialog(null, "No user was found that matches the given credentials.","Invalid Credentials", JOptionPane.ERROR_MESSAGE);
-                }
-            }else{
-                JOptionPane.showMessageDialog(null, "No active sessions.","Session Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (IOException ex) 
-        {
-            IO.log(TAG, IO.TAG_ERROR, ex.getMessage());
-        }
     }
-    
-    public void setActiveEmployee(Employee empl)
-    {
-        this.active_employee=empl;
-    }
-    
+
     public Employee getActiveEmployee()
     {
-        return this.active_employee;
+        if(getActive()!=null)
+        {
+            EmployeeManager.getInstance().loadDataFromServer();
+            if (EmployeeManager.getInstance().getEmployees() != null)
+                return EmployeeManager.getInstance().getEmployees().get(getActive().getUsr());
+        }
+        return null;
     }
     
     public List<Session> getSessions()
@@ -101,7 +73,7 @@ public class SessionManager
     {
         for(Session s : sessions)
         {
-            if(s.getUsername().equals(usr))
+            if(s.getUsr().equals(usr))
                 return s;
         }
         return null;

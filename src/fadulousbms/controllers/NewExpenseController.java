@@ -127,7 +127,7 @@ public class NewExpenseController extends ScreenController implements Initializa
         expense.setExpense_title(txtTitle.getText());
         expense.setExpense_description(txtDescription.getText());
         expense.setExpense_value(Double.parseDouble(txtValue.getText()));
-        expense.setCreator(SessionManager.getInstance().getActive().getUsername());
+        expense.setCreator(SessionManager.getInstance().getActive().getUsr());
         expense.setAccount(txtAccount.getText());
         expense.setSupplier_obj(cbxSupplier.getValue());
         expense.setDate_logged(dateLogged.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
@@ -137,7 +137,7 @@ public class NewExpenseController extends ScreenController implements Initializa
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new quote on database
             HttpURLConnection connection = RemoteComms.postData("/api/expense/add", expense.asUTFEncodedString(), headers);

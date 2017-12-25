@@ -579,7 +579,7 @@ public class ViewJobController extends ScreenController implements Initializable
                             {
                                 String url = tbl_row_businessObject.apiEndpoint() + "/" + tbl_row_businessObject.get_id();
                                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                                 try
                                 {
                                     String obj_json = RemoteComms.sendGetRequest(url, headers);

@@ -1,6 +1,7 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.managers.EmployeeManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -11,44 +12,11 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/01/29.
  */
-public class QuoteRep implements BusinessObject, Serializable
+public class QuoteRep extends BusinessObject implements Serializable
 {
-    private String _id;
     private String quote_id;
     private String usr;
-    private Employee employee;
-    private boolean marked;
     public static final String TAG = "QuoteRep";
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     private StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
 
@@ -74,9 +42,10 @@ public class QuoteRep implements BusinessObject, Serializable
         this.usr = employee_id;
     }
 
-    public void setUser(Employee employee){this.employee=employee;}
-
-    public Employee getUser(){return this.employee;}
+    public Employee getUser()
+    {
+        return EmployeeManager.getInstance().getEmployees().get(getUsr());
+    }
 
     @Override
     public void parse(String var, Object val)
@@ -139,6 +108,6 @@ public class QuoteRep implements BusinessObject, Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/api/quote/rep";
+        return "/quote/rep";
     }
 }

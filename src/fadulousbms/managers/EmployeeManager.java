@@ -37,7 +37,6 @@ import java.util.HashMap;
  */
 public class EmployeeManager extends BusinessObjectManager
 {
-    //private Employee[] employees;
     private HashMap<String, Employee> employees;
     private Gson gson;
     private static EmployeeManager employeeManager = new EmployeeManager();
@@ -94,26 +93,33 @@ public class EmployeeManager extends BusinessObjectManager
                 {
                     gson  = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-                    String employees_json = RemoteComms.sendGetRequest("/api/employees", headers);
-                    Employee[] users = gson.fromJson(employees_json, Employee[].class);
+                    String employee_json_object = RemoteComms.sendGetRequest("/employees", headers);
+                    EmployeeServerObject employeeServerObject = gson.fromJson(employee_json_object, EmployeeServerObject.class);
+                    //Employee employeeObject = gson.fromJson(employees_json, Employee.class);
+                    //System.out.println("Embedded: "+employeeObject.get_embedded());
+                    if(employeeServerObject!=null)
+                    {
+                        if(employeeServerObject.get_embedded()!=null)
+                        {
+                            Employee[] users = employeeServerObject.get_embedded().get_employees();
+                            /*System.out.println("Employee count: " + employeeServerObject.getPage().getTotalElements());
+                            System.out
+                                    .println("Employee link: " + employeeServerObject.get_links().getSelf().getHref());*/
 
-                    employees = new HashMap();
-                    for(Employee employee: users)
-                        employees.put(employee.getUsr(), employee);
-
+                            employees = new HashMap();
+                            for (Employee employee : users)
+                                employees.put(employee.getUsr(), employee);
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Employees in database.");
+                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "EmployeeServerObject (containing Employee objects & other metadata) is null");
                     IO.log(getClass().getName(), IO.TAG_INFO, "reloaded employee collection.");
-                }else{
-                    IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-                }
-            }else{
-                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-            }
-        }catch (MalformedURLException ex)
+                } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Session Expired", "Active session is invalid", IO.TAG_ERROR);
+        } catch (MalformedURLException ex)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        }catch (IOException ex)
+        } catch (IOException ex)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
         }
@@ -200,7 +206,7 @@ public class EmployeeManager extends BusinessObjectManager
 
             try
             {
-                HttpURLConnection connection = RemoteComms.postData("/api/employee/add", params, null);
+                HttpURLConnection connection = RemoteComms.postData("/employee/add", params, null);
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                 {
                     IO.logAndAlert("Account Creation Success", "Successfully created new contact!", IO.TAG_INFO);
@@ -362,7 +368,7 @@ public class EmployeeManager extends BusinessObjectManager
 
                 try
                 {
-                    HttpURLConnection connection = RemoteComms.postData("/api/employee/add", params, null);
+                    HttpURLConnection connection = RemoteComms.postData("/employee/add", params, null);
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                     {
                         IO.logAndAlert("Account Creation Success", "Successfully created a new employee!", IO.TAG_INFO);
@@ -437,10 +443,10 @@ public class EmployeeManager extends BusinessObjectManager
                             in.close();
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
-                            RemoteComms.uploadFile("/api/employee/id/upload/" + employee_id, headers, buffer);
+                            RemoteComms.uploadFile("/employee/id/upload/" + employee_id, headers, buffer);
                             IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded ID for employee ["+employee_id+"], file size: [" + buffer.length + "] bytes.");
                         } else
                         {
@@ -480,10 +486,10 @@ public class EmployeeManager extends BusinessObjectManager
                             in.close();
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
-                            RemoteComms.uploadFile("/api/employee/cv/upload/" + employee_id, headers, buffer);
+                            RemoteComms.uploadFile("/employee/cv/upload/" + employee_id, headers, buffer);
                             IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded CV for employee ["+employee_id+"], file size: [" + buffer.length + "] bytes.");
                         } else
                         {
@@ -518,11 +524,11 @@ public class EmployeeManager extends BusinessObjectManager
                 try
                 {
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
                     //String filename = String.valueOf(bo.get(property));
                     long start = System.currentTimeMillis();
-                    byte[] file = RemoteComms.sendFileRequest("/api/employee/id/" + employee_id, headers);
+                    byte[] file = RemoteComms.sendFileRequest("/employee/id/" + employee_id, headers);
 
                     if (file != null)
                     {
@@ -598,11 +604,11 @@ public class EmployeeManager extends BusinessObjectManager
                 try
                 {
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
                     //String filename = String.valueOf(bo.get(property));
                     long start = System.currentTimeMillis();
-                    byte[] file = RemoteComms.sendFileRequest("/api/employee/cv/" + employee_id, headers);
+                    byte[] file = RemoteComms.sendFileRequest("/employee/cv/" + employee_id, headers);
 
                     if (file != null)
                     {
@@ -659,5 +665,35 @@ public class EmployeeManager extends BusinessObjectManager
                 }
             } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    class EmployeeServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Employee[] employees;
+
+            public Employee[] get_employees()
+            {
+                return employees;
+            }
+
+            public void set_employees(Employee[] employees)
+            {
+                this.employees = employees;
+            }
+        }
     }
 }

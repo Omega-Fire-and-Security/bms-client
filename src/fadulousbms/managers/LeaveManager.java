@@ -95,10 +95,10 @@ public class LeaveManager extends BusinessObjectManager
                 {
                     gson = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                     //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/api/timestamp/leave_timestamp", headers);
+                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/leave_timestamp", headers);
                     Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                     if (cntr_timestamp != null)
                     {
@@ -113,38 +113,41 @@ public class LeaveManager extends BusinessObjectManager
 
                     if (!isSerialized(ROOT_PATH + filename))
                     {
-                        String leave_records_json = RemoteComms.sendGetRequest("/api/leave_records", headers);
-                        Leave[] leave_records_arr = gson.fromJson(leave_records_json, Leave[].class);
+                        String leave_records_json = RemoteComms.sendGetRequest("/leave_records", headers);
+                        LeaveServerObject leaveServerObject = gson.fromJson(leave_records_json, LeaveServerObject.class);
+                        if (leaveServerObject != null)
+                        {
+                            if(leaveServerObject.get_embedded()!=null)
+                            {
+                                Leave[] leave_records_arr = leaveServerObject.get_embedded().getLeave_records();
 
-                        leave_records = new HashMap();
-                        for (Leave leave : leave_records_arr)
-                            leave_records.put(leave.get_id(), leave);
+                                leave_records = new HashMap<>();
+                                for (Leave leave : leave_records_arr)
+                                    leave_records.put(leave.get_id(), leave);
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Leave records in the database.");
+                        }
 
                         IO.log(getClass().getName(), IO.TAG_INFO, "reloaded leave_records collection.");
                         this.serialize(ROOT_PATH + filename, leave_records);
-                    }
-                    else
+                    } else
                     {
-                        IO.log(this.getClass()
-                                .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                        IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                         leave_records = (HashMap<String, Leave>) this.deserialize(ROOT_PATH + filename);
                     }
-                }
-                else
+                } else
                 {
                     IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
                 }
-            }
-            else
+            } else
             {
                 IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
             }
         } catch (MalformedURLException ex)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
         } catch (IOException ex)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
         }
     }
 
@@ -251,7 +254,7 @@ public class LeaveManager extends BusinessObjectManager
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if (SessionManager.getInstance().getActive() != null)
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                            .getSession_id()));
                 else
                 {
                     IO.logAndAlert("Error: Session expired", "No active sessions.", IO.TAG_INFO);
@@ -328,7 +331,7 @@ public class LeaveManager extends BusinessObjectManager
                             in.close();
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                             RemoteComms.uploadFile("/api/leave_record/signed/upload/" + leave_id, headers, buffer);
@@ -383,7 +386,7 @@ public class LeaveManager extends BusinessObjectManager
 
                                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance()
-                                        .getActive().getSessionId()));
+                                        .getActive().getSession_id()));
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                                 RemoteComms.uploadFile("/api/leave_record/upload/" + leave.get_id(), headers, buffer);
@@ -529,7 +532,7 @@ public class LeaveManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                            .getSession_id()));
                     params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
@@ -669,7 +672,7 @@ public class LeaveManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                            .getSession_id()));
                     params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
@@ -733,7 +736,7 @@ public class LeaveManager extends BusinessObjectManager
             if (!SessionManager.getInstance().getActive().isExpired())
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
                 leave.setStatus(Leave.STATUS_APPROVED);
                 try
@@ -757,5 +760,35 @@ public class LeaveManager extends BusinessObjectManager
                 }
             } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    class LeaveServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Leave[] leave_records;
+
+            public Leave[] getLeave_records()
+            {
+                return leave_records;
+            }
+
+            public void setLeave_records(Leave[] leave_records)
+            {
+                this.leave_records = leave_records;
+            }
+        }
     }
 }

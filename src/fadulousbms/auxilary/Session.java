@@ -9,15 +9,15 @@ package fadulousbms.auxilary;
  *
  * @author ghost
  */
-public class Session 
+public class Session
 {
-    private String usr;
+    private String usr;//username associated with session
     private String session_id;
-    private long date;
-    private int ttl;
-    
+    private long date;//creation date
+    private int ttl;//time-to-live
+
     public Session(){}
-    
+
     public Session(String usr, String session_id, int date, int ttl)
     {
         this.usr = usr;
@@ -25,13 +25,13 @@ public class Session
         this.date=date;
         this.ttl=ttl;
     }
-    
-    public String getSessionId() 
+
+    public String getSession_id()
     {
         return session_id;
     }
 
-    public void setSessionId(String session_id) 
+    public void setSession_id(String session_id)
     {
         this.session_id = session_id;
     }
@@ -46,22 +46,22 @@ public class Session
         this.date = date;
     }
 
-    public int getTtl() 
+    public int getTtl()
     {
         return ttl;
     }
 
-    public void setTtl(int ttl) 
+    public void setTtl(int ttl)
     {
         this.ttl = ttl;
     }
-    
-    public String getUsername()
+
+    public String getUsr()
     {
         return usr;
     }
-    
-    public void setUser(String usr)
+
+    public void setUsr(String usr)
     {
         this.usr = usr;
     }
@@ -69,5 +69,14 @@ public class Session
     public boolean isExpired()
     {
         return (System.currentTimeMillis()/1000) >= getDate()+getTtl();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "{\"session_id\":\""+session_id+"\", "+
+                "\"usr\":\""+usr+"\","+
+                "\"date\":\""+date+"\","+
+                "\"ttl\":\""+ttl+"\"}";
     }
 }

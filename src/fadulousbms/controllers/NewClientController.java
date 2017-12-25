@@ -1,7 +1,6 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.managers.ClientManager;
@@ -149,8 +148,8 @@ public class NewClientController extends ScreenController implements Initializab
         client.setContact_email(txtEmail.getText());
         client.setDate_partnered(datePartnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         client.setWebsite(txtWebsite.getText());
-        client.setRegistration(txtRegistration.getText());
-        client.setVat(txtVat.getText());
+        client.setRegistration_number(txtRegistration.getText());
+        client.setVat_number(txtVat.getText());
         client.setAccount_name(txtAccount.getText());
         client.setActive(cbxActive.isSelected());
 
@@ -160,7 +159,7 @@ public class NewClientController extends ScreenController implements Initializab
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new supplier on database
             HttpURLConnection connection = RemoteComms.postData("/api/client/add", client.asUTFEncodedString(), headers);

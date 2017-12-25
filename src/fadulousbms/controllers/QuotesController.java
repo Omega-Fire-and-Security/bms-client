@@ -9,42 +9,21 @@ import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * views Controller class
@@ -86,19 +65,19 @@ public class QuotesController extends OperationsController implements Initializa
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
         colClient.setMinWidth(120);
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_id"));
-        colClient.setCellFactory(col -> new ComboBoxTableCell(ClientManager.getInstance().getClients(), "client_id", "/api/quote"));
+        colClient.setCellFactory(col -> new ComboBoxTableCell(ClientManager.getInstance().getClients(), "client_id", "/quotes"));
         colContactPerson.setMinWidth(120);
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person_id"));
-        colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr", "/api/quote"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_generated", "/api/quote");
-        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", "/api/quote");
-        CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", "/api/quote");
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","SALE"}, false,"/api/quote");
+        colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr", "/quotes"));
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_generated", "/quotes");
+        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", "/quotes");
+        CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", "/quotes");
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","SALE"}, false,"/quotes");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
         colRevision.setCellValueFactory(new PropertyValueFactory<>("revision"));
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
-        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 100, "extra", "/api/quote");
+        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 100, "extra", "/quotes");
 
         Callback<TableColumn<Quote, String>, TableCell<Quote, String>> cellFactory
                 =
@@ -251,14 +230,14 @@ public class QuotesController extends OperationsController implements Initializa
         HashMap<String, Quote> latest_rev_quotes = new HashMap<>();
         for(Quote quote: QuoteManager.getInstance().getQuotes().values())
         {
-            if(quote.getParent()!=null)//if quote has parent, i.e. siblings
+            if(quote.getParent_id()!=null)//if quote has parent, i.e. siblings
             {
                 //get Quote's siblings
                 Quote[] siblings = quote.getSiblings("revision");
                 if (siblings != null)
                 {
                     //add latest revision/sibling to list of latest revisions with identifier of parent.
-                    latest_rev_quotes.put(quote.getParent().get_id(), siblings[siblings.length - 1]);//overwrite existing value if exists
+                    latest_rev_quotes.put(quote.getParent_id().get_id(), siblings[siblings.length - 1]);//overwrite existing value if exists
                 } else IO.log(getClass().getName(), IO.TAG_WARN, "Quote [" + quote.get_id() + "] has no siblings. should return self as first sibling.");
             } else if(quote.getChildren("revision")==null)//if Quote has no parent and no children add it to list.
             {

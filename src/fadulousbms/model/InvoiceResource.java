@@ -4,50 +4,19 @@ import fadulousbms.auxilary.IO;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 /**
  * Created by ghost on 2017/02/03.
  */
-public class InvoiceResource implements BusinessObject
+public class InvoiceResource extends BusinessObject implements Serializable
 {
-    private String _id;
     private String invoice_id;
     private String resource_id;
     private double markup;
-    private boolean marked;
     public static final String TAG = "InvoiceResource";
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     private StringProperty invoice_idProperty(){return new SimpleStringProperty(invoice_id);}
 
@@ -153,6 +122,6 @@ public class InvoiceResource implements BusinessObject
     @Override
     public String apiEndpoint()
     {
-        return "/api/invoice/resource";
+        return "/invoice/resource";
     }
 }

@@ -5,53 +5,21 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Comparator;
 
 /**
  * Created by ghost on 2017/01/13.
  */
-public class Transaction implements BusinessObject//Comparable<Transaction>
+public class Transaction extends BusinessObject implements Serializable
 {
-    private String _id;
     private long date;
-    private boolean marked;
     private BusinessObject businessObject;
 
     public Transaction(String id, long date, BusinessObject businessObject)
     {
-        this._id = id;
+        super.set_id(id);
         this.date = date;
         this.businessObject = businessObject;
     }
-
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public long getDate()
     {
@@ -133,21 +101,21 @@ public class Transaction implements BusinessObject//Comparable<Transaction>
     }
 
     /**
-     * Not a server side model so no need for API endpoint value.
-     * @return null.
-     */
-    @Override
-    public String apiEndpoint()
-    {
-        return null;
-    }
-
-    /**
      * Not a server side model so no need for UTF encoded string.
      * @return null.
      */
     @Override
     public String asUTFEncodedString()
+    {
+        return null;
+    }
+
+    /**
+     * Not a server side model so no need for API endpoint value.
+     * @return null.
+     */
+    @Override
+    public String apiEndpoint()
     {
         return null;
     }

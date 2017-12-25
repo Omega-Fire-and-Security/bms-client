@@ -17,12 +17,8 @@ import java.net.URLEncoder;
  *
  * @author ghost
  */
-public class Employee implements BusinessObject, Serializable
+public class Employee extends BusinessObject implements Serializable
 {
-    /*private Occupation current_occupation;
-    private Job current_job;
-    private Comment comments[];*/
-    private String _id;
     private String usr;
     private String pwd;//hashed
     private String firstname;
@@ -35,44 +31,13 @@ public class Employee implements BusinessObject, Serializable
     private int access_level;
     private boolean active;
     private String other;
-    private boolean marked;
     public static final String TAG = "Employee";
     public static int ACCESS_LEVEL_NONE = 0;
     public static int ACCESS_LEVEL_NORMAL = 1;
     public static int ACCESS_LEVEL_ADMIN = 2;
     public static int ACCESS_LEVEL_SUPER = 3;
 
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    private StringProperty usrProperty(){return new SimpleStringProperty(usr);}
+    public StringProperty usrProperty(){return new SimpleStringProperty(usr);}
 
     public String getUsr()
     {
@@ -83,7 +48,7 @@ public class Employee implements BusinessObject, Serializable
         this.usr = usr;
     }
 
-    private StringProperty pwdProperty(){return new SimpleStringProperty(pwd);}
+    public StringProperty pwdProperty(){return new SimpleStringProperty(pwd);}
 
     public String getPwd()
     {
@@ -94,7 +59,7 @@ public class Employee implements BusinessObject, Serializable
         this.pwd = pwd;
     }
 
-    private StringProperty access_levelProperty(){return new SimpleStringProperty(String.valueOf(access_level));}
+    public StringProperty access_levelProperty(){return new SimpleStringProperty(String.valueOf(access_level));}
 
     public int getAccessLevel() {
         return access_level;
@@ -105,7 +70,7 @@ public class Employee implements BusinessObject, Serializable
         this.access_level = access_level;
     }
 
-    private StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
+    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
 
     public String isActive()
     {
@@ -122,7 +87,7 @@ public class Employee implements BusinessObject, Serializable
         this.active = active;
     }
 
-    private StringProperty otherProperty(){return new SimpleStringProperty(other);}
+    public StringProperty otherProperty(){return new SimpleStringProperty(other);}
 
     public String getOther() 
     {
@@ -134,7 +99,7 @@ public class Employee implements BusinessObject, Serializable
         this.other = other;
     }
 
-    private StringProperty firstnameProperty(){return new SimpleStringProperty(firstname);}
+    public StringProperty firstnameProperty(){return new SimpleStringProperty(firstname);}
 
     public String getFirstname()
     {
@@ -146,7 +111,7 @@ public class Employee implements BusinessObject, Serializable
         this.firstname = firstname;
     }
 
-    private StringProperty lastnameProperty(){return new SimpleStringProperty(lastname);}
+    public StringProperty lastnameProperty(){return new SimpleStringProperty(lastname);}
 
     public String getLastname()
     {
@@ -158,7 +123,7 @@ public class Employee implements BusinessObject, Serializable
         this.lastname = lastname;
     }
 
-    private StringProperty date_joinedProperty(){return new SimpleStringProperty(String.valueOf(date_joined));}
+    public StringProperty date_joinedProperty(){return new SimpleStringProperty(String.valueOf(date_joined));}
 
     public long getDate_joined()
     {
@@ -170,7 +135,7 @@ public class Employee implements BusinessObject, Serializable
         this.date_joined = date_joined;
     }
 
-    private StringProperty emailProperty(){return new SimpleStringProperty(email);}
+    public StringProperty emailProperty(){return new SimpleStringProperty(email);}
 
     public String getEmail()
     {
@@ -182,7 +147,7 @@ public class Employee implements BusinessObject, Serializable
         this.email = email;
     }
 
-    private StringProperty telProperty(){return new SimpleStringProperty(usr);}
+    public StringProperty telProperty(){return new SimpleStringProperty(usr);}
 
     public String getTel()
     {
@@ -194,7 +159,7 @@ public class Employee implements BusinessObject, Serializable
         this.tel = tel;
     }
 
-    private StringProperty cellProperty(){return new SimpleStringProperty(usr);}
+    public StringProperty cellProperty(){return new SimpleStringProperty(usr);}
 
     public String getCell()
     {
@@ -206,7 +171,7 @@ public class Employee implements BusinessObject, Serializable
         this.cell = cell;
     }
 
-    private StringProperty genderProperty(){return new SimpleStringProperty(usr);}
+    public StringProperty genderProperty(){return new SimpleStringProperty(usr);}
 
     public String getGender()
     {
@@ -301,12 +266,6 @@ public class Employee implements BusinessObject, Serializable
         }
     }
 
-    @Override
-    public String toString()
-    {
-        return firstname + " " + lastname;
-    }
-
     public String getInitials(){return new String(firstname.substring(0,1) + lastname.substring(0,1));}
 
     @Override
@@ -351,8 +310,14 @@ public class Employee implements BusinessObject, Serializable
     }
 
     @Override
+    public String toString()
+    {
+        return firstname + " " + lastname;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/api/employee";
+        return "/employees";
     }
 }

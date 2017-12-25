@@ -17,54 +17,22 @@ import java.net.URLEncoder;
  *
  * @author ghost
  */
-public class Client implements BusinessObject, Serializable
+public class Client extends BusinessObject implements Serializable
 {
-    private String _id;
     private String client_name;
     private String physical_address;
     private String postal_address;
     private String tel;
     private String fax;
     private String contact_email;
-    private String registration;
-    private String vat;
+    private String registration_number;
+    private String vat_number;
     private String account_name;
     private long date_partnered;
     private String website;
     private boolean active;
     private String other;
     private Job[] jobs;
-    private boolean marked;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty client_nameProperty(){return new SimpleStringProperty(client_name);}
 
@@ -182,28 +150,28 @@ public class Client implements BusinessObject, Serializable
         this.website = website;
     }
 
-    public StringProperty registrationProperty(){return new SimpleStringProperty(getRegistration());}
+    public StringProperty registration_numberProperty(){return new SimpleStringProperty(getRegistration_number());}
 
-    public String getRegistration()
+    public String getRegistration_number()
     {
-        return registration;
+        return registration_number;
     }
 
-    public void setRegistration(String registration)
+    public void setRegistration_number(String registration_number)
     {
-        this.registration = registration;
+        this.registration_number = registration_number;
     }
 
-    public StringProperty vatProperty(){return new SimpleStringProperty(getVat());}
+    public StringProperty vat_numberProperty(){return new SimpleStringProperty(getVat_number());}
 
-    public String getVat()
+    public String getVat_number()
     {
-        return vat;
+        return vat_number;
     }
 
-    public void setVat(String vat)
+    public void setVat_number(String vat_number)
     {
-        this.vat = vat;
+        this.vat_number = vat_number;
     }
 
     public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
@@ -255,11 +223,11 @@ public class Client implements BusinessObject, Serializable
                 case "contact_email":
                     setContact_email((String)val);
                     break;
-                case "registration":
-                    setRegistration((String) val);
+                case "registration_number":
+                    setRegistration_number((String) val);
                     break;
-                case "vat":
-                    setVat((String) val);
+                case "vat_number":
+                    setVat_number((String) val);
                     break;
                 case "account_name":
                     setAccount_name((String)val);
@@ -303,10 +271,10 @@ public class Client implements BusinessObject, Serializable
                 return getFax();
             case "contact_email":
                 return getContact_email();
-            case "registration":
-                return getRegistration();
-            case "vat":
-                return getVat();
+            case "registration_number":
+                return getRegistration_number();
+            case "vat_number":
+                return getVat_number();
             case "account_name":
                 return getAccount_name();
             case "date_partnered":
@@ -321,12 +289,6 @@ public class Client implements BusinessObject, Serializable
                 IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Client attribute '" + var + "'.");
                 return null;
         }
-    }
-
-    @Override
-    public String apiEndpoint()
-    {
-        return "/api/client";
     }
 
     @Override
@@ -349,10 +311,10 @@ public class Client implements BusinessObject, Serializable
                         + URLEncoder.encode(getFax(), "UTF-8"));
             result.append("&" + URLEncoder.encode("contact_email","UTF-8") + "="
                     + URLEncoder.encode(getContact_email(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("registration","UTF-8") + "="
-                    + URLEncoder.encode(getRegistration(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
-                    + URLEncoder.encode(getVat(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("registration_number","UTF-8") + "="
+                    + URLEncoder.encode(getRegistration_number(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("vat_number","UTF-8") + "="
+                    + URLEncoder.encode(getVat_number(), "UTF-8"));
             result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(getAccount_name()), "UTF-8"));
             if(getDate_partnered()>0)
@@ -381,4 +343,9 @@ public class Client implements BusinessObject, Serializable
         return client_name;
     }
 
+    @Override
+    public String apiEndpoint()
+    {
+        return "/clients";
+    }
 }

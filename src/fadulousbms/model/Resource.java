@@ -17,9 +17,8 @@ import java.net.URLEncoder;
  *
  * @author ghost
  */
-public class Resource implements BusinessObject, Serializable
+public class Resource extends BusinessObject implements Serializable
 {
-    private String _id;
     private String resource_name;
     private String resource_description;
     private String resource_serial;
@@ -30,38 +29,7 @@ public class Resource implements BusinessObject, Serializable
     private long date_exhausted;
     private String unit;
     private String other;
-    private boolean marked;
     public static final String TAG = "Resource";
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty resource_nameProperty(){return new SimpleStringProperty(resource_name);}
 
@@ -221,7 +189,7 @@ public class Resource implements BusinessObject, Serializable
                     other = (String)val;
                     break;
                 default:
-                    IO.log(TAG, IO.TAG_ERROR,"Unknown Resource attribute '" + var + "'.");
+                    IO.log(TAG, IO.TAG_ERROR,"Unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
         }catch (NumberFormatException e)
@@ -259,15 +227,9 @@ public class Resource implements BusinessObject, Serializable
             case "other":
                 return other;
             default:
-                IO.log(TAG, IO.TAG_ERROR,"Unknown Resource attribute '" + var + "'.");
+                IO.log(TAG, IO.TAG_ERROR,"Unknown "+getClass().getName()+" attribute '" + var + "'.");
                 return null;
         }
-    }
-
-    @Override
-    public String apiEndpoint()
-    {
-        return "/api/resource";
     }
 
     @Override
@@ -314,5 +276,11 @@ public class Resource implements BusinessObject, Serializable
     public String toString()
     {
         return getResource_name();
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/resource";
     }
 }

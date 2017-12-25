@@ -3,20 +3,9 @@ package fadulousbms.managers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
-import fadulousbms.controllers.HomescreenController;
-import fadulousbms.controllers.OperationsController;
-import fadulousbms.model.CustomTableViewControls;
-import fadulousbms.model.BusinessObject;
-import fadulousbms.model.Client;
-import fadulousbms.model.Job;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import fadulousbms.model.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -31,8 +20,6 @@ import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by ghost on 2017/01/11.
@@ -107,18 +94,17 @@ public class ClientManager extends BusinessObjectManager
             {
                 gson = new GsonBuilder().create();
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                 //Get Timestamp
-                String timestamp_json = RemoteComms.sendGetRequest("/api/timestamp/clients_timestamp", headers);
+                String timestamp_json = RemoteComms.sendGetRequest("/timestamp/clients_timestamp", headers);
                 Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                 if (cntr_timestamp != null)
                 {
                     timestamp = cntr_timestamp.getCount();
                     filename = "clients_" + timestamp + ".dat";
                     IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
-                }
-                else
+                } else
                 {
                     IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
                     return;
@@ -126,24 +112,33 @@ public class ClientManager extends BusinessObjectManager
 
                 if (!isSerialized(ROOT_PATH + filename))
                 {
-                    String clients_json = RemoteComms.sendGetRequest("/api/clients", headers);
-                    Client[] clients_arr = gson.fromJson(clients_json, Client[].class);
+                    String clients_json_object = RemoteComms.sendGetRequest("/clients", headers);
+                    ClientServerObject clientServerObject = gson.fromJson(clients_json_object, ClientServerObject.class);
+                    System.out.println(">>>>>>>>clients embedded objs: "+clientServerObject.get_embedded().toString());
+                    if(clientServerObject!=null)
+                    {
+                        if(clientServerObject.get_embedded()!=null)
+                        {
+                            Client[] clients_arr = clientServerObject.get_embedded().getClients();
 
-                    clients = new HashMap<>();
-                    for (Client client : clients_arr)
-                        clients.put(client.get_id(), client);
+                            clients = new HashMap<>();
+                            for (Client client : clients_arr)
+                            {
+                                clients.put(client.get_id(), client);
+                                System.out.println(">>>>>>>>client obj:   "+client.asUTFEncodedString());
+                            }
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Clients in database.");
+                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "ClientServerObject (containing Client objects & other metadata) is null");
 
                     IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of clients.");
                     this.serialize(ROOT_PATH + filename, clients);
-                }
-                else
+                } else
                 {
-                    IO.log(this.getClass()
-                            .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                    IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                     clients = (HashMap<String, Client>) this.deserialize(ROOT_PATH + filename);
                 }
-            }else JOptionPane.showMessageDialog(null, "Active session has expired.", "Session Expired", JOptionPane.ERROR_MESSAGE);
-        }else JOptionPane.showMessageDialog(null, "No active sessions.", "Session Expired", JOptionPane.ERROR_MESSAGE);
+            } else IO.logAndAlert("Active session has expired.", "Session Expired", IO.TAG_ERROR);
+        } else IO.logAndAlert("No active sessions.", "Session Expired", IO.TAG_ERROR);
     }
 
     public void newClientWindow(String title, Callback callback)
@@ -263,7 +258,7 @@ public class ClientManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     JOptionPane.showMessageDialog(null, "No active sessions.", "Session expired", JOptionPane.ERROR_MESSAGE);
@@ -318,5 +313,35 @@ public class ClientManager extends BusinessObjectManager
         stage.show();
         stage.centerOnScreen();
         stage.setResizable(true);
+    }
+
+    class ClientServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Client[] clients;
+
+            public Client[] getClients()
+            {
+                return clients;
+            }
+
+            public void setClients(Client[] clients)
+            {
+                this.clients = clients;
+            }
+        }
     }
 }

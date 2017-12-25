@@ -14,7 +14,6 @@ import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.lang.annotation.Native;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
@@ -22,12 +21,8 @@ import java.util.ArrayList;
  *
  * @author ghost
  */
-public class Job implements BusinessObject, Serializable
+public class Job extends BusinessObject implements Serializable
 {
-    private String _id;
-    //private String job_name;
-    //private String job_description;
-    //private String client_id;
     private long planned_start_date;
     private long date_logged;
     private long date_assigned;
@@ -38,42 +33,9 @@ public class Job implements BusinessObject, Serializable
     private String quote_id;
     private String creator;
     private boolean signed;
-    private boolean marked;
     private String signed_job;
     private Employee[] assigned_employees;
     private FileMetadata[] safety_catalogue;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
-
-    //public StringProperty planned_start_dateProperty(){return new SimpleStringProperty(String.valueOf(planned_start_date));}
 
     public long getPlanned_start_date() {return planned_start_date;}
 
@@ -88,11 +50,6 @@ public class Job implements BusinessObject, Serializable
     {
         this.date_logged = date_logged;
     }
-    
-    /*public StringProperty date_loggedProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(date_logged));
-    }*/
 
     public StringProperty job_numberProperty()
     {
@@ -150,7 +107,7 @@ public class Job implements BusinessObject, Serializable
     {
         String s="";
         for(FileMetadata file: safety_catalogue)
-            s += file.getIndex() + " : " + file.getLabel() + ",";
+            s += " : " + file.getLabel() + ",";
         return new SimpleStringProperty(s.substring(0,s.length()-1));
     }
 
@@ -164,11 +121,6 @@ public class Job implements BusinessObject, Serializable
     {
         this.date_assigned = date_assigned;
     }
-    
-    /*public StringProperty date_assignedProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(date_assigned));
-    }*/
 
     public long getDate_started() 
     {
@@ -179,11 +131,6 @@ public class Job implements BusinessObject, Serializable
     {
         this.date_started = date_started;
     }
-    
-    /*public StringProperty date_startedProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(date_started));
-    }*/
 
     public long getDate_completed() 
     {
@@ -194,26 +141,11 @@ public class Job implements BusinessObject, Serializable
     {
         this.date_completed = date_completed;
     }
-    
-    /*public StringProperty date_completedProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(date_completed));
-    }*/
 
     public boolean isJob_completed()
     {
         return (date_completed>0);
     }
-
-    /*public void setJob_completed(boolean executed)
-    {
-        this.job_completed = executed;
-    }
-    
-    public StringProperty job_completedProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(job_completed));
-    }*/
     
     public StringProperty creatorProperty()
     {
@@ -358,69 +290,6 @@ public class Job implements BusinessObject, Serializable
     }
 
     @Override
-    public String apiEndpoint()
-    {
-        return "/api/job";
-    }
-
-    @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            /*result.append(URLEncoder.encode("job_number","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(job_number), "UTF-8"));*/
-            result.append(URLEncoder.encode("quote_id","UTF-8") + "="
-                    + URLEncoder.encode(quote_id, "UTF-8"));
-            result.append("&" + URLEncoder.encode("signed","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(signed), "UTF-8"));
-            if(getSigned_job()!=null)
-                result.append("&" + URLEncoder.encode("signed_job","UTF-8") + "="
-                        + URLEncoder.encode(getSigned_job(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
-                    + URLEncoder.encode(creator, "UTF-8"));
-            if(date_logged>0)
-                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_logged), "UTF-8"));
-            if(date_assigned>0)
-                result.append("&" + URLEncoder.encode("date_assigned","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_assigned), "UTF-8"));
-            if(planned_start_date>0)
-                result.append("&" + URLEncoder.encode("planned_start_date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(planned_start_date), "UTF-8"));
-            if(date_started>0)
-                result.append("&" + URLEncoder.encode("date_started","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_started), "UTF-8"));
-            if(date_completed>0)
-                result.append("&" + URLEncoder.encode("date_completed","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_completed), "UTF-8"));
-            if(invoice_id!=null)
-                result.append("&" + URLEncoder.encode("invoice_id","UTF-8") + "="
-                        + URLEncoder.encode(invoice_id, "UTF-8"));
-            /*if(assigned_employees!=null)
-                result.append("&" + URLEncoder.encode("assigned_employees","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(assigned_employees.length), "UTF-8"));
-            if(safety_catalogue!=null)
-                result.append("&" + URLEncoder.encode("safety_catalogue","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(safety_catalogue.length), "UTF-8"));*/
-
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "Job #"+job_number;
-    }
-
-    @Override
     public void parse(String var, Object val)
     {
         try
@@ -518,4 +387,68 @@ public class Job implements BusinessObject, Serializable
                 return null;
         }
     }
+
+    @Override
+    public String toString()
+    {
+        return "Job #"+job_number;
+    }
+
+    @Override
+    public String asUTFEncodedString()
+    {
+        //Return encoded URL parameters in UTF-8 charset
+        StringBuilder result = new StringBuilder();
+        try
+        {
+            /*result.append(URLEncoder.encode("job_number","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(job_number), "UTF-8"));*/
+            result.append(URLEncoder.encode("quote_id","UTF-8") + "="
+                    + URLEncoder.encode(quote_id, "UTF-8"));
+            result.append("&" + URLEncoder.encode("signed","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(signed), "UTF-8"));
+            if(getSigned_job()!=null)
+                result.append("&" + URLEncoder.encode("signed_job","UTF-8") + "="
+                        + URLEncoder.encode(getSigned_job(), "UTF-8"));
+            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
+                    + URLEncoder.encode(creator, "UTF-8"));
+            if(date_logged>0)
+                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(date_logged), "UTF-8"));
+            if(date_assigned>0)
+                result.append("&" + URLEncoder.encode("date_assigned","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(date_assigned), "UTF-8"));
+            if(planned_start_date>0)
+                result.append("&" + URLEncoder.encode("planned_start_date","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(planned_start_date), "UTF-8"));
+            if(date_started>0)
+                result.append("&" + URLEncoder.encode("date_started","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(date_started), "UTF-8"));
+            if(date_completed>0)
+                result.append("&" + URLEncoder.encode("date_completed","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(date_completed), "UTF-8"));
+            if(invoice_id!=null)
+                result.append("&" + URLEncoder.encode("invoice_id","UTF-8") + "="
+                        + URLEncoder.encode(invoice_id, "UTF-8"));
+            /*if(assigned_employees!=null)
+                result.append("&" + URLEncoder.encode("assigned_employees","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(assigned_employees.length), "UTF-8"));
+            if(safety_catalogue!=null)
+                result.append("&" + URLEncoder.encode("safety_catalogue","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(safety_catalogue.length), "UTF-8"));*/
+
+            return result.toString();
+        } catch (UnsupportedEncodingException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/job";
+    }
+
 }

@@ -216,7 +216,7 @@ public class IO<T extends BusinessObject>
                 {
                     //Prepare headers
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                     File file= new File(path);
                     if(file.exists())
@@ -269,10 +269,10 @@ public class IO<T extends BusinessObject>
                         {
                             //Prepare headers
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                             long start = System.currentTimeMillis();
-                            byte[] doc = RemoteComms.sendFileRequest(fileMetadata.getPdf_path(), headers);
+                            byte[] doc = RemoteComms.sendFileRequest(fileMetadata.getPath(), headers);
                             long ellapsed = System.currentTimeMillis() - start;
                             IO.log(TAG, IO.TAG_INFO, "File [" + fileMetadata.getLabel() + "] download complete, size: " + doc.length + " bytes in " + ellapsed + "msec.");
 
@@ -306,10 +306,10 @@ public class IO<T extends BusinessObject>
                     {
                         //Prepare headers
                         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                        headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                        headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                         long start = System.currentTimeMillis();
-                        byte[] doc = RemoteComms.sendFileRequest(fileMetadata.getPdf_path(), headers);
+                        byte[] doc = RemoteComms.sendFileRequest(fileMetadata.getPath(), headers);
                         long ellapsed = System.currentTimeMillis() - start;
                         IO.log(TAG, IO.TAG_INFO, "File [" + fileMetadata.getLabel() + "] download complete, size: " + doc.length + " bytes in " + ellapsed + "msec.");
 

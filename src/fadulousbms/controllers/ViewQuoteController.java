@@ -11,20 +11,8 @@ import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.util.Callback;
-import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
-import java.io.IOException;
-import java.net.URL;
 import java.time.DateTimeException;
 import java.util.*;
 
@@ -87,8 +75,8 @@ public class ViewQuoteController extends QuoteController
             txtFax.setText(cbxClients.getValue().getFax());
             txtQuoteId.setText(selected.get_id());
             txtRevision.setText(String.valueOf(selected.getRevision()));
-            if(selected.getParent()!=null)
-                txtBase.setText(selected.getParent().get_id());
+            if(selected.getParent_id()!=null)
+                txtBase.setText(selected.getParent_id().get_id());
             else
             {
                 txtBase.setText("NONE");
@@ -106,7 +94,7 @@ public class ViewQuoteController extends QuoteController
             cbxAccount.setValue(QuoteManager.getInstance().getSelectedQuote().getClient().getAccount_name());
             txtSite.setText(selected.getSitename());
             txtRequest.setText(selected.getRequest());
-            //txtVat.setText(String.valueOf(selected.getVat()));
+            //txtVat.setText(String.valueOf(selected.getVat_number()));
 
             try
             {
@@ -168,10 +156,10 @@ public class ViewQuoteController extends QuoteController
     {
         Quote selected = QuoteManager.getInstance().getSelectedQuote();
         if(selected!=null)
-            if(selected.getParent()!=null)
+            if(selected.getParent_id()!=null)
             {
                 QuoteManager.getInstance().selected_quote_sibling_cursor=0;
-                //QuoteManager.getInstance().setSelectedQuote(selected.getParent());
+                //QuoteManager.getInstance().setSelectedQuote(selected.getParent_id());
                 //refresh GUI
                 new Thread(() ->
                 {

@@ -3,10 +3,7 @@ package fadulousbms.managers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
-import fadulousbms.model.CustomTableViewControls;
-import fadulousbms.model.Employee;
-import fadulousbms.model.Job;
-import fadulousbms.model.Overtime;
+import fadulousbms.model.*;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -96,10 +93,10 @@ public class OvertimeManager extends BusinessObjectManager
                 {
                     gson = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                     //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/api/timestamp/overtime_timestamp", headers);
+                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/overtime_timestamp", headers);
                     Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                     if (cntr_timestamp != null)
                     {
@@ -115,38 +112,37 @@ public class OvertimeManager extends BusinessObjectManager
 
                     if (!isSerialized(ROOT_PATH + filename))
                     {
-                        String overtime_records_json = RemoteComms.sendGetRequest("/api/overtime_records", headers);
-                        Overtime[] overtime_records_arr = gson.fromJson(overtime_records_json, Overtime[].class);
+                        String overtime_records_json = RemoteComms.sendGetRequest("/overtime_records", headers);
+                        OvertimeServerObject overtimeServerObject = gson.fromJson(overtime_records_json, OvertimeServerObject.class);
+                        if (overtimeServerObject != null)
+                        {
+                            if(overtimeServerObject.get_embedded()!=null)
+                            {
+                                Overtime[] overtime_records_arr = overtimeServerObject.get_embedded()
+                                        .getOvertime_records();
 
-                        overtime_records = new HashMap();
-                        for (Overtime overtime : overtime_records_arr)
-                            overtime_records.put(overtime.get_id(), overtime);
+                                overtime_records = new HashMap<>();
+                                for (Overtime overtime : overtime_records_arr)
+                                    overtime_records.put(overtime.get_id(), overtime);
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Overtime records in the database.");
+                        } else IO.log(getClass().getName(), IO.TAG_WARN, "no Overtime records found in the database.");
 
-                        IO.log(getClass().getName(), IO.TAG_INFO, "reloaded overtime_records collection.");
+                        IO.log(getClass().getName(), IO.TAG_INFO, "reloaded Overtime records collection.");
                         this.serialize(ROOT_PATH + filename, overtime_records);
-                    }
-                    else
+                    } else
                     {
                         IO.log(this.getClass()
                                 .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                         overtime_records = (HashMap<String, Overtime>) this.deserialize(ROOT_PATH + filename);
                     }
-                }
-                else
-                {
-                    IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-                }
-            }
-            else
-            {
-                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-            }
+                } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Session Expired", "No valid active sessions found.", IO.TAG_ERROR);
         } catch (MalformedURLException ex)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
         } catch (IOException ex)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
         }
     }
 
@@ -266,7 +262,7 @@ public class OvertimeManager extends BusinessObjectManager
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if (SessionManager.getInstance().getActive() != null)
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                            .getSession_id()));
                 else
                 {
                     IO.logAndAlert("Error: Session expired", "No active sessions.", IO.TAG_INFO);
@@ -338,7 +334,7 @@ public class OvertimeManager extends BusinessObjectManager
             if (!SessionManager.getInstance().getActive().isExpired())
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
                 overtime.setStatus(Overtime.STATUS_APPROVED);
                 try
@@ -362,5 +358,35 @@ public class OvertimeManager extends BusinessObjectManager
                 }
             } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    class OvertimeServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Overtime[] overtime_records;
+
+            public Overtime[] getOvertime_records()
+            {
+                return overtime_records;
+            }
+
+            public void setOvertime_records(Overtime[] overtime_records)
+            {
+                this.overtime_records = overtime_records;
+            }
+        }
     }
 }

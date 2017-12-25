@@ -11,59 +11,15 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/02/24.
  */
-public class FileMetadata implements BusinessObject, Serializable
+public class FileMetadata extends BusinessObject implements Serializable
 {
-    private String _id;
-    private double index;
+    private String filename;
     private String label;
-    private String pdf_path;
-    private String logo_options;
-    private String type;
-    private boolean marked;
-    private boolean required;
+    private String path;
+    private long date_logged;
+    private String content_type;
+    private String extra;//{"logo_options":{}, "required":false}
     public static final String TAG = "FileMetadata";
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
-
-    public StringProperty indexProperty(){return new SimpleStringProperty(String.valueOf(index));}
-
-    public double getIndex()
-    {
-        return index;
-    }
-
-    public void setIndex(int index)
-    {
-        this.index = index;
-    }
 
     public StringProperty labelProperty(){return new SimpleStringProperty(label);}
 
@@ -77,73 +33,74 @@ public class FileMetadata implements BusinessObject, Serializable
         this.label = label;
     }
 
-    public StringProperty pdf_pathProperty(){return new SimpleStringProperty(pdf_path);}
+    public StringProperty pathProperty(){return new SimpleStringProperty(path);}
 
-    public String getPdf_path()
+    public String getPath()
     {
-        return pdf_path;
+        return path;
     }
 
-    public void setPdf_path(String pdf_path)
+    public void setPath(String path)
     {
-        this.pdf_path = pdf_path;
+        this.path = path;
     }
 
-    public StringProperty typeProperty(){return new SimpleStringProperty(type);}
+    public StringProperty content_typeProperty(){return new SimpleStringProperty(content_type);}
 
-    public String getType()
+    public String getContent_type()
     {
-        return type;
+        return content_type;
     }
 
-    public void setType(String type)
+    public void setContent_type(String content_type)
     {
-        this.type = type;
+        this.content_type = content_type;
     }
 
-    public StringProperty logo_optionsProperty(){return new SimpleStringProperty(logo_options);}
-
-    public String getLogo_options()
+    public long getDate_logged()
     {
-        return logo_options;
+        return date_logged;
     }
 
-    public void setLogo_options(String logo_options)
+    public void setDate_logged(long date_logged)
     {
-        this.logo_options = logo_options;
+        this.date_logged = date_logged;
     }
 
-    public StringProperty requiredProperty(){return new SimpleStringProperty(String.valueOf(required));}
+    public StringProperty extraProperty(){return new SimpleStringProperty(extra);}
 
-    public boolean getRequired(){return required;}
+    public String getExtra()
+    {
+        return extra;
+    }
 
-    public void setRequired(boolean required){this.required=required;}
+    public void setExtra(String extra)
+    {
+        this.extra = extra;
+    }
 
     @Override
     public void parse(String var, Object val)
     {
         switch (var.toLowerCase())
         {
-            case "index":
-                index = Double.parseDouble((String) val);
+            case "filename":
+                filename = (String)val;
                 break;
             case "label":
                 label=(String)val;
                 break;
-            case "pdf_path":
-                pdf_path=(String)val;
+            case "path":
+                path=(String)val;
                 break;
-            case "logo_options":
-                logo_options=(String)val;
+            case "content_type":
+                content_type=(String)val;
                 break;
-            case "type":
-                type=(String)val;
-                break;
-            case "required":
-                required=(Boolean) val;
+            case "extra":
+                extra=(String) val;
                 break;
             default:
-                IO.log(TAG, IO.TAG_ERROR, "unknown FileMetadata attribute '" + var + "'");
+                IO.log(TAG, IO.TAG_ERROR, "unknown "+TAG+" attribute '" + var + "'");
                 break;
         }
     }
@@ -153,27 +110,19 @@ public class FileMetadata implements BusinessObject, Serializable
     {
         switch (var.toLowerCase())
         {
-            case "index":
-                return index;
+            case "filename":
+                return filename;
             case "label":
                 return label;
-            case "pdf_path":
-                return pdf_path;
-            case "logo_options":
-                return logo_options;
-            case "type":
-                return type;
-            case "required":
-                return required;
+            case "path":
+                return path;
+            case "content_type":
+                return content_type;
+            case "extra":
+                return extra;
             default:
                 return null;
         }
-    }
-
-    @Override
-    public String apiEndpoint()
-    {
-        return "/api/file";
     }
 
     @Override
@@ -183,18 +132,18 @@ public class FileMetadata implements BusinessObject, Serializable
         StringBuilder result = new StringBuilder();
         try
         {
-            result.append(URLEncoder.encode("index","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(index), "UTF-8") + "&");
             result.append(URLEncoder.encode("label","UTF-8") + "="
                     + URLEncoder.encode(label, "UTF-8") + "&");
-            result.append(URLEncoder.encode("required","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(required), "UTF-8") + "&");
-            result.append(URLEncoder.encode("pdf_path","UTF-8") + "="
-                    + URLEncoder.encode(pdf_path, "UTF-8") + "&");
-            result.append(URLEncoder.encode("type","UTF-8") + "="
-                    + URLEncoder.encode(type, "UTF-8") + "&");
-            result.append(URLEncoder.encode("logo_options","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(logo_options), "UTF-8"));
+            result.append(URLEncoder.encode("path","UTF-8") + "="
+                    + URLEncoder.encode(getPath(), "UTF-8") + "&");
+            result.append(URLEncoder.encode("content_type","UTF-8") + "="
+                    + URLEncoder.encode(getContent_type(), "UTF-8") + "&");
+            if(getDate_logged()>0)
+                result.append(URLEncoder.encode("date_logged","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8") + "&");
+            if(getExtra()!=null)
+                result.append(URLEncoder.encode("extra","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getExtra()), "UTF-8") + "&");
 
             return result.toString();
         } catch (UnsupportedEncodingException e)
@@ -204,8 +153,14 @@ public class FileMetadata implements BusinessObject, Serializable
         return null;
     }
 
+    @Override
+    public String apiEndpoint()
+    {
+        return "/file";
+    }
+
     //Additional methods
-    static int partition(FileMetadata arr[], int left, int right)
+    /*static int partition(FileMetadata arr[], int left, int right)
     {
         int i = left, j = right;
         FileMetadata tmp;
@@ -237,6 +192,6 @@ public class FileMetadata implements BusinessObject, Serializable
             quickSort(arr, left, index - 1);
         if (index < right)
             quickSort(arr, index, right);
-    }
+    }*/
 }
 

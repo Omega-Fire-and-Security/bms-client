@@ -12,10 +12,8 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/02/01.
  */
-public class Asset implements BusinessObject, Serializable
+public class Asset extends BusinessObject implements Serializable
 {
-    private boolean marked;
-    private String _id;
     private String asset_name;
     private String asset_description;
     private String asset_serial;
@@ -26,36 +24,6 @@ public class Asset implements BusinessObject, Serializable
     private long quantity;
     private String unit;
     private String other;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty asset_nameProperty(){return new SimpleStringProperty(asset_name);}
 
@@ -295,7 +263,7 @@ public class Asset implements BusinessObject, Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/api/asset";
+        return "/asset";
     }
 
     @Override

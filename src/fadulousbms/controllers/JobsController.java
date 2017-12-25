@@ -480,7 +480,7 @@ public class JobsController extends ScreenController implements Initializable
                 try
                 {
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
                     //String filename = String.valueOf(bo.get(property));
                     long start = System.currentTimeMillis();

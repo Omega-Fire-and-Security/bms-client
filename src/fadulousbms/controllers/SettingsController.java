@@ -93,7 +93,7 @@ public class SettingsController extends ScreenController implements Initializabl
                             in.close();
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "image/" + f.getName().split("\\.")[1]));
                             headers.add(new AbstractMap.SimpleEntry<>("File-Type", f.getName().split("\\.")[1]));
                             RemoteComms.uploadFile("/api/upload/logo", headers, buffer);

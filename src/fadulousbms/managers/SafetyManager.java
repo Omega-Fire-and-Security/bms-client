@@ -63,7 +63,7 @@ public class SafetyManager extends BusinessObjectManager
                     Gson gson = new GsonBuilder().create();
                     //Prepare headers
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                     //Request index
                     String resources_json = RemoteComms.sendGetRequest("/api/safety/indices", headers);
@@ -73,11 +73,11 @@ public class SafetyManager extends BusinessObjectManager
                     //System.out.println("\n\n>>>>>Documents successfully loaded, size: " + documents.length + "<<<<<\n\n");
 
                     //Sort array in ascending order
-                    if(documents!=null)
+                    /*if(documents!=null)
                         if(documents.length>0)
-                            FileMetadata.quickSort(documents, 0, documents.length-1);
+                            //TODO:IO.getInstance().quickSort(documents, 0, documents.length-1);
                         else IO.log("No documents found", IO.TAG_ERROR, "No safety documents were found in the database.");
-                    else IO.log("No documents found", IO.TAG_ERROR, "No safety documents were found in the database.");
+                    else IO.log("No documents found", IO.TAG_ERROR, "No safety documents were found in the database.");*/
 
                 } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
             } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -209,7 +209,7 @@ public class SafetyManager extends BusinessObjectManager
                                 in.close();
 
                                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
                                 headers.add(new AbstractMap.SimpleEntry<>("Filename", f.getName()));
                                 RemoteComms.uploadFile("/api/upload", headers, buffer);
@@ -308,7 +308,8 @@ public class SafetyManager extends BusinessObjectManager
         final TextField txt_safety_doc = new TextField();
         txt_safety_doc.setMinWidth(200);
         txt_safety_doc.setMaxWidth(Double.MAX_VALUE);
-        txt_safety_doc.setText(selected_doc.getIndex() + ":" + selected_doc.getLabel());
+        //TODO: txt_safety_doc.setText(selected_doc.getIndex() + ":" + selected_doc.getLabel());
+        txt_safety_doc.setText(selected_doc.getLabel());
         txt_safety_doc.setEditable(false);
         HBox safety_doc = CustomTableViewControls.getLabelledNode("Safety document: ", 200, txt_safety_doc);
 
@@ -365,7 +366,7 @@ public class SafetyManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     JOptionPane.showMessageDialog(null, "No active sessions.", "Session expired", JOptionPane.ERROR_MESSAGE);
@@ -473,7 +474,7 @@ public class SafetyManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);

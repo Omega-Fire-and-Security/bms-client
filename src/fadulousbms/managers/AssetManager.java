@@ -71,10 +71,10 @@ public class AssetManager extends BusinessObjectManager
                 {
                     gson = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                     //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/api/timestamp/assets_timestamp", headers);
+                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/assets_timestamp", headers);
                     Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                     if(cntr_timestamp!=null)
                     {
@@ -88,23 +88,33 @@ public class AssetManager extends BusinessObjectManager
 
                     if(!isSerialized(ROOT_PATH+filename))
                     {
-                        String assets_json = RemoteComms.sendGetRequest("/api/assets", headers);
-                        Asset[] arr_assets = gson.fromJson(assets_json, Asset[].class);
-                        assets = new HashMap<>();
-                        all_assets = new HashMap<>();
-                        for(Asset asset: arr_assets)
+                        String assets_json = RemoteComms.sendGetRequest("/assets", headers);
+                        AssetServerObject assetServerObject= gson.fromJson(assets_json, AssetServerObject.class);
+                        if(assetServerObject!=null)
                         {
-                            all_assets.put(asset.get_id(), asset);
-                            if(asset.getDate_acquired()>0)
-                                assets.put(asset.get_id(), asset);
-                            else IO.log(getClass().getName(), IO.TAG_WARN, "asset ["+asset+"] has not been approved yet. [date_acquired not set]");
-                        }
+                            if(assetServerObject.get_embedded()!=null)
+                            {
+                                Asset[] assets_arr = assetServerObject.get_embedded().getAssets();
 
-                        String asset_types_json = RemoteComms.sendGetRequest("/api/asset/types", headers);
-                        AssetType[] arr_asset_types = gson.fromJson(asset_types_json, AssetType[].class);
-                        asset_types = new HashMap<>();
-                        for(AssetType asset_type: arr_asset_types)
-                            asset_types.put(asset_type.get_id(), asset_type);
+                                assets = new HashMap<>();
+                                for (Asset asset : assets_arr)
+                                    assets.put(asset.get_id(), asset);
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Assets in database.");
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "AssetServerObject (containing Asset objects & other metadata) is null");
+
+                        String asset_types_json = RemoteComms.sendGetRequest("/assets/types", headers);
+                        AssetTypeServerObject assetTypeServerObject= gson.fromJson(asset_types_json, AssetTypeServerObject.class);
+                        if(assetTypeServerObject!=null)
+                        {
+                            if(assetTypeServerObject.get_embedded()!=null)
+                            {
+                                AssetType[] asset_types_arr = assetTypeServerObject.get_embedded().getAsset_types();
+
+                                asset_types = new HashMap<>();
+                                for (AssetType assetType : asset_types_arr)
+                                    asset_types.put(assetType.get_id(), assetType);
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Asset Types in the database.");
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "AssetTypeServerObject (containing AssetType objects & other metadata) is null");
 
                         IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of assets.");
 
@@ -325,7 +335,7 @@ public class AssetManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -433,7 +443,7 @@ public class AssetManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);
@@ -636,7 +646,7 @@ public class AssetManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -736,7 +746,7 @@ public class AssetManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -780,5 +790,65 @@ public class AssetManager extends BusinessObjectManager
         stage.show();
         stage.centerOnScreen();
         stage.setResizable(true);
+    }
+
+    class AssetServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Asset[] assets;
+
+            public Asset[] getAssets()
+            {
+                return assets;
+            }
+
+            public void setAssets(Asset[] assets)
+            {
+                this.assets = assets;
+            }
+        }
+    }
+
+    class AssetTypeServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private AssetType[] asset_types;
+
+            public AssetType[] getAsset_types()
+            {
+                return asset_types;
+            }
+
+            public void setAsset_types(AssetType[] asset_types)
+            {
+                this.asset_types = asset_types;
+            }
+        }
     }
 }

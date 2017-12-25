@@ -65,12 +65,12 @@
                 </TableColumn>
                 <TableColumn fx:id="colSupplierRegistration" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Registration #">
                    <cellValueFactory>
-                      <PropertyValueFactory property="registration" />
+                      <PropertyValueFactory property="registration_number" />
                    </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colSupplierVat" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="VAT Number">
                    <cellValueFactory>
-                      <PropertyValueFactory property="vat" />
+                      <PropertyValueFactory property="vat_number" />
                    </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colSupplierAccount" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Account Name">

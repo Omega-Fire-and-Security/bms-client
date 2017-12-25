@@ -60,13 +60,13 @@ public class InspectionManager extends BusinessObjectManager
                 {
                     Gson gson = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                     String index_json = RemoteComms.sendGetRequest("/api/inspection/indices", headers);
                     documents = gson.fromJson(index_json, FileMetadata[].class);
 
                     //Sort array in ascending order
-                    FileMetadata.quickSort(documents, 0, documents.length-1);
+                    //TODO:FileMetadata.quickSort(documents, 0, documents.length-1);
                 } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
             } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
         }catch (JsonSyntaxException ex)
@@ -242,7 +242,7 @@ public class InspectionManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     JOptionPane.showMessageDialog(null, "No active sessions.", "Session expired", JOptionPane.ERROR_MESSAGE);

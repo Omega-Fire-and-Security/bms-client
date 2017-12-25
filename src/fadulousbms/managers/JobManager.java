@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 public class JobManager extends BusinessObjectManager
 {
     private HashMap<String, Job> jobs;
-    private BusinessObject[] genders=null, domains=null;
+    private String[] genders=null, domains=null;
     private Gson gson;
     private ScreenManager screenManager = null;
     private static JobManager job_manager = new JobManager();
@@ -71,24 +71,10 @@ public class JobManager extends BusinessObjectManager
     public void initialize()
     {
         //init genders
-        BusinessObject male = new Gender();
-        male.set_id("male");
-        male.parse("gender", "male");
-        BusinessObject female = new Gender();
-        female.set_id("female");
-        female.parse("gender", "female");
-
-        genders = new BusinessObject[]{male, female};
+        genders = new String[]{"Male", "Female"};
 
         //init domains
-        BusinessObject internal = new Domain();
-        internal.set_id("true");
-        internal.parse("domain", "internal");
-        BusinessObject external = new Domain();
-        external.set_id("false");
-        external.parse("domain", "external");
-
-        domains = new BusinessObject[]{internal, external};
+        domains = new String[]{"internal", "external"};
 
         loadDataFromServer();
     }
@@ -132,10 +118,10 @@ public class JobManager extends BusinessObjectManager
             {
                 gson = new GsonBuilder().create();
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                 //Get Timestamp
-                String timestamp_json = RemoteComms.sendGetRequest("/api/timestamp/jobs_timestamp", headers);
+                String timestamp_json = RemoteComms.sendGetRequest("/timestamp/jobs_timestamp", headers);
                 Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                 if (cntr_timestamp != null)
                 {
@@ -151,58 +137,68 @@ public class JobManager extends BusinessObjectManager
 
                 if (!isSerialized(ROOT_PATH + filename))
                 {
-                    String jobs_json = RemoteComms.sendGetRequest("/api/jobs", headers);
-                    Job[] jobs_arr = gson.fromJson(jobs_json, Job[].class);
-
-                    jobs = new HashMap<>();
-                    for (Job job : jobs_arr)
+                    //Load Job objects from server
+                    String jobs_json = RemoteComms.sendGetRequest("/jobs", headers);
+                    JobServerObject jobServerObject = gson.fromJson(jobs_json, JobServerObject.class);
+                    if (jobServerObject != null)
                     {
-                        //Load JobEmployee objects using Job_id
-                        String jobemployees_json = RemoteComms
-                                .sendGetRequest("/api/job/employees/" + job.get_id(), headers);
-                        JobEmployee[] jobemployees = gson.fromJson(jobemployees_json, JobEmployee[].class);
-
-                        // Get Employee objects from Employee_id derived from JobEmployee objects
-                        // And load them into an array.
-                        Employee[] employees_arr = new Employee[jobemployees.length];
-                        for (int i = 0; i < jobemployees.length; i++)
+                        if (jobServerObject.get_embedded() != null)
                         {
-                            String employees_json = RemoteComms
-                                    .sendGetRequest("/api/employee/" + jobemployees[i].getUsr(), headers);
-                            Employee employee = gson.fromJson(employees_json, Employee.class);
-                            employees_arr[i] = employee;
-                        }
-                        // Set Employee objects on to Job object.
-                        job.setAssigned_employees(employees_arr);
+                            Job[] jobs_arr = jobServerObject.get_embedded().getJobs();
 
-                        //Load Job Safety Catalogue
-                        String job_cat_json = RemoteComms
-                                .sendGetRequest("/api/job/safetycatalogue/" + job.get_id(), headers);
-                        JobSafetyCatalogue[] safetyCatalog = gson
-                                .fromJson(job_cat_json, JobSafetyCatalogue[].class);
-                        FileMetadata[] safety_docs = new FileMetadata[safetyCatalog.length];
-                        for (int i = 0; i < safetyCatalog.length; i++)
-                        {
-                            String safety_doc_json = RemoteComms
-                                    .sendGetRequest("/api/safety/index/" + safetyCatalog[i]
-                                            .getSafety_id(), headers);
-                            FileMetadata safety_doc = gson.fromJson(safety_doc_json, FileMetadata.class);
-                            safety_docs[i] = safety_doc;
+                            jobs = new HashMap<>();
+                            for (Job job : jobs_arr)
+                                jobs.put(job.get_id(), job);
                         }
-                        job.setSafety_catalogue(safety_docs);
-                        jobs.put(job.get_id(), job);
+                        else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
                     }
+                    if (jobs != null)
+                    {
+                        for (Job job : jobs.values())
+                        {
+                            //Load JobEmployee objects using Job_id
+                            String job_employees_json = RemoteComms.sendGetRequest("/jobs/employees/" + job.get_id(), headers);
+                            JobEmployeeServerObject jobEmployeeServerObject = gson.fromJson(job_employees_json, JobEmployeeServerObject.class);
+                            if (jobEmployeeServerObject != null)
+                            {
+                                if(jobEmployeeServerObject.get_embedded()!=null)
+                                {
+                                    JobEmployee[] job_employees_arr = jobEmployeeServerObject.get_embedded()
+                                            .getJob_employees();
+                                    if (job_employees_arr != null)
+                                    {
+                                        // make Employee[] of same size as JobEmployee[]
+                                        Employee[] employees_arr = new Employee[job_employees_arr.length];
+                                        // Load actual Employee objects from JobEmployee[] objects
+                                        int i = 0;
+                                        for (JobEmployee jobEmployee : job_employees_arr)
+                                            if (EmployeeManager.getInstance().getEmployees() != null)
+                                                employees_arr[i++] = EmployeeManager.getInstance().getEmployees()
+                                                        .get(jobEmployee.getUsr());
+                                            else IO.log(getClass()
+                                                    .getName(), IO.TAG_ERROR, "no Employees found in database.");
+                                        // Set Employee objects on to Job object.
+                                        job.setAssigned_employees(employees_arr);
+                                    } else IO.log(getClass()
+                                            .getName(), IO.TAG_ERROR, "could not load assigned Employees for job #" + job
+                                            .get_id());
+
+                                } else IO.log(getClass()
+                                        .getName(), IO.TAG_ERROR, "could not load assigned Employees for job #"
+                                        + job.get_id()+". Could not find any JobEmployee documents in collection.");
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid JobEmployeeServerObject for Job#"+job.get_id());
+                        }
+                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
                     IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of jobs.");
                     this.serialize(ROOT_PATH + filename, jobs);
-                }
-                else
+                } else
                 {
                     IO.log(this.getClass()
                             .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                     jobs = (HashMap<String, Job>) this.deserialize(ROOT_PATH + filename);
                 }
-            }else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        }else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.logAndAlert("Session Expired", "No valid active sessions found.", IO.TAG_ERROR);
     }
 
     /**
@@ -225,7 +221,7 @@ public class JobManager extends BusinessObjectManager
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new job on database
             HttpURLConnection connection = RemoteComms.postData("/api/job/add", job.asUTFEncodedString(), headers);
@@ -295,7 +291,7 @@ public class JobManager extends BusinessObjectManager
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
             params.add(new AbstractMap.SimpleEntry<>("job_id", job_id));
@@ -382,7 +378,7 @@ public class JobManager extends BusinessObjectManager
                 {
                     if (!active.isExpired())
                     {
-                        headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSessionId()));
+                        headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSession_id()));
                         HttpURLConnection conn = RemoteComms.postData("/api/job/sign/" + job.get_id(), "", headers);
                         if (conn != null)
                         {
@@ -459,7 +455,7 @@ public class JobManager extends BusinessObjectManager
                             in.close();
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             //headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                             //update signed job property
@@ -518,7 +514,7 @@ public class JobManager extends BusinessObjectManager
                             in.close();
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                             RemoteComms.uploadFile("/api/job/signed/upload/" + job_id, headers, buffer);
@@ -573,7 +569,7 @@ public class JobManager extends BusinessObjectManager
 
                                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance()
-                                        .getActive().getSessionId()));
+                                        .getActive().getSession_id()));
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                                 RemoteComms.uploadFile("/api/job/upload/" + job.get_id(), headers, buffer);
@@ -692,7 +688,7 @@ public class JobManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                            .getSession_id()));
                     params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
@@ -863,7 +859,7 @@ public class JobManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                            .getSession_id()));
                     params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
@@ -1007,8 +1003,7 @@ public class JobManager extends BusinessObjectManager
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
                 {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                     params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
@@ -1184,144 +1179,63 @@ public class JobManager extends BusinessObjectManager
         }else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);*/
     }
 
-    class JobSafetyCatalogue implements BusinessObject
+    class JobServerObject extends ServerObject
     {
-        private String _id;
-        private String job_id;
-        private String safety_id;
-        private long date_assigned;
-        private boolean marked;
-        public static final String TAG = "JobSafetyCatalogue";
+        private JobServerObject.Embedded _embedded;
 
-        public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-        @Override
-        public String get_id()
+        Embedded get_embedded()
         {
-            return _id;
+            return _embedded;
         }
 
-        public void set_id(String _id)
+        void set_embedded(Embedded _embedded)
         {
-            this._id = _id;
+            this._embedded = _embedded;
         }
 
-        public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-        @Override
-        public String getShort_id()
+        class Embedded
         {
-            return _id.substring(0, 8);
-        }
+            private Job[] jobs;
 
-        private StringProperty job_idProperty(){return new SimpleStringProperty(job_id);}
-
-        public String getJob_id()
-        {
-            return job_id;
-        }
-
-        public void setJob_id(String job_id)
-        {
-            this.job_id = job_id;
-        }
-
-        private StringProperty safety_idProperty(){return new SimpleStringProperty(safety_id);}
-
-        public String getSafety_id()
-        {
-            return safety_id;
-        }
-
-        public void setSafety_id(String safety_id)
-        {
-            this.safety_id = safety_id;
-        }
-
-        private StringProperty date_assignedProperty(){return new SimpleStringProperty(String.valueOf(date_assigned));}
-
-        public double getDate_assigned()
-        {
-            return date_assigned;
-        }
-
-        public void setDate_assigned(long date_assigned)
-        {
-            this.date_assigned = date_assigned;
-        }
-
-        @Override
-        public boolean isMarked()
-        {
-            return marked;
-        }
-
-        @Override
-        public void setMarked(boolean marked){this.marked=marked;}
-
-        @Override
-        public void parse(String var, Object val)
-        {
-            switch (var.toLowerCase())
+            public Job[] getJobs()
             {
-                case "job_id":
-                    job_id = String.valueOf(val);
-                    break;
-                case "safety_id":
-                    safety_id = String.valueOf(val);
-                    break;
-                case "date_assigned":
-                    date_assigned = Long.parseLong((String)val);
-                    break;
-                default:
-                    System.err.println("Unknown "+TAG+" attribute '" + var + "'.");
-                    break;
+                return jobs;
+            }
+
+            public void setJobs(Job[] jobs)
+            {
+                this.jobs = jobs;
             }
         }
+    }
 
-        @Override
-        public Object get(String var)
+    class JobEmployeeServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
         {
-            switch (var.toLowerCase())
-            {
-                case "job_id":
-                    return job_id;
-                case "safety_id":
-                    return safety_id;
-                case "date_assigned":
-                    return date_assigned;
-                default:
-                    System.err.println("Unknown "+TAG+" attribute '" + var + "'.");
-                    return null;
-            }
+            return _embedded;
         }
 
-        @Override
-        public String asUTFEncodedString()
+        void set_embedded(Embedded _embedded)
         {
-            //Return encoded URL parameters in UTF-8 charset
-            StringBuilder result = new StringBuilder();
-            try
-            {
-                result.append(URLEncoder.encode("job_id","UTF-8") + "="
-                        + URLEncoder.encode(job_id, "UTF-8") + "&");
-                result.append(URLEncoder.encode("safety_id","UTF-8") + "="
-                        + URLEncoder.encode(safety_id, "UTF-8") + "&");
-                result.append(URLEncoder.encode("date_assigned","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_assigned), "UTF-8"));
-
-                return result.toString();
-            } catch (UnsupportedEncodingException e)
-            {
-                IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-            }
-            return null;
+            this._embedded = _embedded;
         }
 
-        @Override
-        public String apiEndpoint()
+        class Embedded
         {
-            return "/api/job/safetycatalogue";
+            private JobEmployee[] job_employees;
+
+            public JobEmployee[] getJob_employees()
+            {
+                return job_employees;
+            }
+
+            public void setJob_employees(JobEmployee[] job_employees)
+            {
+                this.job_employees = job_employees;
+            }
         }
     }
 }

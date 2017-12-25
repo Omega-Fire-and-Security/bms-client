@@ -2,8 +2,6 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.ResourceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -14,9 +12,8 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/01/21.
  */
-public abstract class PurchaseOrderItem implements BusinessObject, Serializable
+public abstract class PurchaseOrderItem extends BusinessObject implements Serializable
 {
-    private String _id;
     private int item_number;
     private String purchase_order_id;
     private String item_id;
@@ -25,53 +22,9 @@ public abstract class PurchaseOrderItem implements BusinessObject, Serializable
     private double cost;
     private long date_logged;
     private BusinessObject item;
-    private boolean marked;
     private String extra;
     private String type;
     public static final String TAG = "PurchaseOrderItem";
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    /**
-     * Function to get identifier of Quote object.
-     * @return Quote identifier.
-     */
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    /**
-     * Method to assign identifier to this object.
-     * @param _id identifier to be assigned to this object.
-     */
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-
-    /**
-     * Function to get a shortened identifier of this object.
-     * @return The shortened identifier.
-     */
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
 

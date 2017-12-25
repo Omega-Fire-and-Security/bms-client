@@ -2,26 +2,22 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.PDF;
 import fadulousbms.managers.ClientManager;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.QuoteManager;
-import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/21.
  */
-public class Quote implements BusinessObject, Serializable
+public class Quote extends BusinessObject implements Serializable
 {
-    private String _id;
     private String client_id;
     private String contact_person_id;
     private String sitename;
@@ -33,59 +29,14 @@ public class Quote implements BusinessObject, Serializable
     private double revision;
     private String extra;
     private int status;
-    private String parent;
+    private String parent_id;
     private QuoteItem[] resources;
     private QuoteRep[] representatives;
     private int rev_cursor = -1;
-    //public static double VAT = 14.0;
-    private boolean marked;
     public static final String TAG = "Quote";
     public static final int STATUS_PENDING =0;
     public static final int STATUS_APPROVED =1;
     public static final int STATUS_ARCHIVED =2;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    /**
-     * Function to get identifier of Quote object.
-     * @return Quote identifier.
-     */
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    /**
-     * Method to assign identifier to this object.
-     * @param _id identifier to be assigned to this object.
-     */
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-
-    /**
-     * Function to get a shortened identifier of this object.
-     * @return The shortened identifier.
-     */
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
 
@@ -220,27 +171,27 @@ public class Quote implements BusinessObject, Serializable
         this.creator = creator;
     }
 
-    public StringProperty parentProperty()
+    public StringProperty parent_idProperty()
     {
         return new SimpleStringProperty(String.valueOf(getParentID()));
     }
 
-    public Quote getParent()
+    public Quote getParent_id()
     {
-        if(parent==null)
+        if(parent_id ==null)
             return null;
         else
         {
             QuoteManager.getInstance().loadDataFromServer();
-            return QuoteManager.getInstance().getQuotes().get(parent);
+            return QuoteManager.getInstance().getQuotes().get(parent_id);
         }
     }
 
-    public String getParentID(){return this.parent;}
+    public String getParentID(){return this.parent_id;}
 
-    public void setParent(String parent)
+    public void setParent_id(String parent_id)
     {
-        this.parent= parent;
+        this.parent_id = parent_id;
     }
 
     public StringProperty revisionProperty(){return new SimpleStringProperty(String.valueOf(revision));}
@@ -297,7 +248,7 @@ public class Quote implements BusinessObject, Serializable
     {
         if(representatives==null)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, "quote ["+_id+"] has no representatives.");
+            IO.log(getClass().getName(), IO.TAG_ERROR, "quote ["+get_id()+"] has no representatives.");
             return null;
         }
         Employee[] reps = new Employee[representatives.length];
@@ -345,8 +296,8 @@ public class Quote implements BusinessObject, Serializable
     public Quote getRoot()
     {
         Quote quote = this;
-        while(quote.getParent()!=null)
-            quote=quote.getParent();
+        while(quote.getParent_id()!=null)
+            quote=quote.getParent_id();
         return quote;
     }
 
@@ -354,10 +305,10 @@ public class Quote implements BusinessObject, Serializable
     {
         HashMap<Double, Quote> siblings = new HashMap<>();
         siblings.put(this.getRevision(), this);//make self be first child of requested siblings
-        if(getParent()!=null)
+        if(getParent_id()!=null)
         {
             QuoteManager.getInstance().loadDataFromServer();
-            siblings.put(getParent().getRevision(), getParent());//make parent be second child of requested siblings
+            siblings.put(getParent_id().getRevision(), getParent_id());//make parent_id be second child of requested siblings
             if (QuoteManager.getInstance().getQuotes() != null)
             {
                 for (Quote quote : QuoteManager.getInstance().getQuotes().values())
@@ -365,7 +316,7 @@ public class Quote implements BusinessObject, Serializable
                         siblings.put(quote.getRevision(), quote);
             }
             else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
-        } else IO.log(getClass().getName(), IO.TAG_WARN, "quote ["+get_id()+"] has no parent.");
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "quote ["+get_id()+"] has no parent_id.");
         return siblings;
     }
 
@@ -390,8 +341,9 @@ public class Quote implements BusinessObject, Serializable
         if (QuoteManager.getInstance().getQuotes() != null)
         {
             for (Quote quote : QuoteManager.getInstance().getQuotes().values())
-                if (get_id().equals(quote.getParentID()))
-                    children.put(quote.getRevision(), quote);
+                if(quote.getParentID()!=null)
+                    if (quote.getParentID().equals(get_id()))
+                        children.put(quote.getRevision(), quote);
         } else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
         return children;
     }
@@ -424,62 +376,6 @@ public class Quote implements BusinessObject, Serializable
     }
 
     @Override
-    public String apiEndpoint()
-    {
-        return "/api/quote";
-    }
-
-    @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("client_id","UTF-8") + "="
-                    + URLEncoder.encode(client_id, "UTF-8") + "&");
-            result.append(URLEncoder.encode("contact_person_id","UTF-8") + "="
-                    + URLEncoder.encode(contact_person_id, "UTF-8") + "&");
-            if(date_generated>0)
-                result.append(URLEncoder.encode("date_generated","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_generated), "UTF-8"));
-            result.append("&" + URLEncoder.encode("sitename","UTF-8") + "="
-                    + URLEncoder.encode(sitename, "UTF-8"));
-            result.append("&" + URLEncoder.encode("request","UTF-8") + "="
-                    + URLEncoder.encode(request, "UTF-8"));
-            if(status>0)
-                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(status), "UTF-8"));
-            result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(vat), "UTF-8"));
-            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
-                    + URLEncoder.encode(account_name, "UTF-8"));
-            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
-                    + URLEncoder.encode(creator, "UTF-8"));
-            if(parent!=null)
-                result.append("&" + URLEncoder.encode("parent","UTF-8") + "="
-                        + URLEncoder.encode(parent, "UTF-8"));
-            result.append("&" + URLEncoder.encode("revision","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(revision), "UTF-8"));
-            if(extra!=null)
-                if(!extra.isEmpty())
-                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
-                            + URLEncoder.encode(extra, "UTF-8"));
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
-    public String toString()
-    {
-        return this._id;
-    }
-
-    @Override
     public void parse(String var, Object val)
     {
         try
@@ -507,8 +403,8 @@ public class Quote implements BusinessObject, Serializable
                 case "creator":
                     creator = String.valueOf(val);
                     break;
-                case "parent":
-                    parent = String.valueOf(val);
+                case "parent_id":
+                    parent_id = String.valueOf(val);
                     break;
                 case "revision":
                     revision = Integer.parseInt(String.valueOf(val));
@@ -538,7 +434,7 @@ public class Quote implements BusinessObject, Serializable
         switch (var.toLowerCase())
         {
             case "_id":
-                return _id;
+                return get_id();
             case "client_id":
                 return client_id;
             case "contact_person_id":
@@ -551,8 +447,8 @@ public class Quote implements BusinessObject, Serializable
                 return status;
             case "creator":
                 return creator;
-            case "parent":
-                return parent;
+            case "parent_id":
+                return parent_id;
             case "vat":
                 return vat;
             case "account_name":
@@ -565,5 +461,79 @@ public class Quote implements BusinessObject, Serializable
                 IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown Quote attribute '" + var + "'.");
                 return null;
         }
+    }
+    @Override
+    public String asUTFEncodedString()
+    {
+        //Return encoded URL parameters in UTF-8 charset
+        StringBuilder result = new StringBuilder();
+        try
+        {
+            result.append(URLEncoder.encode("client_id","UTF-8") + "="
+                    + URLEncoder.encode(client_id, "UTF-8") + "&");
+            result.append(URLEncoder.encode("contact_person_id","UTF-8") + "="
+                    + URLEncoder.encode(contact_person_id, "UTF-8") + "&");
+            if(date_generated>0)
+                result.append(URLEncoder.encode("date_generated","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(date_generated), "UTF-8"));
+            result.append("&" + URLEncoder.encode("sitename","UTF-8") + "="
+                    + URLEncoder.encode(sitename, "UTF-8"));
+            result.append("&" + URLEncoder.encode("request","UTF-8") + "="
+                    + URLEncoder.encode(request, "UTF-8"));
+            if(status>0)
+                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(status), "UTF-8"));
+            result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(vat), "UTF-8"));
+            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
+                    + URLEncoder.encode(account_name, "UTF-8"));
+            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
+                    + URLEncoder.encode(creator, "UTF-8"));
+            if(parent_id !=null)
+                result.append("&" + URLEncoder.encode("parent_id","UTF-8") + "="
+                        + URLEncoder.encode(parent_id, "UTF-8"));
+            result.append("&" + URLEncoder.encode("revision","UTF-8") + "="
+                    + URLEncoder.encode(String.valueOf(revision), "UTF-8"));
+            if(extra!=null)
+                if(!extra.isEmpty())
+                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
+                            + URLEncoder.encode(extra, "UTF-8"));
+            return result.toString();
+        } catch (UnsupportedEncodingException e)
+        {
+            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public String toString()
+    {
+        String json_obj = "{";//\"_id\":\""+get_id()+"\"
+                json_obj+="\"contact_person_id\":\""+contact_person_id+"\""
+                +",\"sitename\":\""+sitename+"\""
+                +",\"request\":\""+request+"\""
+                +",\"vat\":\""+vat+"\""
+                +",\"account_name\":\""+account_name+"\""
+                +",\"creator\":\""+creator+"\""
+                +",\"revision\":\""+revision+"\"";
+                if(getClient_id()!=null)
+                    json_obj+=",\"client_id\":\""+client_id+"\"";
+                if(parent_id!=null)
+                    json_obj+=",\"parent_id\":\""+ parent_id +"\"";
+                if(date_generated>0)
+                    json_obj+=",\"date_generated\":\""+date_generated+"\"";
+                if(status>0)
+                    json_obj+=",\"status\":\""+status+"\"";
+                json_obj+=",\"extra\":\""+extra+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/quotes";
     }
 }

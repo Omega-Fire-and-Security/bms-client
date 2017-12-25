@@ -1,30 +1,22 @@
 package fadulousbms.model;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.managers.EmployeeManager;
-import fadulousbms.managers.SessionManager;
 import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/21.
  */
-public class PurchaseOrder implements BusinessObject, Serializable
+public class PurchaseOrder extends BusinessObject implements Serializable
 {
-    private String _id;
     private int number;
     private String supplier_id;
     private String contact_person_id;
@@ -33,53 +25,9 @@ public class PurchaseOrder implements BusinessObject, Serializable
     private String creator;
     private String account;
     private int status;
-    private boolean marked;
     private String extra;
     public static final String TAG = "PurchaseOrder";
     public PurchaseOrderItem[] items;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    /**
-     * Function to get identifier of PurchaseOrder object.
-     * @return PurchaseOrder identifier.
-     */
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    /**
-     * Method to assign identifier to this object.
-     * @param _id identifier to be assigned to this object.
-     */
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-
-    /**
-     * Function to get a shortened identifier of this object.
-     * @return The shortened identifier.
-     */
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
 
     private StringProperty numberProperty(){return new SimpleStringProperty(String.valueOf(number));}
 
@@ -183,7 +131,7 @@ public class PurchaseOrder implements BusinessObject, Serializable
     {
         /*Gson gson = new GsonBuilder().create();
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
         String purchase_order_items_json = RemoteComms.sendGetRequest("/api/purchaseorder/items/" + get_id(), headers);
         return gson.fromJson(purchase_order_items_json, PurchaseOrderItem[].class);*/
         return items;
@@ -345,12 +293,6 @@ public class PurchaseOrder implements BusinessObject, Serializable
     }
 
     @Override
-    public String apiEndpoint()
-    {
-        return "/api/purchaseorder";
-    }
-
-    @Override
     public String asUTFEncodedString()
     {
         //Return encoded URL parameters in UTF-8 charset
@@ -384,5 +326,11 @@ public class PurchaseOrder implements BusinessObject, Serializable
             IO.log(TAG, IO.TAG_ERROR, e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/purchaseorder";
     }
 }

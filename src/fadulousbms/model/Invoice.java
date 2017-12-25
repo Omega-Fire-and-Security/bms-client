@@ -7,7 +7,6 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.ClientManager;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.JobManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,49 +15,19 @@ import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 /**
  *
  * @author ghost
  */
-public class Invoice implements BusinessObject, Serializable
+public class Invoice extends BusinessObject implements Serializable
 {
-    private String _id;
     private String job_id;
     private String creator;
     private long date_generated;
     private String account;
-    private String extra;
-    private boolean marked;
     private double receivable;
-
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
-
-    @Override
-    public String get_id()
-    {
-        return _id;
-    }
-
-    public void set_id(String _id)
-    {
-        this._id = _id;
-    }
-
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    @Override
-    public String getShort_id()
-    {
-        return _id.substring(0, 8);
-    }
-
-    @Override
-    public boolean isMarked() { return marked;}
-
-    @Override
-    public void setMarked(boolean marked){this.marked=marked;}
+    private String extra;
 
     public long getDate_generated()
     {
@@ -108,7 +77,7 @@ public class Invoice implements BusinessObject, Serializable
 
     public StringProperty invoice_numberProperty()
     {
-        return new SimpleStringProperty(_id);//TODO: fix this!
+        return new SimpleStringProperty(get_id());//TODO: fix this!
     }
 
     private StringProperty totalProperty()
@@ -264,11 +233,7 @@ public class Invoice implements BusinessObject, Serializable
         }
     }
 
-    @Override
-    public String apiEndpoint()
-    {
-        return "/api/invoice";
-    }
+
 
     @Override
     public String asUTFEncodedString()
@@ -299,5 +264,11 @@ public class Invoice implements BusinessObject, Serializable
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public String apiEndpoint()
+    {
+        return "/invoice";
     }
 }

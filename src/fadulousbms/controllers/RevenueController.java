@@ -133,7 +133,7 @@ public class RevenueController extends ScreenController implements Initializable
 
         tblRevenue.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 RevenueManager.getInstance().setSelected(tblRevenue.getSelectionModel().getSelectedItem()));
-        tblRevenue.setItems(FXCollections.observableArrayList(RevenueManager.getInstance().getRevenues()));
+        tblRevenue.setItems(FXCollections.observableArrayList(RevenueManager.getInstance().getRevenues().values()));
     }
 
     @Override

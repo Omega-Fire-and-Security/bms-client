@@ -69,10 +69,10 @@ public class InvoiceManager extends BusinessObjectManager
                 {
                     gson  = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                     //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/api/timestamp/invoices_timestamp", headers);
+                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/invoices_timestamp", headers);
                     Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                     if(cntr_timestamp!=null)
                     {
@@ -86,27 +86,28 @@ public class InvoiceManager extends BusinessObjectManager
 
                     if(!isSerialized(ROOT_PATH+filename))
                     {
-                        String invoices_json = RemoteComms.sendGetRequest("/api/invoices", headers);
-                        Invoice[] invoices_arr = gson.fromJson(invoices_json, Invoice[].class);
-
-                        invoices = new HashMap<>();
-                        if(invoices_arr!=null)
-                            for(Invoice invoice: invoices_arr)
-                                invoices.put(invoice.get_id(), invoice);
+                        String invoices_json = RemoteComms.sendGetRequest("/invoices", headers);
+                        InvoiceServerObject invoiceServerObject= gson.fromJson(invoices_json, InvoiceServerObject.class);
+                        if(invoiceServerObject!=null)
+                        {
+                            if(invoiceServerObject.get_embedded()!=null)
+                            {
+                                Invoice[] invoices_arr = invoiceServerObject.get_embedded().getInvoices();
+                                invoices = new HashMap<>();
+                                for (Invoice invoice : invoices_arr)
+                                    invoices.put(invoice.get_id(), invoice);
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Invoices in the database.");
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "InvoiceServerObject (containing Invoice objects & other metadata) is null");
 
                         IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of invoices.");
                         this.serialize(ROOT_PATH+filename, invoices);
-                    }else{
+                    } else
+                    {
                         IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object ["+ROOT_PATH+filename+"] on local disk is already up-to-date.");
                         invoices = (HashMap<String, Invoice>) this.deserialize(ROOT_PATH+filename);
                     }
-                }else{
-                    IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-                }
-            }else{
-                IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_ERROR);
-                JOptionPane.showMessageDialog(null, "No active sessions.", "Session Expired", JOptionPane.ERROR_MESSAGE);
-            }
+                } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+            } else IO.logAndAlert("No active sessions.", "Active Session is invalid", IO.TAG_ERROR);
         } catch (MalformedURLException ex)
         {
             IO.log(TAG, IO.TAG_ERROR, ex.getMessage());
@@ -148,7 +149,7 @@ public class InvoiceManager extends BusinessObjectManager
             {
                 gson  = new GsonBuilder().create();
                 ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                 Invoice invoice = new Invoice();
                 invoice.setCreator(smgr.getActiveEmployee().getUsr());
@@ -242,8 +243,7 @@ public class InvoiceManager extends BusinessObjectManager
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
                 {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                     params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
@@ -319,8 +319,7 @@ public class InvoiceManager extends BusinessObjectManager
                                 in.close();
 
                                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance()
-                                        .getActive().getSessionId()));
+                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
                                 RemoteComms.uploadFile("/api/invoice/upload/" + invoice.get_id(), headers, buffer);
@@ -343,5 +342,35 @@ public class InvoiceManager extends BusinessObjectManager
                 }
             }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    class InvoiceServerObject extends ServerObject
+    {
+        private InvoiceServerObject.Embedded _embedded;
+
+        InvoiceServerObject.Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(InvoiceServerObject.Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Invoice[] invoices;
+
+            public Invoice[] getInvoices()
+            {
+                return invoices;
+            }
+
+            public void setInvoices(Invoice[] invoices)
+            {
+                this.invoices = invoices;
+            }
+        }
     }
 }

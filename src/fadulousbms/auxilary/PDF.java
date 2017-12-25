@@ -151,7 +151,7 @@ public class PDF
         for(FileMetadata metadata : fileMetadata)
         {
             contents.beginText();
-            addTextToPageStream(contents, String.valueOf(metadata.getIndex()), 14, 20, line_pos);
+            //TODO:addTextToPageStream(contents, String.valueOf(metadata.getIndex()), 14, 20, line_pos);
 
             if(metadata.getLabel().length()>=105)
                 addTextToPageStream(contents, metadata.getLabel(), 6, 80, line_pos);
@@ -162,7 +162,7 @@ public class PDF
             else if(metadata.getLabel().length()<45)
                 addTextToPageStream(contents, metadata.getLabel(), 14, 80, line_pos);
 
-            addTextToPageStream(contents, String.valueOf(metadata.getRequired()), 14, (int) (w / 2)+120, line_pos);
+            //TODO: addTextToPageStream(contents, String.valueOf(metadata.getRequired()), 14, (int) (w / 2)+120, line_pos);
             contents.endText();
 
             //Availability field to be filled in by official
@@ -336,7 +336,7 @@ public class PDF
                 break;
         }
         addTextToPageStream(contents, "STATUS: ", 14,10, line_pos);
-        addTextToPageStream(contents, status, 14,(int)w/2+100, line_pos);
+        addTextToPageStream(contents, status, 14,100, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
         addTextToPageStream(contents, "IF DENIED, REASON WILL BE STATED BELOW: ", 14,10, line_pos);
@@ -1850,7 +1850,7 @@ public class PDF
         for(Resource resource : ResourceManager.getInstance().getResources().values())
             transactions.add(new Transaction(resource.get_id(), resource.getDate_acquired(), resource));
         //Load additional Expenses
-        for(Expense expense: ExpenseManager.getInstance().getExpenses())
+        for(Expense expense: ExpenseManager.getInstance().getExpenses().values())
             transactions.add(new Transaction(expense.get_id(), expense.getDate_logged(), expense));
         //Load Service income (Invoices)
         for(Invoice invoice: InvoiceManager.getInstance().getInvoices().values())
@@ -2165,13 +2165,13 @@ public class PDF
         for(Resource resource : ResourceManager.getInstance().getResources().values())
             transactions.add(new Transaction(resource.get_id(), resource.getDate_acquired(), resource));
         //Load additional Expenses
-        for(Expense expense: ExpenseManager.getInstance().getExpenses())
+        for(Expense expense: ExpenseManager.getInstance().getExpenses().values())
             transactions.add(new Transaction(expense.get_id(), expense.getDate_logged(), expense));
         //Load Service revenue (Invoices)
         for(Invoice invoice: InvoiceManager.getInstance().getInvoices().values())
             transactions.add(new Transaction(invoice.get_id(), invoice.getDate_generated(), invoice));
         //Load Additional income/revenue
-        for(Revenue revenue: RevenueManager.getInstance().getRevenues())
+        for(Revenue revenue: RevenueManager.getInstance().getRevenues().values())
             transactions.add(new Transaction(revenue.get_id(), revenue.getDate_logged(), revenue));
 
         Transaction[] transactions_arr = new Transaction[transactions.size()];
@@ -2565,7 +2565,7 @@ public class PDF
         }
 
         //ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        //headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+        //headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
         //Client client;
         //String client_json = null;//RemoteComms.sendGetRequest("/api/client/" + job.getClient_id(), headers);
         //client = new GsonBuilder().create().fromJson(client_json, Client.class);

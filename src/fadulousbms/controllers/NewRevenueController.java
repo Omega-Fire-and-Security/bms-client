@@ -115,7 +115,7 @@ public class NewRevenueController extends ScreenController implements Initializa
         revenue.setRevenue_title(txtTitle.getText());
         revenue.setRevenue_description(txtDescription.getText());
         revenue.setRevenue_value(Double.parseDouble(txtValue.getText()));
-        revenue.setCreator(SessionManager.getInstance().getActive().getUsername());
+        revenue.setCreator(SessionManager.getInstance().getActive().getUsr());
         revenue.setAccount(txtAccount.getText());
         revenue.setDate_logged(dateLogged.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         if(txtOther.getText()!=null)
@@ -124,7 +124,7 @@ public class NewRevenueController extends ScreenController implements Initializa
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new quote on database
             HttpURLConnection connection = RemoteComms.postData("/api/revenue/add", revenue.asUTFEncodedString(), headers);

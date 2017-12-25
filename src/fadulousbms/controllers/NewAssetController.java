@@ -157,7 +157,7 @@ public class NewAssetController extends ScreenController implements Initializabl
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new supplier on database
             HttpURLConnection connection = RemoteComms.postData("/api/asset/add", asset.asUTFEncodedString(), headers);

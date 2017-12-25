@@ -227,7 +227,7 @@ public class SupplierManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -340,11 +340,11 @@ public class SupplierManager extends BusinessObjectManager
             {
                 gson = new GsonBuilder().create();
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                 //Get Timestamp
                 String timestamp_json = RemoteComms
-                        .sendGetRequest("/api/timestamp/suppliers_timestamp", headers);
+                        .sendGetRequest("/timestamp/suppliers_timestamp", headers);
                 Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                 if (cntr_timestamp != null)
                 {
@@ -360,23 +360,57 @@ public class SupplierManager extends BusinessObjectManager
 
                 if (!isSerialized(ROOT_PATH + filename))
                 {
-                    String suppliers_json = RemoteComms.sendGetRequest("/api/suppliers", headers);
-
-                    Supplier[] supps = gson.fromJson(suppliers_json, Supplier[].class);
-                    suppliers = new HashMap();
-                    for (Supplier supplier : supps)
-                        suppliers.put(supplier.get_id(), supplier);
+                    String suppliers_json = RemoteComms.sendGetRequest("/suppliers", headers);
+                    SupplierServerObject supplierServerObject= gson.fromJson(suppliers_json, SupplierServerObject.class);
+                    if(supplierServerObject!=null)
+                    {
+                        if(supplierServerObject.get_embedded()!=null)
+                        {
+                            Supplier[] suppliers_arr = supplierServerObject.get_embedded().getSuppliers();
+                            suppliers = new HashMap<>();
+                            for (Supplier supplier : suppliers_arr)
+                                suppliers.put(supplier.get_id(), supplier);
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Suppliers in the database");
+                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "SupplierServerObject (containing Supplier objects & other metadata) is null");
 
                     IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of suppliers.");
                     this.serialize(ROOT_PATH + filename, suppliers);
-                }
-                else
+                } else
                 {
-                    IO.log(this.getClass()
-                            .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                    IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                     suppliers = (HashMap) this.deserialize(ROOT_PATH + filename);
                 }
-            }else JOptionPane.showMessageDialog(null, "Active session has expired.", "Session Expired", JOptionPane.ERROR_MESSAGE);
-        }else JOptionPane.showMessageDialog(null, "No active sessions.", "Session Expired", JOptionPane.ERROR_MESSAGE);
+            } else IO.logAndAlert("Session Expired", "Active session has expired.",  IO.TAG_ERROR);
+        } else IO.logAndAlert("Invalid Session.", "Active Session is invalid", IO.TAG_ERROR);
+    }
+
+    class SupplierServerObject extends ServerObject
+    {
+        private SupplierServerObject.Embedded _embedded;
+
+        SupplierServerObject.Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(SupplierServerObject.Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private Supplier[] suppliers;
+
+            public Supplier[] getSuppliers()
+            {
+                return suppliers;
+            }
+
+            public void setSuppliers(Supplier[] suppliers)
+            {
+                this.suppliers = suppliers;
+            }
+        }
     }
 }

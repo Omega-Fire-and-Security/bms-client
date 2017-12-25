@@ -60,13 +60,13 @@ public class AppointmentManager extends BusinessObjectManager
                 {
                     Gson gson = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-                    String index_json = RemoteComms.sendGetRequest("/api/appointment/indices", headers);
+                    String index_json = RemoteComms.sendGetRequest("/appointment/indices", headers);
                     documents = gson.fromJson(index_json, FileMetadata[].class);
 
                     //Sort array in ascending order
-                    FileMetadata.quickSort(documents, 0, documents.length-1);
+                    //TODO:FileMetadata.quickSort(documents, 0, documents.length-1);
                 } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
             } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
         }catch (JsonSyntaxException ex)
@@ -98,22 +98,22 @@ public class AppointmentManager extends BusinessObjectManager
                 tblAppointment.setEditable(true);
 
                 TableColumn<BusinessObject, String> index = new TableColumn("Index");
-                CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", "/api/appointment/index");
+                CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", "/appointment/index");
 
                 TableColumn<BusinessObject, String> label = new TableColumn("Label");
-                CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", "/api/appointment/index");
+                CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", "/appointment/index");
 
                 TableColumn<BusinessObject, String> document = new TableColumn("Document Path");
-                CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", "/api/appointment/index");
+                CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", "/appointment/index");
 
                 TableColumn<BusinessObject, HBox> action = new TableColumn("Action");
-                CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/api/appointment/index");
+                CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/appointment/index");
 
                 TableColumn<BusinessObject, GridPane> required = new TableColumn("Required?");
-                CustomTableViewControls.makeToggleButtonTableColumn(required, null,100, "required", "/api/appointment/index");
+                CustomTableViewControls.makeToggleButtonTableColumn(required, null,100, "required", "/appointment/index");
 
                 TableColumn<BusinessObject, GridPane> mark = new TableColumn("Mark");
-                CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/api/appointment/index");
+                CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/appointment/index");
 
                 ObservableList<FileMetadata> lst_inspection = FXCollections.observableArrayList();
                 lst_inspection.addAll(documents);
@@ -232,14 +232,14 @@ public class AppointmentManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     JOptionPane.showMessageDialog(null, "No active sessions.", "Session expired", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/appointment/index/add", params, headers);
+                HttpURLConnection connection = RemoteComms.postData("/appointment/index/add", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

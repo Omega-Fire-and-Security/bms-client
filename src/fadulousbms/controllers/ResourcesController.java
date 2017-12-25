@@ -44,8 +44,11 @@ public class ResourcesController extends ScreenController implements Initializab
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading resources/materials view..");
-        ResourceType[] res_types = new ResourceType[ResourceManager.getInstance().getResource_types().size()];
-        ResourceManager.getInstance().getResource_types().values().toArray(res_types);
+        /*if(ResourceManager.getInstance().getResource_types()!=null)
+        {
+            ResourceType[] res_types = new ResourceType[ResourceManager.getInstance().getResource_types().size()];
+            ResourceManager.getInstance().getResource_types().values().toArray(res_types);
+        }*/
 
         colId.setMinWidth(80);
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));

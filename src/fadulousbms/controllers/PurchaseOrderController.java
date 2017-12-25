@@ -492,7 +492,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             if (SessionManager.getInstance().getActive() != null)
                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                        .getSessionId()));
+                        .getSession_id()));
             else
             {
                 IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -662,7 +662,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
         }
 
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
         if(PurchaseOrderManager.getInstance().getSelected()!=null)
         {
@@ -1038,7 +1038,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
         purchaseOrder.setStatus(0);
         purchaseOrder.setAccount(str_account);
         purchaseOrder.setVat(Double.parseDouble(str_vat));
-        purchaseOrder.setCreator(SessionManager.getInstance().getActive().getUsername());
+        purchaseOrder.setCreator(SessionManager.getInstance().getActive().getUsr());
 
         PurchaseOrderItem[] items = new PurchaseOrderItem[purchaseOrderItems.size()];
         purchaseOrderItems.toArray(items);
@@ -1048,7 +1048,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             if(SessionManager.getInstance().getActive()!=null)
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSessionId()));
+                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
             else
             {
                 IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
