@@ -57,16 +57,16 @@ public class ResourcesController extends ScreenController implements Initializab
 
         colType.setMinWidth(120);
         colType.setCellValueFactory(new PropertyValueFactory<>("resource_type"));
-        colType.setCellFactory(col -> new ComboBoxTableCell(ResourceManager.getInstance().getResource_types(), "resource_type", "/api/resource"));
+        colType.setCellFactory(col -> new ComboBoxTableCell(ResourceManager.getInstance().getResource_types(), "resource_type", "/resources"));
 
-        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "resource_description", "/api/resource");
-        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 80, "resource_value", "/api/resource");
-        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/api/resource");
-        CustomTableViewControls.makeEditableTableColumn(colUnit, TextFieldTableCell.forTableColumn(), 50, "unit", "/api/resource");
-        CustomTableViewControls.makeEditableTableColumn(colQuantity, TextFieldTableCell.forTableColumn(), 50, "quantity", "/api/resource");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAcquired, "date_acquired", "/api/resource");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateExhausted, "date_exhausted", "/api/resource");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 80, "extra", "/api/resource");
+        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "resource_description", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 80, "resource_value", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colUnit, TextFieldTableCell.forTableColumn(), 50, "unit", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colQuantity, TextFieldTableCell.forTableColumn(), 50, "quantity", "/resources");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAcquired, "date_acquired");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateExhausted, "date_exhausted");
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 80, "other", "/resources");
 
         ObservableList<Resource> lst_resources = FXCollections.observableArrayList();
         lst_resources.addAll(ResourceManager.getInstance().getResources().values());

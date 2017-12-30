@@ -1,9 +1,6 @@
 package fadulousbms.controllers;
 
-import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
-import fadulousbms.auxilary.RemoteComms;
-import fadulousbms.auxilary.Validators;
+import fadulousbms.auxilary.*;
 import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
@@ -147,6 +144,7 @@ public class NewResourceController extends ScreenController implements Initializ
         resource.setDate_acquired(dateAcquired.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         if(dateExhausted.getValue()!=null)
             resource.setDate_exhausted(dateExhausted.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+        resource.setCreator(SessionManager.getInstance().getActive().getUsr());
         //if(str_extra!=null)
         //    quote.setExtra(str_extra);
 
@@ -154,15 +152,15 @@ public class NewResourceController extends ScreenController implements Initializ
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.postData("/api/resource/add", resource.asUTFEncodedString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/resources", resource.toString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                 {
                     String response = IO.readStream(connection.getInputStream());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "created resource["+response+"].");
 
                     if(response==null)
                     {
@@ -175,7 +173,7 @@ public class NewResourceController extends ScreenController implements Initializ
                         return;
                     }
                     ResourceManager.getInstance().setSelected(resource);
-                    IO.logAndAlert("New Resource Creation Success", "Successfully created a new resource.", IO.TAG_INFO);
+                    IO.logAndAlert("New Resource Creation Success", "Successfully created a new Resource ["+response+"]", IO.TAG_INFO);
                     itemsModified = false;
                 }else
                 {

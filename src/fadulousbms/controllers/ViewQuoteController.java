@@ -39,7 +39,7 @@ public class ViewQuoteController extends QuoteController
             }
 
             //get selected Quote's siblings sorted by revision number
-            Quote[] siblings = selected.getSiblings("revision");
+            Quote[] siblings = selected.getSortedSiblings("revision");
             if(siblings==null)
                 IO.log("View Quote Warning", "selected quote has no siblings. using self.", IO.TAG_WARN);
             else selected = siblings[QuoteManager.getInstance().selected_quote_sibling_cursor];//set selected Quote to be selected_quote_sibling_cursor revision.
@@ -91,7 +91,8 @@ public class ViewQuoteController extends QuoteController
                 cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", QuoteManager.getInstance().getSelectedQuote().getClient().getAccount_name()}));
             else IO.log(getClass().getName(), IO.TAG_ERROR, "Selected Quote Client is null.");
             //set selected Supplier account
-            cbxAccount.setValue(QuoteManager.getInstance().getSelectedQuote().getClient().getAccount_name());
+            cbxAccount.getSelectionModel().select(QuoteManager.getInstance().getSelectedQuote().getAccount_name());
+            //cbxAccount.setValue(QuoteManager.getInstance().getSelectedQuote().getAccount_name());
             txtSite.setText(selected.getSitename());
             txtRequest.setText(selected.getRequest());
             //txtVat.setText(String.valueOf(selected.getVat_number()));
@@ -99,7 +100,7 @@ public class ViewQuoteController extends QuoteController
             try
             {
                 //String date = LocalDate.parse(new SimpleDateFormat("EEE, d MMM yyyy").format(new Date(selected.getDate_generated()*1000))).toString();
-                String date = new Date(selected.getDate_generated() * 1000).toString();
+                String date = new Date(selected.getDate_logged()).toString();
                 txtDateGenerated.setText(date);
             } catch (DateTimeException e)
             {
@@ -176,7 +177,7 @@ public class ViewQuoteController extends QuoteController
         if(selected!=null)
         {
             //get selected Quote's siblings and traverse through them
-            Quote[] siblings = selected.getSiblings("revision");
+            Quote[] siblings = selected.getSortedSiblings("revision");
             if (siblings != null)
             {
                 //set selected quote
@@ -200,7 +201,7 @@ public class ViewQuoteController extends QuoteController
         if(selected!=null)
         {
             //get selected Quote's parent's children and traverse through them
-            Quote[] siblings = selected.getSiblings("revision");
+            Quote[] siblings = selected.getSortedSiblings("revision");
             if (siblings != null)
             {
                 //set selected quote

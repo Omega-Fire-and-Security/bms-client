@@ -39,7 +39,7 @@
                 </TableColumn>
                 <TableColumn fx:id="colAccount" prefWidth="75.0" text="Account">
                     <cellValueFactory>
-                        <PropertyValueFactory property="account" />
+                        <PropertyValueFactory property="account_name" />
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colOther" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Other" visible="false">

@@ -68,8 +68,8 @@ public class QuotesController extends OperationsController implements Initializa
         colClient.setCellFactory(col -> new ComboBoxTableCell(ClientManager.getInstance().getClients(), "client_id", "/quotes"));
         colContactPerson.setMinWidth(120);
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person_id"));
-        colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr", "/quotes"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_generated", "/quotes");
+        colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr"));
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
         CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", "/quotes");
         CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", "/quotes");
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","SALE"}, false,"/quotes");
@@ -77,7 +77,7 @@ public class QuotesController extends OperationsController implements Initializa
         colRevision.setCellValueFactory(new PropertyValueFactory<>("revision"));
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
-        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 100, "extra", "/quotes");
+        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 100, "other", "/quotes");
 
         Callback<TableColumn<Quote, String>, TableCell<Quote, String>> cellFactory
                 =
@@ -233,7 +233,7 @@ public class QuotesController extends OperationsController implements Initializa
             if(quote.getParent_id()!=null)//if quote has parent, i.e. siblings
             {
                 //get Quote's siblings
-                Quote[] siblings = quote.getSiblings("revision");
+                Quote[] siblings = quote.getSortedSiblings("revision");
                 if (siblings != null)
                 {
                     //add latest revision/sibling to list of latest revisions with identifier of parent.

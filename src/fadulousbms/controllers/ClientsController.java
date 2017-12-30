@@ -52,19 +52,19 @@ public class ClientsController extends ScreenController implements Initializable
 
         colClientId.setMinWidth(100);
         colClientId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colClientName, TextFieldTableCell.forTableColumn(), 80, "client_name", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientPhysicalAddress, TextFieldTableCell.forTableColumn(), 120, "physical_address", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientTel, TextFieldTableCell.forTableColumn(), 80, "tel", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientFax, TextFieldTableCell.forTableColumn(), 80, "fax", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", "/api/client");
-        CustomTableViewControls.makeCheckboxedTableColumn(colClientActive, null, 80, "active", "/api/client");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colClientDatePartnered, "date_partnered", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientWebsite, TextFieldTableCell.forTableColumn(), 100, "website", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientRegistration, TextFieldTableCell.forTableColumn(), 100, "registration", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientVat, TextFieldTableCell.forTableColumn(), 100, "vat", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/api/client");
-        CustomTableViewControls.makeEditableTableColumn(colClientOther, TextFieldTableCell.forTableColumn(), 50, "other", "/api/client");
+        CustomTableViewControls.makeEditableTableColumn(colClientName, TextFieldTableCell.forTableColumn(), 80, "client_name", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientPhysicalAddress, TextFieldTableCell.forTableColumn(), 120, "physical_address", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientTel, TextFieldTableCell.forTableColumn(), 80, "tel", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientFax, TextFieldTableCell.forTableColumn(), 80, "fax", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", "/clients");
+        CustomTableViewControls.makeCheckboxedTableColumn(colClientActive, null, 80, "active", "/clients");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colClientDatePartnered, "date_partnered");
+        CustomTableViewControls.makeEditableTableColumn(colClientWebsite, TextFieldTableCell.forTableColumn(), 100, "website", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientRegistration, TextFieldTableCell.forTableColumn(), 100, "registration_number", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientVat, TextFieldTableCell.forTableColumn(), 100, "vat_number", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientOther, TextFieldTableCell.forTableColumn(), 50, "other", "/clients");
 
         ObservableList<Client> lst_clients = FXCollections.observableArrayList();
         lst_clients.addAll(ClientManager.getInstance().getClients().values());

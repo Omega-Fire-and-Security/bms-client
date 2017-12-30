@@ -46,11 +46,11 @@ public class LeaveTabController extends ScreenController implements Initializabl
         colEmployee.setMinWidth(100);
         colEmployee.setCellValueFactory(new PropertyValueFactory<>("employee"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colStartDate, "start_date", "/api/leave_record");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colEndDate, "end_date", "/api/leave_record");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colReturnDate, "return_date", "/api/leave_record");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", "/api/leave_record");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/api/leave_record");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colStartDate, "start_date");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colEndDate, "end_date");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colReturnDate, "return_date");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/leave_records");
 
         if(LeaveManager.getInstance().getLeaveRecords()!=null)
         {

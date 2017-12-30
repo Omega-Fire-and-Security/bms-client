@@ -58,14 +58,14 @@ public class InvoicesController extends ScreenController implements Initializabl
         colJobNum.setCellValueFactory(new PropertyValueFactory<>("job_number"));
         colClient.setMinWidth(100);
         colClient.setCellValueFactory(new PropertyValueFactory<>("client"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_generated", "/api/invoice");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
         colCreator.setMinWidth(70);
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
-        CustomTableViewControls.makeEditableTableColumn(colReceivable, TextFieldTableCell.forTableColumn(), 80, "receivable", "/api/invoice");
-        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/api/invoice");
+        colAccount.setCellValueFactory(new PropertyValueFactory<>("account"));
+        CustomTableViewControls.makeEditableTableColumn(colReceivable, TextFieldTableCell.forTableColumn(), 80, "receivable", "/invoices");
         CustomTableViewControls.makeJobManagerAction(colAction, 420, null);
-        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 80, "extra", "/api/invoice");
+        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 80, "other", "/invoices");
 
         ObservableList<Invoice> lst_invoices = FXCollections.observableArrayList();
         lst_invoices.addAll(InvoiceManager.getInstance().getInvoices().values());

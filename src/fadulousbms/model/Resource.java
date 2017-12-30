@@ -28,7 +28,6 @@ public class Resource extends BusinessObject implements Serializable
     private long date_acquired;
     private long date_exhausted;
     private String unit;
-    private String other;
     public static final String TAG = "Resource";
 
     public StringProperty resource_nameProperty(){return new SimpleStringProperty(resource_name);}
@@ -139,21 +138,10 @@ public class Resource extends BusinessObject implements Serializable
         this.date_exhausted = date_exhausted;
     }
 
-    public StringProperty otherProperty(){return new SimpleStringProperty(String.valueOf(other));}
-
-    public String getOther()
-    {
-        return other;
-    }
-
-    public void setOther(String other)
-    {
-        this.other = other;
-    }
-
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
@@ -185,14 +173,11 @@ public class Resource extends BusinessObject implements Serializable
                 case "unit":
                     unit = String.valueOf(val);
                     break;
-                case "other":
-                    other = (String)val;
-                    break;
                 default:
                     IO.log(TAG, IO.TAG_ERROR,"Unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -224,12 +209,8 @@ public class Resource extends BusinessObject implements Serializable
                 return quantity;
             case "unit":
                 return unit;
-            case "other":
-                return other;
-            default:
-                IO.log(TAG, IO.TAG_ERROR,"Unknown "+getClass().getName()+" attribute '" + var + "'.");
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -259,10 +240,10 @@ public class Resource extends BusinessObject implements Serializable
                     + URLEncoder.encode(unit, "UTF-8"));
             result.append("&" + URLEncoder.encode("quantity","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(quantity), "UTF-8"));
-            if(other!=null)
-                if(!other.isEmpty())
+            if(getOther()!=null)
+                if(!getOther().isEmpty())
                     result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                            + URLEncoder.encode(other, "UTF-8"));
+                            + URLEncoder.encode(getOther(), "UTF-8"));
 
             return result.toString();
         } catch (UnsupportedEncodingException e)
@@ -275,12 +256,32 @@ public class Resource extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        return getResource_name();
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
+                +"\"resource_name\":\""+getResource_name()+"\""
+                +",\"resource_description\":\""+getResource_description()+"\""
+                +",\"resource_value\":\""+getResource_value()+"\""
+                +",\"resource_serial\":\""+getResource_serial()+"\""
+                +",\"resource_type\":\""+getResource_type()+"\""
+                +",\"unit\":\""+getUnit()+"\"";
+        if(getQuantity()>0)
+            json_obj+=",\"quantity\":\""+getQuantity()+"\"";
+        if(getDate_acquired()>0)
+            json_obj+=",\"date_acquired\":\""+getDate_acquired()+"\"";
+        if(getDate_exhausted()>0)
+            json_obj+=",\"date_exhausted\":\""+getDate_exhausted()+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
     }
 
     @Override
     public String apiEndpoint()
     {
-        return "/resource";
+        return "/resources";
     }
 }

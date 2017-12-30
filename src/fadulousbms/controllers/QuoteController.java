@@ -96,11 +96,10 @@ public abstract class QuoteController extends ScreenController implements Initia
         cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
         cbxClients.valueProperty().addListener((observable, oldValue, newValue) ->
         {
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>Selected client id: " + newValue.get_id());
-            if(newValue!=null)
-                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()}));
             if(newValue!=null)
             {
+                IO.log(getClass().getName(), IO.TAG_INFO, "selected client id: " + newValue.get_id());
+                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()}));
                 txtFax.setText(newValue.getFax());
                 itemsModified=true;
             }
@@ -1108,7 +1107,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(txtExtra!=null)
             if(txtExtra.getText()!=null)
-                quote.setExtra(txtExtra.getText());
+                quote.setOther(txtExtra.getText());
 
         try
         {
@@ -1227,7 +1226,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             quote.setCreator(SessionManager.getInstance().getActive().getUsr());
             quote.setRevision(1.0);//set default revision number
             //get selected Quote's siblings sorted by revision number
-            Quote[] quote_revisions = selected.getSiblings("revision");
+            Quote[] quote_revisions = selected.getSortedSiblings("revision");
             if(quote_revisions!=null)
                 if(quote_revisions.length>0)
                     quote.setRevision(quote_revisions[quote_revisions.length-1].getRevision()+1);//get revision # of last Quote +1
@@ -1242,10 +1241,11 @@ public abstract class QuoteController extends ScreenController implements Initia
 
             if(txtExtra!=null)
                 if(txtExtra.getText()!=null)
-                    quote.setExtra(txtExtra.getText());
+                    quote.setOther(txtExtra.getText());
 
             try
             {
+                //Create new Quote with new _id & +1 revision number, with parent Quote pointing to current selected Quote
                 QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblSaleReps.getItems(), new Callback()
                 {
                     @Override
@@ -1260,12 +1260,20 @@ public abstract class QuoteController extends ScreenController implements Initia
                                 QuoteManager.getInstance().reloadDataFromServer();
 
                                 //update selected Quote
-                                if(QuoteManager.getInstance().getQuotes()!=null)
+                                if(quote_id!=null)
                                 {
-                                    Quote new_selected = QuoteManager.getInstance().getQuotes().get(quote_id);
-                                    IO.log(getClass().getName(), IO.TAG_INFO, "setting selected quote to: " + quote_id + " revision: " + new_selected.getRevision());
-                                    QuoteManager.getInstance().setSelectedQuote(new_selected);
-                                }
+                                    if (QuoteManager.getInstance().getQuotes() != null)
+                                    {
+                                        Quote new_selected = QuoteManager.getInstance().getQuotes().get(quote_id);
+                                        if(new_selected!=null)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_INFO,
+                                                    "setting selected quote to: " + quote_id + " revision: "
+                                                            +new_selected.getRevision());
+                                            QuoteManager.getInstance().setSelectedQuote(new_selected);
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "newly created Quote is invalid.");
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not update Quote, no Quotes were found in the database.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not update Quote, quote_id is not set.");
 
                                 //refresh GUI
                                 new Thread(new Runnable()

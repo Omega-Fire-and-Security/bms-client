@@ -138,6 +138,12 @@ public class NewClientController extends ScreenController implements Initializab
             return;
         }
 
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Error", "Invalid session. Please log in.", IO.TAG_ERROR);
+            return;
+        }
+
         //prepare client parameters
         Client client = new Client();
         client.setClient_name(txtName.getText());
@@ -152,6 +158,7 @@ public class NewClientController extends ScreenController implements Initializab
         client.setVat_number(txtVat.getText());
         client.setAccount_name(txtAccount.getText());
         client.setActive(cbxActive.isSelected());
+        client.setCreator(SessionManager.getInstance().getActive().getUsr());
 
         //if(str_extra!=null)
         //    quote.setExtra(str_extra);
@@ -160,15 +167,15 @@ public class NewClientController extends ScreenController implements Initializab
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.postData("/api/client/add", client.asUTFEncodedString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/clients", client.toString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                 {
                     String response = IO.readStream(connection.getInputStream());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "created client["+response+"].");
 
                     if(response==null)
                     {
@@ -180,11 +187,14 @@ public class NewClientController extends ScreenController implements Initializab
                         IO.logAndAlert("New Client Creation Failure", "Invalid response.", IO.TAG_ERROR);
                         return;
                     }
+                    String new_client_id = response.replaceAll("\"","");//strip inverted commas around client_id
+                    new_client_id = new_client_id.replaceAll("\n","");//strip new line chars
+                    new_client_id = new_client_id.replaceAll(" ","");//strip whitespace chars
                     try
                     {
                         ClientManager.getInstance().reloadDataFromServer();
                         ClientManager.getInstance().setSelected(client);
-                        IO.logAndAlert("New Client Creation Success", "Successfully created a new client.", IO.TAG_INFO);
+                        IO.logAndAlert("New Client Creation Success", "Successfully created new Client "+new_client_id, IO.TAG_INFO);
                         itemsModified = false;
                     }catch (MalformedURLException ex)
                     {
@@ -207,7 +217,7 @@ public class NewClientController extends ScreenController implements Initializab
                 }
                 if(connection!=null)
                     connection.disconnect();
-            }else IO.logAndAlert("New Generic Quote Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
+            } else IO.logAndAlert("New Generic Quote Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
         } catch (IOException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);

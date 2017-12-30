@@ -84,11 +84,11 @@ public class CustomTableViewControls
         date_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
     }
 
-    public static void makeLabelledDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property, String api_method)
+    public static void makeLabelledDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property)
     {
         date_col.setMinWidth(130);
         date_col.setCellValueFactory(new PropertyValueFactory<>(property));
-        date_col.setCellFactory(col -> new LabelledDatePickerCell(property, api_method));
+        date_col.setCellFactory(col -> new LabelledDatePickerCell(property));
         date_col.setEditable(true);
         date_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
     }
@@ -134,12 +134,10 @@ public class CustomTableViewControls
                 if(bo!=null)
                 {
                     bo.parse(property, event.getNewValue());
-                    RemoteComms.updateBusinessObjectOnServer(bo, api_call, property);
+                    RemoteComms.updateBusinessObjectOnServer(bo, property);
                 }
             });
-        }else{
-            IO.log(TAG, IO.TAG_ERROR, "Null table column!");
-        }
+        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
     }
 
     public static void makeEditableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, String api_call)
@@ -155,12 +153,10 @@ public class CustomTableViewControls
                 if(bo!=null)
                 {
                     bo.parse(property, event.getNewValue());
-                    RemoteComms.updateBusinessObjectOnServer(bo, api_call, property);
+                    RemoteComms.updateBusinessObjectOnServer(bo, property);
                 }
             });
-        }else{
-            IO.log(TAG, IO.TAG_ERROR, "Null table column!");
-        }
+        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
     }
 
     public static void createEditableTableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, String api_call)
@@ -176,9 +172,7 @@ public class CustomTableViewControls
                 if(bo!=null)
                     bo.parse(property, event.getNewValue());
             });
-        }else{
-            IO.log(TAG, IO.TAG_ERROR, "Null table column!");
-        }
+        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
     }
 
     public static void makeCheckboxedTableColumn(TableColumn<BusinessObject, GridPane> col, Callback<TableColumn<BusinessObject, GridPane>, TableCell<BusinessObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
@@ -205,10 +199,7 @@ public class CustomTableViewControls
                         bo.setMarked(newValue));
                 return new SimpleObjectProperty<>(grid);
             });
-        } else
-        {
-            IO.log(TAG, IO.TAG_ERROR, "Null table column!");
-        }
+        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
     }
 
     public static void makeToggleButtonTypeTableColumn(TableColumn<BusinessObject, GridPane> col, Callback<TableColumn<BusinessObject, GridPane>, TableCell<BusinessObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
@@ -220,6 +211,11 @@ public class CustomTableViewControls
             col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, GridPane> param) ->
             {
                 BusinessObject bo = param.getValue();
+                if(bo==null)
+                {
+                    IO.log(TAG, IO.TAG_ERROR, "invalid BusinessObject");
+                    return null;
+                }
 
                 //Make toggle button and set button state from data from database.
                 ToggleButton toggleButton;
@@ -233,16 +229,16 @@ public class CustomTableViewControls
                         {
                             toggleButton = new ToggleButton("Generic");
                             toggleButton.setSelected(true);
-                        }else{
+                        } else {
                             toggleButton = new ToggleButton("Custom");
                             toggleButton.setSelected(false);
                         }
-                    }else{
+                    } else {
                         //value not set - assume false
                         toggleButton = new ToggleButton("Unknown");
                         toggleButton.setSelected(false);
                     }
-                }else
+                } else
                 {
                     toggleButton = new ToggleButton("Unknown");
                     toggleButton.setSelected(false);
@@ -281,9 +277,9 @@ public class CustomTableViewControls
                         if (newVal != null)
                             bo.parse(property, newVal);
                         else IO.log(TAG, IO.TAG_ERROR, "new value [meant to be either generic/custom/unknown] is null.");
-                    }else IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to Business Object's " + property + " property.");
+                    } else IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to BusinessObject{"+bo.getClass().getName()+"}'s " + property + " property.");
 
-                    RemoteComms.updateBusinessObjectOnServer(bo, api_call, property);
+                    RemoteComms.updateBusinessObjectOnServer(bo, property);
                 });
                 return new SimpleObjectProperty<>(grid);
             });
@@ -302,6 +298,11 @@ public class CustomTableViewControls
             col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, GridPane> param) ->
             {
                 BusinessObject bo = param.getValue();
+                if(bo==null)
+                {
+                    IO.log(TAG, IO.TAG_ERROR, "invalid BusinessObject.");
+                    return null;
+                }
 
                 //Make toggle button and set button state from data from database.
                 ToggleButton toggleButton;
@@ -345,11 +346,11 @@ public class CustomTableViewControls
                         toggleButton.setText("No");
                     }
                     if(!(bo instanceof FileMetadata))
-                        IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to Business Object's " + property + " property.");
+                        IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to BusinessObject{"+bo.getClass().getName()+"}'s " + property + " property.");
                     else IO.log(TAG, IO.TAG_INFO, "attempting to set boolean value to FileMetadata's " + property + " property.");
 
                     bo.parse(property, newValue);
-                    RemoteComms.updateBusinessObjectOnServer(bo, api_call, property);
+                    RemoteComms.updateBusinessObjectOnServer(bo, property);
                 });
                 return new SimpleObjectProperty<>(grid);
             });
@@ -407,9 +408,9 @@ public class CustomTableViewControls
                         bo.parse(property, props[2]);
                         toggleButton.setText(props[3]);
                     }
-                    RemoteComms.updateBusinessObjectOnServer(bo, api_call, property);
+                    RemoteComms.updateBusinessObjectOnServer(bo, property);
                 });
-                return new SimpleObjectProperty<ToggleButton>(toggleButton);
+                return new SimpleObjectProperty<>(toggleButton);
             });
         } else
         {
@@ -467,14 +468,11 @@ public class CustomTableViewControls
                         bo.parse(property, props[0]);
                     }
 
-                    RemoteComms.updateBusinessObjectOnServer(bo, api_call, property);
+                    RemoteComms.updateBusinessObjectOnServer(bo, property);
                 });
                 return new SimpleObjectProperty<>(grid);
             });
-        } else
-        {
-            IO.log(TAG, IO.TAG_ERROR, "Null table column!");
-        }
+        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
     }
 
     public static void makeActionTableColumn(TableColumn<BusinessObject, HBox> col, int min_width, String property, String api_call)

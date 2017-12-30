@@ -48,11 +48,11 @@ public class OvertimeTabController extends ScreenController implements Initializ
         colJobNumber.setMinWidth(100);
         colJobNumber.setCellValueFactory(new PropertyValueFactory<>("job_number"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        CustomTableViewControls.makeEditableTableColumn(colTimeIn, TextFieldTableCell.forTableColumn(), 120, "time_in", "/api/overtime_record");
-        CustomTableViewControls.makeEditableTableColumn(colTimeOut, TextFieldTableCell.forTableColumn(), 120, "time_out", "/api/overtime_record");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDate, "date", "/api/overtime_record");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", "/api/overtime_record");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/api/overtime_record");
+        CustomTableViewControls.makeEditableTableColumn(colTimeIn, TextFieldTableCell.forTableColumn(), 120, "time_in", "/overtime_records");
+        CustomTableViewControls.makeEditableTableColumn(colTimeOut, TextFieldTableCell.forTableColumn(), 120, "time_out", "/overtime_records");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDate, "date");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "");
 
         if(OvertimeManager.getInstance().getOvertimeRecords()!=null)
         {

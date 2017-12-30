@@ -38,7 +38,7 @@ public class LoginController extends ScreenController implements Initializable
     public void refreshView()
     {
         //TODO: remove this
-        txtUsr.setText("ghost");
+        txtUsr.setText("gh0st");
         txtPwd.setText("87654321");
     }
 

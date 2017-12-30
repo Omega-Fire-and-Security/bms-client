@@ -105,7 +105,7 @@ public class ViewJobController extends ScreenController implements Initializable
             try
             {
                 //String date = LocalDate.parse(new SimpleDateFormat("EEE, d MMM yyyy").format(new Date(selected.getDate_generated()*1000))).toString();
-                String date = new Date(selected.getDate_logged()*1000).toString();
+                String date = new Date(selected.getDate_logged()).toString();
                 txtDateGenerated.setText(date);
             }catch (DateTimeException e)
             {

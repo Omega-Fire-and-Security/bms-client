@@ -56,7 +56,7 @@ public class EmployeesTabController extends ScreenController implements Initiali
         CustomTableViewControls.makeEditableTableColumn(colEmployeeTel, TextFieldTableCell.forTableColumn(), 120, "tell", "/api/employee");
         CustomTableViewControls.makeEditableTableColumn(colEmployeeSex, TextFieldTableCell.forTableColumn(), 120, "gender", "/api/employee");
         CustomTableViewControls.makeEditableTableColumn(colEmployeeActive, TextFieldTableCell.forTableColumn(), 120, "active", "/api/employee");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colEmployeeDateJoined, "date_joined", "/api/employee");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colEmployeeDateJoined, "date_joined");
         CustomTableViewControls.makeEditableTableColumn(colEmployeeOther, TextFieldTableCell.forTableColumn(), 120, "other", "/api/employee");
 
         ObservableList<Employee> lst_employees = FXCollections.observableArrayList();

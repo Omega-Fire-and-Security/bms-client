@@ -12,7 +12,7 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/02/01.
  */
-public class Asset extends BusinessObject implements Serializable
+public class Asset extends BusinessObject
 {
     private String asset_name;
     private String asset_description;
@@ -23,7 +23,6 @@ public class Asset extends BusinessObject implements Serializable
     private long date_exhausted;
     private long quantity;
     private String unit;
-    private String other;
 
     public StringProperty asset_nameProperty(){return new SimpleStringProperty(asset_name);}
 
@@ -133,21 +132,10 @@ public class Asset extends BusinessObject implements Serializable
         this.unit = unit;
     }
 
-    public StringProperty otherProperty(){return new SimpleStringProperty(String.valueOf(other));}
-
-    public String getOther()
-    {
-        return other;
-    }
-
-    public void setOther(String other)
-    {
-        this.other = other;
-    }
-
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         switch (var.toLowerCase())
         {
             case "asset_name":
@@ -177,11 +165,8 @@ public class Asset extends BusinessObject implements Serializable
             case "unit":
                 unit = (String)val;
                 break;
-            case "other":
-                other = (String)val;
-                break;
             default:
-                IO.log(getClass().getName(), "Unknown Asset attribute '" + var + "'.", IO.TAG_ERROR);
+                IO.log(getClass().getName(), "Unknown "+getClass().getName()+" attribute '" + var + "'.", IO.TAG_ERROR);
                 break;
         }
     }
@@ -213,12 +198,8 @@ public class Asset extends BusinessObject implements Serializable
                 return quantity;
             case "unit":
                 return unit;
-            case "other":
-                return other;
-            default:
-                IO.log(getClass().getName(), "Unknown Asset attribute '" + var + "'.", IO.TAG_ERROR);
-                return null;
         }
+        return this.get(var);
     }
 
     @Override
@@ -248,9 +229,9 @@ public class Asset extends BusinessObject implements Serializable
                     + URLEncoder.encode(String.valueOf(quantity), "UTF-8"));
             result.append("&" + URLEncoder.encode("unit","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(unit), "UTF-8"));
-            if(other!=null)
+            if(getOther()!=null)
                 result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                        + URLEncoder.encode(other, "UTF-8"));
+                        + URLEncoder.encode(getOther(), "UTF-8"));
 
             return result.toString();
         } catch (UnsupportedEncodingException e)
@@ -263,12 +244,31 @@ public class Asset extends BusinessObject implements Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/asset";
+        return "/assets";
     }
 
     @Override
     public String toString()
     {
-        return getAsset_name();
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
+                +"\"asset_name\":\""+getAsset_name()+"\""
+                +",\"asset_description\":\""+getAsset_description()+"\""
+                +",\"asset_value\":\""+getAsset_value()+"\""
+                +",\"asset_serial\":\""+getAsset_serial()+"\""
+                +",\"unit\":\""+getUnit()+"\""
+                +",\"asset_type\":\""+getAsset_type()+"\""
+                +",\"quantity\":\""+getQuantity()+"\"";
+        if(getDate_acquired()>0)
+            json_obj+=",\"date_acquired\":\""+getDate_acquired()+"\"";
+        if(getDate_exhausted()>0)
+            json_obj+=",\"date_exhausted\":\""+getDate_exhausted()+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
     }
 }

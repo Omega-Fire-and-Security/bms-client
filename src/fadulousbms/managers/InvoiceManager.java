@@ -139,7 +139,7 @@ public class InvoiceManager extends BusinessObjectManager
     {
         if(job.getQuote()==null)
         {
-            IO.logAndAlert(getClass().getName(), "Job Quote object is not set.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getName(), "Job->Quote object is not set.", IO.TAG_ERROR);
             return;
         }
         SessionManager smgr = SessionManager.getInstance();
@@ -150,26 +150,23 @@ public class InvoiceManager extends BusinessObjectManager
                 gson  = new GsonBuilder().create();
                 ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
                 Invoice invoice = new Invoice();
                 invoice.setCreator(smgr.getActiveEmployee().getUsr());
                 invoice.setJob_id(job.get_id());
-                invoice.setAccount("Cash");
+                //invoice.setAccount_name(job.getQuote().getAccount_name());
                 invoice.setReceivable(job.getQuote().getTotal());
 
-                HttpURLConnection response = RemoteComms.postData("/api/invoice/add", invoice.asUTFEncodedString(), headers);
+                HttpURLConnection response = RemoteComms.putJSON("/invoices", invoice.toString(), headers);
                 if(response!=null)
                 {
                     if(response.getResponseCode()==HttpURLConnection.HTTP_OK)
-                        IO.logAndAlert("Success", IO.readStream(response.getInputStream()), IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully created new Invoice: "+IO.readStream(response.getInputStream()), IO.TAG_INFO);
                     else IO.logAndAlert("Error", IO.readStream(response.getErrorStream()), IO.TAG_ERROR);
-                }else IO.logAndAlert("Error", "Response object is null.", IO.TAG_ERROR);
-            }else{
-                JOptionPane.showMessageDialog(null, "Active session has expired.", "Session Expired", JOptionPane.ERROR_MESSAGE);
-            }
-        }else{
-            JOptionPane.showMessageDialog(null, "No active sessions.", "Session Expired", JOptionPane.ERROR_MESSAGE);
-        }
+                } else IO.logAndAlert("Error", "Response object is null.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.logAndAlert("Error: Invalid Session", "No valid active sessions.", IO.TAG_ERROR);
     }
 
     public void emailInvoice(Invoice invoice, Callback callback)

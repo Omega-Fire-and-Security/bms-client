@@ -9,7 +9,7 @@ import java.io.Serializable;
 /**
  * Created by ghost on 2017/01/13.
  */
-public class Transaction extends BusinessObject implements Serializable
+public class Transaction extends BusinessObject
 {
     private long date;
     private BusinessObject businessObject;
@@ -31,17 +31,11 @@ public class Transaction extends BusinessObject implements Serializable
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         switch (var)
         {
-            case "id":
-            case "_id":
-                set_id((String)val);
-                break;
             case "date":
                 setDate(Long.valueOf(String.valueOf(val)));
-                break;
-            case "marked":
-                setMarked(Boolean.parseBoolean((String)val));
                 break;
             case "business_object":
             case "businessobject":
@@ -79,15 +73,8 @@ public class Transaction extends BusinessObject implements Serializable
     {
         switch (var)
         {
-            case "id":
-            case "_id":
-                get_id();
-                break;
             case "date":
                 getDate();
-                break;
-            case "marked":
-                isMarked();
                 break;
             case "business_object":
             case "businessobject":
@@ -97,7 +84,7 @@ public class Transaction extends BusinessObject implements Serializable
                 IO.log(getClass().getName(), IO.TAG_WARN, "unknown " +getClass().getName()+ " attribute ["+var+"], ignoring.");
                 break;
         }
-        return null;
+        return super.get(var);
     }
 
     /**

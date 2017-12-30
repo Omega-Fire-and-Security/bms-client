@@ -15,6 +15,7 @@ import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 
 /**
  *
@@ -23,32 +24,23 @@ import java.net.URLEncoder;
 public class Invoice extends BusinessObject implements Serializable
 {
     private String job_id;
-    private String creator;
-    private long date_generated;
-    private String account;
+    //private String account;
     private double receivable;
-    private String extra;
 
-    public long getDate_generated()
-    {
-        return date_generated;
-    }
-
-    public void setDate_generated(long date_generated)
-    {
-        this.date_generated = date_generated;
-    }
-
-    public StringProperty accountProperty(){return new SimpleStringProperty(account);}
+    public StringProperty accountProperty(){return new SimpleStringProperty(getAccount());}
 
     public String getAccount()
     {
-        return account;
-    }
-
-    public void setAccount(String account)
-    {
-        this.account = account;
+        /*HashMap<String, Job> jobs_map = JobManager.getInstance().getJobs();
+        if(jobs_map==null)
+            return "N/A";
+        Job job = jobs_map.get(getJob_id());*/
+        Job job =getJob();
+        if(job==null)
+            return "N/A";
+        if(job.getQuote()==null)
+            return "N/A";
+        return job.getQuote().getAccount_name();
     }
 
     public StringProperty receivableProperty(){return new SimpleStringProperty(String.valueOf(receivable));}
@@ -124,83 +116,40 @@ public class Invoice extends BusinessObject implements Serializable
         return null;
     }
 
-    private StringProperty creatorProperty()
-    {
-        return new SimpleStringProperty(getCreator().toString());
-    }
-
-    public Employee getCreator()
-    {
-        if(creator==null)
-            return null;
-        else
-        {
-            EmployeeManager.getInstance().loadDataFromServer();
-            return EmployeeManager.getInstance().getEmployees().get(creator);
-        }
-    }
-
-    public void setCreator(String creator)
-    {
-        this.creator = creator;
-    }
-
-    private StringProperty extraProperty(){return new SimpleStringProperty(extra);}
-
-    public String getExtra()
-    {
-        return extra;
-    }
-
-    public void setExtra(String extra)
-    {
-        this.extra = extra;
-    }
-
     public Job getJob()
     {
-        if(job_id==null)
+        if(getJob_id()==null)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, "job_id is not set.");
             return null;
         }
+        JobManager.getInstance().loadDataFromServer();
         if(JobManager.getInstance().getJobs()!=null)
         {
             return JobManager.getInstance().getJobs().get(job_id);
-        }else IO.log(getClass().getName(), IO.TAG_ERROR, "No Jobs were found in the database.");
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "No Jobs were found in the database.");
         return null;
     }
 
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
             {
-                case "date_generated":
-                    setDate_generated(Long.parseLong(String.valueOf(val)));
-                    break;
                 case "job_id":
                     setJob_id(String.valueOf(val));
-                    break;
-                case "creator":
-                    setCreator(String.valueOf(val));
-                    break;
-                case "account":
-                    setAccount(String.valueOf(val));
                     break;
                 case "receivable":
                     setReceivable(Double.valueOf(String.valueOf(val)));
                     break;
-                case "extra":
-                    setExtra(String.valueOf(val));
-                    break;
                 default:
-                    IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Invoice attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -211,26 +160,14 @@ public class Invoice extends BusinessObject implements Serializable
     {
         switch (var.toLowerCase())
         {
-            case "_id":
-                return get_id();
-            case "short_id":
-                return getShort_id();
             case "job_id":
                 return getJob_id();
-            case "date_generated":
-                return getDate_generated();
-            case "creator":
-                return getCreator();
             case "account":
                 return getAccount();
             case "receivable":
                 return getReceivable();
-            case "extra":
-                return getExtra();
-            default:
-                IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Invoice attribute '" + var + "'.");
-                return null;
         }
+        return super.get(var);
     }
 
 
@@ -246,18 +183,16 @@ public class Invoice extends BusinessObject implements Serializable
                     + URLEncoder.encode(String.valueOf(quote_id), "UTF-8"));*/
             result.append("&" + URLEncoder.encode("job_id","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(job_id), "UTF-8"));
-            if(date_generated>0)
-                result.append("&" + URLEncoder.encode("date_generated","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_generated), "UTF-8"));
+            if(getDate_logged()>0)
+                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
             result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(creator), "UTF-8"));
-            result.append("&" + URLEncoder.encode("account","UTF-8") + "="
-                    + URLEncoder.encode(account, "UTF-8"));
+                    + URLEncoder.encode(String.valueOf(getCreator()), "UTF-8"));
             result.append("&" + URLEncoder.encode("receivable","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(receivable), "UTF-8"));
-            if(extra!=null)
-                result.append(URLEncoder.encode("extra","UTF-8") + "="
-                        + URLEncoder.encode(extra, "UTF-8") + "&");
+            if(getOther()!=null)
+                result.append(URLEncoder.encode("other","UTF-8") + "="
+                        + URLEncoder.encode(getOther(), "UTF-8") + "&");
             return result.toString();
         } catch (UnsupportedEncodingException e)
         {
@@ -267,8 +202,26 @@ public class Invoice extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        String json_obj = "{\"_id\":\""+get_id()+"\""
+                +",\"job_id\":\""+job_id+"\""
+                //+",\"quote_id\":\""+quote_id+"\""
+                //+",\"account\":\""+account+"\""
+                +",\"receivable\":\""+receivable+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/invoice";
+        return "/invoices";
     }
 }

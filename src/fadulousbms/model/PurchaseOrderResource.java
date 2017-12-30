@@ -65,8 +65,32 @@ public class PurchaseOrderResource extends PurchaseOrderItem
     }
 
     @Override
+    public String toString()
+    {
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
+                +"\"purchase_order_id\":\""+getPurchase_order_id()+"\""
+                +",\"item_id\":\""+getItem_id()+"\""
+                //+"\"number\":\""+getItem_name()+"\""
+                //*+",\"supplier_id\":\""+getItem_description()+"\""
+                +",\"type\":\""+getType()+"\""
+                +",\"unit\":\""+getUnit()+"\""
+                +",\"quantity\":\""+getQuantity()+"\""
+                +",\"cost\":\""+getCost()+"\"";
+        if(getDiscountValue()>0)
+            json_obj+=",\"discount\":\""+getDiscountValue()+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/purchaseorder/item";
+        return "/purchaseorders/resources";
     }
 }

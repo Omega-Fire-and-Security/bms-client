@@ -149,6 +149,7 @@ public class NewAssetController extends ScreenController implements Initializabl
         asset.setUnit(txtUnit.getText());
         asset.setQuantity(Long.valueOf(txtQuantity.getText()));
         asset.setDate_acquired(dateAcquired.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+        asset.setCreator(SessionManager.getInstance().getActive().getUsr());
         if(dateExhausted.getValue()!=null)
             asset.setDate_exhausted(dateExhausted.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         //if(str_extra!=null)
@@ -158,15 +159,15 @@ public class NewAssetController extends ScreenController implements Initializabl
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.postData("/api/asset/add", asset.asUTFEncodedString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/assets", asset.toString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                 {
                     String response = IO.readStream(connection.getInputStream());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "created asset["+response+"].");
 
                     if(response==null)
                     {
@@ -178,8 +179,13 @@ public class NewAssetController extends ScreenController implements Initializabl
                         IO.logAndAlert("New Asset Creation Failure", "Invalid response.", IO.TAG_ERROR);
                         return;
                     }
+
+                    String new_asset_id = response.replaceAll("\"","");//strip inverted commas around asset_id
+                    new_asset_id = new_asset_id.replaceAll("\n","");//strip new line chars
+                    new_asset_id = new_asset_id.replaceAll(" ","");//strip whitespace chars
+
                     AssetManager.getInstance().setSelected(asset);
-                    IO.logAndAlert("New Asset Creation Success", "Successfully created a new asset.", IO.TAG_INFO);
+                    IO.logAndAlert("New Asset Creation Success", "Successfully created new Asset ["+new_asset_id+"]", IO.TAG_INFO);
                     itemsModified = false;
                 }else
                 {
@@ -209,5 +215,11 @@ public class NewAssetController extends ScreenController implements Initializabl
             }).start();
             return null;
         });
+    }
+
+    @FXML
+    public void back()
+    {
+        ScreenController.previousScreen();
     }
 }

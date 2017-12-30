@@ -55,20 +55,20 @@ public class SuppliersController extends ScreenController implements Initializab
 
         colSupplierId.setMinWidth(100);
         colSupplierId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colSupplierName, TextFieldTableCell.forTableColumn(), 100, "supplier_name", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierPhysicalAddress, TextFieldTableCell.forTableColumn(), 120, "physical_address", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierTel, TextFieldTableCell.forTableColumn(), 80, "tel", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierFax, TextFieldTableCell.forTableColumn(), 80, "fax", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierSpeciality, TextFieldTableCell.forTableColumn(), 80, "speciality", "/api/supplier");
-        CustomTableViewControls.makeCheckboxedTableColumn(colSupplierActive, null, 80, "active", "/api/supplier");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colSupplierDatePartnered, "date_partnered", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierWebsite, TextFieldTableCell.forTableColumn(), 100, "website", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierRegistration, TextFieldTableCell.forTableColumn(), 100, "registration", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierVat, TextFieldTableCell.forTableColumn(), 100, "vat", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/api/supplier");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierOther, TextFieldTableCell.forTableColumn(), 80, "other", "/api/supplier");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierName, TextFieldTableCell.forTableColumn(), 100, "supplier_name", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierPhysicalAddress, TextFieldTableCell.forTableColumn(), 120, "physical_address", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierTel, TextFieldTableCell.forTableColumn(), 80, "tel", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierFax, TextFieldTableCell.forTableColumn(), 80, "fax", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierSpeciality, TextFieldTableCell.forTableColumn(), 80, "speciality", "/suppliers");
+        CustomTableViewControls.makeCheckboxedTableColumn(colSupplierActive, null, 80, "active", "/suppliers");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colSupplierDatePartnered, "date_partnered");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierWebsite, TextFieldTableCell.forTableColumn(), 100, "website", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierRegistration, TextFieldTableCell.forTableColumn(), 100, "registration_number", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierVat, TextFieldTableCell.forTableColumn(), 100, "vat_number", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierOther, TextFieldTableCell.forTableColumn(), 80, "other", "/suppliers");
 
         ObservableList<Supplier> lst_suppliers = FXCollections.observableArrayList();
         lst_suppliers.addAll(suppliers);

@@ -114,7 +114,6 @@ public class ClientManager extends BusinessObjectManager
                 {
                     String clients_json_object = RemoteComms.sendGetRequest("/clients", headers);
                     ClientServerObject clientServerObject = gson.fromJson(clients_json_object, ClientServerObject.class);
-                    System.out.println(">>>>>>>>clients embedded objs: "+clientServerObject.get_embedded().toString());
                     if(clientServerObject!=null)
                     {
                         if(clientServerObject.get_embedded()!=null)
@@ -125,7 +124,6 @@ public class ClientManager extends BusinessObjectManager
                             for (Client client : clients_arr)
                             {
                                 clients.put(client.get_id(), client);
-                                System.out.println(">>>>>>>>client obj:   "+client.asUTFEncodedString());
                             }
                         } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Clients in database.");
                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "ClientServerObject (containing Client objects & other metadata) is null");

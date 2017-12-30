@@ -21,17 +21,15 @@ import java.util.ArrayList;
  *
  * @author ghost
  */
-public class Job extends BusinessObject implements Serializable
+public class Job extends BusinessObject
 {
     private long planned_start_date;
-    private long date_logged;
     private long date_assigned;
     private long date_started;
     private long date_completed;
     private long job_number;
     private String invoice_id;
     private String quote_id;
-    private String creator;
     private boolean signed;
     private String signed_job;
     private Employee[] assigned_employees;
@@ -40,16 +38,6 @@ public class Job extends BusinessObject implements Serializable
     public long getPlanned_start_date() {return planned_start_date;}
 
     public void setPlanned_start_date(long planned_start_date) {this.planned_start_date = planned_start_date;}
-
-    public long getDate_logged() 
-    {
-        return date_logged;
-    }
-
-    public void setDate_logged(long date_logged) 
-    {
-        this.date_logged = date_logged;
-    }
 
     public StringProperty job_numberProperty()
     {
@@ -146,32 +134,7 @@ public class Job extends BusinessObject implements Serializable
     {
         return (date_completed>0);
     }
-    
-    public StringProperty creatorProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(getCreator()));
-    }
 
-    public String getCreator()
-    {
-        if(creator==null)
-            return "N/A";
-        else
-        {
-            EmployeeManager.getInstance().loadDataFromServer();
-            Employee employee = EmployeeManager.getInstance().getEmployees().get(creator);
-            if(employee!=null)
-                return employee.toString();
-            else return "N/A";
-        }
-    }
-
-    public String getCreatorID(){return this.creator;}
-
-    public void setCreator(String creator)
-    {
-        this.creator = creator;
-    }
 
     public void setSigned(boolean signed)
     {
@@ -220,7 +183,7 @@ public class Job extends BusinessObject implements Serializable
         if(QuoteManager.getInstance().getQuotes()!=null)
         {
             //return latest revision
-            Quote[] revisions = QuoteManager.getInstance().getQuotes().get(quote_id).getSiblings("revision");
+            Quote[] revisions = QuoteManager.getInstance().getQuotes().get(quote_id).getSortedSiblings("revision");
             return revisions[revisions.length-1];
         }
         else IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, "No quotes were found on the database.");
@@ -292,6 +255,7 @@ public class Job extends BusinessObject implements Serializable
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
@@ -305,11 +269,11 @@ public class Job extends BusinessObject implements Serializable
                 case "signed_job":
                     signed_job = (String) val;
                     break;
+                case "date_logged":
+                    setDate_logged(Long.parseLong(String.valueOf(val)));
+                    break;
                 case "planned_start_date":
                     planned_start_date = Long.parseLong(String.valueOf(val));
-                    break;
-                case "date_logged":
-                    date_logged = Long.parseLong(String.valueOf(val));
                     break;
                 case "date_assigned":
                     date_assigned = Long.parseLong(String.valueOf(val));
@@ -322,9 +286,6 @@ public class Job extends BusinessObject implements Serializable
                     break;
                 case "job_number":
                     job_number = Long.parseLong(String.valueOf(val));
-                    break;
-                case "creator":
-                    creator = String.valueOf(val);
                     break;
                 case "invoice_id":
                     invoice_id = (String)val;
@@ -340,10 +301,10 @@ public class Job extends BusinessObject implements Serializable
                     else IO.log(getClass().getName(), IO.TAG_WARN, "value to be casted to FileMetadata[] is null.");
                     break;
                 default:
-                    IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Job attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -354,8 +315,6 @@ public class Job extends BusinessObject implements Serializable
     {
         switch (var.toLowerCase())
         {
-            case "_id":
-                return get_id();
             case "job_number":
                 return getJob_number();
             case "quote_id":
@@ -366,8 +325,6 @@ public class Job extends BusinessObject implements Serializable
                 return getSigned_job();
             case "planned_start_date":
                 return getPlanned_start_date();
-            case "date_logged":
-                return getDate_logged();
             case "date_assigned":
                 return getDate_assigned();
             case "date_started":
@@ -380,18 +337,8 @@ public class Job extends BusinessObject implements Serializable
                 return getAssigned_employees();
             case "safety_catalogue":
                 return getSafety_catalogue();
-            case "creator":
-                return creator;
-            default:
-                IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Job attribute '" + var + "'.");
-                return null;
         }
-    }
-
-    @Override
-    public String toString()
-    {
-        return "Job #"+job_number;
+        return super.get(var);
     }
 
     @Override
@@ -410,11 +357,6 @@ public class Job extends BusinessObject implements Serializable
             if(getSigned_job()!=null)
                 result.append("&" + URLEncoder.encode("signed_job","UTF-8") + "="
                         + URLEncoder.encode(getSigned_job(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
-                    + URLEncoder.encode(creator, "UTF-8"));
-            if(date_logged>0)
-                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_logged), "UTF-8"));
             if(date_assigned>0)
                 result.append("&" + URLEncoder.encode("date_assigned","UTF-8") + "="
                         + URLEncoder.encode(String.valueOf(date_assigned), "UTF-8"));
@@ -446,9 +388,35 @@ public class Job extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        String json_obj = "{\"_id\":\""+get_id()+"\"";
+        json_obj+=",\"quote_id\":\""+quote_id+"\""
+                +",\"signed\":\""+signed+"\""
+                +",\"creator\":\""+getCreator()+"\""
+                +",\"date_logged\":\""+getDate_logged()+"\"";
+        if(signed_job!=null)
+            json_obj+=",\"signed_job\":\""+signed_job+"\"";
+        if(date_assigned>0)
+            json_obj+=",\"date_assigned\":\""+date_assigned+"\"";
+        if(planned_start_date>0)
+            json_obj+=",\"planned_start_date\":\""+planned_start_date+"\"";
+        if(date_started>0)
+            json_obj+=",\"date_started\":\""+date_started+"\"";
+        if(date_completed>0)
+            json_obj+=",\"date_completed\":\""+date_completed+"\"";
+        if(invoice_id!=null)
+            json_obj+=",\"invoice_id\":\""+invoice_id+"\"";
+        json_obj+="}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/job";
+        return "/jobs";
     }
 
 }

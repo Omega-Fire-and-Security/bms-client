@@ -151,8 +151,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
                     {
                         if(purchaseOrderServerObject.get_embedded()!=null)
                         {
-                            PurchaseOrder[] purchase_orders_arr = purchaseOrderServerObject.get_embedded()
-                                    .getPurchaseOrders();
+                            PurchaseOrder[] purchase_orders_arr = purchaseOrderServerObject.get_embedded().getPurchase_orders();
 
                             if (purchase_orders_arr != null)
                             {
@@ -589,16 +588,16 @@ public class PurchaseOrderManager extends BusinessObjectManager
 
         class Embedded
         {
-            private PurchaseOrder[] purchaseorders;
+            private PurchaseOrder[] purchase_orders;
 
-            public PurchaseOrder[] getPurchaseOrders()
+            public PurchaseOrder[] getPurchase_orders()
             {
-                return purchaseorders;
+                return purchase_orders;
             }
 
-            public void setPurchaseOrder(PurchaseOrder[] purchaseorders)
+            public void setPurchase_orders(PurchaseOrder[] purchase_orders)
             {
-                this.purchaseorders = purchaseorders;
+                this.purchase_orders = purchase_orders;
             }
         }
     }

@@ -555,11 +555,11 @@ public class PDF
         //left text
         addTextToPageStream(contents,"Creator: " + purchaseOrder.getCreator(), PDType1Font.COURIER_BOLD_OBLIQUE, 12, 20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Tel    :  " + purchaseOrder.getCreator().getTel(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
+        addTextToPageStream(contents,"Tel    :  " + purchaseOrder.getCreatorEmployee().getTel(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Cell   :  " + purchaseOrder.getCreator().getCell(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
+        addTextToPageStream(contents,"Cell   :  " + purchaseOrder.getCreatorEmployee().getCell(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"eMail :  " + purchaseOrder.getCreator().getEmail(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
+        addTextToPageStream(contents,"eMail :  " + purchaseOrder.getCreatorEmployee().getEmail(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
 
         line_pos=temp_pos;//revert line pos
 
@@ -798,8 +798,8 @@ public class PDF
 
         contents.beginText();
 
-        if(purchaseOrder.getExtra()!=null)
-            addTextToPageStream(contents, "P.S. "+purchaseOrder.getExtra(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
+        if(purchaseOrder.getOther()!=null)
+            addTextToPageStream(contents, "P.S. "+purchaseOrder.getOther(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
 
         line_pos -= LINE_HEIGHT;//next line
         //if the page can't hold another 9 lines add a new page
@@ -911,7 +911,7 @@ public class PDF
         //right text
         addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,(int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;
-        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(quote.getDate_generated()*1000))), 12,(int)(w/2)+5, line_pos);
+        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(quote.getDate_logged()))), 12,(int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
         //left text
@@ -1233,8 +1233,8 @@ public class PDF
 
         contents.beginText();
 
-        if(quote.getExtra()!=null)
-            addTextToPageStream(contents, "P.S. "+quote.getExtra(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
+        if(quote.getOther()!=null)
+            addTextToPageStream(contents, "P.S. "+quote.getOther(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
 
         line_pos -= LINE_HEIGHT;//next line
         //if the page can't hold another 9 lines add a new page
@@ -1324,7 +1324,7 @@ public class PDF
         }
         Job job = invoice.getJob();
         Quote quote = invoice.getJob().getQuote();
-        //Quote[] quotes = invoice.getJob().getQuote().getSiblings("revision");
+        //Quote[] quotes = invoice.getJob().getQuote().getSortedSiblings("revision");
         //Prepare PDF data from database.
         //Load Invoice Client
         Client client = invoice.getJob().getQuote().getClient();
@@ -1766,8 +1766,8 @@ public class PDF
 
         contents.beginText();
 
-        if(quote.getExtra()!=null)
-            addTextToPageStream(contents, "P.S. "+quote.getExtra(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
+        if(quote.getOther()!=null)
+            addTextToPageStream(contents, "P.S. "+quote.getOther(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
 
         line_pos -= LINE_HEIGHT;//next line
         //if the page can't hold another 9 lines add a new page
@@ -1854,7 +1854,7 @@ public class PDF
             transactions.add(new Transaction(expense.get_id(), expense.getDate_logged(), expense));
         //Load Service income (Invoices)
         for(Invoice invoice: InvoiceManager.getInstance().getInvoices().values())
-            transactions.add(new Transaction(invoice.get_id(), invoice.getDate_generated(), invoice));
+            transactions.add(new Transaction(invoice.get_id(), invoice.getDate_logged(), invoice));
 
         Transaction[] transactions_arr = new Transaction[transactions.size()];
         transactions.toArray(transactions_arr);
@@ -2024,7 +2024,7 @@ public class PDF
                     addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
-                    //addTextToPageStream(contents, ((Asset) t.getBusinessObject()).getAccount(), PDType1Font.HELVETICA, 15, 150, line_pos);
+                    //addTextToPageStream(contents, ((Asset) t.getBusinessObject()).getAccount_name(), PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
                     addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                 } else if (t.getBusinessObject() instanceof Resource)
@@ -2041,7 +2041,7 @@ public class PDF
                     addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
-                    //addTextToPageStream(contents, ((Resource) t.getBusinessObject()).getAccount(), PDType1Font.HELVETICA, 15, 150, line_pos);
+                    //addTextToPageStream(contents, ((Resource) t.getBusinessObject()).getAccount_name(), PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
                     addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                 }
@@ -2169,7 +2169,7 @@ public class PDF
             transactions.add(new Transaction(expense.get_id(), expense.getDate_logged(), expense));
         //Load Service revenue (Invoices)
         for(Invoice invoice: InvoiceManager.getInstance().getInvoices().values())
-            transactions.add(new Transaction(invoice.get_id(), invoice.getDate_generated(), invoice));
+            transactions.add(new Transaction(invoice.get_id(), invoice.getDate_logged(), invoice));
         //Load Additional income/revenue
         for(Revenue revenue: RevenueManager.getInstance().getRevenues().values())
             transactions.add(new Transaction(revenue.get_id(), revenue.getDate_logged(), revenue));
@@ -2205,7 +2205,7 @@ public class PDF
             }else if(t.getBusinessObject() instanceof Asset)
             {
                 Asset asset = ((Asset)t.getBusinessObject());
-                String str_acc = "%ACCOUNT";//asset.getAccount();
+                String str_acc = "%ACCOUNT";//asset.getAccount_name();
                 Account acc = accounts_map.get(str_acc.toLowerCase());
                 if(acc==null)
                 {
@@ -2221,7 +2221,7 @@ public class PDF
             }else if(t.getBusinessObject() instanceof Resource)
             {
                 Resource resource = ((Resource)t.getBusinessObject());
-                String str_acc = "%ACCOUNT";//resource.getAccount();
+                String str_acc = "%ACCOUNT";//resource.getAccount_name();
                 Account acc = accounts_map.get(str_acc.toLowerCase());
                 if(acc==null)
                 {

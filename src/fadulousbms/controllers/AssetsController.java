@@ -80,9 +80,9 @@ public class AssetsController extends ScreenController implements Initializable
         colQuantity.setMinWidth(80);
         colQuantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         //CustomTableViewControls.makeEditableTableColumn(colQuantity, TextFieldTableCell.forTableColumn(), 50, "quantity", "/api/asset");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAcquired, "date_acquired", "/api/asset");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateExhausted, "date_exhausted", "/api/asset");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/api/asset");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAcquired, "date_acquired");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateExhausted, "date_exhausted");
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/assets");
 
         ObservableList<Asset> lst_assets = FXCollections.observableArrayList();
         lst_assets.addAll(AssetManager.getInstance().getAssets().values());

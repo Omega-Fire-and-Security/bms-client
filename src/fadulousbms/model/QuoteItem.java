@@ -23,7 +23,6 @@ public class QuoteItem extends BusinessObject implements Serializable
     private String additional_costs;
     private String quote_id;
     private String resource_id;
-    private String extra;
     public static final String TAG = "QuoteItem";
 
     private StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
@@ -166,18 +165,6 @@ public class QuoteItem extends BusinessObject implements Serializable
 
     public void setMarkup(double markup){this.markup=markup;}
 
-    private StringProperty extraProperty(){return new SimpleStringProperty(extra);}
-
-    public String getExtra()
-    {
-        return extra;
-    }
-
-    public void setExtra(String extra)
-    {
-        this.extra = extra;
-    }
-
     public Resource getResource()
     {
         HashMap<String, Resource> resources = ResourceManager.getInstance().getAll_resources();
@@ -253,6 +240,7 @@ public class QuoteItem extends BusinessObject implements Serializable
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
@@ -278,14 +266,11 @@ public class QuoteItem extends BusinessObject implements Serializable
                 case "markup":
                     setMarkup(Double.parseDouble((String) val));
                     break;
-                case "extra":
-                    setExtra((String)val);
-                    break;
                 default:
-                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown QuoteItem attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -296,8 +281,6 @@ public class QuoteItem extends BusinessObject implements Serializable
     {
         switch (var.toLowerCase())
         {
-            case "_id":
-                return get_id();
             case "quote_id":
                 return getQuote_id();
             case "resource_id":
@@ -320,12 +303,8 @@ public class QuoteItem extends BusinessObject implements Serializable
                 return getCurrentValue();
             case "markup":
                 return getMarkupValue();
-            case "extra":
-                return getExtra();
-            default:
-                IO.log(TAG, IO.TAG_ERROR, "Unknown QuoteItem attribute '" + var + "'.");
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -350,10 +329,10 @@ public class QuoteItem extends BusinessObject implements Serializable
                     + URLEncoder.encode(String.valueOf(unit_cost), "UTF-8") + "&");
             result.append(URLEncoder.encode("markup","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(markup), "UTF-8"));
-            if(extra!=null)
-                if(!extra.isEmpty())
-                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
-                            + URLEncoder.encode(extra, "UTF-8"));
+            if(getOther()!=null)
+                if(!getOther().isEmpty())
+                    result.append("&" + URLEncoder.encode("other","UTF-8") + "="
+                            + URLEncoder.encode(getOther(), "UTF-8"));
             return result.toString();
         } catch (UnsupportedEncodingException e)
         {
@@ -363,8 +342,30 @@ public class QuoteItem extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        String json_obj = "{";//\"_id\":\""+get_id()+"\"
+        json_obj+="\"resource_id\":\""+resource_id+"\""
+                +",\"quote_id\":\""+quote_id+"\""
+                +",\"item_number\":\""+item_number+"\""
+                +",\"quantity\":\""+quantity+"\""
+                +",\"unit_cost\":\""+unit_cost+"\""
+                +",\"markup\":\""+markup+"\"";
+        if(additional_costs!=null)
+                json_obj+=",\"additional_costs\":\""+additional_costs+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/quote/resource";
+        return "/quotes/resources";
     }
 }

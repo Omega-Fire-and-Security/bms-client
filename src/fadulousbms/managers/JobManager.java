@@ -163,8 +163,7 @@ public class JobManager extends BusinessObjectManager
                             {
                                 if(jobEmployeeServerObject.get_embedded()!=null)
                                 {
-                                    JobEmployee[] job_employees_arr = jobEmployeeServerObject.get_embedded()
-                                            .getJob_employees();
+                                    JobEmployee[] job_employees_arr = jobEmployeeServerObject.get_embedded().getJobemployees();
                                     if (job_employees_arr != null)
                                     {
                                         // make Employee[] of same size as JobEmployee[]
@@ -173,8 +172,7 @@ public class JobManager extends BusinessObjectManager
                                         int i = 0;
                                         for (JobEmployee jobEmployee : job_employees_arr)
                                             if (EmployeeManager.getInstance().getEmployees() != null)
-                                                employees_arr[i++] = EmployeeManager.getInstance().getEmployees()
-                                                        .get(jobEmployee.getUsr());
+                                                employees_arr[i++] = EmployeeManager.getInstance().getEmployees().get(jobEmployee.getUsr());
                                             else IO.log(getClass()
                                                     .getName(), IO.TAG_ERROR, "no Employees found in database.");
                                         // Set Employee objects on to Job object.
@@ -221,25 +219,31 @@ public class JobManager extends BusinessObjectManager
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new job on database
-            HttpURLConnection connection = RemoteComms.postData("/api/job/add", job.asUTFEncodedString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/jobs", job.toString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                 {
                     String response = IO.readStream(connection.getInputStream());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "successfully created a new job: " + response);
+                    //server will return message object in format "<job_id>"
+                    String new_job_id = response.replaceAll("\"","");//strip inverted commas around job_id
+                    new_job_id = new_job_id.replaceAll("\n","");//strip new line chars
+                    new_job_id = new_job_id.replaceAll(" ","");//strip whitespace chars
+                    IO.log(getClass().getName(), IO.TAG_INFO, "successfully created a new job: " + new_job_id);
 
                     JobManager.getInstance().reloadDataFromServer();
                     if(callback!=null)
-                        callback.call(null);
+                        callback.call(new_job_id);
 
                     if(connection!=null)
                         connection.disconnect();
-                    return response;
-                }else{
+                    return new_job_id;
+                } else
+                {
                     //Get error message
                     String msg = IO.readStream(connection.getErrorStream());
                     IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
@@ -292,17 +296,21 @@ public class JobManager extends BusinessObjectManager
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            /*ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
             params.add(new AbstractMap.SimpleEntry<>("job_id", job_id));
-            params.add(new AbstractMap.SimpleEntry<>("usr", usr));
+            params.add(new AbstractMap.SimpleEntry<>("usr", usr));*/
 
-            String job_employee_object = URLEncoder.encode("job_id", "UTF-8") + "="
+            /*String job_employee_object = URLEncoder.encode("job_id", "UTF-8") + "="
                                         + URLEncoder.encode(job_id, "UTF-8")
                                         + "&" + URLEncoder.encode("usr", "UTF-8") + "="
-                                        + URLEncoder.encode(usr, "UTF-8");
+                                        + URLEncoder.encode(usr, "UTF-8");*/
+            String job_employee_object =    "{\"job_id\":\"" +job_id
+                                            +"\",\"usr\":\""+usr
+                                            +"\",\"creator\":\""+SessionManager.getInstance().getActive().getUsr()+"\"}";
             //create new job on database
-            HttpURLConnection connection = RemoteComms.postData("/api/job/employee/add", job_employee_object, headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/jobs/employees", job_employee_object, headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -313,7 +321,8 @@ public class JobManager extends BusinessObjectManager
                     if(connection!=null)
                         connection.disconnect();
                     return true;
-                }else{
+                } else
+                {
                     //Get error message
                     String msg = IO.readStream(connection.getErrorStream());
                     IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
@@ -1225,16 +1234,16 @@ public class JobManager extends BusinessObjectManager
 
         class Embedded
         {
-            private JobEmployee[] job_employees;
+            private JobEmployee[] jobemployees;
 
-            public JobEmployee[] getJob_employees()
+            public JobEmployee[] getJobemployees()
             {
-                return job_employees;
+                return jobemployees;
             }
 
-            public void setJob_employees(JobEmployee[] job_employees)
+            public void setJobemployees(JobEmployee[] jobemployees)
             {
-                this.job_employees = job_employees;
+                this.jobemployees = jobemployees;
             }
         }
     }

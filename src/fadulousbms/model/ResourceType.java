@@ -15,6 +15,6 @@ public class ResourceType extends Type
     @Override
     public String apiEndpoint()
     {
-        return "/resource/type";
+        return "/resources/types";
     }
 }

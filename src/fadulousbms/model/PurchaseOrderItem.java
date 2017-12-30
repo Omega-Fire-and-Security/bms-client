@@ -12,7 +12,7 @@ import java.net.URLEncoder;
 /**
  * Created by ghost on 2017/01/21.
  */
-public abstract class PurchaseOrderItem extends BusinessObject implements Serializable
+public abstract class PurchaseOrderItem extends BusinessObject
 {
     private int item_number;
     private String purchase_order_id;
@@ -20,9 +20,7 @@ public abstract class PurchaseOrderItem extends BusinessObject implements Serial
     private int quantity;
     private double discount;
     private double cost;
-    private long date_logged;
     private BusinessObject item;
-    private String extra;
     private String type;
     public static final String TAG = "PurchaseOrderItem";
 
@@ -75,16 +73,6 @@ public abstract class PurchaseOrderItem extends BusinessObject implements Serial
     public void setItem_id(String item_id)
     {
         this.item_id = item_id;
-    }
-
-    public long getDate_logged()
-    {
-        return date_logged;
-    }
-
-    public void setDate_logged(long date_logged)
-    {
-        this.date_logged = date_logged;
     }
 
     public StringProperty item_nameProperty()
@@ -158,18 +146,6 @@ public abstract class PurchaseOrderItem extends BusinessObject implements Serial
 
     public abstract BusinessObject getItem();
 
-    private StringProperty extraProperty(){return new SimpleStringProperty(extra);}
-
-    public String getExtra()
-    {
-        return extra;
-    }
-
-    public void setExtra(String extra)
-    {
-        this.extra = extra;
-    }
-
     //public abstract BusinessObject getItem();
    /* public BusinessObject getItem()
     {
@@ -184,6 +160,7 @@ public abstract class PurchaseOrderItem extends BusinessObject implements Serial
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
@@ -206,14 +183,11 @@ public abstract class PurchaseOrderItem extends BusinessObject implements Serial
                 case "cost":
                     setCost(Double.parseDouble((String) val));
                     break;
-                case "extra":
-                    setExtra(String.valueOf(val));
-                    break;
                 default:
-                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown PurchaseOrderItem attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -224,8 +198,6 @@ public abstract class PurchaseOrderItem extends BusinessObject implements Serial
     {
         switch (var.toLowerCase())
         {
-            case "_id":
-                return get_id();
             case "purchase_order_id":
                 return getPurchase_order_id();
             case "item_id":
@@ -244,12 +216,8 @@ public abstract class PurchaseOrderItem extends BusinessObject implements Serial
                 return getQuantity();
             case "discount":
                 return getDiscount();
-            case "extra":
-                return extra;
-            default:
-                IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown PurchaseOrderItem attribute '" + var + "'.");
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -271,13 +239,13 @@ public abstract class PurchaseOrderItem extends BusinessObject implements Serial
                     + URLEncoder.encode(String.valueOf(discount), "UTF-8"));
             result.append("&" + URLEncoder.encode("cost","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(cost), "UTF-8"));
-            if(date_logged>0)
+            if(getDate_logged()>0)
                 result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_logged), "UTF-8"));
-            if(extra!=null)
-                if(!extra.isEmpty())
-                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
-                            + URLEncoder.encode(extra, "UTF-8"));
+                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
+            if(getOther()!=null)
+                if(!getOther().isEmpty())
+                    result.append("&" + URLEncoder.encode("other","UTF-8") + "="
+                            + URLEncoder.encode(getOther(), "UTF-8"));
             return result.toString();
         } catch (UnsupportedEncodingException e)
         {

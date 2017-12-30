@@ -162,33 +162,37 @@ public class IO<T extends BusinessObject>
 
     public static String readStream(InputStream stream) throws IOException
     {
-        //Get message from input stream
-        BufferedReader in = new BufferedReader(new InputStreamReader(stream));
-        if(in!=null)
+        if(stream!=null)
         {
-            StringBuilder msg = new StringBuilder();
-            String line;
-            while ((line = in.readLine())!=null)
+            //Get message from input stream
+            BufferedReader in = new BufferedReader(new InputStreamReader(stream));
+            if (in != null)
             {
-                msg.append(line + "\n");
-            }
-            in.close();
+                StringBuilder msg = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null)
+                {
+                    msg.append(line + "\n");
+                }
+                in.close();
 
-            //try to read response as JSON object - default method of responses by server.
-            Gson gson = new GsonBuilder().create();
-            try
-            {
-                Message message = gson.fromJson(msg.toString(), Message.class);
-                if (message != null)
-                    if (message.getMessage() != null)
-                        if (message.getMessage().length() > 0)
-                            return message.getMessage();
-            }catch (JsonSyntaxException e)
-            {
-                IO.log(TAG, IO.TAG_WARN, "message["+msg.toString()+"] from server not in standard (JSON) Message format.");
-            }
-            return msg.toString();
-        }else IO.logAndAlert(TAG, "could not read error stream from server response.", IO.TAG_ERROR);
+                //try to read response as JSON object - default method of responses by server.
+                Gson gson = new GsonBuilder().create();
+                try
+                {
+                    Message message = gson.fromJson(msg.toString(), Message.class);
+                    if (message != null)
+                        if (message.getMessage() != null)
+                            if (message.getMessage().length() > 0)
+                                return message.getMessage();
+                } catch (JsonSyntaxException e)
+                {
+                    IO.log(TAG, IO.TAG_WARN, "message[" + msg
+                            .toString() + "] from server not in standard (JSON) Message format.");
+                }
+                return msg.toString();
+            } else IO.logAndAlert(TAG, "Could not read error stream from server response.", IO.TAG_ERROR);
+        } else IO.logAndAlert(TAG, "Could not read response from server.", IO.TAG_ERROR);
         return null;
     }
 

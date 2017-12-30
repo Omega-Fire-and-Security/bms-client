@@ -5,16 +5,13 @@
  */
 package fadulousbms.controllers;
 
-import fadulousbms.FadulousBMS;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
-import fadulousbms.auxilary.Validators;
+import fadulousbms.auxilary.Session;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -479,7 +476,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
         purchaseOrder.setSupplier_id(str_supplier);
         purchaseOrder.setContact_person_id(str_contact);
         //purchaseOrder.setStatus(0);
-        purchaseOrder.setAccount(str_account);
+        purchaseOrder.setAccount_name(str_account);
         purchaseOrder.setVat(Double.parseDouble(str_vat));
         //purchaseOrder.setCreator(SessionManager.getInstance().getActive().getUsername());
 
@@ -670,7 +667,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             {
                 // set PO status and update it on server.
                 PurchaseOrderManager.getInstance().getSelected().setStatus(PurchaseOrderManager.PO_STATUS_APPROVED);
-                RemoteComms.updateBusinessObjectOnServer(PurchaseOrderManager.getInstance().getSelected(), "/api/purchaseorder", "status");
+                RemoteComms.updateBusinessObjectOnServer(PurchaseOrderManager.getInstance().getSelected(), "status");
                 //updatePurchaseOrder();
                 //System.out.println("Status::::::::: " + PurchaseOrderManager.getInstance().getSelected().getStatus());
 
@@ -953,6 +950,17 @@ public class PurchaseOrderController extends OperationsController implements Ini
     @FXML
     public void createPurchaseOrder()
     {
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+
         String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
 
         cbxSuppliers.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
@@ -961,7 +969,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             cbxSuppliers.getStyleClass().remove("form-control-default");
             cbxSuppliers.getStyleClass().add("control-input-error");
             return;
-        }else{
+        } else{
             cbxSuppliers.getStyleClass().remove("control-input-error");
             cbxSuppliers.getStyleClass().add("form-control-default");
         }
@@ -972,7 +980,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             cbxContactPerson.getStyleClass().remove("form-control-default");
             cbxContactPerson.getStyleClass().add("control-input-error");
             return;
-        }else{
+        } else{
             cbxContactPerson.getStyleClass().remove("control-input-error");
             cbxContactPerson.getStyleClass().add("form-control-default");
         }
@@ -1025,7 +1033,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                 vat=0;
             str_vat = new DecimalFormat("##.##").format(vat);//txtVat.getText();
             str_account = cbxAccount.getValue();//txtAccount.getText();
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
             return;
@@ -1036,10 +1044,9 @@ public class PurchaseOrderController extends OperationsController implements Ini
         purchaseOrder.setSupplier_id(str_supplier);
         purchaseOrder.setContact_person_id(str_contact);
         purchaseOrder.setStatus(0);
-        purchaseOrder.setAccount(str_account);
+        purchaseOrder.setAccount_name(str_account);
         purchaseOrder.setVat(Double.parseDouble(str_vat));
         purchaseOrder.setCreator(SessionManager.getInstance().getActive().getUsr());
-
         PurchaseOrderItem[] items = new PurchaseOrderItem[purchaseOrderItems.size()];
         purchaseOrderItems.toArray(items);
         purchaseOrder.setItems(items);
@@ -1047,6 +1054,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
             if(SessionManager.getInstance().getActive()!=null)
                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
             else
@@ -1056,13 +1064,13 @@ public class PurchaseOrderController extends OperationsController implements Ini
             }
 
             //create new purchase order on database
-            HttpURLConnection connection = RemoteComms.postData("/api/purchaseorder/add", purchaseOrder.asUTFEncodedString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/purchaseorders", purchaseOrder.toString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                 {
                     String response = IO.readStream(connection.getInputStream());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "created purchaseorder ["+response+"]. Adding resources to purchaseorder.");
+                    IO.log(getClass().getName(), IO.TAG_INFO, "created PurchaseOrder ["+response+"]. Adding resources to purchaseorder.");
 
                     if(response==null)
                     {
@@ -1075,6 +1083,10 @@ public class PurchaseOrderController extends OperationsController implements Ini
                         return;
                     }
 
+                    String new_po_id = response.replaceAll("\"","");//strip inverted commas around po_id
+                    new_po_id = new_po_id.replaceAll("\n","");//strip new line chars
+                    new_po_id = new_po_id.replaceAll(" ","");//strip whitespace chars
+
                     //Close connection
                     if(connection!=null)
                         connection.disconnect();
@@ -1084,19 +1096,21 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     for(PurchaseOrderItem purchaseOrderItem: tblPurchaseOrderItems.getItems())
                     {
                         //prepare parameters for purchase order asset.
-                        purchaseOrderItem.setPurchase_order_id(response);
+                        purchaseOrderItem.setPurchase_order_id(new_po_id);
+                        purchaseOrderItem.setType(purchaseOrderItem.getClass().getName());
+                        purchaseOrderItem.setCreator(SessionManager.getInstance().getActive().getUsr());
 
                         if(purchaseOrderItem instanceof PurchaseOrderAsset)
-                            connection = RemoteComms.postData("/api/purchaseorder/asset/add", purchaseOrderItem.asUTFEncodedString(), headers);
+                            connection = RemoteComms.putJSON("/purchaseorders/assets", purchaseOrderItem.toString(), headers);
                         else if(purchaseOrderItem instanceof PurchaseOrderResource)
-                            connection = RemoteComms.postData("/api/purchaseorder/item/add", purchaseOrderItem.asUTFEncodedString(), headers);
+                            connection = RemoteComms.putJSON("/purchaseorders/resources", purchaseOrderItem.toString(), headers);
                         else IO.logAndAlert("Purchase Order Item Creation Error", "unknown purchase order item type ["+purchaseOrderItem+"].", IO.TAG_ERROR);
 
                         if (connection != null)
                         {
                             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                             {
-                                IO.log(getClass().getName(), IO.TAG_INFO, "Successfully added a new purchase order["+response+"] item.");
+                                IO.log(getClass().getName(), IO.TAG_INFO, "Successfully created a new Purchase Order["+new_po_id+"] item.");
                             } else
                             {
                                 added_all_po_items = false;
@@ -1104,7 +1118,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                                 String msg = IO.readStream(connection.getErrorStream());
                                 IO.logAndAlert("Error " + String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
                             }
-                        }else IO.logAndAlert("New Purchase Order Item Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
+                        } else IO.logAndAlert("New Purchase Order Item Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
                     }
                     if(added_all_po_items)
                     {
@@ -1122,7 +1136,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                         try
                         {
                             PurchaseOrderManager.getInstance().reloadDataFromServer();
-                            PurchaseOrderManager.getInstance().setSelected(PurchaseOrderManager.getInstance().getPurchaseOrders().get(response));
+                            PurchaseOrderManager.getInstance().setSelected(PurchaseOrderManager.getInstance().getPurchaseOrders().get(new_po_id));
 
                             ScreenManager.getInstance().showLoadingScreen(param ->
                             {
@@ -1145,21 +1159,21 @@ public class PurchaseOrderController extends OperationsController implements Ini
                                 }).start();
                                 return null;
                             });
-                        }catch (MalformedURLException ex)
+                        } catch (MalformedURLException ex)
                         {
                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
                             IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                        }catch (ClassNotFoundException e)
+                        } catch (ClassNotFoundException e)
                         {
                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                             IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                        }catch (IOException ex)
+                        } catch (IOException ex)
                         {
                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
                             IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
                         }
                     } else IO.logAndAlert("New Purchase Order Creation Failure", "Could not add items to Purchase Order.", IO.TAG_ERROR);
-                }else
+                } else
                 {
                     //Get error message
                     String msg = IO.readStream(connection.getErrorStream());
@@ -1167,7 +1181,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                 }
                 if(connection!=null)
                     connection.disconnect();
-            }else IO.logAndAlert("New Purchase Order Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
+            } else IO.logAndAlert("New Purchase Order Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
         } catch (IOException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);

@@ -15,7 +15,6 @@ public class Type extends BusinessObject implements Serializable
 {
     private String type_name;
     private String type_description;
-    private String other;
 
     public StringProperty type_nameProperty(){return new SimpleStringProperty(type_name);}
 
@@ -41,21 +40,10 @@ public class Type extends BusinessObject implements Serializable
         this.type_description = type_description;
     }
 
-    public StringProperty otherProperty(){return new SimpleStringProperty(other);}
-
-    public String getOther()
-    {
-        return other;
-    }
-
-    public void setOther(String other)
-    {
-        this.other = other;
-    }
-
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         switch (var.toLowerCase())
         {
             case "type_name":
@@ -63,9 +51,6 @@ public class Type extends BusinessObject implements Serializable
                 break;
             case "type_description":
                 type_description = (String)val;
-                break;
-            case "other":
-                other = (String)val;
                 break;
             default:
                 IO.log(getClass().getName(), "Unknown attribute '" + var + "'.", IO.TAG_ERROR);
@@ -82,12 +67,8 @@ public class Type extends BusinessObject implements Serializable
                 return type_name;
             case "type_description":
                 return type_description;
-            case "other":
-                return other;
-            default:
-                IO.log(getClass().getName(), "Unknown attribute '" + var + "'.", IO.TAG_ERROR);
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -101,9 +82,9 @@ public class Type extends BusinessObject implements Serializable
                     + URLEncoder.encode(type_name, "UTF-8"));
             result.append("&" + URLEncoder.encode("type_description","UTF-8") + "="
                     + URLEncoder.encode(type_description, "UTF-8"));
-            if(other!=null)
+            if(getOther()!=null)
                 result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                        + URLEncoder.encode(other, "UTF-8"));
+                        + URLEncoder.encode(getOther(), "UTF-8"));
 
             return result.toString();
         } catch (UnsupportedEncodingException e)
@@ -122,6 +103,6 @@ public class Type extends BusinessObject implements Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/resource/type";
+        return "/resources/types";
     }
 }

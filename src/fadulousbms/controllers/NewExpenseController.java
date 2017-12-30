@@ -129,7 +129,7 @@ public class NewExpenseController extends ScreenController implements Initializa
         expense.setExpense_value(Double.parseDouble(txtValue.getText()));
         expense.setCreator(SessionManager.getInstance().getActive().getUsr());
         expense.setAccount(txtAccount.getText());
-        expense.setSupplier_obj(cbxSupplier.getValue());
+        expense.setSupplier(cbxSupplier.getValue().get_id());
         expense.setDate_logged(dateLogged.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         if(txtOther.getText()!=null)
             expense.setOther(txtOther.getText());

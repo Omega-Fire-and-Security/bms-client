@@ -121,10 +121,13 @@ public class LeaveManager extends BusinessObjectManager
                             {
                                 Leave[] leave_records_arr = leaveServerObject.get_embedded().getLeave_records();
 
-                                leave_records = new HashMap<>();
-                                for (Leave leave : leave_records_arr)
-                                    leave_records.put(leave.get_id(), leave);
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Leave records in the database.");
+                                if(leave_records_arr!=null)
+                                {
+                                    leave_records = new HashMap<>();
+                                    for (Leave leave : leave_records_arr)
+                                        leave_records.put(leave.get_id(), leave);
+                                } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any leave_records in database");
+                            } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Leave records in the database.");
                         }
 
                         IO.log(getClass().getName(), IO.TAG_INFO, "reloaded leave_records collection.");

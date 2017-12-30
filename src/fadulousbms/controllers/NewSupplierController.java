@@ -138,6 +138,11 @@ public class NewSupplierController extends ScreenController implements Initializ
             txtWebsite.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
             return;
         }
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Error", "Invalid session", IO.TAG_ERROR);
+            return;
+        }
 
         //prepare supplier parameters
         Supplier supplier = new Supplier();
@@ -154,6 +159,7 @@ public class NewSupplierController extends ScreenController implements Initializ
         supplier.setDate_partnered(datePartnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         supplier.setWebsite(txtWebsite.getText());
         supplier.setActive(cbxActive.isSelected());
+        supplier.setCreator(SessionManager.getInstance().getActive().getUsr());
 
         //if(str_extra!=null)
         //    quote.setExtra(str_extra);
@@ -162,15 +168,14 @@ public class NewSupplierController extends ScreenController implements Initializ
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.postData("/api/supplier/add", supplier.asUTFEncodedString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/suppliers", supplier.toString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                 {
                     String response = IO.readStream(connection.getInputStream());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "created supplier["+response+"].");
 
                     if(response==null)
                     {
@@ -182,7 +187,11 @@ public class NewSupplierController extends ScreenController implements Initializ
                         IO.logAndAlert("New Supplier Creation Failure", "Invalid response.", IO.TAG_ERROR);
                         return;
                     }
-                    IO.logAndAlert("New Supplier Creation Success", "Successfully created a new supplier ["+txtName.getText()+"].", IO.TAG_INFO);
+
+                    String new_supplier_id = response.replaceAll("\"","");//strip inverted commas around supplier_id
+                    new_supplier_id = new_supplier_id.replaceAll("\n","");//strip new line chars
+                    new_supplier_id = new_supplier_id.replaceAll(" ","");//strip whitespace chars
+                    IO.logAndAlert("New Supplier Creation Success", "Successfully created a new Supplier ["+txtName.getText()+"].", IO.TAG_INFO);
                     SupplierManager.getInstance().initialize();
                     SupplierManager.getInstance().setSelected(supplier);
                     itemsModified = false;

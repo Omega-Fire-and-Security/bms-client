@@ -31,7 +31,6 @@ public class Client extends BusinessObject implements Serializable
     private long date_partnered;
     private String website;
     private boolean active;
-    private String other;
     private Job[] jobs;
 
     public StringProperty client_nameProperty(){return new SimpleStringProperty(client_name);}
@@ -186,21 +185,10 @@ public class Client extends BusinessObject implements Serializable
         this.account_name = account_name;
     }
 
-    public String getOther()
-    {
-        return other;
-    }
-
-    public StringProperty otherProperty(){return new SimpleStringProperty(other);}
-
-    public void setOther(String other)
-    {
-        this.other = other;
-    }
-
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
@@ -241,14 +229,11 @@ public class Client extends BusinessObject implements Serializable
                 case "active":
                     setActive(Boolean.parseBoolean(String.valueOf(val)));
                     break;
-                case "other":
-                    setOther((String) val);
-                    break;
                 default:
-                    IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Client attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -283,12 +268,8 @@ public class Client extends BusinessObject implements Serializable
                 return getWebsite();
             case "active":
                 return isActive();
-            case "other":
-                return getOther();
-            default:
-                IO.log(getClass().getName(), IO.TAG_ERROR, "unknown Client attribute '" + var + "'.");
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -325,7 +306,7 @@ public class Client extends BusinessObject implements Serializable
                         + URLEncoder.encode(getWebsite(), "UTF-8"));
             result.append("&" + URLEncoder.encode("active","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(isActive()), "UTF-8"));
-            if(other!=null)
+            if(getOther()!=null)
                 result.append("&" + URLEncoder.encode("other","UTF-8") + "="
                         + URLEncoder.encode(getOther(), "UTF-8"));
 
@@ -340,7 +321,27 @@ public class Client extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        return client_name;
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
+                +"\"client_name\":\""+getClient_name()+"\""
+                +",\"tel\":\""+getTel()+"\""
+                +",\"fax\":\""+getFax()+"\""
+                +",\"physical_address\":\""+getPhysical_address()+"\""
+                +",\"postal_address\":\""+getPostal_address()+"\""
+                +",\"contact_email\":\""+getContact_email()+"\""
+                +",\"website\":\""+getWebsite()+"\""
+                +",\"account_name\":\""+getAccount_name()+"\""
+                +",\"registration_number\":\""+getRegistration_number()+"\""
+                +",\"vat_number\":\""+getVat_number()+"\"";
+        if(getDate_partnered()>0)
+            json_obj+=",\"date_partnered\":\""+getDate_partnered()+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
     }
 
     @Override

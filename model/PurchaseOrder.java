@@ -322,7 +322,7 @@ public class PurchaseOrder implements BusinessObject, Serializable
             case "vat":
                 return getVatVal();
             case "account":
-                return getAccount();
+                return getAccount_name();
             case "date_logged":
                 return getDate_logged();
             case "creator":

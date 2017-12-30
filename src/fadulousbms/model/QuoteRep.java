@@ -18,6 +18,19 @@ public class QuoteRep extends BusinessObject implements Serializable
     private String usr;
     public static final String TAG = "QuoteRep";
 
+    public QuoteRep(String quote_id, String usr)
+    {
+        setQuote_id(quote_id);
+        setUsr(usr);
+    }
+
+    public QuoteRep(String quote_id, String usr, String creator)
+    {
+        setQuote_id(quote_id);
+        setUsr(usr);
+        setCreator(creator);
+    }
+
     private StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
 
     public String getQuote_id()
@@ -50,6 +63,7 @@ public class QuoteRep extends BusinessObject implements Serializable
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
@@ -61,10 +75,10 @@ public class QuoteRep extends BusinessObject implements Serializable
                     usr = String.valueOf(val);
                     break;
                 default:
-                    System.err.println("Unknown QuoteRep attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -79,10 +93,8 @@ public class QuoteRep extends BusinessObject implements Serializable
                 return quote_id;
             case "usr":
                 return usr;
-            default:
-                System.err.println("Unknown QuoteRep attribute '" + var + "'.");
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -106,8 +118,24 @@ public class QuoteRep extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        String json_obj = "{";//\"_id\":\""+get_id()+"\"
+        json_obj+="\"usr\":\""+getUsr()+"\""
+                +",\"quote_id\":\""+getQuote_id()+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/quote/rep";
+        return "/quotes/representatives";
     }
 }

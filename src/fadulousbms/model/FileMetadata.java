@@ -16,9 +16,8 @@ public class FileMetadata extends BusinessObject implements Serializable
     private String filename;
     private String label;
     private String path;
-    private long date_logged;
     private String content_type;
-    private String extra;//{"logo_options":{}, "required":false}
+    //private String extra;//{"logo_options":{}, "required":false}
     public static final String TAG = "FileMetadata";
 
     public StringProperty labelProperty(){return new SimpleStringProperty(label);}
@@ -57,31 +56,10 @@ public class FileMetadata extends BusinessObject implements Serializable
         this.content_type = content_type;
     }
 
-    public long getDate_logged()
-    {
-        return date_logged;
-    }
-
-    public void setDate_logged(long date_logged)
-    {
-        this.date_logged = date_logged;
-    }
-
-    public StringProperty extraProperty(){return new SimpleStringProperty(extra);}
-
-    public String getExtra()
-    {
-        return extra;
-    }
-
-    public void setExtra(String extra)
-    {
-        this.extra = extra;
-    }
-
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         switch (var.toLowerCase())
         {
             case "filename":
@@ -95,9 +73,6 @@ public class FileMetadata extends BusinessObject implements Serializable
                 break;
             case "content_type":
                 content_type=(String)val;
-                break;
-            case "extra":
-                extra=(String) val;
                 break;
             default:
                 IO.log(TAG, IO.TAG_ERROR, "unknown "+TAG+" attribute '" + var + "'");
@@ -118,11 +93,8 @@ public class FileMetadata extends BusinessObject implements Serializable
                 return path;
             case "content_type":
                 return content_type;
-            case "extra":
-                return extra;
-            default:
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -141,10 +113,9 @@ public class FileMetadata extends BusinessObject implements Serializable
             if(getDate_logged()>0)
                 result.append(URLEncoder.encode("date_logged","UTF-8") + "="
                         + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8") + "&");
-            if(getExtra()!=null)
-                result.append(URLEncoder.encode("extra","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getExtra()), "UTF-8") + "&");
-
+            if(getOther()!=null)
+                result.append(URLEncoder.encode("other","UTF-8") + "="
+                        + URLEncoder.encode(String.valueOf(getOther()), "UTF-8") + "&");
             return result.toString();
         } catch (UnsupportedEncodingException e)
         {
@@ -156,7 +127,7 @@ public class FileMetadata extends BusinessObject implements Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/file";
+        return "/files";
     }
 
     //Additional methods

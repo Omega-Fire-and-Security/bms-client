@@ -28,7 +28,7 @@
                 </TableColumn>
                 <TableColumn fx:id="colAccount" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Account">
                     <cellValueFactory>
-                        <PropertyValueFactory property="account" />
+                        <PropertyValueFactory property="account_name" />
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colCreator" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Creator">

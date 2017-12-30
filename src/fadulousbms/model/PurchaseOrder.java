@@ -7,7 +7,6 @@ import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -15,17 +14,14 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/01/21.
  */
-public class PurchaseOrder extends BusinessObject implements Serializable
+public class PurchaseOrder extends BusinessObject
 {
     private int number;
     private String supplier_id;
     private String contact_person_id;
     private double vat;
-    private long date_logged;
-    private String creator;
-    private String account;
+    private String account_name;
     private int status;
-    private String extra;
     public static final String TAG = "PurchaseOrder";
     public PurchaseOrderItem[] items;
 
@@ -61,16 +57,6 @@ public class PurchaseOrder extends BusinessObject implements Serializable
     public void setVat(double vat)
     {
         this.vat= vat;
-    }
-
-    public long getDate_logged()
-    {
-        return date_logged;
-    }
-
-    public void setDate_logged(long date_logged)
-    {
-        this.date_logged = date_logged;
     }
 
     public String getSupplier_id()
@@ -147,7 +133,7 @@ public class PurchaseOrder extends BusinessObject implements Serializable
         HashMap<String, Supplier> suppliers = SupplierManager.getInstance().getSuppliers();
         if(suppliers!=null)
             return suppliers.get(supplier_id);
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "no suppliers were found in database.");
+        else IO.log(getClass().getName(), IO.TAG_ERROR, "no Suppliers were found in database.");
         return null;
     }
 
@@ -160,37 +146,16 @@ public class PurchaseOrder extends BusinessObject implements Serializable
         return null;
     }
 
-    public StringProperty creatorProperty()
+    private StringProperty account_nameProperty(){return new SimpleStringProperty(account_name);}
+
+    public String getAccount_name()
     {
-        return new SimpleStringProperty(getCreator().toString());
+        return account_name;
     }
 
-    public Employee getCreator()
+    public void setAccount_name(String account_name)
     {
-        if(creator==null)
-            return null;
-        else
-        {
-            EmployeeManager.getInstance().loadDataFromServer();
-            return EmployeeManager.getInstance().getEmployees().get(creator);
-        }
-    }
-
-    public void setCreator(String creator)
-    {
-        this.creator = creator;
-    }
-
-    private StringProperty accountProperty(){return new SimpleStringProperty(account);}
-
-    public String getAccount()
-    {
-        return account;
-    }
-
-    public void setAccount(String account)
-    {
-        this.account = account;
+        this.account_name = account_name;
     }
 
     private StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
@@ -205,21 +170,10 @@ public class PurchaseOrder extends BusinessObject implements Serializable
         this.status = status;
     }
 
-    private StringProperty extraProperty(){return new SimpleStringProperty(extra);}
-
-    public String getExtra()
-    {
-        return extra;
-    }
-
-    public void setExtra(String extra)
-    {
-        this.extra = extra;
-    }
-
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
@@ -236,26 +190,17 @@ public class PurchaseOrder extends BusinessObject implements Serializable
                 case "vat":
                     setVat(Double.valueOf((String)val));
                     break;
-                case "account":
-                    setAccount((String)val);
-                    break;
-                case "date_logged":
-                    setDate_logged(Long.valueOf((String)val));
+                case "account_name":
+                    setAccount_name((String)val);
                     break;
                 case "status":
                     setStatus(Integer.valueOf((String)val));
                     break;
-                case "creator":
-                    setCreator((String)val);
-                    break;
-                case "extra":
-                    setExtra(String.valueOf(val));
-                    break;
                 default:
-                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown PurchaseOrder attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -266,8 +211,6 @@ public class PurchaseOrder extends BusinessObject implements Serializable
     {
         switch (var.toLowerCase())
         {
-            case "_id":
-                return get_id();
             case "number":
                 return getNumber();
             case "supplier_id":
@@ -276,20 +219,12 @@ public class PurchaseOrder extends BusinessObject implements Serializable
                 return getContact_person_id();
             case "vat":
                 return getVatVal();
-            case "account":
-                return getAccount();
-            case "date_logged":
-                return getDate_logged();
-            case "creator":
-                return getCreator();
+            case "account_name":
+                return getAccount_name();
             case "status":
                 return getStatus();
-            case "extra":
-                return getExtra();
-            default:
-                IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown PurchaseOrder attribute '" + var + "'.");
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -309,17 +244,17 @@ public class PurchaseOrder extends BusinessObject implements Serializable
                     + URLEncoder.encode(String.valueOf(vat), "UTF-8"));
             result.append("&" + URLEncoder.encode("status","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(status), "UTF-8"));
-            result.append("&" + URLEncoder.encode("account","UTF-8") + "="
-                    + URLEncoder.encode(account, "UTF-8"));
-            if(date_logged>0)
+            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
+                    + URLEncoder.encode(account_name, "UTF-8"));
+            if(getDate_logged()>0)
                 result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_logged), "UTF-8"));
+                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
             result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
-                    + URLEncoder.encode(creator, "UTF-8"));
-            if(extra!=null)
-                if(!extra.isEmpty())
-                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
-                            + URLEncoder.encode(extra, "UTF-8"));
+                    + URLEncoder.encode(getCreator(), "UTF-8"));
+            if(getOther()!=null)
+                if(!getOther().isEmpty())
+                    result.append("&" + URLEncoder.encode("other","UTF-8") + "="
+                            + URLEncoder.encode(getOther(), "UTF-8"));
             return result.toString();
         } catch (UnsupportedEncodingException e)
         {
@@ -329,8 +264,30 @@ public class PurchaseOrder extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
+                +"\"number\":\""+getNumber()+"\""
+                +",\"supplier_id\":\""+getSupplier_id()+"\""
+                +",\"account_name\":\""+getAccount_name()+"\""
+                +",\"contact_person_id\":\""+getContact_person_id()+"\""
+                +",\"status\":\""+getStatus()+"\""
+                +",\"vat\":\""+getVat()+"\"";
+        if(getDiscount()>0)
+            json_obj+=",\"discount\":\""+getDiscount()+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/purchaseorder";
+        return "/purchaseorders";
     }
 }

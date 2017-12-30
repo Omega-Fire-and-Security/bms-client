@@ -71,7 +71,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
         //CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/api/purchaseorder");
         //CustomTableViewControls.makeEditableTableColumn(colVat, TextFieldTableCell.forTableColumn(), 50, "vat", "/api/purchaseorder");
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", "/api/purchaseorder");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/api/purchaseorder");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));

@@ -2,10 +2,12 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.Link;
+import fadulousbms.managers.EmployeeManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/04.
@@ -13,6 +15,9 @@ import java.io.Serializable;
 public abstract class BusinessObject implements Serializable
 {
     private String _id;
+    private long date_logged;
+    private String creator;
+    private String other;
     private boolean marked;
     private Link _links;
 
@@ -54,6 +59,77 @@ public abstract class BusinessObject implements Serializable
         return id;
     }
 
+    /**
+     * Method to assign identifier to this object.
+     * @param _id identifier to be assigned to this object.
+     */
+    public void set_id(String _id)
+    {
+        this._id = _id;
+    }
+
+    public long getDate_logged()
+    {
+        return this.date_logged;
+    }
+
+    public void setDate_logged(long date_logged)
+    {
+        this.date_logged = date_logged;
+    }
+
+    public StringProperty creatorProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(getCreator()));
+    }
+
+    public String getCreator()
+    {
+        return this.creator;
+    }
+
+    public Employee getCreatorEmployee()
+    {
+        EmployeeManager.getInstance().loadDataFromServer();
+        HashMap<String, Employee> employees = EmployeeManager.getInstance().getEmployees();
+        if(employees!=null)
+            return employees.get(getCreator());
+        return null;
+    }
+
+    public void setCreator(String creator)
+    {
+        this.creator = creator;
+    }
+
+    public String getOther()
+    {
+        return other;
+    }
+
+    public void setOther(String other)
+    {
+        this.other = other;
+    }
+
+    /**
+     * Function to get a shortened identifier of this object.
+     * @return The shortened identifier.
+     */
+    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
+
+    public String getShort_id()
+    {
+        return _id.substring(0, 8);
+    }
+
+    public boolean isMarked()
+    {
+        return marked;
+    }
+
+    public void setMarked(boolean marked){this.marked=marked;}
+
     public void set_links(Link links)
     {
         this._links=links;
@@ -75,36 +151,46 @@ public abstract class BusinessObject implements Serializable
         }*/
     }
 
-    /**
-     * Method to assign identifier to this object.
-     * @param _id identifier to be assigned to this object.
-     */
-    public void set_id(String _id)
+    public void parse(String var, Object val)
     {
-        this._id = _id;
+        switch (var.toLowerCase())
+        {
+            case "date_logged":
+                date_logged = Long.parseLong(String.valueOf(val));
+                break;
+            case "creator":
+                creator = String.valueOf(val);
+                break;
+            case "other":
+                other = String.valueOf(val);
+                break;
+            case "marked":
+                marked = Boolean.valueOf((String) val);
+                break;
+        }
     }
 
-
-    /**
-     * Function to get a shortened identifier of this object.
-     * @return The shortened identifier.
-     */
-    public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
-
-    public String getShort_id()
+    public Object get(String var)
     {
-        return _id.substring(0, 8);
+        switch (var.toLowerCase())
+        {
+            case "_id":
+                return get_id();
+            case "date_logged":
+                return getDate_logged();
+            case "creator":
+                return getCreator();
+            case "marked":
+                return isMarked();
+            case "other":
+                return getOther();
+            default:
+                IO.log(getClass().getName(), IO.TAG_ERROR, "unknown "+getClass().getName()+" attribute '" + var + "'.");
+                return null;
+        }
     }
 
-    public boolean isMarked()
-    {
-        return marked;
-    }
-
-    public void setMarked(boolean marked){this.marked=marked;}
-
-    public abstract void parse(String var, Object val);
-    public abstract Object get(String var);
     public abstract String apiEndpoint();
+
     public abstract String asUTFEncodedString();
 }

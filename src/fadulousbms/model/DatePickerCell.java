@@ -115,7 +115,7 @@ public class DatePickerCell extends TableCell<BusinessObject, Long>
         if(bo!=null)
         {
             bo.parse(property, newValue);
-            RemoteComms.updateBusinessObjectOnServer(bo, api_method, property);
+            RemoteComms.updateBusinessObjectOnServer(bo, property);
         }else IO.log(getClass().getName(), IO.TAG_WARN, "TableRow BusinessObject is null.");
     }
 
@@ -129,8 +129,8 @@ public class DatePickerCell extends TableCell<BusinessObject, Long>
             setGraphic(null);
         } else
         {
-            datePicker.setValue(LocalDate.parse(formatter.format(new Date(date*1000))));
-            //setText(formatter.format(new Date(date*1000)));
+            datePicker.setValue(LocalDate.parse(formatter.format(new Date(date))));
+            //setText(formatter.format(new Date(date)));
             setGraphic(datePicker);
         }
     }

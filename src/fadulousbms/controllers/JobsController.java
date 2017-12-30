@@ -71,18 +71,17 @@ public class JobsController extends ScreenController implements Initializable
         }
         colJobNum.setMinWidth(100);
         colJobNum.setCellValueFactory(new PropertyValueFactory<>("job_number"));
-        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell
-                .forTableColumn(), 215, "job_description", "/api/job");
+        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 215, "job_description", "/jobs");
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_name"));
         colSitename.setCellValueFactory(new PropertyValueFactory<>("sitename"));
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
         //TODO: contact_personProperty
         CustomTableViewControls
-                .makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date", "/api/job");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", "/api/job");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAssigned, "date_assigned", "/api/job");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateStarted, "date_started", "/api/job");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateEnded, "date_completed", "/api/job");
+                .makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAssigned, "date_assigned");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateStarted, "date_started");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateEnded, "date_completed");
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
         //CustomTableViewControls.makeJobManagerAction(colAction, 600, null);
         //colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
