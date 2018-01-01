@@ -20,7 +20,7 @@
                 </TableColumn>
                 <TableColumn fx:id="colRequest" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description">
                     <cellValueFactory>
-                        <PropertyValueFactory property="request" />
+                        <PropertyValueFactory property="description" />
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colSitename" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Sitename" visible="false">
@@ -30,7 +30,7 @@
                 </TableColumn>
                 <TableColumn fx:id="colContactPerson" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Contact Person" visible="false">
                     <cellValueFactory>
-                        <PropertyValueFactory property="contact_person_id"/>
+                        <PropertyValueFactory property="responsible_person_id"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colDateGenerated" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Logged">

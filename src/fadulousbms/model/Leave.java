@@ -29,6 +29,15 @@ public class Leave extends BusinessObject implements Serializable
     public static final int STATUS_APPROVED =1;
     public static final int STATUS_ARCHIVED =2;
 
+    public Leave(String usr, long start_date, long end_date, String type)
+    {
+        setUsr(usr);
+        setStart_date(start_date);
+        setEnd_date(end_date);
+        setType(type);
+        setStatus(this.STATUS_PENDING);
+    }
+
     public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
 
     public String getUsr()

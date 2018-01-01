@@ -4,11 +4,11 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
-<Tab fx:id="quotesTab" text="Quotes" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.QuotesController">
+<Tab fx:id="requisitionsTab" text="Requisitions" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.RequisitionsController">
     <content>
-        <TableView fx:id="tblQuotes" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+        <TableView fx:id="tblRequisitions" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Quote ID" visible="false">
+                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Requisition ID" visible="false">
                     <cellValueFactory>
                         <PropertyValueFactory property="_id" />
                     </cellValueFactory>
@@ -18,24 +18,24 @@
                         <PropertyValueFactory property="client_id" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colRequest" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Request">
+                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description">
                     <cellValueFactory>
                         <PropertyValueFactory property="description" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colSitename" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Sitename">
+                <TableColumn fx:id="colType" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Type">
                     <cellValueFactory>
-                        <PropertyValueFactory property="sitename" />
+                        <PropertyValueFactory property="type" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colContactPerson" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Contact Person">
+                <TableColumn fx:id="colResponsiblePerson" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Responsible Person">
                     <cellValueFactory>
                         <PropertyValueFactory property="responsible_person_id" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colDateGenerated" editable="false" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Logged">
+                <TableColumn fx:id="colDateLogged" editable="false" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Logged">
                     <cellValueFactory>
-                        <PropertyValueFactory property="date_generated" />
+                        <PropertyValueFactory property="date_logged" />
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="false">
@@ -44,15 +44,7 @@
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colCreator" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Creator" />
-                <TableColumn fx:id="colVat" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="VAT [%]" />
-                <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Total [incl. VAT]" />
-                <TableColumn fx:id="colRevision" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Revision" visible="false" />
                 <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="280.0" prefWidth="-1.0" text="Action"/>
-                <TableColumn fx:id="colExtra" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Extra" visible="false">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="extra" />
-                    </cellValueFactory>
-                </TableColumn>
             </columns>
         </TableView>
     </content>

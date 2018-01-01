@@ -18,6 +18,7 @@
                                 <MenuItem mnemonicParsing="false" onAction="#newMaterial" text="New Material" />
                                 <MenuItem mnemonicParsing="false" onAction="#newQuote" text="New Quote" />
                                 <MenuItem mnemonicParsing="false" onAction="#createPurchaseOrderClick" text="New Purchase Order" />
+                                <MenuItem mnemonicParsing="false" onAction="#newRequisitionClick" text="New Requisition" />
                                 <MenuItem mnemonicParsing="false" text="Close" />
                             </items>
                         </Menu>

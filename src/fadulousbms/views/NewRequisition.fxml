@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox minWidth="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"  fx:controller="fadulousbms.controllers.NewRequisitionController">
+    <children>
+        <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+            <children>
+                <MenuBar prefHeight="35.0" HBox.hgrow="ALWAYS">
+                    <menus>
+                        <Menu mnemonicParsing="false" text="File">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="Close" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Edit">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="Delete" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Help">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="About" />
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+                <Button onMouseClicked="#createRequisition" alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Create Requisition">
+                    <HBox.margin>
+                        <Insets left="5.0" right="5.0" />
+                    </HBox.margin>
+                </Button>
+                <Button fx:id="btnBack" onMouseClicked="#back" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
+            </children>
+        </HBox>
+        <BorderPane>
+            <center>
+                <Label text="Create New Requisition" BorderPane.alignment="CENTER">
+                    <font>
+                        <Font size="25.0" />
+                    </font>
+                </Label>
+            </center>
+        </BorderPane>
+        <GridPane hgap="10.0" vgap="10.0">
+            <columnConstraints>
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <Label text="Client" GridPane.rowIndex="1" />
+                <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                    <children>
+                        <ComboBox fx:id="cbxClient" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select client" HBox.hgrow="ALWAYS" />
+                        <Button minWidth="60.0" onMouseClicked="#newClient" mnemonicParsing="false" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                            <HBox.margin>
+                                <Insets left="10.0" />
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                </HBox>
+                <Label alignment="CENTER" contentDisplay="CENTER" text="Responsible Person" GridPane.rowIndex="2" />
+                <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                    <children>
+                        <ComboBox fx:id="cbxResponsiblePerson" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select person" HBox.hgrow="ALWAYS" />
+                        <Button minWidth="60.0" mnemonicParsing="false" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                            <HBox.margin>
+                                <Insets left="10.0" />
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                </HBox>
+                <Label text="Type" GridPane.rowIndex="3" />
+                <ComboBox fx:id="cbxType" minWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <Label text="Description" GridPane.rowIndex="4" />
+                <TextArea fx:id="txtDescription" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.vgrow="ALWAYS" />
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+        </GridPane>
+        <HBox>
+            <children>
+                <Label text="Server Status:" />
+                <Circle fx:id="shpServerStatus" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                <Label fx:id="lblOutput" text="console output">
+                    <HBox.margin>
+                        <Insets left="10.0" />
+                    </HBox.margin>
+                </Label>
+            </children>
+        </HBox>
+    </children>
+</VBox>

@@ -439,7 +439,7 @@ public class Quote extends BusinessObject
     @Override
     public String toString()
     {
-        String json_obj = "{\"_id\":\""+get_id()+"\""
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
                 +",\"contact_person_id\":\""+contact_person_id+"\""
                 +",\"sitename\":\""+sitename+"\""
                 +",\"request\":\""+request+"\""

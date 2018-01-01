@@ -248,6 +248,9 @@ public class LeaveManager extends BusinessObjectManager
             params.add(new AbstractMap.SimpleEntry<>("start_date", String.valueOf(start_date_in_sec)));
             params.add(new AbstractMap.SimpleEntry<>("end_date", String.valueOf(end_date_in_sec)));
 
+            Leave leave_record = new Leave(SessionManager.getInstance().getActiveEmployee().getUsr(),start_date_in_sec, end_date_in_sec, cbx_type.getValue());
+            leave_record.setCreator(SessionManager.getInstance().getActiveEmployee().getUsr());
+
             if (str_other != null)
                 if (!str_other.isEmpty())
                     params.add(new AbstractMap.SimpleEntry<>("other", str_other));
@@ -255,9 +258,9 @@ public class LeaveManager extends BusinessObjectManager
             try
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
                 if (SessionManager.getInstance().getActive() != null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSession_id()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
                 {
                     IO.logAndAlert("Error: Session expired", "No active sessions.", IO.TAG_INFO);

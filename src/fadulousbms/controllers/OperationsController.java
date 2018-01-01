@@ -249,6 +249,35 @@ public class OperationsController extends ScreenController implements Initializa
         });
     }
 
+    @FXML
+    public void newRequisitionClick()
+    {
+        final ScreenManager screenManager = ScreenManager.getInstance();
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(screenManager.loadScreen(Screens.NEW_REQUISITION.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_REQUISITION.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            screenManager.setScreen(Screens.NEW_REQUISITION.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load requisition creation screen.");
+                    } catch (IOException e)
+                    {
+                        e.printStackTrace();
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                }
+            }).start();
+            return null;
+        });
+    }
+
     public void createPurchaseOrderClick()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();
