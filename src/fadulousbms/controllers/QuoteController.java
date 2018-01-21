@@ -55,7 +55,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     protected ComboBox<Employee> cbxContactPerson;
     @FXML
-    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtRevision,txtBase,txtExtra;
+    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtRevision,txtExtra;
     //@FXML
     //protected Slider vatSlider;
     @FXML
@@ -1557,8 +1557,15 @@ public abstract class QuoteController extends ScreenController implements Initia
     public void requestApproval()
     {
         //send email requesting approval of Quote
-        if(QuoteManager.getInstance().getSelectedQuote()!=null)
-            QuoteManager.getInstance().requestQuoteApproval(QuoteManager.getInstance().getSelectedQuote(), null);
+        try
+        {
+            if(QuoteManager.getInstance().getSelectedQuote()!=null)
+                QuoteManager.getInstance().requestQuoteApproval(QuoteManager.getInstance().getSelectedQuote(), null);
+            else IO.logAndAlert("Error", "Selected Quote is invalid.", IO.TAG_ERROR);
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
     }
 
     @FXML

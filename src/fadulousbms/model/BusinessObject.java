@@ -20,6 +20,9 @@ public abstract class BusinessObject implements Serializable
     private String other;
     private boolean marked;
     private Link _links;
+    public static final int STATUS_PENDING =0;
+    public static final int STATUS_APPROVED =1;
+    public static final int STATUS_ARCHIVED =2;
 
     public StringProperty idProperty(){return new SimpleStringProperty(_id);}
 

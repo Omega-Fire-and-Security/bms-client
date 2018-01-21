@@ -128,7 +128,7 @@ public class LeaveManager extends BusinessObjectManager
                                         leave_records.put(leave.get_id(), leave);
                                 } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any leave_records in database");
                             } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Leave records in the database.");
-                        }
+                        } else IO.log(getClass().getName(), IO.TAG_WARN, "no Leave records were found in the database.");
 
                         IO.log(getClass().getName(), IO.TAG_INFO, "reloaded leave_records collection.");
                         this.serialize(ROOT_PATH + filename, leave_records);

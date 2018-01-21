@@ -135,7 +135,7 @@ public class InvoiceManager extends BusinessObjectManager
         this.selected_invoice = selected_invoice;
     }
 
-    public void generateInvoice(Job job) throws IOException
+    public void generateInvoice(Job job, String quote_revs, Callback callback) throws IOException
     {
         if(job.getQuote()==null)
         {
@@ -155,6 +155,8 @@ public class InvoiceManager extends BusinessObjectManager
                 Invoice invoice = new Invoice();
                 invoice.setCreator(smgr.getActiveEmployee().getUsr());
                 invoice.setJob_id(job.get_id());
+                //invoice.setQuote_id(quote_id);
+                invoice.setQuote_revision_numbers(quote_revs);
                 //invoice.setAccount_name(job.getQuote().getAccount_name());
                 invoice.setReceivable(job.getQuote().getTotal());
 
@@ -162,8 +164,16 @@ public class InvoiceManager extends BusinessObjectManager
                 if(response!=null)
                 {
                     if(response.getResponseCode()==HttpURLConnection.HTTP_OK)
-                        IO.logAndAlert("Success", "Successfully created new Invoice: "+IO.readStream(response.getInputStream()), IO.TAG_INFO);
-                    else IO.logAndAlert("Error", IO.readStream(response.getErrorStream()), IO.TAG_ERROR);
+                    {
+                        String inv_id = IO.readStream(response.getInputStream());
+                        IO.logAndAlert("Success", "Successfully created new Invoice: " + inv_id, IO.TAG_INFO);
+                        if(callback!=null)
+                            callback.call(inv_id);
+                    } else {
+                        IO.logAndAlert("Error", IO.readStream(response.getErrorStream()), IO.TAG_ERROR);
+                        if(callback!=null)
+                            callback.call(null);
+                    }
                 } else IO.logAndAlert("Error", "Response object is null.", IO.TAG_ERROR);
             } else IO.logAndAlert("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.logAndAlert("Error: Invalid Session", "No valid active sessions.", IO.TAG_ERROR);

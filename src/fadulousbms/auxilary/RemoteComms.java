@@ -5,22 +5,26 @@
  */
 package fadulousbms.auxilary;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mailjet.client.ClientOptions;
+import com.mailjet.client.MailjetClient;
+import com.mailjet.client.MailjetRequest;
+import com.mailjet.client.MailjetResponse;
+import com.mailjet.client.errors.MailjetException;
+import com.mailjet.client.errors.MailjetSocketTimeoutException;
+import com.mailjet.client.resource.Email;
+import com.mailjet.client.resource.Emailv31;
 import fadulousbms.exceptions.LoginException;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.BusinessObject;
-import fadulousbms.model.Error;
-import sun.net.www.http.HttpClient;
-
-import javax.swing.*;
+import fadulousbms.model.Employee;
+import fadulousbms.model.FileMetadata;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 
@@ -32,6 +36,9 @@ public class RemoteComms
 {
     public static String host = "http://localhost:8080";//192.168.0.103//95.85.57.110
     public static final String TAG = "RemoteComms";
+    public static String MAIL_SERVER_IP = "localhost";
+    public static int MAIL_SERVER_PORT = 9000;
+    public static int TTL = 60*60*2;//2 hours in sec
 
     public static Session auth(String usr, String pwd) throws IOException, LoginException
     {
@@ -535,5 +542,96 @@ public class RemoteComms
         String desc = IO.readStream(httpConn.getInputStream());
         IO.log(RemoteComms.class.getName(), httpConn.getResponseCode() + ":\t" + desc, IO.TAG_INFO);
         httpConn.disconnect();
+    }
+
+    public static void bar(String sender_email, String recipient_email) throws MailjetSocketTimeoutException, MailjetException
+    {
+        IO.log(RemoteComms.class.getName(), IO.TAG_INFO, "sending email from ["+sender_email+"] to ["+recipient_email+"]");
+        MailjetClient client = new MailjetClient(System.getenv("f8d3d1d74c95250bb2119063b3697082"), System.getenv("8304b30da4245632c878bf48f1d65d92"));
+        /*MailjetRequest email = new MailjetRequest(Email.resource)
+                .property("messages", new JSONArray()
+                        .put(new JSONObject()
+                                .put("From", new JSONObject()
+                                        .put(Email.FROMEMAIL, sender_email)
+                                        .put(Email.FROMNAME, "pandora"))
+                                .put(Email.TO, new JSONArray()
+                                        .put(new JSONObject()
+                                            .put("Email", recipient_email)))
+                                .put(Email.SUBJECT, )
+                                .put(Email.TEXTPART, "Dear passenger, welcome to Mailjet! May the delivery force be with you!")
+                                .put(Email.HTMLPART, "<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!")));*/
+        MailjetRequest email = new MailjetRequest(Email.resource);
+        email.property(Email.FROMEMAIL, sender_email);
+        email.property(Email.FROMNAME, "some person");
+        email.property(Email.TO, recipient_email);
+        email.property(Email.SUBJECT, "Your email flight plan!");
+        email.property(Email.TEXTPART, "Dear passenger, welcome to Mailjet! May the delivery force be with you!");
+        email.property(Email.HTMLPART, "<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!");
+        email.property(Email.ATTACHMENTS, "<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!");
+        client.post(email);
+        IO.logAndAlert(RemoteComms.class.getName(), "Sent email to ["+recipient_email+"]", IO.TAG_INFO);
+    }
+
+    public static void sendMail(String sender_email, String recipient_email) throws MailjetSocketTimeoutException, MailjetException
+    {
+        MailjetClient client;
+        MailjetRequest request;
+        MailjetResponse response;
+        client = new MailjetClient("f8d3d1d74c95250bb2119063b3697082", "8304b30da4245632c878bf48f1d65d92", new ClientOptions("v3.1"));
+        request = new MailjetRequest(Emailv31.resource)
+                .property(Emailv31.MESSAGES, new JSONArray()
+                        .put(new JSONObject()
+                                .put(Emailv31.Message.FROM, new JSONObject()
+                                        .put("Email", sender_email)
+                                        .put("Name", "BMS"))
+                                .put(Emailv31.Message.TO, new JSONArray()
+                                        .put(new JSONObject()
+                                                .put("Email", recipient_email)
+                                                .put("Name", "Some Name")))
+                                .put(Emailv31.Message.SUBJECT, "Your email flight plan!")
+                                .put(Emailv31.Message.TEXTPART, "Dear passenger 1, welcome to Mailjet! May the delivery force be with you!")
+                                .put(Emailv31.Message.HTMLPART, "<h3>Dear passenger 1, welcome to Mailjet!</h3><br />May the delivery force be with you!")));
+        response = client.post(request);
+        System.out.println(response.getStatus());
+        System.out.println(response.getData());
+    }
+
+    public static void emailAttachment(String subject, String message, Employee[] recipient_employees, FileMetadata[] fileMetadata) throws MailjetSocketTimeoutException, MailjetException
+    {
+        MailjetClient client;
+        MailjetRequest request;
+        MailjetResponse response;
+
+        //setup recipients
+        JSONArray recipients = new JSONArray();
+        for(Employee recipient:recipient_employees)
+                recipients.put(new JSONObject()
+                        .put("Email", recipient.getEmail())
+                        .put("Name", recipient.getFirstname()+" "+recipient.getLastname()));
+
+        //setup files to be emailed
+        JSONArray files = new JSONArray();
+        for(FileMetadata file: fileMetadata)
+            files.put(new JSONObject()
+            .put("ContentType", file.getContent_type())
+            .put("Filename", file.getLabel())
+            .put("Base64Content", "VGhpcyBpcyB5b3VyIGF0dGFjaGVkIGZpbGUhISEK"));
+
+
+        client = new MailjetClient("f8d3d1d74c95250bb2119063b3697082", "8304b30da4245632c878bf48f1d65d92", new ClientOptions("v3.1"));
+        request = new MailjetRequest(Emailv31.resource)
+                .property(Emailv31.MESSAGES, new JSONArray()
+                        .put(new JSONObject()
+                                .put(Emailv31.Message.FROM, new JSONObject()
+                                        .put("Email", "bms@omegafs.co.za")
+                                        .put("Name", "BMS"))
+                                .put(Emailv31.Message.TO, recipients)
+                                .put(Emailv31.Message.SUBJECT, subject)
+                                //.put(Emailv31.Message.TEXTPART, "Dear passenger 1, welcome to Mailjet! May the delivery force be with you!")
+                                .put(Emailv31.Message.HTMLPART, message)
+                                .put(Emailv31.Message.ATTACHMENTS, files)));
+        response = client.post(request);
+        System.out.println(response.getStatus());
+        System.out.println(response.getData());
     }
 }

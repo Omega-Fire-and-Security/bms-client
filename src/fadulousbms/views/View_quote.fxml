@@ -199,16 +199,10 @@
                                 <Insets top="20.0" />
                             </GridPane.margin>
                         </TableView>
-                        <Label text="Base Quote" GridPane.rowIndex="4" />
                         <Label text="Revision" GridPane.rowIndex="3" />
                         <TextField fx:id="txtRevision" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
                             <children>
-                                <TextField fx:id="txtBase" editable="false" minHeight="35.0" minWidth="70.0">
-                                    <HBox.margin>
-                                        <Insets right="5.0" />
-                                    </HBox.margin>
-                                </TextField>
                                 <Button minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#viewBase" styleClass="btnDefault" stylesheets="@../styles/home.css" text="View Base">
                                     <HBox.margin>
                                         <Insets right="5.0" />

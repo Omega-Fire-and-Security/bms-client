@@ -38,13 +38,13 @@
                         <PropertyValueFactory property="date_logged" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="false">
+                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="true">
                     <cellValueFactory>
                         <PropertyValueFactory property="status" />
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="colCreator" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Creator" />
-                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="280.0" prefWidth="-1.0" text="Action"/>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="360.0" prefWidth="-1.0" text="Action"/>
             </columns>
         </TableView>
     </content>

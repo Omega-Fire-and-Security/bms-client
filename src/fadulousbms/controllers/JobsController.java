@@ -17,11 +17,14 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
@@ -34,10 +37,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * views Controller class
@@ -182,7 +182,7 @@ public class JobsController extends ScreenController implements Initializable
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).isSigned())
+                                    if (getTableView().getItems().get(getIndex()).getStatus()>=BusinessObject.STATUS_APPROVED)
                                     {
                                         btnEmail.getStyleClass().add("btnDefault");
                                         btnEmail.setDisable(false);
@@ -200,7 +200,7 @@ public class JobsController extends ScreenController implements Initializable
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).isSigned())
+                                    if (getTableView().getItems().get(getIndex()).getStatus()>=BusinessObject.STATUS_APPROVED)
                                     {
                                         btnEmailSigned.getStyleClass().add("btnAdd");
                                         btnEmailSigned.setDisable(false);
@@ -230,8 +230,8 @@ public class JobsController extends ScreenController implements Initializable
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
                                     Job job = getTableView().getItems().get(getIndex());
 
-                                    btnSign.setText(job.isSigned() ? "Signed" : "Not Signed");
-                                    btnSign.setSelected(job.isSigned());
+                                    btnSign.setText(job.getStatus()>=BusinessObject.STATUS_APPROVED ? "Signed" : "Not Signed");
+                                    btnSign.setSelected(job.getStatus()>=BusinessObject.STATUS_APPROVED);
 
                                     btnView.setOnAction(event ->
                                     {
@@ -284,7 +284,7 @@ public class JobsController extends ScreenController implements Initializable
                                             viewSignedJob(job));
 
                                     btnInvoice.setOnAction(event ->
-                                            generateJobInvoice(job));
+                                            generateQuoteInvoice(job));
 
                                     btnEmail.setOnAction(event ->
                                             JobManager.getInstance().emailJobCard(job, null));
@@ -360,21 +360,45 @@ public class JobsController extends ScreenController implements Initializable
         }).start();
     }
 
-    private static void generateJobInvoice(Job job)
+    private static void generateQuoteInvoice(Job job)
     {
-        try
+        generateInvoice(job);//, cbx_quote_revision.getValue().get_id()
+    }
+
+    private static void generateInvoice(Job job)
+    {
+        if (job != null)
         {
-            if (job != null)
+            if(job.getStatus()>=BusinessObject.STATUS_APPROVED)
             {
-                if(job.isSigned())
+                if (job.getAssigned_employees() != null)
                 {
-                    if (job.getAssigned_employees() != null)
+                    if (job.getDate_started() > 0 && job.getDate_completed() > 0)
                     {
-                        if (job.getDate_started() > 0 && job.getDate_completed() > 0)
+                        if (job.getDate_completed() >= job.getDate_started())
                         {
-                            if (job.getDate_completed() >= job.getDate_started())
+                            Stage stage = new Stage();
+                            stage.setTitle("Select Quote["+job.getQuote().get_id()+"] Revisions");
+                            stage.setResizable(false);
+
+                            VBox container = new VBox(new Label("Choose Quote Revisions"));
+                            HashMap<String, Quote> quote_revs = new HashMap<>();
+                            for(Quote quote_rev: job.getQuote().getSortedSiblings("revision"))
                             {
-                                InvoiceManager.getInstance().generateInvoice(job);
+                                CheckBox checkBox = new CheckBox("Revision "+quote_rev.getRevision());
+                                checkBox.selectedProperty().addListener((observable, oldValue, newValue) ->
+                                {
+                                    //add Quote to map on checkbox check, remove otherwise
+                                    if(newValue)
+                                        quote_revs.put(quote_rev.get_id(), quote_rev);
+                                    else quote_revs.remove(quote_rev.get_id());
+                                });
+                                container.setSpacing(10);
+                                container.getChildren().add(checkBox);
+                            }
+                            Button btnSubmit = new Button("Submit");
+                            btnSubmit.setOnAction(event1 ->
+                            {
                                 ScreenManager.getInstance().showLoadingScreen(param ->
                                 {
                                     new Thread(new Runnable()
@@ -384,41 +408,44 @@ public class JobsController extends ScreenController implements Initializable
                                         {
                                             try
                                             {
+                                                String str_quote_revs="";
+                                                for(Quote quote: quote_revs.values())
+                                                    str_quote_revs+=(str_quote_revs==""?quote.getRevision():";"+quote.getRevision());//comma separated revision numbers
+                                                InvoiceManager.getInstance().generateInvoice(job, str_quote_revs, callback -> null);
+
                                                 //TODO: show Invoices tab
                                                 if (ScreenManager.getInstance()
                                                         .loadScreen(Screens.OPERATIONS
                                                                 .getScreen(), FadulousBMS.class.getResource("views/" + Screens.OPERATIONS
-                                                                        .getScreen())))
+                                                                .getScreen())))
                                                 {
                                                     Platform.runLater(() -> ScreenManager
                                                             .getInstance()
                                                             .setScreen(Screens.OPERATIONS
                                                                     .getScreen()));
-                                                } else IO.log(getClass()
-                                                        .getName(), IO.TAG_ERROR, "could not load invoice viewer screen.");
+                                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load invoices list screen.");
                                             } catch (IOException e)
                                             {
-                                                IO.log(getClass()
-                                                        .getName(), IO.TAG_ERROR, e
-                                                        .getMessage());
+                                                IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
                                             }
                                         }
                                     }).start();
                                     return null;
                                 });
-                            } else
-                                IO.logAndAlert("Error", "Date started cannot be less than date completed.", IO.TAG_ERROR);
+                            });
+                            container.getChildren().add(btnSubmit);
+                            stage.setScene(new Scene(container));
+                            stage.show();
+                            stage.centerOnScreen();
                         } else
-                            IO.logAndAlert("Error", "Please ensure that you've entered valid dates then try again.", IO.TAG_ERROR);
+                            IO.logAndAlert("Error", "Date started cannot be less than date completed.", IO.TAG_ERROR);
                     } else
-                        IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
+                        IO.logAndAlert("Error", "Please ensure that you've entered valid dates then try again.", IO.TAG_ERROR);
                 } else
-                    IO.logAndAlert("Error", "Selected job has not been SIGNED yet, please sign it first and try again.", IO.TAG_ERROR);
-            } else IO.logAndAlert("Error", "Selected job is invalid.", IO.TAG_ERROR);
-        } catch (IOException ex)
-        {
-            IO.log(JobsController.class.getName(), IO.TAG_ERROR, ex.getMessage());
-        }
+                    IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
+            } else
+                IO.logAndAlert("Error", "Selected job has not been SIGNED yet, please sign it first and try again.", IO.TAG_ERROR);
+        } else IO.logAndAlert("Error", "Selected job is invalid.", IO.TAG_ERROR);
     }
 
     /**

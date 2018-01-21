@@ -27,7 +27,9 @@ import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -40,7 +42,7 @@ public class RequisitionsController extends OperationsController implements Init
     @FXML
     private TableView<Requisition>    tblRequisitions;
     @FXML
-    private TableColumn     colId, colClient, colDescription, colType, colDateLogged, colResponsiblePerson, colStatus, colCreator,colAction;
+    private TableColumn     colId, colClient, colDescription, colType, colDateLogged, colResponsiblePerson, colStatus, colCreator, colAction;
 
     @Override
     public void refreshView()
@@ -91,7 +93,8 @@ public class RequisitionsController extends OperationsController implements Init
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
         CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "description", "/requisitions");
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", RequisitionManager.TYPES, false,"/requisitions");
+        //CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", RequisitionManager.TYPES, false,"/requisitions");
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
 
         Callback<TableColumn<Requisition, String>, TableCell<Requisition, String>> cellFactory
@@ -103,45 +106,14 @@ public class RequisitionsController extends OperationsController implements Init
                     {
                         final TableCell<Requisition, String> cell = new TableCell<Requisition, String>()
                         {
-                            final Button btnView = new Button("View Requisition");
-                            final Button btnPDF = new Button("View as PDF");
-                            final Button btnEmail = new Button("eMail Requisition");
+                            final Button btnRequestAppproval= new Button("Request Approval");
+                            final Button btnNewQuote = new Button("New Quote");
                             final Button btnRemove = new Button("Delete");
 
                             @Override
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnView.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnView.getStyleClass().add("btnDefault");
-                                btnView.setMinWidth(100);
-                                btnView.setMinHeight(35);
-                                HBox.setHgrow(btnView, Priority.ALWAYS);
-
-                                btnPDF.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnPDF.getStyleClass().add("btnDefault");
-                                btnPDF.setMinWidth(100);
-                                btnPDF.setMinHeight(35);
-                                HBox.setHgrow(btnPDF, Priority.ALWAYS);
-
-                                btnEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                                btnEmail.setMinWidth(100);
-                                btnEmail.setMinHeight(35);
-                                HBox.setHgrow(btnEmail, Priority.ALWAYS);
-
-                                if(!empty)
-                                {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()==PurchaseOrderManager.PO_STATUS_APPROVED)
-                                    {
-                                        btnEmail.getStyleClass().add("btnAdd");
-                                        btnEmail.setDisable(false);
-                                    }
-                                    else
-                                    {
-                                        btnEmail.getStyleClass().add("btnDisabled");
-                                        btnEmail.setDisable(true);
-                                    }
-                                }
 
                                 btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
@@ -149,72 +121,131 @@ public class RequisitionsController extends OperationsController implements Init
                                 btnRemove.setMinHeight(35);
                                 HBox.setHgrow(btnRemove, Priority.ALWAYS);
 
+                                btnNewQuote.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnNewQuote.getStyleClass().add("btnAdd");
+                                btnNewQuote.setMinWidth(100);
+                                btnNewQuote.setMinHeight(35);
+                                HBox.setHgrow(btnNewQuote, Priority.ALWAYS);
+
+                                btnRequestAppproval.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRequestAppproval.getStyleClass().add("btnAdd");
+                                btnRequestAppproval.setMinWidth(100);
+                                btnRequestAppproval.setMinHeight(35);
+                                HBox.setHgrow(btnRequestAppproval, Priority.ALWAYS);
+
                                 if (empty)
                                 {
                                     setGraphic(null);
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnView, btnPDF, btnEmail, btnRemove);
+                                    HBox hBox = new HBox(btnRequestAppproval, btnNewQuote, btnRemove);
 
-                                    btnView.setOnAction(event ->
+                                    btnRequestAppproval.setOnAction(event ->
                                     {
                                         Requisition requisition = getTableView().getItems().get(getIndex());
+
                                         if(requisition==null)
                                         {
                                             IO.logAndAlert("Error " + getClass().getName(), "Requisition object is not set", IO.TAG_ERROR);
                                             return;
                                         }
-
-                                        /*ScreenManager.getInstance().showLoadingScreen(param ->
+                                        if(requisition.getClient()==null)
                                         {
-                                            new Thread(new Runnable()
-                                            {
-                                                @Override
-                                                public void run()
-                                                {
-                                                    RequisitionManager.getInstance().setSelected(requisition);
-                                                    try
-                                                    {
-                                                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_REQUISITION.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_REQUISITION.getScreen())))
-                                                        {
-                                                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_REQUISITION.getScreen()));
-                                                        }
-                                                        else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load requisitions viewer screen.");
-                                                    } catch (IOException e)
-                                                    {
-                                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                                    }
-                                                }
-                                            }).start();
-                                            return null;
-                                        });*/
+                                            IO.logAndAlert("Error " + getClass().getName(), "Invalid Requisition Client object", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        if(SessionManager.getInstance().getActive()==null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Invalid active Session.", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        if(SessionManager.getInstance().getActive().isExpired())
+                                        {
+                                            IO.logAndAlert("Error", "Active Session has expired.", IO.TAG_ERROR);
+                                            return;
+                                        }
+
+                                        RequisitionManager.getInstance().setSelected(requisition);
+                                        requestApproval();
                                     });
 
-                                    btnPDF.setOnAction(event ->
-                                    {
-                                        /*Requisition requisition = getTableView().getItems().get(getIndex());
-                                        try
-                                        {
-                                            String path = PDF.createRequisitionPdf(requisition);
-                                            if(path!=null)
-                                            {
-                                                PDFViewer pdfViewer = PDFViewer.getInstance();
-                                                pdfViewer.setVisible(true);
-                                                pdfViewer.doOpen(path);
-                                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid requisition pdf path returned.");
-                                        } catch (IOException ex)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                                        }*/
-                                    });
-
-                                    btnEmail.setOnAction(event ->
+                                    btnNewQuote.setOnAction(event ->
                                     {
                                         Requisition requisition = getTableView().getItems().get(getIndex());
-                                        if(requisition!=null)
-                                            RequisitionManager.getInstance().emailRequisition(requisition, null);
-                                        else IO.logAndAlert("Error", "Requisition object is null.", IO.TAG_ERROR);
+                                        RequisitionManager.getInstance().setSelected(requisition);
+                                        if(requisition==null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Requisition object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        if(requisition.getClient()==null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Invalid Requisition Client object", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        if(SessionManager.getInstance().getActive()==null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Invalid active Session.", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        if(SessionManager.getInstance().getActive().isExpired())
+                                        {
+                                            IO.logAndAlert("Error", "Active Session has expired.", IO.TAG_ERROR);
+                                            return;
+                                        }
+
+                                        Quote quote = new Quote();
+                                        quote.setRequisition_id(requisition.get_id());
+                                        quote.setVat(QuoteManager.VAT);
+                                        quote.setStatus(Quote.STATUS_PENDING);
+                                        quote.setAccount_name(requisition.getClient().getAccount_name());
+                                        quote.setRequest(requisition.getDescription());
+                                        quote.setSitename("To be confirmed: "+requisition.getClient().getPhysical_address());
+                                        quote.setClient_id(requisition.getClient().get_id());
+                                        quote.setContact_person_id(requisition.getResponsible_person_id());
+                                        quote.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                        quote.setRevision(1.0);
+
+                                        List<Employee> quote_reps = new ArrayList<>();
+                                        quote_reps.add(SessionManager.getInstance().getActiveEmployee());
+                                        try
+                                        {
+                                            QuoteManager.getInstance().createQuote(quote, null, FXCollections
+                                                    .observableList(quote_reps), new Callback()
+                                            {
+                                                @Override
+                                                public Object call(Object param)
+                                                {
+                                                    ScreenManager.getInstance().showLoadingScreen(arg ->
+                                                    {
+                                                        new Thread(new Runnable()
+                                                        {
+                                                            @Override
+                                                            public void run()
+                                                            {
+                                                                try
+                                                                {
+                                                                    if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
+                                                                    {
+                                                                        Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen()));
+                                                                    }
+                                                                    else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load Quotes viewer screen.");
+                                                                } catch (IOException e)
+                                                                {
+                                                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                                                }
+                                                            }
+                                                        }).start();
+                                                        return null;
+                                                    });
+                                                    return null;
+                                                }
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
                                     });
 
                                     btnRemove.setOnAction(event ->
@@ -245,6 +276,14 @@ public class RequisitionsController extends OperationsController implements Init
         if(RequisitionManager.getInstance().getRequisitions()!=null)
             tblRequisitions.setItems(FXCollections.observableArrayList(RequisitionManager.getInstance().getRequisitions().values()));
         else IO.log(getClass().getName(), IO.TAG_WARN, "no requisitions were found in the database.");
+    }
+
+    public void requestApproval()
+    {
+        //send email requesting approval of Requisition
+        if(RequisitionManager.getInstance().getSelected()!=null)
+            RequisitionManager.getInstance().requestRequisitionApproval(RequisitionManager.getInstance().getSelected(), null);
+        else IO.logAndAlert("Error", "Selected Requisition is invalid.", IO.TAG_ERROR);
     }
 
     @Override

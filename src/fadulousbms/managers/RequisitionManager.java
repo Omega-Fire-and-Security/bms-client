@@ -15,13 +15,11 @@ import javafx.util.Callback;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by ghost on 2017/01/13.
@@ -54,7 +52,9 @@ public class RequisitionManager extends BusinessObjectManager
 
     public void setSelected(Requisition requisition)
     {
-        this.selected=requisition;
+        if(requisition!=null)
+            this.selected=requisition;
+        else IO.log(getClass().getName()+">setSelected()", IO.TAG_WARN, "invalid requisition.");
     }
 
     public void setSelected(String requisition_id)
@@ -399,54 +399,25 @@ public class RequisitionManager extends BusinessObjectManager
 
         VBox vbox = new VBox(1);
 
-        //gather list of Employees with enough clearance to approve requisitions
-        ArrayList<Employee> lst_auth_employees = new ArrayList<>();
-        for(Employee employee: EmployeeManager.getInstance().getEmployees().values())
-            if(employee.getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
-                lst_auth_employees.add(employee);
-
-        if(lst_auth_employees==null)
-        {
-            IO.logAndAlert("Error", "Could not find any employee with the required access rights to approve documents.", IO.TAG_ERROR);
-            return;
-        }
-
-        final ComboBox<Employee> cbx_destination = new ComboBox(FXCollections.observableArrayList(lst_auth_employees));
-        cbx_destination.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
-        {
-            @Override
-            public ListCell<Employee> call(ListView<Employee> param)
-            {
-                return new ListCell<Employee>()
-                {
-                    @Override
-                    protected void updateItem(Employee employee, boolean empty)
-                    {
-                        if(employee!=null && !empty)
-                        {
-                            super.updateItem(employee, empty);
-                            setText(employee.toString() + " <" + employee.getEmail() + ">");
-                        }
-                    }
-                };
-            }
-        });
-        cbx_destination.setMinWidth(200);
-        cbx_destination.setMaxWidth(Double.MAX_VALUE);
-        cbx_destination.setPromptText("Pick a recipient");
-        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, cbx_destination);
-
         final TextField txt_subject = new TextField();
         txt_subject.setMinWidth(200);
         txt_subject.setMaxWidth(Double.MAX_VALUE);
         txt_subject.setPromptText("Type in an eMail subject");
-        txt_subject.setText("PURCHASE ORDER ["+requisition.get_id()+"] APPROVAL REQUEST");
+        txt_subject.setText("REQUISITION ["+requisition.get_id()+"] APPROVAL REQUEST");
         HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
-        
+
         final TextArea txt_message = new TextArea();
         txt_message.setMinWidth(200);
         txt_message.setMaxWidth(Double.MAX_VALUE);
         HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
+
+        //set default message
+        Employee sender = SessionManager.getInstance().getActiveEmployee();
+        String title = sender.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";;
+        String def_msg = "Good day,\n\nCould you please assist me" +
+                " by approving this requisition of services to be rendered to "  + requisition.getClient().getClient_name() + ".\nThank you.\n\nBest Regards,\n"
+                + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
+        txt_message.setText(def_msg);
 
         HBox submit;
         submit = CustomTableViewControls.getSpacedButton("Send", event ->
@@ -454,8 +425,6 @@ public class RequisitionManager extends BusinessObjectManager
             String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
 
             //TODO: check this
-            if(!Validators.isValidNode(cbx_destination, cbx_destination.getValue()==null?"":cbx_destination.getValue().getEmail(), 1, ".+"))
-                return;
             if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
                 return;
             if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
@@ -466,36 +435,81 @@ public class RequisitionManager extends BusinessObjectManager
             //convert all new line chars to HTML break-lines
             msg = msg.replaceAll("\\n", "<br/>");
 
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("requisition_id", requisition.get_id()));
-            params.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
-            params.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("message", msg));
+            String path = null;
+            try
+            {
+                path = PDF.createRequisitionPDF(requisition);
+            } catch (IOException e)
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            }
+            String base64_requisition = null;
+            if(path!=null)
+            {
+                File f = new File(path);
+                if (f != null)
+                {
+                    if (f.exists())
+                    {
+                        FileInputStream in = null;
+                        try
+                        {
+                            in = new FileInputStream(f);
+                            byte[] buffer =new byte[(int) f.length()];
+                            in.read(buffer, 0, buffer.length);
+                            in.close();
+                            base64_requisition = Base64.getEncoder().encodeToString(buffer);
+                        } catch (FileNotFoundException e)
+                        {
+                            IO.log(RequisitionManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+                        } catch (IOException e)
+                        {
+                            IO.log(RequisitionManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+                        }
+                    } else
+                    {
+                        IO.logAndAlert(RequisitionManager.class.getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
+                    }
+                } else
+                {
+                    IO.log(RequisitionManager.class.getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
+                }
+            } else IO.log(RequisitionManager.class.getName(), "Could not get valid path for created Requisition pdf.", IO.TAG_ERROR);
+            final String finalBase64_requisition = base64_requisition;
 
             try
             {
                 //send email
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));//multipart/form-data
+                headers.add(new AbstractMap.SimpleEntry<>("requisition_id", requisition.get_id()));
+                //headers.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
+                headers.add(new AbstractMap.SimpleEntry<>("message", msg));
+                headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
+
                 if(SessionManager.getInstance().getActive()!=null)
                 {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/requisitions/request_approval", params, headers);
+                FileMetadata fileMetadata = new FileMetadata("requisition_"+requisition.get_id()+".pdf","application/pdf");
+                fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
+                fileMetadata.setFile(finalBase64_requisition);
+
+                HttpURLConnection connection = RemoteComms.postJSON("/requisitions/request_approval", fileMetadata.toString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         //TODO: CC self
-                        IO.logAndAlert("Success", "Successfully requested requisition #"+requisition.get_id()+" approval from ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully requested Requisition #"+requisition.get_id()+" approval!", IO.TAG_INFO);
                         if(callback!=null)
-                            callback.call(null);
+                            callback.call(IO.readStream(connection.getInputStream()));
                     } else
                     {
                         IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
@@ -509,25 +523,8 @@ public class RequisitionManager extends BusinessObjectManager
             }
         });
 
-        cbx_destination.valueProperty().addListener((observable, oldValue, newValue) ->
-        {
-            if(newValue==null)
-            {
-                IO.log(getClass().getName(), "invalid destination address.", IO.TAG_ERROR);
-                return;
-            }
-            Employee sender = SessionManager.getInstance().getActiveEmployee();
-            String title = null;
-            if(newValue.getGender()!=null)
-                title = newValue.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";
-            String msg = "Good day " + title + " " + newValue.getLastname() + ",\n\nCould you please assist me" +
-                    " by approving this requisition to be issued to "  + requisition.getClient().getClient_name() + ".\nThank you.\n\nBest Regards,\n"
-                    + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
-            txt_message.setText(msg);
-        });
 
         //Add form controls vertically on the stage
-        vbox.getChildren().add(destination);
         vbox.getChildren().add(subject);
         //vbox.getChildren().add(hbox_job_id);
         vbox.getChildren().add(message);
@@ -542,7 +539,6 @@ public class RequisitionManager extends BusinessObjectManager
         stage.setScene(scene);
         stage.show();
         stage.centerOnScreen();
-        stage.setResizable(true);
     }
 
     public static void uploadRequisitionPDF(Requisition requisition)

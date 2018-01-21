@@ -21,13 +21,8 @@ public class Overtime extends BusinessObject implements Serializable
     private long date;
     private long time_in;
     private long time_out;
-    private long date_logged;
     private int status;
-    private String extra;
     public static final String TAG = "Overtime";
-    public static final int STATUS_PENDING =0;
-    public static final int STATUS_APPROVED =1;
-    public static final int STATUS_ARCHIVED =2;
 
     public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
 
@@ -104,16 +99,6 @@ public class Overtime extends BusinessObject implements Serializable
         this.time_out = time_out;
     }
 
-    public long getDate_logged()
-    {
-        return date_logged;
-    }
-
-    public void setDate_logged(long date_logged)
-    {
-        this.date_logged = date_logged;
-    }
-
     public StringProperty statusProperty()
     {
         switch (getStatus())
@@ -139,18 +124,6 @@ public class Overtime extends BusinessObject implements Serializable
         this.status= status;
     }
 
-    public StringProperty extraProperty(){return new SimpleStringProperty(getExtra());}
-
-    public String getExtra()
-    {
-        return extra;
-    }
-
-    public void setExtra(String extra)
-    {
-        this.extra = extra;
-    }
-
     public StringProperty employeeProperty()
     {
         Employee employee = getEmployee();
@@ -172,6 +145,7 @@ public class Overtime extends BusinessObject implements Serializable
     @Override
     public void parse(String var, Object val)
     {
+        super.parse(var, val);
         try
         {
             switch (var.toLowerCase())
@@ -197,14 +171,11 @@ public class Overtime extends BusinessObject implements Serializable
                 case "status":
                     setStatus(Integer.parseInt(String.valueOf(val)));
                     break;
-                case "extra":
-                    setExtra((String)val);
-                    break;
                 default:
-                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown Overtime attribute '" + var + "'.");
+                    IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown "+getClass().getName()+" attribute '" + var + "'.");
                     break;
             }
-        }catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -223,20 +194,14 @@ public class Overtime extends BusinessObject implements Serializable
                 return getJob_id();
             case "date":
                 return getDate();
-            case "date_logged":
-                return date_logged;
             case "time_in":
                 return getTime_in();
             case "time_out":
                 return getTime_out();
             case "status":
                 return getStatus();
-            case "extra":
-                return getExtra();
-            default:
-                IO.log(TAG, IO.TAG_ERROR, "Unknown Overtime attribute '" + var + "'.");
-                return null;
         }
+        return super.get(var);
     }
 
     @Override
@@ -265,10 +230,6 @@ public class Overtime extends BusinessObject implements Serializable
             if(getDate_logged()>0)
                 result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
                         + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
-            if(getExtra()!=null)
-                if(!getExtra().isEmpty())
-                    result.append("&" + URLEncoder.encode("extra","UTF-8") + "="
-                            + URLEncoder.encode(getExtra(), "UTF-8"));
             return result.toString();
         } catch (UnsupportedEncodingException e)
         {
@@ -280,7 +241,7 @@ public class Overtime extends BusinessObject implements Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/overtime_record";
+        return "/overtime_records";
     }
 
 }

@@ -5,11 +5,15 @@
  */
 package fadulousbms.controllers;
 
+import com.mailjet.client.errors.MailjetException;
+import com.mailjet.client.errors.MailjetSocketTimeoutException;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -22,6 +26,7 @@ import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.*;
 import java.net.URL;
+import java.rmi.Remote;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
@@ -91,6 +96,7 @@ public class QuotesController extends OperationsController implements Initializa
                             final Button btnView = new Button("View Quote");
                             final Button btnPDF = new Button("View as PDF");
                             final Button btnEmail = new Button("eMail Quote");
+                            final Button btnRequestApproval = new Button("Request Quote Approval");
                             final Button btnRemove = new Button("Delete");
 
                             @Override
@@ -102,6 +108,12 @@ public class QuotesController extends OperationsController implements Initializa
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
+
+                                btnRequestApproval.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRequestApproval.getStyleClass().add("btnAdd");
+                                btnRequestApproval.setMinWidth(100);
+                                btnRequestApproval.setMinHeight(35);
+                                HBox.setHgrow(btnRequestApproval, Priority.ALWAYS);
 
                                 btnPDF.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnPDF.getStyleClass().add("btnDefault");
@@ -116,7 +128,13 @@ public class QuotesController extends OperationsController implements Initializa
 
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()==PurchaseOrderManager.PO_STATUS_APPROVED)
+                                    Quote quote = getTableView().getItems().get(getIndex());
+                                    if(quote==null)
+                                    {
+                                        IO.logAndAlert("Error " + getClass().getName(), "Quote object is not set", IO.TAG_ERROR);
+                                        return;
+                                    }
+                                    if (quote.getStatus()==PurchaseOrderManager.PO_STATUS_APPROVED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -140,7 +158,36 @@ public class QuotesController extends OperationsController implements Initializa
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnView, btnPDF, btnEmail, btnRemove);
+                                    HBox hBox = new HBox(btnView, btnRequestApproval, btnPDF, btnEmail, btnRemove);
+
+                                    btnRequestApproval.setOnAction(event ->
+                                    {
+                                        Quote quote = getTableView().getItems().get(getIndex());
+                                        if(quote==null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Quote object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        try
+                                        {
+                                            QuoteManager.getInstance().requestQuoteApproval(quote, null);
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
+                                        /*try
+                                        {
+                                            RemoteComms.emailAttachment("Email with attachment", "test",
+                                                    new Employee[]{SessionManager.getInstance().getActiveEmployee()},
+                                                    new FileMetadata[]{new FileMetadata("some-file.txt", "Some File", "/files", "text/plain")});
+                                        } catch (MailjetSocketTimeoutException e)
+                                        {
+                                            e.printStackTrace();
+                                        } catch (MailjetException e)
+                                        {
+                                            e.printStackTrace();
+                                        }*/
+                                    });
 
                                     btnView.setOnAction(event ->
                                     {
@@ -237,7 +284,7 @@ public class QuotesController extends OperationsController implements Initializa
                 if (siblings != null)
                 {
                     //add latest revision/sibling to list of latest revisions with identifier of parent.
-                    latest_rev_quotes.put(quote.getParent_id().get_id(), siblings[siblings.length - 1]);//overwrite existing value if exists
+                    latest_rev_quotes.put(quote.getParent().get_id(), siblings[siblings.length - 1]);//overwrite existing value if exists
                 } else IO.log(getClass().getName(), IO.TAG_WARN, "Quote [" + quote.get_id() + "] has no siblings. should return self as first sibling.");
             } else if(quote.getChildren("revision")==null)//if Quote has no parent and no children add it to list.
             {

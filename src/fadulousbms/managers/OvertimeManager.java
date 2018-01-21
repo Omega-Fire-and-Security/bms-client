@@ -121,9 +121,12 @@ public class OvertimeManager extends BusinessObjectManager
                                 Overtime[] overtime_records_arr = overtimeServerObject.get_embedded()
                                         .getOvertime_records();
 
-                                overtime_records = new HashMap<>();
-                                for (Overtime overtime : overtime_records_arr)
-                                    overtime_records.put(overtime.get_id(), overtime);
+                                if(overtime_records_arr!=null)
+                                {
+                                    overtime_records = new HashMap<>();
+                                    for (Overtime overtime : overtime_records_arr)
+                                        overtime_records.put(overtime.get_id(), overtime);
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Overtime records in the database.");
                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Overtime records in the database.");
                         } else IO.log(getClass().getName(), IO.TAG_WARN, "no Overtime records found in the database.");
 

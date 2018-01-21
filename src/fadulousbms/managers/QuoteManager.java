@@ -16,10 +16,8 @@ import javafx.util.Callback;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.rmi.Remote;
+import java.util.*;
 
 /**
  * Created by ghost on 2017/01/21.
@@ -324,47 +322,50 @@ public class QuoteManager extends BusinessObjectManager
                     /* Add Quote Resources to Quote on database */
 
                 boolean added_all_quote_items = true;
-                for(QuoteItem quoteItem : quoteItems)
+                if(quoteItems!=null)
                 {
-                    //prepare parameters for quote resources.
-                    /*ArrayList params = new ArrayList<>();
-                    params.add(new AbstractMap.SimpleEntry<>("quote_id", new_quote_id));
-                    params.add(new AbstractMap.SimpleEntry<>("item_number", quoteItem.getItem_number()));
-                    params.add(new AbstractMap.SimpleEntry<>("resource_id", quoteItem.getResource().get_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("markup", quoteItem.getMarkup()));
-                    params.add(new AbstractMap.SimpleEntry<>("unit_cost", quoteItem.getUnit_cost()));
-                    params.add(new AbstractMap.SimpleEntry<>("quantity", quoteItem.getQuantity()));
-                    params.add(new AbstractMap.SimpleEntry<>("additional_costs", quoteItem.getAdditional_costs()));*/
-                    /*QuoteItem new_quote_item = new QuoteItem();
-                    new_quote_item.setQuote_id(new_quote_id);
-                    new_quote_item.setItem_number(quoteItem.getItem_numberValue());
-                    new_quote_item.setResource_id(quoteItem.getResource().get_id());
-                    new_quote_item.setMarkup(quoteItem.getMarkupValue());
-                    new_quote_item.setUnit_cost(quoteItem.getUnitCost());
-                    new_quote_item.setQuantity(quoteItem.getQuantityValue());
-                    new_quote_item.setAdditional_costs(quoteItem.getAdditional_costs());*/
-
-                    quoteItem.setQuote_id(new_quote_id);
-
-                    added_all_quote_items = QuoteManager.getInstance().createQuoteItem(quoteItem, headers);
-                    //added_all_quote_items = QuoteManager.getInstance().createQuoteItem(response, params, headers);
-
-                    //connection = RemoteComms.putJSONData("/quotes/resources", params, headers);
-                    //connection = RemoteComms.putJSON("/quotes/resources", quoteItem.toString(), headers);
-                    /*if (connection != null)
+                    for (QuoteItem quoteItem : quoteItems)
                     {
-                        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
+                        //prepare parameters for quote resources.
+                        /*ArrayList params = new ArrayList<>();
+                        params.add(new AbstractMap.SimpleEntry<>("quote_id", new_quote_id));
+                        params.add(new AbstractMap.SimpleEntry<>("item_number", quoteItem.getItem_number()));
+                        params.add(new AbstractMap.SimpleEntry<>("resource_id", quoteItem.getResource().get_id()));
+                        params.add(new AbstractMap.SimpleEntry<>("markup", quoteItem.getMarkup()));
+                        params.add(new AbstractMap.SimpleEntry<>("unit_cost", quoteItem.getUnit_cost()));
+                        params.add(new AbstractMap.SimpleEntry<>("quantity", quoteItem.getQuantity()));
+                        params.add(new AbstractMap.SimpleEntry<>("additional_costs", quoteItem.getAdditional_costs()));*/
+                        /*QuoteItem new_quote_item = new QuoteItem();
+                        new_quote_item.setQuote_id(new_quote_id);
+                        new_quote_item.setItem_number(quoteItem.getItem_numberValue());
+                        new_quote_item.setResource_id(quoteItem.getResource().get_id());
+                        new_quote_item.setMarkup(quoteItem.getMarkupValue());
+                        new_quote_item.setUnit_cost(quoteItem.getUnitCost());
+                        new_quote_item.setQuantity(quoteItem.getQuantityValue());
+                        new_quote_item.setAdditional_costs(quoteItem.getAdditional_costs());*/
+
+                        quoteItem.setQuote_id(new_quote_id);
+
+                        added_all_quote_items = QuoteManager.getInstance().createQuoteItem(quoteItem, headers);
+                        //added_all_quote_items = QuoteManager.getInstance().createQuoteItem(response, params, headers);
+
+                        //connection = RemoteComms.putJSONData("/quotes/resources", params, headers);
+                        //connection = RemoteComms.putJSON("/quotes/resources", quoteItem.toString(), headers);
+                        /*if (connection != null)
                         {
-                            IO.log(getClass().getName(), IO.TAG_INFO, "Successfully added a new resource for quote["+new_quote_id+"].");
-                        } else
-                        {
-                            added_all_quote_items = false;
-                            //Get error message
-                            String msg = IO.readStream(connection.getErrorStream());
-                            IO.logAndAlert("Error " + String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
-                        }
-                    }else IO.logAndAlert("New Quote Item Creation Failure", "Could not connect to server.", IO.TAG_ERROR);*/
-                }
+                            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
+                            {
+                                IO.log(getClass().getName(), IO.TAG_INFO, "Successfully added a new resource for quote["+new_quote_id+"].");
+                            } else
+                            {
+                                added_all_quote_items = false;
+                                //Get error message
+                                String msg = IO.readStream(connection.getErrorStream());
+                                IO.logAndAlert("Error " + String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
+                            }
+                        }else IO.logAndAlert("New Quote Item Creation Failure", "Could not connect to server.", IO.TAG_ERROR);*/
+                    }
+                } else IO.log(getClass().getName(), IO.TAG_WARN, "Quote["+new_quote_id+"] has no items/resources.");
                 if(added_all_quote_items && added_all_quote_reps)
                 {
                     try
@@ -867,7 +868,7 @@ public class QuoteManager extends BusinessObjectManager
         stage.setResizable(true);
     }
 
-    public void requestQuoteApproval(Quote quote, Callback callback)
+    public void requestQuoteApproval(Quote quote, Callback callback) throws IOException
     {
         if(quote==null)
         {
@@ -894,12 +895,35 @@ public class QuoteManager extends BusinessObjectManager
             IO.logAndAlert("Error: Invalid Employee Session", "Could not find any active employee sessions.", IO.TAG_ERROR);
             return;
         }
-
+        String path = PDF.createQuotePdf(quote);
+        String base64_quote = null;
+        if(path!=null)
+        {
+            File f = new File(path);
+            if (f != null)
+            {
+                if (f.exists())
+                {
+                    FileInputStream in = new FileInputStream(f);
+                    byte[] buffer =new byte[(int) f.length()];
+                    in.read(buffer, 0, buffer.length);
+                    in.close();
+                    base64_quote = Base64.getEncoder().encodeToString(buffer);
+                } else
+                {
+                    IO.logAndAlert(QuoteManager.class.getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
+                }
+            } else
+            {
+                IO.log(QuoteManager.class.getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
+            }
+        } else IO.log(QuoteManager.class.getName(), "Could not get valid path for created Quote pdf.", IO.TAG_ERROR);
+        final String finalBase64_quote = base64_quote;
         //upload Quote PDF to server
-        uploadQuotePDF(quote);
+        //uploadQuotePDF(quote);
 
         Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Quote ["+quote.get_id()+"]");
+        stage.setTitle(Globals.APP_NAME.getValue() + " - Request Quote ["+quote.get_id()+"] Approval");
         stage.setMinWidth(320);
         stage.setHeight(350);
         stage.setAlwaysOnTop(true);
@@ -907,7 +931,7 @@ public class QuoteManager extends BusinessObjectManager
         VBox vbox = new VBox(1);
 
         //gather list of Employees with enough clearance to approve quotes
-        ArrayList<Employee> lst_auth_employees = new ArrayList<>();
+        /*ArrayList<Employee> lst_auth_employees = new ArrayList<>();
         for(Employee employee: EmployeeManager.getInstance().getEmployees().values())
             if(employee.getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
                 lst_auth_employees.add(employee);
@@ -918,7 +942,7 @@ public class QuoteManager extends BusinessObjectManager
             return;
         }
 
-        final ComboBox<Employee> cbx_destination = new ComboBox(FXCollections.observableArrayList(lst_auth_employees));
+        /*final ComboBox<Employee> cbx_destination = new ComboBox(FXCollections.observableArrayList(lst_auth_employees));
         cbx_destination.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
         {
             @Override
@@ -941,7 +965,7 @@ public class QuoteManager extends BusinessObjectManager
         cbx_destination.setMinWidth(200);
         cbx_destination.setMaxWidth(Double.MAX_VALUE);
         cbx_destination.setPromptText("Pick a recipient");
-        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, cbx_destination);
+        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, cbx_destination);*/
 
         final TextField txt_subject = new TextField();
         txt_subject.setMinWidth(200);
@@ -955,14 +979,22 @@ public class QuoteManager extends BusinessObjectManager
         txt_message.setMaxWidth(Double.MAX_VALUE);
         HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
 
+        //set default message
+        Employee sender = SessionManager.getInstance().getActiveEmployee();
+        String title = sender.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";;
+        String def_msg = "Good day,\n\nCould you please assist me" +
+                " by approving this quote to be issued to "  + quote.getClient().getClient_name() + ".\nThank you.\n\nBest Regards,\n"
+                + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
+        txt_message.setText(def_msg);
+
         HBox submit;
         submit = CustomTableViewControls.getSpacedButton("Send", event ->
         {
             String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
 
             //TODO: check this
-            if(!Validators.isValidNode(cbx_destination, cbx_destination.getValue()==null?"":cbx_destination.getValue().getEmail(), 1, ".+"))
-                return;
+            //if(!Validators.isValidNode(cbx_destination, cbx_destination.getValue()==null?"":cbx_destination.getValue().getEmail(), 1, ".+"))
+            //    return;
             if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
                 return;
             if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
@@ -973,33 +1005,40 @@ public class QuoteManager extends BusinessObjectManager
             //convert all new line chars to HTML break-lines
             msg = msg.replaceAll("\\n", "<br/>");
 
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("quote_id", quote.get_id()));
-            params.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
-            params.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("message", msg));
+            //ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            //params.add(new AbstractMap.SimpleEntry<>("message", msg));
 
             try
             {
                 //send email
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));//multipart/form-data
+                headers.add(new AbstractMap.SimpleEntry<>("quote_id", quote.get_id()));
+                //headers.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
+                headers.add(new AbstractMap.SimpleEntry<>("message", msg));
+                headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
+
                 if(SessionManager.getInstance().getActive()!=null)
                 {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/quote/request_approval", params, headers);
+                //String data = "{\"file\":\""+finalBase64_quote+"\"}";
+                FileMetadata fileMetadata = new FileMetadata("quote_"+quote.get_id()+".pdf","application/pdf");
+                fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
+                fileMetadata.setFile(finalBase64_quote);
+                HttpURLConnection connection = RemoteComms.postJSON("/quotes/approval_request", fileMetadata.toString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         //TODO: CC self
-                        IO.logAndAlert("Success", "Successfully requested quote approval from ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully requested Quote approval!", IO.TAG_INFO);
                         if(callback!=null)
                             callback.call(null);
                     } else {
@@ -1013,7 +1052,7 @@ public class QuoteManager extends BusinessObjectManager
             }
         });
 
-        cbx_destination.valueProperty().addListener((observable, oldValue, newValue) ->
+        /*cbx_destination.valueProperty().addListener((observable, oldValue, newValue) ->
         {
             if(newValue==null)
             {
@@ -1028,10 +1067,10 @@ public class QuoteManager extends BusinessObjectManager
                             " by approving this quote to be issued to "  + quote.getClient().getClient_name() + ".\nThank you.\n\nBest Regards,\n"
                             + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
             txt_message.setText(msg);
-        });
+        });*/
 
         //Add form controls vertically on the stage
-        vbox.getChildren().add(destination);
+        //vbox.getChildren().add(destination);
         vbox.getChildren().add(subject);
         //vbox.getChildren().add(hbox_quote_id);
         vbox.getChildren().add(message);

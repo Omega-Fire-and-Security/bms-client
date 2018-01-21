@@ -73,15 +73,17 @@ public class ViewQuoteController extends QuoteController
             txtTel.setText(selected.getContact_person().getTel());
             txtEmail.setText(selected.getContact_person().getEmail());
             txtFax.setText(cbxClients.getValue().getFax());
-            txtQuoteId.setText(selected.get_id());
-            txtRevision.setText(String.valueOf(selected.getRevision()));
             if(selected.getParent_id()!=null)
+                txtQuoteId.setText(selected.getParent().get_id());
+            else txtQuoteId.setText(selected.get_id());
+            txtRevision.setText(String.valueOf(selected.getRevision()));
+            /*if(selected.getParent_id()!=null)
                 txtBase.setText(selected.getParent_id().get_id());
             else
             {
                 txtBase.setText("NONE");
                 IO.log(getClass().getName(), IO.TAG_WARN, "quote " + selected.get_id() + " has no parent.");
-            }
+            }*/
 
             //set VAT toggle button value
             toggleVatExempt.setText(QuoteManager.getInstance().getSelectedQuote().getVat()==QuoteManager.VAT?QuoteManager.VAT+"%":"VAT exempt");

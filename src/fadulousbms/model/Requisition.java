@@ -23,9 +23,6 @@ public class Requisition extends BusinessObject
     private String type;
     private int status;
     public static final String TAG = "Requisition";
-    public static final int STATUS_PENDING =0;
-    public static final int STATUS_APPROVED =1;
-    public static final int STATUS_ARCHIVED =2;
 
     public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
 
@@ -75,7 +72,25 @@ public class Requisition extends BusinessObject
         this.description = description;
     }
 
-    private StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
+    private StringProperty statusProperty()
+    {
+        return new SimpleStringProperty(getStatusName());
+    }
+
+    private String getStatusName()
+    {
+        switch (status)
+        {
+            case BusinessObject.STATUS_APPROVED:
+                return "Approved";
+            case BusinessObject.STATUS_PENDING:
+                return "Pending";
+            case BusinessObject.STATUS_ARCHIVED:
+                return "Archived";
+            default:
+                return "Unknown";
+        }
+    }
 
     public int getStatus()
     {

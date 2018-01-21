@@ -18,6 +18,7 @@ import java.util.HashMap;
  */
 public class Quote extends BusinessObject
 {
+    private String requisition_id;//optional
     private String client_id;
     private String contact_person_id;
     private String sitename;
@@ -31,9 +32,18 @@ public class Quote extends BusinessObject
     private QuoteRep[] representatives;
     private int rev_cursor = -1;
     public static final String TAG = "Quote";
-    public static final int STATUS_PENDING =0;
-    public static final int STATUS_APPROVED =1;
-    public static final int STATUS_ARCHIVED =2;
+
+    public StringProperty requisition_idProperty(){return new SimpleStringProperty(requisition_id);}
+
+    public String getRequisition_id()
+    {
+        return requisition_id;
+    }
+
+    public void setRequisition_id(String requisition_id)
+    {
+        this.requisition_id = requisition_id;
+    }
 
     public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
 
@@ -134,10 +144,10 @@ public class Quote extends BusinessObject
 
     public StringProperty parent_idProperty()
     {
-        return new SimpleStringProperty(String.valueOf(getParentID()));
+        return new SimpleStringProperty(String.valueOf(getParent_id()));
     }
 
-    public Quote getParent_id()
+    public Quote getParent()
     {
         if(parent_id ==null)
             return null;
@@ -148,7 +158,7 @@ public class Quote extends BusinessObject
         }
     }
 
-    public String getParentID(){return this.parent_id;}
+    public String getParent_id(){return this.parent_id;}
 
     public void setParent_id(String parent_id)
     {
@@ -238,14 +248,20 @@ public class Quote extends BusinessObject
         return null;
     }
 
+    /**
+     * @return First Quote revision from associated Quotes, returns self if only revision.
+     */
     public Quote getRoot()
     {
         Quote quote = this;
         while(quote.getParent_id()!=null)
-            quote=quote.getParent_id();
+            quote=quote.getParent();
         return quote;
     }
 
+    /**
+     * @return HashMap of Quote objects who share a parent with this Quote.
+     */
     public HashMap<Double, Quote> getSiblingsMap()
     {
         HashMap<Double, Quote> siblings = new HashMap<>();
@@ -253,11 +269,11 @@ public class Quote extends BusinessObject
         if(getParent_id()!=null)
         {
             QuoteManager.getInstance().loadDataFromServer();
-            siblings.put(getParent_id().getRevision(), getParent_id());//make parent_id be second child of requested siblings
+            siblings.put(getParent().getRevision(), getParent());//make parent_id be second child of requested siblings
             if (QuoteManager.getInstance().getQuotes() != null)
             {
                 for (Quote quote : QuoteManager.getInstance().getQuotes().values())
-                    if (getParentID().equals(quote.getParentID()))
+                    if (getParent_id().equals(quote.getParent_id()))
                         siblings.put(quote.getRevision(), quote);
             }
             else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
@@ -265,6 +281,10 @@ public class Quote extends BusinessObject
         return siblings;
     }
 
+    /**
+     * @param comparator An arbitrary comparator attribute.
+     * @return Array of Quote objects who share a parent with this Quote, sorted using an arbitrary comparator attribute.
+     */
     public Quote[] getSortedSiblings(String comparator)
     {
         HashMap<Double, Quote> siblings = getSiblingsMap();
@@ -279,20 +299,29 @@ public class Quote extends BusinessObject
         return null;
     }
 
+    /**
+     * @return HashMap of Quote objects whose parent is this Quote, using their revision numbers as the keys.
+     */
     public HashMap<Double, Quote> getChildrenMap()
     {
         HashMap<Double, Quote> children = new HashMap<>();
-        QuoteManager.getInstance().loadDataFromServer();
+        QuoteManager.getInstance().loadDataFromServer();//refresh data model//TODO: remove
         if (QuoteManager.getInstance().getQuotes() != null)
         {
             for (Quote quote : QuoteManager.getInstance().getQuotes().values())
-                if(quote.getParentID()!=null)
-                    if (quote.getParentID().equals(get_id()))
-                        children.put(quote.getRevision(), quote);
+                if(quote.getParent_id()!=null)//if Quote has parent
+                    if (quote.getParent_id().equals(get_id()))//if Quote's parent_id equals this Quote's _id
+                        children.put(quote.getRevision(), quote);//add that Quote to the Map
         } else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
         return children;
     }
 
+    /**
+     *
+     * @param comparator Quote property to use to sort the array of children Quote objects
+     *                   whose parent is this Quote.
+     * @return Array of Quote objects whose parent is this Quote, sorted using an arbitrary comparator.
+     */
     public Quote[] getChildren(String comparator)
     {
         HashMap<Double, Quote> children = getChildrenMap();
@@ -328,6 +357,9 @@ public class Quote extends BusinessObject
         {
             switch (var.toLowerCase())
             {
+                case "requisition_id":
+                    requisition_id = (String)val;
+                    break;
                 case "client_id":
                     client_id = (String)val;
                     break;
@@ -370,6 +402,8 @@ public class Quote extends BusinessObject
     {
         switch (var.toLowerCase())
         {
+            case "requisition_id":
+                return requisition_id;
             case "client_id":
                 return client_id;
             case "contact_person_id":
@@ -440,7 +474,7 @@ public class Quote extends BusinessObject
     public String toString()
     {
         String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +",\"contact_person_id\":\""+contact_person_id+"\""
+                +"\"contact_person_id\":\""+contact_person_id+"\""
                 +",\"sitename\":\""+sitename+"\""
                 +",\"request\":\""+request+"\""
                 +",\"vat\":\""+vat+"\""
@@ -448,6 +482,8 @@ public class Quote extends BusinessObject
                 +",\"revision\":\""+revision+"\"";
                 if(getClient_id()!=null)
                     json_obj+=",\"client_id\":\""+client_id+"\"";
+                if(getRequisition_id()!=null)
+                    json_obj+=",\"requisition_id\":\""+requisition_id+"\"";
                 if(parent_id!=null)
                     json_obj+=",\"parent_id\":\""+ parent_id +"\"";
                 if(status>0)

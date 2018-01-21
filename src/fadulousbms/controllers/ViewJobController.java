@@ -100,7 +100,7 @@ public class ViewJobController extends ScreenController implements Initializable
             txtRequest.setText(selected.getQuote().getRequest());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                         String.valueOf(selected.getQuote().getTotal()));
-            txtStatus.setText(selected.isSigned()?"SIGNED":"NOT SIGNED");
+            txtStatus.setText(selected.getStatus()>=BusinessObject.STATUS_APPROVED?"SIGNED":"NOT SIGNED");
 
             try
             {
@@ -385,9 +385,15 @@ public class ViewJobController extends ScreenController implements Initializable
     @FXML
     public void requestSignature()
     {
-        //send email requesting approval of Job
-        if(JobManager.getInstance().getSelected()!=null)
-            JobManager.getInstance().requestSignature(JobManager.getInstance().getSelected(), null);
+        try
+        {
+            //send email requesting approval of Job
+            if(JobManager.getInstance().getSelected()!=null)
+                JobManager.getInstance().requestJobApproval(JobManager.getInstance().getSelected(), null);
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
     }
 
     @FXML

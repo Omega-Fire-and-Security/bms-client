@@ -11,23 +11,27 @@ import fadulousbms.auxilary.PDFViewer;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 
 /**
@@ -155,8 +159,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                                         if(screenManager.loadScreen(Screens.VIEW_QUOTE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
                                                         {
                                                             Platform.runLater(() -> screenManager.setScreen(Screens.VIEW_QUOTE.getScreen()));
-                                                        }
-                                                        else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quotes viewer screen.");
+                                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quotes viewer screen.");
                                                     } catch (IOException e)
                                                     {
                                                         IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
@@ -238,10 +241,21 @@ public class InvoicesController extends ScreenController implements Initializabl
                                         //IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
                                     });
 
-                                    btnPDF.setOnAction(event -> {
+                                    btnPDF.setOnAction(event ->
+                                    {
+                                        if(invoice.getJob()==null)
+                                        {
+                                            IO.logAndAlert("Error","Invalid Job object.", IO.TAG_ERROR);
+                                            return;
+                                        }
+                                        if(invoice.getJob().getQuote()==null)
+                                        {
+                                            IO.logAndAlert("Error","Invalid Quote associated with this Invoice["+invoice.get_id()+"].", IO.TAG_ERROR);
+                                            return;
+                                        }
                                         try
                                         {
-                                            String path = PDF.createInvoicePdf(invoice);
+                                            String path = PDF.createInvoicePdf(invoice, invoice.quoteRevisions());
                                             if(path!=null)
                                             {
                                                 PDFViewer pdfViewer = PDFViewer.getInstance();
@@ -295,9 +309,19 @@ public class InvoicesController extends ScreenController implements Initializabl
     public void refreshModel()
     {
         EmployeeManager.getInstance().loadDataFromServer();
-        InvoiceManager.getInstance().loadDataFromServer();
         ClientManager.getInstance().loadDataFromServer();
+        try
+        {
+            QuoteManager.getInstance().reloadDataFromServer();
+        } catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
         JobManager.getInstance().loadDataFromServer();
+        InvoiceManager.getInstance().loadDataFromServer();
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

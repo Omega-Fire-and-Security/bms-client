@@ -9,6 +9,7 @@ import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.JobManager;
+import fadulousbms.managers.QuoteManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -24,8 +25,65 @@ import java.util.HashMap;
 public class Invoice extends BusinessObject implements Serializable
 {
     private String job_id;
+    //private String quote_id;
+    private String quote_revision_numbers;//semi-colon separated array of Quote revision numbers associated with Invoice.
     //private String account;
     private double receivable;
+    private int status;
+
+    public HashMap<String, Quote> quoteRevisions()
+    {
+        if(getJob()==null)
+        {
+            IO.log(getClass().getName(), IO.TAG_WARN, "invalid Invoice Job object.");
+            return null;
+        }
+        if(getJob().getQuote()==null)
+        {
+            IO.log(getClass().getName(), IO.TAG_WARN, "invalid Invoice Quote object.");
+            return null;
+        }
+        if(getJob().getQuote().getChildrenMap()==null)
+        {
+            IO.log(getClass().getName(), IO.TAG_WARN, "invalid Quote children map.");
+            return null;
+        }
+        String[] str_revs = quote_revision_numbers.split(";");
+        HashMap<String, Quote> quotes_map = new HashMap<>();
+        quotes_map.put(this.getJob().getQuote().get_id(), getJob().getQuote());//add parent Quote to map of Quotes to be returned
+        if(str_revs!=null)
+        {
+            if(str_revs.length>0)
+            {
+                IO.log(getClass().getName(), IO.TAG_INFO, "Invoice ["+get_id()+"] has ["+str_revs.length+"] Quote revisions.");
+                for(String str_rev_num: str_revs)
+                {
+                    try
+                    {
+                        Quote quote = getJob().getQuote().getSiblingsMap().get(Double.parseDouble(str_rev_num));
+                        if(quote!=null)
+                            quotes_map.put(quote.get_id(), quote);
+                        else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Quote [revision #:"+str_rev_num+"] " +
+                                "associated with this "+getClass().getName()+"["+get_id()+"]");
+                    } catch (NumberFormatException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                }
+            }
+        }
+        return quotes_map;
+    }
+
+    public String getQuote_revision_numbers()
+    {
+        return quote_revision_numbers;
+    }
+
+    public void setQuote_revision_numbers(String quote_revision_numbers)
+    {
+        this.quote_revision_numbers = quote_revision_numbers;
+    }
 
     public StringProperty accountProperty(){return new SimpleStringProperty(getAccount());}
 
@@ -72,6 +130,18 @@ public class Invoice extends BusinessObject implements Serializable
         return new SimpleStringProperty(get_id());//TODO: fix this!
     }
 
+    private StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
+
+    public int getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(int status)
+    {
+        this.status = status;
+    }
+
     private StringProperty totalProperty()
     {
         return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));
@@ -108,10 +178,10 @@ public class Invoice extends BusinessObject implements Serializable
         return null;
     }
 
-    private StringProperty clientProperty()
+    public StringProperty clientProperty()
     {
         if(getClient()!=null)
-            return new SimpleStringProperty(getClient().toString());
+            return new SimpleStringProperty(getClient().getClient_name());
         else IO.log(getClass().getName(), IO.TAG_ERROR, "Job->Quote->Client object is not set");
         return null;
     }
@@ -142,8 +212,14 @@ public class Invoice extends BusinessObject implements Serializable
                 case "job_id":
                     setJob_id(String.valueOf(val));
                     break;
+                /*case "quote_id":
+                    setQuote_id(String.valueOf(val));
+                    break;*/
                 case "receivable":
                     setReceivable(Double.valueOf(String.valueOf(val)));
+                    break;
+                case "quote_revision_numbers":
+                    setQuote_revision_numbers(String.valueOf(val));
                     break;
                 default:
                     IO.log(getClass().getName(), IO.TAG_ERROR, "unknown "+getClass().getName()+" attribute '" + var + "'.");
@@ -162,15 +238,17 @@ public class Invoice extends BusinessObject implements Serializable
         {
             case "job_id":
                 return getJob_id();
+            /*case "quote_id":
+                return getQuote_id();*/
             case "account":
                 return getAccount();
+            case "quote_revision_numbers":
+                return getQuote_revision_numbers();
             case "receivable":
                 return getReceivable();
         }
         return super.get(var);
     }
-
-
 
     @Override
     public String asUTFEncodedString()
@@ -181,7 +259,7 @@ public class Invoice extends BusinessObject implements Serializable
         {
             /*result.append(URLEncoder.encode("quote_id","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(quote_id), "UTF-8"));*/
-            result.append("&" + URLEncoder.encode("job_id","UTF-8") + "="
+            result.append(URLEncoder.encode("job_id","UTF-8") + "="
                     + URLEncoder.encode(String.valueOf(job_id), "UTF-8"));
             if(getDate_logged()>0)
                 result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
@@ -204,10 +282,11 @@ public class Invoice extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        String json_obj = "{\"_id\":\""+get_id()+"\""
-                +",\"job_id\":\""+job_id+"\""
-                //+",\"quote_id\":\""+quote_id+"\""
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
+                +"\"job_id\":\""+job_id+"\""
+                //+",\"quotes\":\""+quote_id+"\""
                 //+",\"account\":\""+account+"\""
+                +",\"quote_revision_numbers\":\""+quote_revision_numbers+"\""
                 +",\"receivable\":\""+receivable+"\"";
         if(getCreator()!=null)
             json_obj+=",\"creator\":\""+getCreator()+"\"";

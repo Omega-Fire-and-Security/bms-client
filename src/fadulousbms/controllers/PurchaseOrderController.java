@@ -639,9 +639,15 @@ public class PurchaseOrderController extends OperationsController implements Ini
     @FXML
     public void requestApproval()
     {
-        //send email requesting approval of Quote
-        if(PurchaseOrderManager.getInstance().getSelected()!=null)
-            PurchaseOrderManager.getInstance().requestPOApproval(PurchaseOrderManager.getInstance().getSelected(), null);
+        try
+        {
+            //send email requesting approval of PO
+            if(PurchaseOrderManager.getInstance().getSelected()!=null)
+                PurchaseOrderManager.getInstance().requestPOApproval(PurchaseOrderManager.getInstance().getSelected(), null);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @FXML
