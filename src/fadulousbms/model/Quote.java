@@ -29,7 +29,6 @@ public class Quote extends BusinessObject
     private int status;
     private String parent_id;
     private QuoteItem[] resources;
-    private QuoteRep[] representatives;
     private int rev_cursor = -1;
     public static final String TAG = "Quote";
 
@@ -201,30 +200,6 @@ public class Quote extends BusinessObject
     public void setResources(QuoteItem[] resources)
     {
         this.resources=resources;
-    }
-
-    public Employee[] getRepresentatives()
-    {
-        if(representatives==null)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, "quote ["+get_id()+"] has no representatives.");
-            return null;
-        }
-        if(representatives.length==0)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, "quote ["+get_id()+"] has no representatives.");
-            return null;
-        }
-        Employee[] reps = new Employee[representatives.length];
-        EmployeeManager.getInstance().loadDataFromServer();
-        for(int i=0;i<representatives.length;i++)
-            reps[i]= representatives[i].getUser();
-        return  reps;
-    }
-
-    public void setRepresentatives(QuoteRep[] representatives)
-    {
-        this.representatives=representatives;
     }
 
     public Client getClient()

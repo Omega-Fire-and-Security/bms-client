@@ -211,8 +211,7 @@ public class RequisitionsController extends OperationsController implements Init
                                         quote_reps.add(SessionManager.getInstance().getActiveEmployee());
                                         try
                                         {
-                                            QuoteManager.getInstance().createQuote(quote, null, FXCollections
-                                                    .observableList(quote_reps), new Callback()
+                                            QuoteManager.getInstance().createQuote(quote, null, new Callback()
                                             {
                                                 @Override
                                                 public Object call(Object param)

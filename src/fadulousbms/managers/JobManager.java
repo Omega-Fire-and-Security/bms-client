@@ -474,7 +474,7 @@ public class JobManager extends BusinessObjectManager
         final String finalBase64_job = base64_job;
 
         Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - Request Job ["+job.get_id()+"] Approval");
+        stage.setTitle(Globals.APP_NAME.getValue() + " - Request Job ["+job.getJob_number()+"] Approval");
         stage.setMinWidth(320);
         stage.setHeight(350);
         stage.setAlwaysOnTop(true);
@@ -485,7 +485,7 @@ public class JobManager extends BusinessObjectManager
         txt_subject.setMinWidth(200);
         txt_subject.setMaxWidth(Double.MAX_VALUE);
         txt_subject.setPromptText("Type in an eMail subject");
-        txt_subject.setText("JOB ["+job.get_id()+"] APPROVAL REQUEST");
+        txt_subject.setText("JOB ["+job.getJob_number()+"] APPROVAL REQUEST");
         HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
 
         final TextArea txt_message = new TextArea();
@@ -899,195 +899,6 @@ public class JobManager extends BusinessObjectManager
         vbox.getChildren().add(destination);
         vbox.getChildren().add(subject);
         vbox.getChildren().add(hbox_job_id);
-        vbox.getChildren().add(message);
-        vbox.getChildren().add(submit);
-
-        //Setup scene and display stage
-        Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
-        scene.getStylesheets().clear();
-        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-
-        stage.setScene(scene);
-        stage.show();
-        stage.centerOnScreen();
-        stage.setResizable(true);
-    }
-
-    /**
-     * Method to send eMail containing Job card (PDF) and a URL to sign the Job.
-     * @param job Job object to be signed.
-     * @param callback Callback to be executed on successful request.
-     */
-    public static void requestSignature(Job job, Callback callback)
-    {
-        if(job==null)
-        {
-            IO.logAndAlert("Error", "Invalid Job.", IO.TAG_ERROR);
-            return;
-        }
-        if(JobManager.getInstance().getJobs()==null)
-        {
-            IO.logAndAlert("Error", "Could not find any jobs in the system.", IO.TAG_ERROR);
-            return;
-        }
-        if(SessionManager.getInstance().getActive()==null)
-        {
-            IO.logAndAlert("Error: Invalid Session", "Could not find any valid sessions.", IO.TAG_ERROR);
-            return;
-        }
-        if(SessionManager.getInstance().getActive().isExpired())
-        {
-            IO.logAndAlert("Error: Session Expired", "The active session has expired.", IO.TAG_ERROR);
-            return;
-        }
-        if(SessionManager.getInstance().getActiveEmployee()==null)
-        {
-            IO.logAndAlert("Error: Invalid Employee Session", "Could not find any active employee sessions.", IO.TAG_ERROR);
-            return;
-        }
-
-        //upload Job PDF to server
-        uploadJobCardPDF(job);
-
-        Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - Request Job ["+job.get_id()+"] Signature");
-        stage.setMinWidth(320);
-        stage.setHeight(350);
-        stage.setAlwaysOnTop(true);
-
-        VBox vbox = new VBox(1);
-
-        //gather list of Employees with enough clearance to sign jobs
-        ArrayList<Employee> lst_auth_employees = new ArrayList<>();
-        for(Employee employee: EmployeeManager.getInstance().getEmployees().values())
-            if(employee.getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
-                lst_auth_employees.add(employee);
-
-        if(lst_auth_employees==null)
-        {
-            IO.logAndAlert("Error", "Could not find any employee with the required access rights to sign off the job.", IO.TAG_ERROR);
-            return;
-        }
-
-        final ComboBox<Employee> cbx_destination = new ComboBox(FXCollections.observableArrayList(lst_auth_employees));
-        cbx_destination.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
-        {
-            @Override
-            public ListCell<Employee> call(ListView<Employee> param)
-            {
-                return new ListCell<Employee>()
-                {
-                    @Override
-                    protected void updateItem(Employee employee, boolean empty)
-                    {
-                        if(employee!=null && !empty)
-                        {
-                            super.updateItem(employee, empty);
-                            setText(employee.toString() + " <" + employee.getEmail() + ">");
-                        }
-                    }
-                };
-            }
-        });
-        cbx_destination.setMinWidth(200);
-        cbx_destination.setMaxWidth(Double.MAX_VALUE);
-        cbx_destination.setPromptText("Pick a recipient");
-        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, cbx_destination);
-
-        final TextField txt_subject = new TextField();
-        txt_subject.setMinWidth(200);
-        txt_subject.setMaxWidth(Double.MAX_VALUE);
-        txt_subject.setPromptText("Type in an eMail subject");
-        txt_subject.setText("JOB [#"+job.getJob_number()+"] SIGNATURE REQUEST");
-        HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
-
-        final TextArea txt_message = new TextArea();
-        txt_message.setMinWidth(200);
-        txt_message.setMaxWidth(Double.MAX_VALUE);
-        HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
-
-        HBox submit;
-        submit = CustomTableViewControls.getSpacedButton("Send", event ->
-        {
-            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
-
-            //TODO: check this
-            if(!Validators.isValidNode(cbx_destination, cbx_destination.getValue()==null?"":cbx_destination.getValue().getEmail(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
-                return;
-
-            String msg = txt_message.getText();
-
-            //convert all new line chars to HTML break-lines
-            msg = msg.replaceAll("\\n", "<br/>");
-
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("job_id", job.get_id()));
-            params.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
-            params.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("message", msg));
-
-            try
-            {
-                //send email
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                if(SessionManager.getInstance().getActive()!=null)
-                {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
-                } else
-                {
-                    IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
-                    return;
-                }
-
-                HttpURLConnection connection = RemoteComms.postData("/api/job/request_signature", params, headers);
-                if(connection!=null)
-                {
-                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                    {
-                        //TODO: CC self
-                        IO.logAndAlert("Success", "Successfully requested job #"+job.getJob_number()+" signature from ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
-                        if(callback!=null)
-                            callback.call(null);
-                    } else {
-                        IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                    }
-                    connection.disconnect();
-                }
-            } catch (IOException e)
-            {
-                e.printStackTrace();
-                IO.log(JobManager.class.getName(), IO.TAG_ERROR, e.getMessage());
-            }
-        });
-
-        cbx_destination.valueProperty().addListener((observable, oldValue, newValue) ->
-        {
-            if(newValue==null)
-            {
-                IO.log(JobManager.class.getName(), "invalid destination address.", IO.TAG_ERROR);
-                return;
-            }
-            Employee sender = SessionManager.getInstance().getActiveEmployee();
-            String title = null;
-            if(newValue.getGender()!=null)
-                title = newValue.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";
-            String msg = "Good day " + title + " " + newValue.getLastname() + ",\n\nCould you please assist me" +
-                    " by signing this job to be rendered to "  + job.getQuote().getClient().getClient_name() + ".\nThank you.\n\nBest Regards,\n"
-                    + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
-            txt_message.setText(msg);
-        });
-
-        //Add form controls vertically on the stage
-        vbox.getChildren().add(destination);
-        vbox.getChildren().add(subject);
-        //vbox.getChildren().add(hbox_job_id);
         vbox.getChildren().add(message);
         vbox.getChildren().add(submit);
 

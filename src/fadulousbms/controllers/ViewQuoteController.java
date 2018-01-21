@@ -112,10 +112,6 @@ public class ViewQuoteController extends QuoteController
             if (selected.getResources() != null)
                 tblQuoteItems.setItems(FXCollections.observableArrayList(selected.getResources()));
             else IO.log(getClass().getName(), IO.TAG_WARN, "quote [" + selected.get_id() + "] has no resources.");
-            if (selected.getRepresentatives() != null)
-                tblSaleReps.setItems(FXCollections.observableArrayList(selected.getRepresentatives()));
-            else IO.log(getClass().getName(), IO.TAG_WARN, "quote [" + selected
-                    .get_id() + "] has no representatives.");
 
             /** Store additional cost cols in a HashMap -  used a map
              * To ensure that only a single instance of all additional

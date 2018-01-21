@@ -18,7 +18,6 @@
                         <Menu mnemonicParsing="false" text="File">
                             <items>
                                 <MenuItem mnemonicParsing="false" onAction="#newQuoteItem" text="New quote item" />
-                                <MenuItem mnemonicParsing="false" onAction="#newSaleConsultant" text="New Sale Consultant" />
                                 <MenuItem mnemonicParsing="false" text="Close" />
                             </items>
                         </Menu>

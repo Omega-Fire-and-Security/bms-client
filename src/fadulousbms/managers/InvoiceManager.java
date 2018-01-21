@@ -188,7 +188,7 @@ public class InvoiceManager extends BusinessObjectManager
         }
 
         //upload Invoice PDF to server
-        uploadInvoicePDF(invoice);
+        //TODO: uploadInvoicePDF(invoice);
 
         Stage stage = new Stage();
         stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Invoice ["+invoice.get_id()+"]");
@@ -295,60 +295,6 @@ public class InvoiceManager extends BusinessObjectManager
         stage.show();
         stage.centerOnScreen();
         stage.setResizable(true);
-    }
-
-    public void uploadInvoicePDF(Invoice invoice)
-    {
-        if(invoice==null)
-        {
-            IO.logAndAlert("Error", "Invalid invoice object passed.", IO.TAG_ERROR);
-            return;
-        }
-        //Validate session - also done on server-side don't worry ;)
-        SessionManager smgr = SessionManager.getInstance();
-        if(smgr.getActive()!=null)
-        {
-            if(!smgr.getActive().isExpired())
-            {
-                try
-                {
-                    String path = PDF.createInvoicePdf(invoice);
-                    if(path!=null)
-                    {
-                        File f = new File(path);
-                        if (f != null)
-                        {
-                            if (f.exists())
-                            {
-                                FileInputStream in = new FileInputStream(f);
-                                byte[] buffer = new byte[(int) f.length()];
-                                in.read(buffer, 0, buffer.length);
-                                in.close();
-
-                                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
-
-                                RemoteComms.uploadFile("/api/invoice/upload/" + invoice.get_id(), headers, buffer);
-                                IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded invoice [#" + invoice.get_id()
-                                        + "], file size: [" + buffer.length + "] bytes.");
-                            }
-                            else
-                            {
-                                IO.logAndAlert(getClass().getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
-                            }
-                        }
-                        else
-                        {
-                            IO.log(getClass().getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
-                        }
-                    } else IO.log(getClass().getName(), "Could not get valid path for created invoice pdf.", IO.TAG_ERROR);
-                }catch (IOException e)
-                {
-                    IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
-                }
-            }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
     class InvoiceServerObject extends ServerObject
