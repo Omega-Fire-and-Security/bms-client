@@ -364,8 +364,8 @@ public class Job extends BusinessObject
     @Override
     public String toString()
     {
-        String json_obj = "{\"_id\":\""+get_id()+"\"";
-        json_obj+=",\"quote_id\":\""+quote_id+"\""
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"");
+        json_obj+="\"quote_id\":\""+quote_id+"\""
                 +",\"status\":\""+status+"\""
                 +",\"creator\":\""+getCreator()+"\""
                 +",\"date_logged\":\""+getDate_logged()+"\"";

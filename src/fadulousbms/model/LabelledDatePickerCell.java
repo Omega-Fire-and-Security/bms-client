@@ -92,7 +92,7 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
     {
         super.updateItem(date, empty);
         //setGraphic(label);
-        IO.log(getClass().getName(), IO.TAG_INFO, ">>>>>>>>>date: "+date);
+        IO.log(getClass().getName(), IO.TAG_INFO, "object: "+getTableRow().getItem()+" >> date: "+date);
         if(date==null)
             setGraphic(null);
         else if (empty || date<=0)

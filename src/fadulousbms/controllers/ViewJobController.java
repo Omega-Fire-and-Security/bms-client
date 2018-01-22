@@ -100,7 +100,7 @@ public class ViewJobController extends ScreenController implements Initializable
             txtRequest.setText(selected.getQuote().getRequest());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                         String.valueOf(selected.getQuote().getTotal()));
-            txtStatus.setText(selected.getStatus()>=BusinessObject.STATUS_APPROVED?"SIGNED":"NOT SIGNED");
+            txtStatus.setText(selected.getStatus()>=BusinessObject.STATUS_APPROVED?"APPROVED":"PENDING");
 
             try
             {

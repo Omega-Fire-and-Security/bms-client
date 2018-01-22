@@ -378,25 +378,25 @@ public class Quote extends BusinessObject
         switch (var.toLowerCase())
         {
             case "requisition_id":
-                return requisition_id;
+                return getRequisition_id();
             case "client_id":
-                return client_id;
+                return getClient_id();
             case "contact_person_id":
-                return contact_person_id;
+                return getContact_person_id();
             case "sitename":
-                return sitename;
+                return getSitename();
             case "request":
-                return request;
+                return getRequest();
             case "status":
-                return status;
+                return getStatus();
             case "parent_id":
-                return parent_id;
+                return getParent_id();
             case "vat":
-                return vat;
+                return getVat();
             case "account_name":
-                return account_name;
+                return getAccount_name();
             case "revision":
-                return revision;
+                return getRevision();
         }
         return super.get(var);
     }

@@ -32,34 +32,7 @@ public abstract class BusinessObject implements Serializable
      */
     public String get_id()
     {
-        String id=null;
-        if(_id!=null)
-            id= _id;
-        else
-        {
-            //if no id has been set, try retrieve it from _links object
-            if (_links != null)
-            {
-                if (_links.getSelf() != null)
-                {
-                    if (_links.getSelf().getHref() != null)
-                    {
-                        //returns data of format  http://localhost:8080/invoices/5a314faf6604db0001816e07
-                        String[] arr = _links.getSelf().getHref().split("/");
-                        if (arr != null)
-                            if (arr.length > 0)
-                                id = arr[arr.length - 1];
-                            else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid href object: " + _links.getSelf().getHref()+" {empty split arr}");
-                        else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid href object: " + _links.getSelf().getHref()+" {null split arr}");
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "_links>self>href object is null.");
-                } else IO.log(getClass().getName(), IO.TAG_ERROR, "_links>self object is null.");
-                if (id != null)
-                    set_id(id);
-                else IO.log(getClass().getName(), IO.TAG_ERROR, "new object id is null.");
-            } else IO.log(getClass().getName(), IO.TAG_ERROR, "_links object is null.");
-        }
-        IO.log(getClass().getName(), IO.TAG_INFO, ">>>>>>>>>>>>id: " + id);
-        return id;
+        return _id;
     }
 
     /**

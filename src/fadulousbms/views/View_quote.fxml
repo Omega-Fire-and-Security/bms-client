@@ -164,10 +164,6 @@
                     <children>
                         <Label text="Quote ID" GridPane.rowIndex="1" />
                         <Label text="Date Generated" GridPane.rowIndex="2" />
-                        <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" text="Sale Consultants" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
-                            <font>
-                                <Font name="System Bold" size="17.0" />
-                            </font></Label>
                         <TextField fx:id="txtQuoteId" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                             <GridPane.margin>
                                 <Insets />
@@ -179,42 +175,27 @@
                                 <Font name="System Bold" size="17.0" />
                             </font>
                         </Label>
-                        <TableView fx:id="tblSaleReps" editable="true" minHeight="100.0" tableMenuButtonVisible="true" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="colFirstname" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="First Name">
-                                    <cellValueFactory>
-                                        <PropertyValueFactory property="_id" />
-                                    </cellValueFactory>
-                                </TableColumn>
-                                <TableColumn fx:id="colLastname" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Last Name" />
-                                <TableColumn fx:id="colCell" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Cell No." />
-                                <TableColumn fx:id="colTel" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Tel No." visible="false" />
-                                <TableColumn fx:id="colEmail" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="eMail" />
-                                <TableColumn fx:id="colGender" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Gender" visible="false" />
-                                <TableColumn fx:id="colActive" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Active" visible="false" />
-                                <TableColumn fx:id="colEmployeeAction" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Action" />
-                            </columns>
-                            <GridPane.margin>
-                                <Insets top="20.0" />
-                            </GridPane.margin>
-                        </TableView>
                         <Label text="Revision" GridPane.rowIndex="3" />
                         <TextField fx:id="txtRevision" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
-                            <children>
-                                <Button minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#viewBase" styleClass="btnDefault" stylesheets="@../styles/home.css" text="View Base">
-                                    <HBox.margin>
-                                        <Insets right="5.0" />
-                                    </HBox.margin>
+                  <VBox GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="CENTER">
+                     <children>
+                              <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" />
+                                <Button minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#viewBase" styleClass="btnDefault" stylesheets="@../styles/home.css" text="View Base" />
+                                <Button fx:id="viewLatest" minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#prevRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Previous Revision">
+                           <VBox.margin>
+                              <Insets top="10.0" />
+                           </VBox.margin>
                                 </Button>
-                                <Button fx:id="viewLatest" layoutX="164.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#prevRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Previous Revision">
-                                    <HBox.margin>
-                                        <Insets right="10.0" />
-                                    </HBox.margin>
-                                </Button>
-                                <Button minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#nextRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Next Revision" />
-                            </children>
-                        </HBox>
+                                <Button minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#nextRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Next Revision">
+                           <VBox.margin>
+                              <Insets top="10.0" />
+                           </VBox.margin>
+                        </Button>
+                     </children>
+                     <GridPane.margin>
+                        <Insets top="100.0" />
+                     </GridPane.margin>
+                  </VBox>
                     </children>
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

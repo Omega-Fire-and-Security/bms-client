@@ -33,6 +33,11 @@
                         <PropertyValueFactory property="responsible_person_id"/>
                     </cellValueFactory>
                 </TableColumn>
+                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="true">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="status" />
+                    </cellValueFactory>
+                </TableColumn>
                 <TableColumn fx:id="colDateGenerated" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Logged">
                     <cellValueFactory>
                         <PropertyValueFactory property="date_generated" />

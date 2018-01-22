@@ -51,7 +51,7 @@ public class JobsController extends ScreenController implements Initializable
     @FXML
     private TableColumn colJobNum, colClient, colSitename, colRequest, colTotal,
             colContactPerson, colDateGenerated, colPlannedStartDate,
-            colDateAssigned, colDateStarted, colDateEnded, colCreator, colExtra, colAction;
+            colDateAssigned, colDateStarted, colDateEnded, colCreator, colExtra, colStatus, colAction;
     public static final String TAB_ID = "jobsTab";
 
     @Override
@@ -76,6 +76,7 @@ public class JobsController extends ScreenController implements Initializable
         colSitename.setCellValueFactory(new PropertyValueFactory<>("sitename"));
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
         //TODO: contact_personProperty
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,90, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/jobs");
         CustomTableViewControls
                 .makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
@@ -240,13 +241,11 @@ public class JobsController extends ScreenController implements Initializable
                                             JobManager.getInstance().reloadDataFromServer();
                                             if (job == null)
                                             {
-                                                IO.logAndAlert("Error " + getClass()
-                                                        .getName(), "Job object is not set", IO.TAG_ERROR);
+                                                IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
                                                 return;
                                             }
-                                            if(JobManager.getInstance().getJobs()!=null)
-                                                JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(job.get_id()));
-                                            else IO.log(getClass().getName(), IO.TAG_ERROR, "no jobs were found in the database." );
+                                            //set selected Job
+                                            JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(job.get_id()));
                                             viewJob(JobManager.getInstance().getSelected());
                                         } catch (ClassNotFoundException e)
                                         {

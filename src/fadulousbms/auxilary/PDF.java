@@ -1385,14 +1385,14 @@ public class PDF
         return path;
     }
 
-    public static String createInvoicePdf(Invoice invoice, HashMap<String, Quote> quote_revisions) throws IOException
+    public static String createInvoicePdf(Invoice invoice) throws IOException//, HashMap<String, Quote> quote_revisions
     {
         if(invoice==null)
         {
             IO.logAndAlert("PDF Viewer", "Invoice object passed is null.", IO.TAG_ERROR);
             return null;
         }
-        if(quote_revisions==null)
+        if(invoice.quoteRevisions()==null)
         {
             IO.logAndAlert("PDF Viewer", "Invalid Quote revisions map.", IO.TAG_ERROR);
             return null;
@@ -1417,7 +1417,7 @@ public class PDF
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
-        for(Quote quote: quote_revisions.values())
+        for(Quote quote: invoice.quoteRevisions().values())
         {
             //Quote quote = invoice.getQuote();
             //Quote[] quotes = invoice.getJob().getQuote().getSortedSiblings("revision");

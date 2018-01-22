@@ -38,7 +38,7 @@
                         <PropertyValueFactory property="date_generated" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="false">
+                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="true">
                     <cellValueFactory>
                         <PropertyValueFactory property="status" />
                     </cellValueFactory>

@@ -77,7 +77,7 @@ public class QuotesController extends OperationsController implements Initializa
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
         CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", "/quotes");
         CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", "/quotes");
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","SALE"}, false,"/quotes");
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/quotes");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
         colRevision.setCellValueFactory(new PropertyValueFactory<>("revision"));
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));

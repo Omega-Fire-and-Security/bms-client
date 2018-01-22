@@ -148,7 +148,10 @@ public class JobManager extends BusinessObjectManager
 
                             jobs = new HashMap<>();
                             for (Job job : jobs_arr)
+                            {
+                                System.out.println(">>>>>>>>>>>> "+job);
                                 jobs.put(job.get_id(), job);
+                            }
                         }
                         else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
                     }

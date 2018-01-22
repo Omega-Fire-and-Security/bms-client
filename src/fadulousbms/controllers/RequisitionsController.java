@@ -65,24 +65,6 @@ public class RequisitionsController extends OperationsController implements Init
             return;
         }
 
-        /*switch (RequisitionManager.getInstance().getSelected().getStatus())
-        {
-            case Requisition.STATUS_PENDING:
-                status = "PENDING";
-                break;
-            case Requisition.STATUS_APPROVED:
-                status = "APPROVED";
-                break;
-            case Requisition.STATUS_ARCHIVED:
-                status = "ARCHIVED";
-                break;
-            default:
-                status = "UNKNOWN";
-                IO.logAndAlert("Error", "Unknown Requisition status: " + RequisitionManager.getInstance().getSelected()
-                        .getStatus(), IO.TAG_ERROR);
-                break;
-        }*/
-
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
         colClient.setMinWidth(120);
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_id"));
@@ -94,7 +76,7 @@ public class RequisitionsController extends OperationsController implements Init
         CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "description", "/requisitions");
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
         //CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", RequisitionManager.TYPES, false,"/requisitions");
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/requisitions");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
 
         Callback<TableColumn<Requisition, String>, TableCell<Requisition, String>> cellFactory

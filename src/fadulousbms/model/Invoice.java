@@ -212,14 +212,14 @@ public class Invoice extends BusinessObject implements Serializable
                 case "job_id":
                     setJob_id(String.valueOf(val));
                     break;
-                /*case "quote_id":
-                    setQuote_id(String.valueOf(val));
-                    break;*/
                 case "receivable":
                     setReceivable(Double.valueOf(String.valueOf(val)));
                     break;
                 case "quote_revision_numbers":
                     setQuote_revision_numbers(String.valueOf(val));
+                    break;
+                case "status":
+                    status = Integer.parseInt(String.valueOf(val));
                     break;
                 default:
                     IO.log(getClass().getName(), IO.TAG_ERROR, "unknown "+getClass().getName()+" attribute '" + var + "'.");
@@ -238,8 +238,8 @@ public class Invoice extends BusinessObject implements Serializable
         {
             case "job_id":
                 return getJob_id();
-            /*case "quote_id":
-                return getQuote_id();*/
+            case "status":
+                return getStatus();
             case "account":
                 return getAccount();
             case "quote_revision_numbers":
@@ -283,11 +283,11 @@ public class Invoice extends BusinessObject implements Serializable
     public String toString()
     {
         String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +"\"job_id\":\""+job_id+"\""
-                //+",\"quotes\":\""+quote_id+"\""
-                //+",\"account\":\""+account+"\""
-                +",\"quote_revision_numbers\":\""+quote_revision_numbers+"\""
-                +",\"receivable\":\""+receivable+"\"";
+                +"\"job_id\":\""+getJob_id()+"\""
+                +",\"quote_revision_numbers\":\""+getQuote_revision_numbers()+"\""
+                +",\"receivable\":\""+getReceivable()+"\"";
+        if(getStatus()>0)
+            json_obj+=",\"status\":\""+getStatus()+"\"";
         if(getCreator()!=null)
             json_obj+=",\"creator\":\""+getCreator()+"\"";
         if(getDate_logged()>0)
