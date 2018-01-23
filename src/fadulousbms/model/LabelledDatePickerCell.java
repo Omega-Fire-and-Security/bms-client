@@ -4,9 +4,14 @@ import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -70,7 +75,7 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
             {
                 updateItem(newVal.atStartOfDay(ZoneId.systemDefault()).toEpochSecond(), isEmpty());
                 if (datePicker.isFocused() || datePicker.isShowing())
-                    commitEdit(newVal.atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+                    commitEdit(newVal.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);
             }else IO.log(getClass().getName(), IO.TAG_ERROR, "new date picker value is null.");
         });
     }
@@ -91,18 +96,20 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
     protected void updateItem(Long date, boolean empty)
     {
         super.updateItem(date, empty);
-        //setGraphic(label);
-        IO.log(getClass().getName(), IO.TAG_INFO, "object: "+getTableRow().getItem()+" >> date: "+date);
-        if(date==null)
-            setGraphic(null);
-        else if (empty || date<=0)
-            setGraphic(label);
-        else if(date>0)
+        if(date==null || getTableRow().getItem()==null)//don't render anything if invalid date
         {
-            datePicker.setValue(LocalDate.parse(formatter.format(new Date(date))));
+            setGraphic(null);
+            return;
+        }
+        if(date>0 && getTableRow().getItem()!=null)
+        {
+            //render date
+            label.setText(String.valueOf(LocalDate.parse(formatter.format(new Date(date)))));
+            //datePicker.setValue(LocalDate.parse(formatter.format(new Date(date))));
             //setText(formatter.format(new Date(date)));
-            setGraphic(datePicker);
-        } else setGraphic(label);
+            setGraphic(label);
+        } else if(date==0 || empty)//render label prompting user to pick a date
+            setGraphic(label);
         //getTableView().refresh();
     }
 

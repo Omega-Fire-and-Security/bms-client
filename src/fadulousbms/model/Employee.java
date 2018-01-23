@@ -157,6 +157,11 @@ public class Employee extends BusinessObject implements Serializable
         this.gender = gender;
     }
 
+    public String getName()
+    {
+        return getFirstname() + " " + getLastname();
+    }
+
     @Override
     public void parse(String var, Object val)
     {

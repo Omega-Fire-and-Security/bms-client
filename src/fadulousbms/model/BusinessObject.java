@@ -54,6 +54,13 @@ public abstract class BusinessObject implements Serializable
         this.date_logged = date_logged;
     }
 
+    public SimpleStringProperty creator_nameProperty()
+    {
+        if(getCreatorEmployee()!=null)
+            return new SimpleStringProperty(getCreatorEmployee().getName());
+        else return new SimpleStringProperty(getCreator());
+    }
+
     public StringProperty creatorProperty()
     {
         return new SimpleStringProperty(String.valueOf(getCreator()));
@@ -132,16 +139,16 @@ public abstract class BusinessObject implements Serializable
         switch (var.toLowerCase())
         {
             case "date_logged":
-                date_logged = Long.parseLong(String.valueOf(val));
+                setDate_logged(Long.parseLong(String.valueOf(val)));
                 break;
             case "creator":
-                creator = String.valueOf(val);
+                setCreator(String.valueOf(val));
                 break;
             case "other":
-                other = String.valueOf(val);
+                setOther(String.valueOf(val));
                 break;
             case "marked":
-                marked = Boolean.valueOf((String) val);
+                setMarked(Boolean.valueOf((String) val));
                 break;
         }
     }

@@ -25,8 +25,6 @@ public class PurchaseOrder extends BusinessObject
     public static final String TAG = "PurchaseOrder";
     public PurchaseOrderItem[] items;
 
-    private StringProperty numberProperty(){return new SimpleStringProperty(String.valueOf(number));}
-
     public String getNumber()
     {
         return String.valueOf(number);
@@ -41,8 +39,6 @@ public class PurchaseOrder extends BusinessObject
     {
         this.number = number;
     }
-
-    private StringProperty vatProperty(){return new SimpleStringProperty(String.valueOf(getVatVal()));}
 
     public String getVat()
     {
@@ -69,11 +65,6 @@ public class PurchaseOrder extends BusinessObject
         this.supplier_id = supplier_id;
     }
 
-    public StringProperty totalProperty()
-    {
-        return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));
-    }
-
     public double getTotal()
     {
         double total=0;
@@ -81,11 +72,6 @@ public class PurchaseOrder extends BusinessObject
             for(PurchaseOrderItem item: getItems())
                 total+=item.getCostValue()*item.getQuantityValue();
         return total;
-    }
-
-    public StringProperty discountProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(getDiscount() + "%"));
     }
 
     public double getDiscount()
@@ -115,11 +101,6 @@ public class PurchaseOrder extends BusinessObject
 
     public PurchaseOrderItem[] getItems()
     {
-        /*Gson gson = new GsonBuilder().create();
-        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-        String purchase_order_items_json = RemoteComms.sendGetRequest("/api/purchaseorder/items/" + get_id(), headers);
-        return gson.fromJson(purchase_order_items_json, PurchaseOrderItem[].class);*/
         return items;
     }
 
@@ -146,8 +127,6 @@ public class PurchaseOrder extends BusinessObject
         return null;
     }
 
-    private StringProperty account_nameProperty(){return new SimpleStringProperty(account_name);}
-
     public String getAccount_name()
     {
         return account_name;
@@ -158,8 +137,6 @@ public class PurchaseOrder extends BusinessObject
         this.account_name = account_name;
     }
 
-    private StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
-
     public int getStatus()
     {
         return status;
@@ -168,6 +145,33 @@ public class PurchaseOrder extends BusinessObject
     public void setStatus(int status)
     {
         this.status = status;
+    }
+
+    //Properties
+
+    public SimpleStringProperty supplier_nameProperty()
+    {
+        if(getSupplier()!=null)
+            return new SimpleStringProperty(getSupplier().getSupplier_name());
+        else return new SimpleStringProperty(getSupplier_id());
+    }
+
+    private StringProperty account_nameProperty(){return new SimpleStringProperty(account_name);}
+
+    private StringProperty numberProperty(){return new SimpleStringProperty(String.valueOf(number));}
+
+    private StringProperty vatProperty(){return new SimpleStringProperty(String.valueOf(getVatVal()));}
+
+    public StringProperty discountProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(getDiscount() + "%"));
+    }
+
+    public StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
+
+    public StringProperty totalProperty()
+    {
+        return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));
     }
 
     @Override

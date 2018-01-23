@@ -32,8 +32,6 @@ public class Quote extends BusinessObject
     private int rev_cursor = -1;
     public static final String TAG = "Quote";
 
-    public StringProperty requisition_idProperty(){return new SimpleStringProperty(requisition_id);}
-
     public String getRequisition_id()
     {
         return requisition_id;
@@ -43,8 +41,6 @@ public class Quote extends BusinessObject
     {
         this.requisition_id = requisition_id;
     }
-
-    public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
 
     public String getClient_id()
     {
@@ -56,8 +52,6 @@ public class Quote extends BusinessObject
         this.client_id = client_id;
     }
 
-    public StringProperty contact_person_idProperty(){return new SimpleStringProperty(contact_person_id);}
-
     public String getContact_person_id()
     {
         return contact_person_id;
@@ -67,8 +61,6 @@ public class Quote extends BusinessObject
     {
         this.contact_person_id = contact_person_id;
     }
-
-    public StringProperty sitenameProperty(){return new SimpleStringProperty(sitename);}
 
     public String getSitename()
     {
@@ -80,8 +72,6 @@ public class Quote extends BusinessObject
         this.sitename = sitename;
     }
 
-    public StringProperty requestProperty(){return new SimpleStringProperty(request);}
-
     public String getRequest()
     {
         return request;
@@ -91,8 +81,6 @@ public class Quote extends BusinessObject
     {
         this.request = request;
     }
-
-    private StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
 
     public int getStatus()
     {
@@ -114,11 +102,6 @@ public class Quote extends BusinessObject
         this.rev_cursor = cursor;
     }
 
-    public StringProperty vatProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(getVat()));
-    }
-
     public double getVat()
     {
         return vat;
@@ -129,8 +112,6 @@ public class Quote extends BusinessObject
         this.vat = vat;
     }
 
-    private StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name());}
-
     public String getAccount_name()
     {
         return account_name;
@@ -139,11 +120,6 @@ public class Quote extends BusinessObject
     public void setAccount_name(String account_name)
     {
         this.account_name = account_name;
-    }
-
-    public StringProperty parent_idProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(getParent_id()));
     }
 
     public Quote getParent()
@@ -164,8 +140,6 @@ public class Quote extends BusinessObject
         this.parent_id = parent_id;
     }
 
-    public StringProperty revisionProperty(){return new SimpleStringProperty(String.valueOf(revision));}
-
     public double getRevision()
     {
         return revision;
@@ -175,8 +149,6 @@ public class Quote extends BusinessObject
     {
         this.revision = revision;
     }
-
-    public SimpleStringProperty totalProperty(){return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));}
 
     public double getTotal()
     {
@@ -311,17 +283,59 @@ public class Quote extends BusinessObject
         return null;
     }
 
+    //Property handlers
+
     public SimpleStringProperty quoteProperty()
     {
-        if(this!=null)
-            if(this.getContact_person()!=null)
-            {
-                String quote_number = this.getContact_person().getFirstname() + "-"
-                        + this.getContact_person().getInitials() + this.get_id().substring(0,8)
-                        + " REV" + String.valueOf(this.getRevision()).substring(0,3);
-                return new SimpleStringProperty(quote_number);
-            }else return new SimpleStringProperty(this.getContact_person_id());
-        else return new SimpleStringProperty("N/A");
+        if(this.getContact_person()!=null)
+        {
+            String quote_number = this.getContact_person().getFirstname() + "-"
+                    + this.getContact_person().getInitials() + this.get_id().substring(0,8)
+                    + " REV" + String.valueOf(this.getRevision()).substring(0,3);
+            return new SimpleStringProperty(quote_number);
+        } else return new SimpleStringProperty(this.getContact_person_id());
+    }
+
+    public SimpleStringProperty contact_personProperty()
+    {
+        if(getContact_person()!=null)
+            return new SimpleStringProperty(getContact_person().getName());
+        else return new SimpleStringProperty(this.getContact_person_id());
+    }
+
+    public SimpleStringProperty client_nameProperty()
+    {
+        if(getClient()!=null)
+            return new SimpleStringProperty(getClient().getClient_name());
+        else return new SimpleStringProperty(getClient_id());
+    }
+
+    public SimpleStringProperty totalProperty(){return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));}
+
+    public StringProperty revisionProperty(){return new SimpleStringProperty(String.valueOf(revision));}
+
+    public StringProperty requisition_idProperty(){return new SimpleStringProperty(requisition_id);}
+
+    public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
+
+    public StringProperty contact_person_idProperty(){return new SimpleStringProperty(contact_person_id);}
+
+    public StringProperty sitenameProperty(){return new SimpleStringProperty(sitename);}
+
+    public StringProperty requestProperty(){return new SimpleStringProperty(request);}
+
+    private StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
+
+    public StringProperty vatProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(getVat()));
+    }
+
+    private StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name());}
+
+    public StringProperty parent_idProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(getParent_id()));
     }
 
     @Override

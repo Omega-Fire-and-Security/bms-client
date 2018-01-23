@@ -69,7 +69,7 @@ public class InvoicesController extends ScreenController implements Initializabl
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
         colAccount.setCellValueFactory(new PropertyValueFactory<>("account"));
         CustomTableViewControls.makeEditableTableColumn(colReceivable, TextFieldTableCell.forTableColumn(), 80, "receivable", "/invoices");
-        CustomTableViewControls.makeJobManagerAction(colAction, 420, null);
+        CustomTableViewControls.makeJobManagerAction(colAction, 600, null);
         CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 80, "other", "/invoices");
         colAction.setMinWidth(360);
 
@@ -127,6 +127,23 @@ public class InvoicesController extends ScreenController implements Initializabl
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
+                                if(!empty)
+                                {
+                                    if (getTableView().getItems().get(getIndex())==null)
+                                    {
+                                        IO.logAndAlert("Error " + getClass().getName(), "Invoice object is not set", IO.TAG_ERROR);
+                                        return;
+                                    }
+                                    if (getTableView().getItems().get(getIndex()).getStatus()==BusinessObject.STATUS_APPROVED)
+                                    {
+                                        btnEmail.getStyleClass().add("btnAdd");
+                                        btnEmail.setDisable(false);
+                                    } else
+                                    {
+                                        btnEmail.getStyleClass().add("btnDisabled");
+                                        btnEmail.setDisable(true);
+                                    }
+                                }
 
                                 btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnRemove.getStyleClass().add("btnBack");
@@ -294,7 +311,13 @@ public class InvoicesController extends ScreenController implements Initializabl
 
                                     btnEmail.setOnAction(event ->
                                     {
-                                        InvoiceManager.getInstance().emailInvoice(invoice, null);
+                                        try
+                                        {
+                                            InvoiceManager.getInstance().emailBusinessObject(invoice, PDF.createInvoicePdf(invoice), null);
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
                                     });
 
                                     hBox.setFillHeight(true);

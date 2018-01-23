@@ -669,10 +669,10 @@ public class PurchaseOrderController extends OperationsController implements Ini
 
         if(PurchaseOrderManager.getInstance().getSelected()!=null)
         {
-            if(PurchaseOrderManager.getInstance().getSelected().getStatus()!=PurchaseOrderManager.PO_STATUS_APPROVED)
+            if(PurchaseOrderManager.getInstance().getSelected().getStatus()!=BusinessObject.STATUS_APPROVED)
             {
                 // set PO status and update it on server.
-                PurchaseOrderManager.getInstance().getSelected().setStatus(PurchaseOrderManager.PO_STATUS_APPROVED);
+                PurchaseOrderManager.getInstance().getSelected().setStatus(BusinessObject.STATUS_APPROVED);
                 RemoteComms.updateBusinessObjectOnServer(PurchaseOrderManager.getInstance().getSelected(), "status");
                 //updatePurchaseOrder();
                 //System.out.println("Status::::::::: " + PurchaseOrderManager.getInstance().getSelected().getStatus());

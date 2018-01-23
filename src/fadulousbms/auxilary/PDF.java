@@ -563,7 +563,7 @@ public class PDF
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,20, line_pos);
         line_pos-=LINE_HEIGHT;
-        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(purchaseOrder.getDate_logged()*1000))), 12, 20, line_pos);
+        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(purchaseOrder.getDate_logged()))), 12, 20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"Overall Discount:  " + purchaseOrder.discountProperty().get(), 12,20 , line_pos);
         line_pos-=LINE_HEIGHT;//next line
@@ -2721,8 +2721,8 @@ public class PDF
                 //addTextToPageStream(contents, "Planned Start Date: " + LocalDate.parse(formatter.format(new Date(job.getPlanned_start_date()*1000))), 12, (int)(w/2)+30, line_pos);
                 //line_pos -= LINE_HEIGHT;//next line
                 //addTextToPageStream(contents, "Date Assigned: " + LocalDate.parse(formatter.format(new Date(job.getDate_assigned()*1000))), 12, 10, line_pos);
-                addTextToPageStream(contents, "DATE STARTED: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()*1000))):"N/A"), 12, 20, line_pos);
-                addTextToPageStream(contents, "DATE COMPLETED: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()*1000))):"N/A"), 12, (int)(w/2)+30, line_pos);
+                addTextToPageStream(contents, "DATE STARTED: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()))):"N/A"), 12, 20, line_pos);
+                addTextToPageStream(contents, "DATE COMPLETED: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()))):"N/A"), 12, (int)(w/2)+30, line_pos);
                 line_pos -= LINE_HEIGHT;//next line
                 addTextToPageStream(contents, "ASSIGNED EMPLOYEE: " + employee, 12, 20, line_pos);
                 addTextToPageStream(contents, "TEL: " + employee.getTel(), 12, (int)(w/2)+30, line_pos);

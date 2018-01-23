@@ -34,70 +34,11 @@ public class Job extends BusinessObject
     private Employee[] assigned_employees;
     private FileMetadata[] safety_catalogue;
 
+    //Getters and setters
+
     public long getPlanned_start_date() {return planned_start_date;}
 
     public void setPlanned_start_date(long planned_start_date) {this.planned_start_date = planned_start_date;}
-
-    public StringProperty job_numberProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(getJob_number()));
-    }
-
-    public long getJob_number()
-    {
-        return job_number;
-    }
-
-    public void setJob_number(long job_number)
-    {
-        this.job_number = job_number;
-    }
-
-    public Employee[] getAssigned_employees()
-    {
-        return assigned_employees;
-    }
-
-    public void setAssigned_employees(Employee[] employees)
-    {
-        this.assigned_employees=employees;
-    }
-
-    public void setAssigned_employees(ArrayList<Employee> reps)
-    {
-        this.assigned_employees = new Employee[reps.size()];
-        for(int i=0;i<reps.size();i++)
-        {
-            this.assigned_employees[i] = reps.get(i);
-        }
-    }
-
-    public StringProperty assigned_employeesProperty()
-    {
-        String s="";
-        for(Employee e: assigned_employees)
-            s += e.getFirstname() + " " + e.getLastname() + ",";
-        return new SimpleStringProperty(s.substring(0,s.length()-1));
-    }
-
-    public FileMetadata[] getSafety_catalogue()
-    {
-        return safety_catalogue;
-    }
-
-    public void setSafety_catalogue(FileMetadata[] safety_catalogue)
-    {
-        this.safety_catalogue=safety_catalogue;
-    }
-
-    public StringProperty safety_catalogueProperty()
-    {
-        String s="";
-        for(FileMetadata file: safety_catalogue)
-            s += " : " + file.getLabel() + ",";
-        return new SimpleStringProperty(s.substring(0,s.length()-1));
-    }
-
 
     public long getDate_assigned() 
     {
@@ -144,11 +85,6 @@ public class Job extends BusinessObject
         this.status = status;
     }
 
-    public StringProperty quote_idProperty()
-    {
-        return new SimpleStringProperty(quote_id);
-    }
-
     public String getQuote_id()
     {
         return quote_id;
@@ -172,11 +108,6 @@ public class Job extends BusinessObject
         return null;
     }
 
-    public StringProperty invoice_idProperty()
-    {
-        return new SimpleStringProperty(invoice_id);
-    }
-
     public String getInvoice_id() 
     {
         return invoice_id;
@@ -185,6 +116,91 @@ public class Job extends BusinessObject
     public void setInvoice_id(String invoice_id) 
     {
         this.invoice_id = invoice_id;
+    }
+
+    /**
+     * @return Job number assigned to a Job object.
+     */
+    public long getJob_number()
+    {
+        return job_number;
+    }
+
+    /**
+     * @param job_number Job number to be assigned to a Job object.
+     */
+    public void setJob_number(long job_number)
+    {
+        this.job_number = job_number;
+    }
+
+    /**
+     * @return Array of Employees assigned to a Job object.
+     */
+    public Employee[] getAssigned_employees()
+    {
+        return assigned_employees;
+    }
+
+    /**
+     * @param employees Array of Employees to be assigned to a Job object.
+     */
+    public void setAssigned_employees(Employee[] employees)
+    {
+        this.assigned_employees=employees;
+    }
+
+    /**
+     * @param reps ArrayList of Employees to be assigned to a Job object.
+     */
+    public void setAssigned_employees(ArrayList<Employee> reps)
+    {
+        this.assigned_employees = new Employee[reps.size()];
+        for(int i=0;i<reps.size();i++)
+        {
+            this.assigned_employees[i] = reps.get(i);
+        }
+    }
+
+    /**
+     * @return Safety documents associated with a Job object.
+     */
+    public FileMetadata[] getSafety_catalogue()
+    {
+        return safety_catalogue;
+    }
+
+    /**
+     * @param safety_catalogue Safety documents associated with a Job object.
+     */
+    public void setSafety_catalogue(FileMetadata[] safety_catalogue)
+    {
+        this.safety_catalogue=safety_catalogue;
+    }
+
+    //Properties
+
+    public StringProperty invoice_idProperty()
+    {
+        return new SimpleStringProperty(invoice_id);
+    }
+
+    public StringProperty quote_idProperty()
+    {
+        return new SimpleStringProperty(quote_id);
+    }
+
+    public StringProperty job_numberProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(getJob_number()));
+    }
+
+    public StringProperty safety_catalogueProperty()
+    {
+        String s="";
+        for(FileMetadata file: safety_catalogue)
+            s += " : " + file.getLabel() + ",";
+        return new SimpleStringProperty(s.substring(0,s.length()-1));
     }
 
     public StringProperty job_descriptionProperty()
@@ -225,6 +241,9 @@ public class Job extends BusinessObject
 
     public SimpleStringProperty totalProperty(){return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));}
 
+    /**
+     * @return The total cost of this Job (derived from Quote object)
+     */
     public double getTotal()
     {
         Quote quote = getQuote();
@@ -234,6 +253,11 @@ public class Job extends BusinessObject
         else return 0;
     }
 
+    /**
+     * Method to parse Model attribute.
+     * @param var Model attribute to be parsed.
+     * @param val Model attribute value to be set.
+     */
     @Override
     public void parse(String var, Object val)
     {
@@ -247,9 +271,6 @@ public class Job extends BusinessObject
                     break;
                 case "status":
                     status = Integer.parseInt(String.valueOf(val));
-                    break;
-                case "date_logged":
-                    setDate_logged(Long.parseLong(String.valueOf(val)));
                     break;
                 case "planned_start_date":
                     planned_start_date = Long.parseLong(String.valueOf(val));
@@ -289,6 +310,10 @@ public class Job extends BusinessObject
         }
     }
 
+    /**
+     * @param var Model attribute whose value is to be returned.
+     * @return Model attribute value.
+     */
     @Override
     public Object get(String var)
     {
@@ -318,6 +343,9 @@ public class Job extends BusinessObject
         return super.get(var);
     }
 
+    /**
+     * @return UTF-8 String representation of Job object.
+     */
     @Override
     public String asUTFEncodedString()
     {
@@ -361,6 +389,9 @@ public class Job extends BusinessObject
         return null;
     }
 
+    /**
+     * @return JSON representation of Job object.
+     */
     @Override
     public String toString()
     {
@@ -385,6 +416,9 @@ public class Job extends BusinessObject
         return json_obj;
     }
 
+    /**
+     * @return Job model's endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

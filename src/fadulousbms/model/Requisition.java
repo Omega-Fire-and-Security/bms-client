@@ -120,6 +120,20 @@ public class Requisition extends BusinessObject
         return null;
     }
 
+    public SimpleStringProperty responsible_personProperty()
+    {
+        if(getResponsible_person()!=null)
+            return new SimpleStringProperty(getResponsible_person().getName());
+        else return new SimpleStringProperty(this.getResponsible_person_id());
+    }
+
+    public SimpleStringProperty client_nameProperty()
+    {
+        if(getClient()!=null)
+            return new SimpleStringProperty(getClient().getClient_name());
+        else return new SimpleStringProperty(getClient_id());
+    }
+
     @Override
     public void parse(String var, Object val)
     {

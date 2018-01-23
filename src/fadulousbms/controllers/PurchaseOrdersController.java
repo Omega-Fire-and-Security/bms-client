@@ -65,17 +65,16 @@ public class PurchaseOrdersController extends ScreenController implements Initia
         colPONumber.setPrefWidth(80);
 
         colSupplier.setMinWidth(120);
-        colSupplier.setCellValueFactory(new PropertyValueFactory<>("supplier_id"));
-        colSupplier.setCellFactory(col -> new ComboBoxTableCell(SupplierManager.getInstance().getSuppliers(), "supplier_id", "/api/purchaseorder"));
-
+        colSupplier.setCellValueFactory(new PropertyValueFactory<>("supplier_name"));
+        //colSupplier.setCellFactory(col -> new ComboBoxTableCell(SupplierManager.getInstance().getSuppliers(), "supplier_id", "/purchaseorders"));
         //CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/api/purchaseorder");
         //CustomTableViewControls.makeEditableTableColumn(colVat, TextFieldTableCell.forTableColumn(), 50, "vat", "/api/purchaseorder");
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/api/purchaseorder");
-        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/purchaseorders");
+        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
-        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 215, "extra", "/api/purchaseorder");
+        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 215, "extra", "/purchaseorders");
 
         ObservableList<PurchaseOrder> lst_po = FXCollections.observableArrayList();
         lst_po.addAll(PurchaseOrderManager.getInstance().getPurchaseOrders().values());
@@ -117,7 +116,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()==PurchaseOrderManager.PO_STATUS_APPROVED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()==BusinessObject.STATUS_APPROVED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -218,7 +217,13 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                             IO.logAndAlert("Error", "Purchase Order object is not set", IO.TAG_ERROR);
                                             return;
                                         }
-                                        PurchaseOrderManager.getInstance().emailPurchaseOrder(po, null);
+                                        try
+                                        {
+                                            PurchaseOrderManager.getInstance().emailBusinessObject(po, PDF.createPurchaseOrderPdf(po), null);
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
                                     });
 
                                     btnRemove.setOnAction(event ->
@@ -242,6 +247,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                     }
                 };
 
+        colAction.setMinWidth(400);
         colAction.setCellValueFactory(new PropertyValueFactory<>(""));
         colAction.setCellFactory(cellFactory);
 

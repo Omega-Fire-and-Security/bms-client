@@ -70,15 +70,16 @@ public class QuotesController extends OperationsController implements Initializa
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
         colClient.setMinWidth(120);
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_id"));
-        colClient.setCellFactory(col -> new ComboBoxTableCell(ClientManager.getInstance().getClients(), "client_id", "/quotes"));
+        //colClient.setCellFactory(col -> new ComboBoxTableCell(ClientManager.getInstance().getClients(), "client_id", "client_name"));
+        colClient.setCellValueFactory(new PropertyValueFactory<>("client_name"));
         colContactPerson.setMinWidth(120);
-        colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person_id"));
-        colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr"));
+        colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
+        //colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
         CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", "/quotes");
         CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", "/quotes");
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/quotes");
-        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
+        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colRevision.setCellValueFactory(new PropertyValueFactory<>("revision"));
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
@@ -134,7 +135,7 @@ public class QuotesController extends OperationsController implements Initializa
                                         IO.logAndAlert("Error " + getClass().getName(), "Quote object is not set", IO.TAG_ERROR);
                                         return;
                                     }
-                                    if (quote.getStatus()==PurchaseOrderManager.PO_STATUS_APPROVED)
+                                    if (quote.getStatus()==BusinessObject.STATUS_APPROVED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -244,9 +245,15 @@ public class QuotesController extends OperationsController implements Initializa
                                     btnEmail.setOnAction(event ->
                                     {
                                         Quote quote = getTableView().getItems().get(getIndex());
-                                        if(quote!=null)
-                                            QuoteManager.getInstance().emailQuote(quote, null);
-                                        else IO.logAndAlert("Error", "Quote object is null.", IO.TAG_ERROR);
+                                        try
+                                        {
+                                            if(quote!=null)
+                                                QuoteManager.getInstance().emailBusinessObject(quote, PDF.createQuotePdf(quote), null);
+                                            else IO.logAndAlert("Error", "Quote object is null.", IO.TAG_ERROR);
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
                                     });
 
                                     btnRemove.setOnAction(event ->

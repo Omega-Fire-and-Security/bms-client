@@ -10,11 +10,8 @@ import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
@@ -28,15 +25,10 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -286,7 +278,17 @@ public class JobsController extends ScreenController implements Initializable
                                             generateQuoteInvoice(job));
 
                                     btnEmail.setOnAction(event ->
-                                            JobManager.getInstance().emailJobCard(job, null));
+                                    {
+                                        try
+                                        {
+                                            if(job!=null)
+                                                JobManager.getInstance().emailBusinessObject(job, PDF.createJobCardPdf(job), null);
+                                            else IO.logAndAlert("Error", "Job object is invalid.", IO.TAG_ERROR);
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
+                                    });
 
                                     btnEmailSigned.setOnAction(event ->
                                             JobManager.getInstance().emailSignedJobCard(job, null));
@@ -410,7 +412,7 @@ public class JobsController extends ScreenController implements Initializable
                                                 String str_quote_revs="";
                                                 for(Quote quote: quote_revs.values())
                                                     str_quote_revs+=(str_quote_revs==""?quote.getRevision():";"+quote.getRevision());//comma separated revision numbers
-                                                InvoiceManager.getInstance().generateInvoice(job, str_quote_revs, callback -> null);
+                                                InvoiceManager.getInstance().createInvoice(job, str_quote_revs, callback -> null);
 
                                                 //TODO: show Invoices tab
                                                 if (ScreenManager.getInstance()
@@ -616,7 +618,13 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            JobManager.getInstance().emailJobCard(JobManager.getInstance().getSelected(), null);
+            try
+            {
+                JobManager.getInstance().emailBusinessObject(JobManager.getInstance().getSelected(), PDF.createJobCardPdf(JobManager.getInstance().getSelected()), null);
+            } catch (IOException e)
+            {
+                IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
+            }
         });
 
         //eMail Signed Job Card menu item

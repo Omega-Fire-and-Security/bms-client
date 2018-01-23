@@ -18,7 +18,7 @@
                 <!--<TableColumn fx:id="colAccount" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Account" visible="false" />-->
                 <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Total" />
                 <TableColumn fx:id="colExtra" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Extra" visible="false" />
-                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="220.0" prefWidth="-1.0" text="Action" />
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="420.0" prefWidth="-1.0" text="Action" />
             </columns>
         </TableView>
     </content>

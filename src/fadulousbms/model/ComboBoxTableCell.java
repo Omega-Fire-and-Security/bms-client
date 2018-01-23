@@ -42,7 +42,7 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
 
         comboBox.valueProperty().addListener((observable, oldValue, newValue) ->
         {
-            //commit only if a change by the user was made
+            //commit only if a change was made by the user
             if(comboBox.isShowing() || comboBox.isFocused() && oldValue!=null)
                 if(newValue.get(comparator_property)!=null)
                     commitEdit((String) newValue.get(comparator_property));

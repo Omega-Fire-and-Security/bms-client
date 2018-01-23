@@ -1,50 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
 <Tab fx:id="requisitionsTab" text="Requisitions" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.RequisitionsController">
     <content>
         <TableView fx:id="tblRequisitions" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Requisition ID" visible="false">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="_id" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colClient" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Client">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="client_id" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="description" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colType" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Type">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="type" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colResponsiblePerson" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Responsible Person">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="responsible_person_id" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colDateLogged" editable="false" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Logged">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="date_logged" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="true">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="status" />
-                    </cellValueFactory>
-                </TableColumn>
+                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Requisition ID" visible="false"/>
+                <TableColumn fx:id="colClient" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Client"/>
+                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description"/>
+                <TableColumn fx:id="colType" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Type"/>
+                <TableColumn fx:id="colResponsiblePerson" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Responsible Person"/>
+                <TableColumn fx:id="colDateLogged" editable="false" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Date Logged"/>
+                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="true"/>
                 <TableColumn fx:id="colCreator" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Creator" />
-                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="360.0" prefWidth="-1.0" text="Action"/>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="400.0" prefWidth="-1.0" text="Action"/>
             </columns>
         </TableView>
     </content>

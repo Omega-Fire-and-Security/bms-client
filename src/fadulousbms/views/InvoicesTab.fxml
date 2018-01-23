@@ -56,11 +56,7 @@
                         <PropertyValueFactory property="extra" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="200.0" text="Action">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="extra" />
-                    </cellValueFactory>
-                </TableColumn>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" text="Action"/>
             </columns>
         </TableView>
     </content>

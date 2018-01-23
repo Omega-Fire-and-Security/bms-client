@@ -67,17 +67,17 @@ public class RequisitionsController extends OperationsController implements Init
 
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
         colClient.setMinWidth(120);
-        colClient.setCellValueFactory(new PropertyValueFactory<>("client_id"));
-        colClient.setCellFactory(col -> new ComboBoxTableCell(ClientManager.getInstance().getClients(), "client_id", "client_id"));
+        colClient.setCellValueFactory(new PropertyValueFactory<>("client_name"));
+        //colClient.setCellFactory(col -> new ComboBoxTableCell(ClientManager.getInstance().getClients(), "client_id", "client_id"));
         colResponsiblePerson.setMinWidth(120);
-        colResponsiblePerson.setCellValueFactory(new PropertyValueFactory<>("responsible_person_id"));
-        colResponsiblePerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "responsible_person_id", "usr"));
+        colResponsiblePerson.setCellValueFactory(new PropertyValueFactory<>("responsible_person"));
+        //colResponsiblePerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "responsible_person_id", "usr"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
         CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "description", "/requisitions");
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
         //CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", RequisitionManager.TYPES, false,"/requisitions");
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/requisitions");
-        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
+        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
 
         Callback<TableColumn<Requisition, String>, TableCell<Requisition, String>> cellFactory
                 =
@@ -90,6 +90,7 @@ public class RequisitionsController extends OperationsController implements Init
                         {
                             final Button btnRequestAppproval= new Button("Request Approval");
                             final Button btnNewQuote = new Button("New Quote");
+                            final Button btnEmail = new Button("eMail Requisition");
                             final Button btnRemove = new Button("Delete");
 
                             @Override
@@ -115,13 +116,38 @@ public class RequisitionsController extends OperationsController implements Init
                                 btnRequestAppproval.setMinHeight(35);
                                 HBox.setHgrow(btnRequestAppproval, Priority.ALWAYS);
 
+                                btnEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnEmail.setMinWidth(100);
+                                btnEmail.setMinHeight(35);
+                                HBox.setHgrow(btnEmail, Priority.ALWAYS);
+
+                                if(!empty)
+                                {
+                                    Requisition requisition= getTableView().getItems().get(getIndex());
+                                    if(requisition==null)
+                                    {
+                                        IO.logAndAlert("Error " + getClass().getName(), "Requisition object is not set", IO.TAG_ERROR);
+                                        return;
+                                    }
+                                    if (requisition.getStatus()==BusinessObject.STATUS_APPROVED)
+                                    {
+                                        btnEmail.getStyleClass().add("btnAdd");
+                                        btnEmail.setDisable(false);
+                                    }
+                                    else
+                                    {
+                                        btnEmail.getStyleClass().add("btnDisabled");
+                                        btnEmail.setDisable(true);
+                                    }
+                                }
+
                                 if (empty)
                                 {
                                     setGraphic(null);
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnRequestAppproval, btnNewQuote, btnRemove);
+                                    HBox hBox = new HBox(btnRequestAppproval, btnNewQuote, btnEmail, btnRemove);
 
                                     btnRequestAppproval.setOnAction(event ->
                                     {
@@ -223,6 +249,20 @@ public class RequisitionsController extends OperationsController implements Init
                                                     return null;
                                                 }
                                             });
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
+                                    });
+
+                                    btnEmail.setOnAction(event ->
+                                    {
+                                        Requisition requisition= getTableView().getItems().get(getIndex());
+                                        try
+                                        {
+                                            if(requisition!=null)
+                                                RequisitionManager.getInstance().emailBusinessObject(requisition, PDF.createRequisitionPDF(requisition), null);
+                                            else IO.logAndAlert("Error", "Quote object is null.", IO.TAG_ERROR);
                                         } catch (IOException e)
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
