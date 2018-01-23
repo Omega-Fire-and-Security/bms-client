@@ -65,7 +65,7 @@ public class NavController extends ScreenController implements Initializable
                 //Render user name
                 Employee e = SessionManager.getInstance().getActiveEmployee();
                 if(e!=null)
-                    this.getUserNameLabel().setText(e.toString());
+                    this.getUserNameLabel().setText(e.getName());
                 else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
             }else
             {

@@ -127,6 +127,16 @@ public class EmployeeManager extends BusinessObjectManager
 
     public void newExternalEmployeeWindow(String title, Callback callback)
     {
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Error", "Invalid active session.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Error", "Active session has expired.", IO.TAG_ERROR);
+            return;
+        }
         Stage stage = new Stage();
         stage.setTitle(Globals.APP_NAME.getValue() + " - " + title);
         stage.setMinWidth(320);
@@ -178,7 +188,6 @@ public class EmployeeManager extends BusinessObjectManager
                 return;
             if(!validateFormField(txtLastname, "Invalid Lastname", "please enter a valid last name", "^.*(?=.{1,}).*"))
                 return;
-
             if(!validateFormField(txtEmail, "Invalid Email", "please enter a valid email address", "^.*(?=.{5,})(?=(.*@.*\\.)).*"))
                 return;
             if(!validateFormField(txtTelephone, "Invalid Telephone Number", "please enter a valid telephone number", "^.*(?=.{10,}).*"))
@@ -189,7 +198,7 @@ public class EmployeeManager extends BusinessObjectManager
             //all valid, send data to server
             int access_lvl=0;
 
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+            /*ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
             params.add(new AbstractMap.SimpleEntry<>("usr", txtEmail.getText()));
             params.add(new AbstractMap.SimpleEntry<>("pwd", txtTelephone.getText()));
             params.add(new AbstractMap.SimpleEntry<>("access_level", String.valueOf(access_lvl)));
@@ -197,26 +206,40 @@ public class EmployeeManager extends BusinessObjectManager
             params.add(new AbstractMap.SimpleEntry<>("lastname", txtLastname.getText()));
             params.add(new AbstractMap.SimpleEntry<>("gender", "female"));
             params.add(new AbstractMap.SimpleEntry<>("email", txtEmail.getText()));
-
             params.add(new AbstractMap.SimpleEntry<>("tel", txtTelephone.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("cell", txtCellphone.getText()));
+            params.add(new AbstractMap.SimpleEntry<>("cell", txtCellphone.getText()));*/
+
+            Employee employee = new Employee();
+            employee.setUsr(txtEmail.getText());
+            employee.setPwd(txtCellphone.getText());//TODO: hash
+            employee.setAccessLevel(access_lvl);
+            employee.setFirstname(txtFirstname.getText());
+            employee.setLastname(txtLastname.getText());
+            employee.setGender("male");
+            employee.setEmail(txtEmail.getText());
+            employee.setTel(txtTelephone.getText());
+            employee.setCell(txtCellphone.getText());
+            employee.setCreator(SessionManager.getInstance().getActive().getUsr());
 
             if(txtOther.getText()!=null)
-                params.add(new AbstractMap.SimpleEntry<>("other", txtOther.getText()));
+                employee.setOther(txtOther.getText());
 
             try
             {
-                HttpURLConnection connection = RemoteComms.postData("/employee/add", params, null);
+                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+
+                HttpURLConnection connection = RemoteComms.putJSON("/employees", employee.toString(), headers);
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                 {
-                    IO.logAndAlert("Account Creation Success", "Successfully created new contact!", IO.TAG_INFO);
+                    IO.logAndAlert("Account Creation Success", "Successfully created new user!", IO.TAG_INFO);
                     if(callback!=null)
                         callback.call(null);
                 } else
                     IO.logAndAlert("Account Creation Failure", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
 
                 connection.disconnect();
-            }catch (IOException e)
+            } catch (IOException e)
             {
                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
             }

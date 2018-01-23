@@ -283,7 +283,24 @@ public class Employee extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        return firstname + " " + lastname;
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
+                +"\"usr\":\""+getUsr()+"\""
+                +",\"pwd\":\""+getPwd()+"\""
+                +",\"firstname\":\""+getFirstname()+"\""
+                +",\"lastname\":\""+getLastname()+"\""
+                +",\"gender\":\""+getGender()+"\""
+                +",\"email\":\""+getEmail()+"\""
+                +",\"cell\":\""+getCell()+"\""
+                +",\"tel\":\""+getTel()+"\""
+                +",\"access_level\":\""+getAccessLevel()+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
     }
 
     @Override
