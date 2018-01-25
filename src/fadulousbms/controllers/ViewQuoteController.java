@@ -58,7 +58,7 @@ public class ViewQuoteController extends QuoteController
                 return;
             }
             //Hide [Approve] button if not authorized
-            if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()<Employee.ACCESS_LEVEL_SUPER)
+            if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()<AccessLevels.SUPERUSER.getLevel())
             {
                 btnApprove.setVisible(false);
                 btnApprove.setDisable(true);

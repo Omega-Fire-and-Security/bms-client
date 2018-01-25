@@ -8,6 +8,7 @@ package fadulousbms;
 import com.sun.javafx.application.LauncherImpl;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.controllers.JobsController;
 import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
@@ -92,6 +93,15 @@ public class FadulousBMS extends Application
     @Override
     public void start(Stage stage) throws Exception 
     {
+        //IO.writeAttributeToConfig("server_ip", "localhost");
+        String ip = IO.readAttributeFromConfig("SERVER_IP");
+        String port = IO.readAttributeFromConfig("SERVER_PORT");
+        if(ip!=null && port!=null)
+        {
+            RemoteComms.host = "http://" + ip + ":" + port;
+            IO.log(getClass().getName(), IO.TAG_INFO, "setting host to: " + RemoteComms.host);
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "attributes SERVER_IP and/or SERVER_PORT are not set in the config file.");
+
         stage.setOnCloseRequest(event ->
         {
             stage.onCloseRequestProperty().addListener((observable, oldValue, newValue) ->

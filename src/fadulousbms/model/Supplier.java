@@ -325,8 +325,9 @@ public class Supplier extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +"\"supplier_name\":\""+getSupplier_name()+"\""
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"supplier_name\":\""+getSupplier_name()+"\""
                 +",\"tel\":\""+getTel()+"\""
                 +",\"fax\":\""+getFax()+"\""
                 +",\"physical_address\":\""+getPhysical_address()+"\""
@@ -339,11 +340,7 @@ public class Supplier extends BusinessObject implements Serializable
                 +",\"vat_number\":\""+getVat_number()+"\"";
         if(getDate_partnered()>0)
             json_obj+=",\"date_partnered\":\""+getDate_partnered()+"\"";
-        if(getCreator()!=null)
-            json_obj+=",\"creator\":\""+getCreator()+"\"";
-        if(getDate_logged()>0)
-            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
-        json_obj+=",\"other\":\""+getOther()+"\"}";
+        json_obj+="}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;

@@ -32,7 +32,7 @@ import java.util.ResourceBundle;
  *
  * @author ghost
  */
-public class CreateAccountController extends ScreenController implements Initializable
+public class AccountCreationController extends ScreenController implements Initializable
 {
     @FXML
     private TextField txtUsername;
@@ -52,7 +52,7 @@ public class CreateAccountController extends ScreenController implements Initial
     private TextField txtCellphone;
     @FXML
     private TextArea txtOther;// = new TextArea();
-    private String[] access_levels = {"NONE", "NORMAL", "ADMIN", "SUPER"};
+    private String[] access_levels = {"NONE", "STANDARD", "ADMIN", "SUPER"};
 
     @Override
     public void refreshView()
@@ -112,37 +112,62 @@ public class CreateAccountController extends ScreenController implements Initial
         int access_level_index = cbxAccessLevel.getSelectionModel().getSelectedIndex();
         if(access_level_index>=0)
         {
-            if(access_levels[access_level_index].toLowerCase().equals("super"))
+            Employee employee = new Employee();
+            employee.setUsr(txtUsername.getText());
+            try
             {
-                ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-                params.add(new AbstractMap.SimpleEntry<>("usr", txtUsername.getText()));
-                params.add(new AbstractMap.SimpleEntry<>("pwd", txtPassword.getText()));
-                params.add(new AbstractMap.SimpleEntry<>("access_level", "3"));
-                params.add(new AbstractMap.SimpleEntry<>("firstname", txtFirstname.getText()));
-                params.add(new AbstractMap.SimpleEntry<>("lastname", txtLastname.getText()));
-                params.add(new AbstractMap.SimpleEntry<>("gender", cbxSex.getItems().get(sex_index).toString()));
-                params.add(new AbstractMap.SimpleEntry<>("email", txtEmail.getText()));
-                params.add(new AbstractMap.SimpleEntry<>("tel", txtTelephone.getText()));
-                params.add(new AbstractMap.SimpleEntry<>("cell", txtCellphone.getText()));
-                if(txtOther.getText()!=null)
-                    params.add(new AbstractMap.SimpleEntry<>("other", txtOther.getText()));
+                String encrypted = IO.getEncryptedHexString(txtPassword.getText());
+                employee.setPwd(encrypted);
+            } catch (Exception e)
+            {
+                IO.logAndAlert("Error", "Could not get password hash: " + e.getMessage(), IO.TAG_ERROR);
+            }
+            employee.setFirstname(txtFirstname.getText());
+            employee.setLastname(txtLastname.getText());
+            employee.setGender(cbxSex.getItems().get(sex_index).toString());
+            employee.setEmail(txtEmail.getText());
+            employee.setTel(txtTelephone.getText());
+            employee.setCell(txtCellphone.getText());
+            if(txtOther.getText()!=null)
+                if(!txtOther.getText().isEmpty())
+                    employee.setOther(txtOther.getText());
+            //set creator Employee if an Employee is logged in.
+            if(SessionManager.getInstance().getActive()!=null)
+                if(!SessionManager.getInstance().getActive().isExpired())
+                    employee.setCreator(SessionManager.getInstance().getActive().getUsr());
 
-                try
+            switch (access_level_index)//access_levels[access_level_index].toLowerCase()
+            {
+                case 0://none//AccessLevels.NO_ACCESS.getLevel()
+                    employee.setAccessLevel(0);
+                    break;
+                case 1://normal
+                    employee.setAccessLevel(1);
+                    break;
+                case 2://admin
+                    employee.setAccessLevel(2);
+                    break;
+                case 3://super
+                    employee.setAccessLevel(3);
+                    break;
+                default:
+                    IO.logAndAlert("Error", "Unknown Employee access level ["+access_level_index+"]", IO.TAG_ERROR);
+            }
+            try
+            {
+                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+                HttpURLConnection connection = RemoteComms.putJSON("/employees", employee.toString(), headers);
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                 {
-                    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-                    HttpURLConnection connection = RemoteComms.putJSONData("/employees", params, headers);
-                    if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
-                    {
-                        IO.logAndAlert("Account Creation Success", IO.readStream(connection.getInputStream()), IO.TAG_INFO);
-                    } else
-                        IO.logAndAlert("Account Creation Failure", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                    IO.logAndAlert("Account Creation Success", IO.readStream(connection.getInputStream()), IO.TAG_INFO);
+                } else
+                    IO.logAndAlert("Account Creation Failure", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
 
-                    connection.disconnect();
-                }catch (IOException e)
-                {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                }
+                connection.disconnect();
+            } catch (IOException e)
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
             }
         }
     }

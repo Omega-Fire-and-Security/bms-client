@@ -1,15 +1,10 @@
 package fadulousbms.auxilary;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
 import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.BusinessObject;
 import fadulousbms.model.FileMetadata;
-import fadulousbms.model.Message;
-import fadulousbms.model.Transaction;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -17,10 +12,16 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.print.PrintException;
 import java.io.*;
+import java.security.MessageDigest;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by ghost on 2017/01/28.
@@ -176,20 +177,6 @@ public class IO<T extends BusinessObject>
                 }
                 in.close();
 
-                //try to read response as JSON object - default method of responses by server.
-                Gson gson = new GsonBuilder().create();
-                try
-                {
-                    Message message = gson.fromJson(msg.toString(), Message.class);
-                    if (message != null)
-                        if (message.getMessage() != null)
-                            if (message.getMessage().length() > 0)
-                                return message.getMessage();
-                } catch (JsonSyntaxException e)
-                {
-                    IO.log(TAG, IO.TAG_WARN, "message[" + msg
-                            .toString() + "] from server not in standard (JSON) Message format.");
-                }
                 return msg.toString();
             } else IO.logAndAlert(TAG, "Could not read error stream from server response.", IO.TAG_ERROR);
         } else IO.logAndAlert(TAG, "Could not read response from server.", IO.TAG_ERROR);
@@ -329,5 +316,131 @@ public class IO<T extends BusinessObject>
                 }
             } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    public static String getEncryptedHexString(String message) throws Exception
+    {
+        StringBuilder str = new StringBuilder();
+        for(byte b: hash(message))
+            str.append(Integer.toHexString(0xFF & b));
+        return str.toString();
+    }
+
+    public static byte[] hash(String plaintext) throws Exception
+    {
+        MessageDigest m = MessageDigest.getInstance("MD5");
+        m.reset();
+        m.update(plaintext.getBytes());
+        return m.digest();
+    }
+
+    public static byte[] encrypt(String digest, String message) throws Exception
+    {
+        final MessageDigest md = MessageDigest.getInstance("md5");
+        final byte[] digestOfPassword = md.digest(digest.getBytes("utf-8"));
+        final byte[] keyBytes = Arrays.copyOf(digestOfPassword, 24);
+        for (int j = 0, k = 16; j < 8;) {
+            keyBytes[k++] = keyBytes[j++];
+        }
+
+        final SecretKey key = new SecretKeySpec(keyBytes, "DESede");
+        final IvParameterSpec iv = new IvParameterSpec(new byte[8]);
+        final Cipher cipher = Cipher.getInstance("DESede/CBC/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+
+        final byte[] plainTextBytes = message.getBytes("utf-8");
+        final byte[] cipherText = cipher.doFinal(plainTextBytes);
+
+        return cipherText;
+    }
+
+    public static String decrypt(String digest, byte[] message) throws Exception
+    {
+        final MessageDigest md = MessageDigest.getInstance("md5");
+        final byte[] digestOfPassword = md.digest(digest.getBytes("utf-8"));
+        final byte[] keyBytes = Arrays.copyOf(digestOfPassword, 24);
+        for (int j = 0, k = 16; j < 8;)
+        {
+            keyBytes[k++] = keyBytes[j++];
+        }
+
+        final SecretKey key = new SecretKeySpec(keyBytes, "DESede");
+        final IvParameterSpec iv = new IvParameterSpec(new byte[8]);
+        final Cipher decipher = Cipher.getInstance("DESede/CBC/PKCS5Padding");
+        decipher.init(Cipher.DECRYPT_MODE, key, iv);
+
+        final byte[] plainText = decipher.doFinal(message);
+
+        return new String(plainText, "UTF-8");
+    }
+
+    public static void writeAttributeToConfig(String key, String value) throws IOException
+    {
+        //TO_Consider: add meta data for [key,value] to meta records.
+        File f = new File("config.cfg");
+        StringBuilder result = new StringBuilder();
+        boolean rec_found=false;
+        if(f.exists())
+        {
+            String s = "";
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+            int line_read_count=0;
+            while ((s = in.readLine())!=null)
+            {
+                if(s.contains("="))
+                {
+                    String k = s.split("=")[0];
+                    String val = s.split("=")[1];
+                    //If the record exists, change it
+                    if(k.equals(key))
+                    {
+                        val = value;//Update record value
+                        rec_found=true;
+                    }
+                    result.append(k+"="+val+"\n");//Append existing record.
+                    line_read_count++;
+                } else IO.log(TAG, IO.TAG_ERROR, "Config file may be corrupted.");
+            }
+            if(!rec_found)//File exists but no key was found - write new line.
+                result.append(key+"="+value+"\n");
+            /*if(in!=null)
+                in.close();*/
+        } else result.append(key+"="+value+"\n");//File DNE - write new line.
+
+        IO.log(TAG, IO.TAG_INFO, "writing attribute to config: " + key + "=" + value);
+
+        /*if(!rec_found)//File exists but record doesn't exist - create new record
+            result.append(key+"="+value+"\n");*/
+
+        //Write to disk.
+        PrintWriter out = new PrintWriter(f);
+        out.print(result);
+        out.flush();
+        out.close();
+    }
+
+    public static String readAttributeFromConfig(String key) throws IOException
+    {
+        File f = new File("config.cfg");
+        if(f.exists())
+        {
+            String s = "";
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+            while ((s = in.readLine())!=null)
+            {
+                if(s.contains("="))
+                {
+                    String var = s.split("=")[0];
+                    String val = s.split("=")[1];
+                    if(var.equals(key))
+                    {
+                        /*if(in!=null)
+                            in.close();*/
+                        return val;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

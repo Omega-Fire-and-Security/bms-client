@@ -256,8 +256,9 @@ public class Resource extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +"\"resource_name\":\""+getResource_name()+"\""
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"resource_name\":\""+getResource_name()+"\""
                 +",\"resource_description\":\""+getResource_description()+"\""
                 +",\"resource_value\":\""+getResource_value()+"\""
                 +",\"resource_serial\":\""+getResource_serial()+"\""
@@ -269,11 +270,7 @@ public class Resource extends BusinessObject implements Serializable
             json_obj+=",\"date_acquired\":\""+getDate_acquired()+"\"";
         if(getDate_exhausted()>0)
             json_obj+=",\"date_exhausted\":\""+getDate_exhausted()+"\"";
-        if(getCreator()!=null)
-            json_obj+=",\"creator\":\""+getCreator()+"\"";
-        if(getDate_logged()>0)
-            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
-        json_obj+=",\"other\":\""+getOther()+"\"}";
+        json_obj+="}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;

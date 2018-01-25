@@ -93,6 +93,15 @@ public class CustomTableViewControls
         date_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
     }
 
+    public static void makeLabelledDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property, boolean editable)
+    {
+        date_col.setMinWidth(130);
+        date_col.setCellValueFactory(new PropertyValueFactory<>(property));
+        date_col.setCellFactory(col -> new LabelledDatePickerCell(property, editable));
+        date_col.setEditable(true);
+        date_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
+    }
+
     public static void makeDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property, boolean editable)
     {
         date_col.setMinWidth(130);

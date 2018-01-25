@@ -3,44 +3,24 @@ package fadulousbms.managers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
-import fadulousbms.controllers.HomescreenController;
 import fadulousbms.controllers.JobsController;
-import fadulousbms.controllers.OperationsController;
 import fadulousbms.model.*;
-import fadulousbms.model.Error;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-
-import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URLEncoder;
-import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by ghost on 2017/01/11.
@@ -358,7 +338,7 @@ public class JobManager extends BusinessObjectManager
      * @param job Job object to be signed.
      * @param callback Callback to be executed on successful request.
      */
-    public static void signJob(Job job, Callback callback)
+    public static void approveJob(Job job, Callback callback)
     {
         if(job==null)
         {
@@ -381,34 +361,35 @@ public class JobManager extends BusinessObjectManager
             return;
         }
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+
         Session active = SessionManager.getInstance().getActive();
+        job.setStatus(BusinessObject.STATUS_APPROVED);
         try
         {
             if (active != null)
             {
-                if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
+                if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=AccessLevels.SUPERUSER.getLevel())
                 {
                     if (!active.isExpired())
                     {
                         headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSession_id()));
-                        HttpURLConnection conn = RemoteComms.postData("/api/job/sign/" + job.get_id(), "", headers);
+                        HttpURLConnection conn = RemoteComms.postJSON(job.apiEndpoint(), job.toString(), headers);
                         if (conn != null)
                         {
                             if (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
                             {
-                                IO.logAndAlert("Success", "Successfully signed job[" + job
-                                        .get_id() + "]", IO.TAG_ERROR);
+                                IO.logAndAlert("Success", "Successfully approved Job[" + job.getObject_number() + "]", IO.TAG_ERROR);
                                 if (callback != null)
                                     callback.call(null);
-                            }
-                            else IO.logAndAlert("Error", "Could not sign job[" + job.get_id() + "]: " + IO
-                                    .readStream(conn.getErrorStream()), IO.TAG_ERROR);
+                            } else IO.logAndAlert("Error", "Could not approve Job[" + job.getObject_number() + "]: "
+                                    + IO.readStream(conn.getErrorStream()), IO.TAG_ERROR);
                             conn.disconnect();
-                        }
+                        } else IO.logAndAlert("Error", "Connection to server has been lost..", IO.TAG_ERROR);
                     } else IO.logAndAlert("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
                 } else IO.logAndAlert("Error: Unauthorised", "Active session is not authorised to perform this action.", IO.TAG_ERROR);
             } else IO.logAndAlert("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
-        }catch (IOException e)
+        } catch (IOException e)
         {
             IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
         }
@@ -477,7 +458,7 @@ public class JobManager extends BusinessObjectManager
         final String finalBase64_job = base64_job;
 
         Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - Request Job ["+job.getJob_number()+"] Approval");
+        stage.setTitle(Globals.APP_NAME.getValue() + " - Request Job ["+job.getObject_number()+"] Approval");
         stage.setMinWidth(320);
         stage.setHeight(350);
         stage.setAlwaysOnTop(true);
@@ -488,7 +469,7 @@ public class JobManager extends BusinessObjectManager
         txt_subject.setMinWidth(200);
         txt_subject.setMaxWidth(Double.MAX_VALUE);
         txt_subject.setPromptText("Type in an eMail subject");
-        txt_subject.setText("JOB ["+job.getJob_number()+"] APPROVAL REQUEST");
+        txt_subject.setText("JOB ["+job.getObject_number()+"] APPROVAL REQUEST");
         HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
 
         final TextArea txt_message = new TextArea();
@@ -601,7 +582,7 @@ public class JobManager extends BusinessObjectManager
                     PDFViewer pdfViewer = PDFViewer.getInstance();
                     pdfViewer.setVisible(true);
                     pdfViewer.doOpen(path);
-                } else IO.log("JobManager", IO.TAG_ERROR, "could not get a valid path for generated Job[#"+job.getJob_number()+"] card PDF.");
+                } else IO.log("JobManager", IO.TAG_ERROR, "could not get a valid path for generated Job[#"+job.getObject_number()+"] card PDF.");
             } catch (IOException e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
@@ -645,7 +626,7 @@ public class JobManager extends BusinessObjectManager
                             //TODO: job.setSigned_job(Base64.getEncoder().encodeToString(buffer));
 
                             RemoteComms.uploadFile("/api/job/update/" + job.get_id(), headers, buffer);
-                            IO.logAndAlert("Success", "successfully uploaded signed job [#"+job.getJob_number()+"], file size: [" + buffer.length + "] bytes.", IO.TAG_INFO);
+                            IO.logAndAlert("Success", "successfully uploaded signed job [#"+job.getObject_number()+"], file size: [" + buffer.length + "] bytes.", IO.TAG_INFO);
                             /*HttpURLConnection connection = RemoteComms.postData("/api/job/update/" + job.get_id(), job.asUTFEncodedString(), headers);
                             if(connection!=null)
                             {

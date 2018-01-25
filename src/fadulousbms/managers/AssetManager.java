@@ -5,21 +5,14 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
-import fadulousbms.model.Error;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -354,9 +347,7 @@ public class AssetManager extends BusinessObjectManager
                     {
                         //Get error message
                         String msg = IO.readStream(connection.getErrorStream());
-                        Gson gson = new GsonBuilder().create();
-                        Error error = gson.fromJson(msg, Error.class);
-                        IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), error.getError(), IO.TAG_ERROR);
+                        IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
                     }
                 }
             } catch (IOException e)

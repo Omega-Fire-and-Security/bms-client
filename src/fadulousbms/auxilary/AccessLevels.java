@@ -6,7 +6,7 @@ package fadulousbms.auxilary;
 public enum AccessLevels
 {
     NO_ACCESS(0),
-    NORMAL(1),
+    STANDARD(1),
     ADMIN(2),
     SUPERUSER(3);
 

@@ -167,7 +167,16 @@ public class Expense extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        return this.expense_title;
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"expense_title\":\""+getExpense_title()+"\""
+                +",\"expense_description\":\""+getExpense_description()+"\""
+                +",\"expense_value\":\""+getExpense_value()+"\""
+                +",\"supplier\":\""+getSupplier()+"\""
+                +",\"account\":\""+getAccount()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
     }
 
     @Override

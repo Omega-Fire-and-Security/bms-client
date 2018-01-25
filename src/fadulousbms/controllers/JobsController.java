@@ -62,7 +62,7 @@ public class JobsController extends ScreenController implements Initializable
             return;
         }
         colJobNum.setMinWidth(100);
-        colJobNum.setCellValueFactory(new PropertyValueFactory<>("job_number"));
+        colJobNum.setCellValueFactory(new PropertyValueFactory<>("object_number"));
         CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 215, "job_description", "/jobs");
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_name"));
         colSitename.setCellValueFactory(new PropertyValueFactory<>("sitename"));
@@ -71,10 +71,11 @@ public class JobsController extends ScreenController implements Initializable
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,90, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/jobs");
         CustomTableViewControls
                 .makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date");
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", false);
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAssigned, "date_assigned");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateStarted, "date_started");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateEnded, "date_completed");
+        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
         //CustomTableViewControls.makeJobManagerAction(colAction, 600, null);
         //colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
@@ -103,7 +104,7 @@ public class JobsController extends ScreenController implements Initializable
                         {
                             final Button btnView = new Button("View Job");
                             final Button btnUpload = new Button("Upload Signed");
-                            final ToggleButton btnSign = new ToggleButton("Not Signed");
+                            final Button btnApprove = new Button("Approve");
                             final Button btnViewSigned = new Button("View Signed Document");
                             final Button btnInvoice = new Button("Generate Invoice");
                             final Button btnPDF = new Button("View as PDF");
@@ -122,8 +123,7 @@ public class JobsController extends ScreenController implements Initializable
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
-                                btnUpload.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnUpload.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 btnUpload.getStyleClass().add("btnDefault");
                                 btnUpload.setMinWidth(130);
                                 btnUpload.setMinHeight(35);
@@ -132,20 +132,23 @@ public class JobsController extends ScreenController implements Initializable
                                 //btnSign.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 //btnSign.getStyleClass().add("btnDefault");
                                 //btnSign.setStyle("-fx-border-radius: 20;");
-                                btnSign.setMinWidth(100);
-                                btnSign.setMinHeight(35);
-                                btnSign.setDisable(true);
+                                btnApprove.setMinWidth(100);
+                                btnApprove.setMinHeight(35);
+                                btnApprove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
                                 if(SessionManager.getInstance().getActiveEmployee()!=null)
                                 {
-                                    //disable sign button if not authorised
-                                    if (SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
+                                    //disable [Approve] button if not authorised
+                                    if (SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=AccessLevels.SUPERUSER.getLevel())
                                     {
-                                        //btnSign.getStyleClass().add("btnDefault");
-                                        btnSign.setDisable(false);
-                                    } else btnSign.getStyleClass().add("btnDisabled");
+                                        btnApprove.getStyleClass().add("btnAdd");
+                                        btnApprove.setDisable(false);
+                                    } else {
+                                        btnApprove.getStyleClass().add("btnDisabled");
+                                        btnApprove.setDisable(true);
+                                    }
                                 } else IO.logAndAlert("Error", "No valid active employee session found, please log in.", IO.TAG_ERROR);
 
-                                HBox.setHgrow(btnSign, Priority.ALWAYS);
+                                HBox.setHgrow(btnApprove, Priority.ALWAYS);
 
                                 btnViewSigned.getStylesheets()
                                         .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
@@ -218,13 +221,10 @@ public class JobsController extends ScreenController implements Initializable
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnView, btnUpload, btnSign, btnViewSigned, btnInvoice, btnPDF, btnEmail, btnEmailSigned, btnRemove);
+                                    HBox hBox = new HBox(btnView, btnUpload, btnApprove, btnViewSigned, btnInvoice, btnPDF, btnEmail, btnEmailSigned, btnRemove);
                                     hBox.setMaxWidth(Double.MAX_VALUE);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
                                     Job job = getTableView().getItems().get(getIndex());
-
-                                    btnSign.setText(job.getStatus()>=BusinessObject.STATUS_APPROVED ? "Signed" : "Not Signed");
-                                    btnSign.setSelected(job.getStatus()>=BusinessObject.STATUS_APPROVED);
 
                                     btnView.setOnAction(event ->
                                     {
@@ -259,8 +259,8 @@ public class JobsController extends ScreenController implements Initializable
                                         JobManager.getInstance().uploadSigned(job.get_id());
                                     });
 
-                                    btnSign.setOnAction(event ->
-                                            JobManager.getInstance().signJob(job, param1 ->
+                                    btnApprove.setOnAction(event ->
+                                            JobManager.approveJob(job, param1 ->
                                             {
                                                 //Refresh UI
                                                 new Thread(() ->
@@ -492,13 +492,8 @@ public class JobsController extends ScreenController implements Initializable
             IO.logAndAlert("Error", "Selected Job object is invalid.", IO.TAG_ERROR);
             return;
         }
-        /*if(!job.isSigned())
-        {
-            IO.logAndAlert("Error", "Selected Job object has not been signed yet.", IO.TAG_ERROR);
-            return;
-        }*/
 
-        //Validate session - also done on server-side don't worry ;)
+        //Validate session - also done on the backend
         SessionManager smgr = SessionManager.getInstance();
         if(smgr.getActive()!=null)
         {
@@ -563,7 +558,7 @@ public class JobsController extends ScreenController implements Initializable
                 } catch (IOException e)
                 {
                     IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
-                    IO.logAndAlert("Error", "Could not download signed job card for [#"+job.getJob_number()+"]: " + e.getMessage(), IO.TAG_ERROR);
+                    IO.logAndAlert("Error", "Could not download signed job card for [#"+job.getObject_number()+"]: " + e.getMessage(), IO.TAG_ERROR);
                 }
             } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -585,7 +580,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            JobManager.getInstance().signJob(JobManager.getInstance().getSelected(), null);
+            JobManager.approveJob(JobManager.getInstance().getSelected(), null);
         });
 
         //View signed Job menu item

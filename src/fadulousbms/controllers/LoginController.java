@@ -125,6 +125,9 @@ public class LoginController extends ScreenController implements Initializable
         } catch (IOException e)
         {
             IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
+        } catch (Exception e)
+        {
+            IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
         }
     }
 }

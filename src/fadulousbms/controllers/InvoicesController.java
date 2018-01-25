@@ -57,7 +57,7 @@ public class InvoicesController extends ScreenController implements Initializabl
             return;
         }
         colInvoiceNum.setMinWidth(140);
-        colInvoiceNum.setCellValueFactory(new PropertyValueFactory<>("invoice_number"));
+        colInvoiceNum.setCellValueFactory(new PropertyValueFactory<>("object_number"));
         colJobNum.setMinWidth(50);
         colJobNum.setCellValueFactory(new PropertyValueFactory<>("job_number"));
         colClient.setMinWidth(80);
@@ -65,7 +65,7 @@ public class InvoicesController extends ScreenController implements Initializabl
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/invoices");
         colCreator.setMinWidth(70);
-        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
+        colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
         colAccount.setCellValueFactory(new PropertyValueFactory<>("account"));
         CustomTableViewControls.makeEditableTableColumn(colReceivable, TextFieldTableCell.forTableColumn(), 80, "receivable", "/invoices");
@@ -253,23 +253,6 @@ public class InvoicesController extends ScreenController implements Initializabl
                                             }).start();
                                             return null;
                                         });
-                                        /*if(invoice.getJob()==null)
-                                        {
-                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
-                                            return;
-                                        }
-                                        JobManager.getInstance().loadDataFromServer();
-                                        JobManager.getInstance().setSelected(invoice.getJob());
-                                        try
-                                        {
-                                            if(screenManager.loadScreen(Screens.VIEW_JOB.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_JOB.getScreen())))
-                                                screenManager.setScreen(Screens.VIEW_JOB.getScreen());
-                                            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quote viewing screen.");
-                                        } catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                            e.printStackTrace();
-                                        }*/
                                     });
 
                                     btnRemove.setOnAction(event ->

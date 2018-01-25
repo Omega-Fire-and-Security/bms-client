@@ -462,8 +462,9 @@ public class Quote extends BusinessObject
     @Override
     public String toString()
     {
-        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +"\"contact_person_id\":\""+contact_person_id+"\""
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"contact_person_id\":\""+contact_person_id+"\""
                 +",\"sitename\":\""+sitename+"\""
                 +",\"request\":\""+request+"\""
                 +",\"vat\":\""+vat+"\""
@@ -473,15 +474,11 @@ public class Quote extends BusinessObject
                     json_obj+=",\"client_id\":\""+client_id+"\"";
                 if(getRequisition_id()!=null)
                     json_obj+=",\"requisition_id\":\""+requisition_id+"\"";
-                if(parent_id!=null)
+                if(getParent_id()!=null)
                     json_obj+=",\"parent_id\":\""+ parent_id +"\"";
-                if(status>0)
+                if(getStatus()>0)
                     json_obj+=",\"status\":\""+status+"\"";
-                if(getCreator()!=null)
-                    json_obj+=",\"creator\":\""+getCreator()+"\"";
-                if(getDate_logged()>0)
-                    json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
-                json_obj+=",\"other\":\""+getOther()+"\"}";
+                json_obj+="}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;

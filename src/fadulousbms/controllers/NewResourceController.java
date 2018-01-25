@@ -6,7 +6,6 @@ import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Resource;
 import fadulousbms.model.ResourceType;
-import fadulousbms.model.Screens;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;

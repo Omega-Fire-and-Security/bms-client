@@ -253,4 +253,23 @@ public abstract class PurchaseOrderItem extends BusinessObject
         }
         return null;
     }
+
+    @Override
+    public String toString()
+    {
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"purchase_order_id\":\""+getPurchase_order_id()+"\""
+                +",\"item_id\":\""+getItem_id()+"\""
+                +",\"type\":\""+getType()+"\""
+                +",\"unit\":\""+getUnit()+"\""
+                +",\"quantity\":\""+getQuantity()+"\""
+                +",\"cost\":\""+getCost()+"\"";
+        if(getDiscountValue()>0)
+            json_obj+=",\"discount\":\""+getDiscountValue()+"\"";
+        json_obj+="}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
 }

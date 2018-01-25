@@ -461,7 +461,7 @@ public class LeaveManager extends BusinessObjectManager
         //gather list of Employees with enough clearance to sign leaves
         ArrayList<Employee> lst_auth_employees = new ArrayList<>();
         for(Employee employee: EmployeeManager.getInstance().getEmployees().values())
-            if(employee.getAccessLevel()>=Employee.ACCESS_LEVEL_SUPER)
+            if(employee.getAccessLevel()>=AccessLevels.SUPERUSER.getLevel())
                 lst_auth_employees.add(employee);
 
         if(lst_auth_employees==null)

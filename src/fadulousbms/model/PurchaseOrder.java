@@ -270,20 +270,17 @@ public class PurchaseOrder extends BusinessObject
     @Override
     public String toString()
     {
-        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +"\"number\":\""+getNumber()+"\""
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"number\":\""+getNumber()+"\""
                 +",\"supplier_id\":\""+getSupplier_id()+"\""
                 +",\"account_name\":\""+getAccount_name()+"\""
                 +",\"contact_person_id\":\""+getContact_person_id()+"\""
                 +",\"status\":\""+getStatus()+"\""
                 +",\"vat\":\""+getVat()+"\"";
         if(getDiscount()>0)
-            json_obj+=",\"discount\":\""+getDiscount()+"\"";
-        if(getCreator()!=null)
-            json_obj+=",\"creator\":\""+getCreator()+"\"";
-        if(getDate_logged()>0)
-            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
-        json_obj+=",\"other\":\""+getOther()+"\"}";
+            json_obj+=",\"discount\":\""+getDiscount() +"\"";
+        json_obj+="}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;

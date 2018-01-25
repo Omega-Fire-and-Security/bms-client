@@ -5,6 +5,7 @@
  */
 package fadulousbms.controllers;
 
+import fadulousbms.auxilary.AccessLevels;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
@@ -49,21 +50,22 @@ public class ViewJobController extends ScreenController implements Initializable
     @FXML
     private TextArea txtRequest;
     @FXML
-    private Button btnSign;
+    private Button btnApprove;
 
     @Override
     public void refreshView()
     {
         tblEmployees.getItems().clear();
 
-        //Hide [Sign] button if not authorized
-        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()< Employee.ACCESS_LEVEL_SUPER)
+        //Hide [Approve] button if not authorized
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()< AccessLevels.SUPERUSER.getLevel())
         {
-            btnSign.setVisible(false);
-            btnSign.setDisable(true);
-        }else{
-            btnSign.setVisible(true);
-            btnSign.setDisable(false);
+            btnApprove.setVisible(false);
+            btnApprove.setDisable(true);
+        }else
+        {
+            btnApprove.setVisible(true);
+            btnApprove.setDisable(false);
         }
 
         //Setup Sale Reps table
@@ -95,7 +97,7 @@ public class ViewJobController extends ScreenController implements Initializable
             }
             if(selected.getQuote().getClient()!=null)
                 txtFax.setText(selected.getQuote().getClient().getFax());
-            txtJobNumber.setText(String.valueOf(selected.getJob_number()));
+            txtJobNumber.setText(String.valueOf(selected.getObject_number()));
             txtSite.setText(selected.getQuote().getSitename());
             txtRequest.setText(selected.getQuote().getRequest());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
@@ -119,9 +121,8 @@ public class ViewJobController extends ScreenController implements Initializable
             {
                 tblEmployees.setItems(FXCollections.observableArrayList(selected.getAssigned_employees()));
                 tblEmployees.refresh();
-            }
-            else IO.log(getClass().getName(), IO.TAG_WARN, "job [" + selected.get_id() + "] has no representatives.");
-        }else IO.logAndAlert("Job Viewer", "Selected Job is invalid.", IO.TAG_ERROR);
+            } else IO.log(getClass().getName(), IO.TAG_WARN, "job [" + selected.get_id() + "] has no representatives.");
+        } else IO.logAndAlert("Job Viewer", "Selected Job is invalid.", IO.TAG_ERROR);
     }
 
     @Override
@@ -292,8 +293,8 @@ public class ViewJobController extends ScreenController implements Initializable
                     if(created_all)
                     {
                         IO.logAndAlert("Success", "Successfully updated job[#" + String
-                                .valueOf(JobManager.getInstance().getSelected()
-                                        .getJob_number()) + "] representatives.", IO.TAG_INFO);
+                                .valueOf(JobManager.getInstance().getSelected().getObject_number())
+                                + "] representatives.", IO.TAG_INFO);
                         try
                         {
                             JobManager.getInstance().reloadDataFromServer();
@@ -347,8 +348,9 @@ public class ViewJobController extends ScreenController implements Initializable
                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
                             IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
                         }
-                    }
-                    else IO.logAndAlert("Error", "Could NOT update job[#"+String.valueOf(JobManager.getInstance().getSelected().getJob_number())+"] representatives.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Error", "Could NOT update job[#"
+                            +String.valueOf(JobManager.getInstance().getSelected().getObject_number())
+                            +"] representatives.", IO.TAG_ERROR);
                 }
             }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
@@ -383,7 +385,7 @@ public class ViewJobController extends ScreenController implements Initializable
     }
 
     @FXML
-    public void requestSignature()
+    public void requestApproval()
     {
         try
         {
@@ -397,7 +399,7 @@ public class ViewJobController extends ScreenController implements Initializable
     }
 
     @FXML
-    public void signJob()
+    public void approveJob()
     {
         if(JobManager.getInstance().getSelected()==null)
         {
@@ -405,7 +407,7 @@ public class ViewJobController extends ScreenController implements Initializable
             return;
         }
 
-        JobManager.getInstance().signJob(JobManager.getInstance().getSelected(), param1 ->
+        JobManager.getInstance().approveJob(JobManager.getInstance().getSelected(), param1 ->
         {
             //Refresh UI
             new Thread(() ->

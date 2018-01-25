@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.controllers.JobsController;
 import fadulousbms.model.*;
-import fadulousbms.model.Error;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -40,7 +39,7 @@ public class EmployeeManager extends BusinessObjectManager
     private HashMap<String, Employee> employees;
     private Gson gson;
     private static EmployeeManager employeeManager = new EmployeeManager();
-    public static String[] access_levels = {"NONE", "NORMAL", "ADMIN", "SUPER"};
+    public static String[] access_levels = {"NONE", "STANDARD", "ADMIN", "SUPER"};
     public static String[] sexes = {"MALE", "FEMALE"};
 
     private EmployeeManager()

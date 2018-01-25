@@ -186,7 +186,7 @@ public class OvertimeManager extends BusinessObjectManager
                     {
                         super.updateItem(job, empty);
                         if (job != null && !empty)
-                            setText("Job #" + String.valueOf(job.getJob_number()));
+                            setText("Job #" + String.valueOf(job.getObject_number()));
                     }
                 };
             }

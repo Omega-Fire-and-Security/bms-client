@@ -158,7 +158,15 @@ public class Revenue extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        return this.revenue_title;
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"revenue_title\":\""+getRevenue_title()+"\""
+                +",\"revenue_description\":\""+getRevenue_description()+"\""
+                +",\"revenue_value\":\""+getRevenue_value()+"\""
+                +",\"account\":\""+getAccount()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
     }
 
     @Override

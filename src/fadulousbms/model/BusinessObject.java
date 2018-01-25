@@ -18,6 +18,7 @@ public abstract class BusinessObject implements Serializable
     private long date_logged;
     private String creator;
     private String other;
+    private long object_number;
     private boolean marked;
     private Link _links;
     public static final int STATUS_PENDING =0;
@@ -85,6 +86,16 @@ public abstract class BusinessObject implements Serializable
         this.creator = creator;
     }
 
+    public long getObject_number()
+    {
+        return object_number;
+    }
+
+    public void setObject_number(long object_number)
+    {
+        this.object_number = object_number;
+    }
+
     public String getOther()
     {
         return other;
@@ -138,6 +149,12 @@ public abstract class BusinessObject implements Serializable
     {
         switch (var.toLowerCase())
         {
+            case "_id":
+                set_id(String.valueOf(val));
+                break;
+            case "object_number":
+                setObject_number(Long.parseLong(String.valueOf(val)));
+                break;
             case "date_logged":
                 setDate_logged(Long.parseLong(String.valueOf(val)));
                 break;
@@ -159,6 +176,8 @@ public abstract class BusinessObject implements Serializable
         {
             case "_id":
                 return get_id();
+            case "object_number":
+                return getObject_number();
             case "date_logged":
                 return getDate_logged();
             case "creator":
@@ -176,4 +195,19 @@ public abstract class BusinessObject implements Serializable
     public abstract String apiEndpoint();
 
     public abstract String asUTFEncodedString();
+
+    @Override
+    public String toString()
+    {
+        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
+                +"\"object_number\":\""+getObject_number()+"\"";
+        if(getCreator()!=null)
+            json_obj+=",\"creator\":\""+getCreator()+"\"";
+        if(getDate_logged()>0)
+            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
+        json_obj+=",\"other\":\""+getOther()+"\"}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
 }

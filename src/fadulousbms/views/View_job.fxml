@@ -33,7 +33,7 @@
                 </Menu>
               </menus>
             </MenuBar>
-            <Button fx:id="btnSign" layoutX="383.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#signJob" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Sign">
+            <Button fx:id="btnApprove" layoutX="383.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#approveJob" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Approve">
                <HBox.margin>
                   <Insets right="5.0" />
                </HBox.margin>
@@ -43,7 +43,7 @@
                   <Insets right="5.0" />
                </HBox.margin>
             </Button>
-            <Button layoutX="283.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#requestSignature" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Request Signature">
+            <Button layoutX="283.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#requestApproval" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Request Approval">
                <HBox.margin>
                   <Insets right="5.0" />
                </HBox.margin>

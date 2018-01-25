@@ -30,12 +30,6 @@ public class Employee extends BusinessObject implements Serializable
     private int access_level;
     private boolean active;
     public static final String TAG = "Employee";
-    public static int ACCESS_LEVEL_NONE = 0;
-    public static int ACCESS_LEVEL_NORMAL = 1;
-    public static int ACCESS_LEVEL_ADMIN = 2;
-    public static int ACCESS_LEVEL_SUPER = 3;
-
-    public StringProperty usrProperty(){return new SimpleStringProperty(usr);}
 
     public String getUsr()
     {
@@ -46,8 +40,6 @@ public class Employee extends BusinessObject implements Serializable
         this.usr = usr;
     }
 
-    public StringProperty pwdProperty(){return new SimpleStringProperty(pwd);}
-
     public String getPwd()
     {
         return pwd;
@@ -57,8 +49,6 @@ public class Employee extends BusinessObject implements Serializable
         this.pwd = pwd;
     }
 
-    public StringProperty access_levelProperty(){return new SimpleStringProperty(String.valueOf(access_level));}
-
     public int getAccessLevel() {
         return access_level;
     }
@@ -67,8 +57,6 @@ public class Employee extends BusinessObject implements Serializable
     {
         this.access_level = access_level;
     }
-
-    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
 
     public String isActive()
     {
@@ -85,8 +73,6 @@ public class Employee extends BusinessObject implements Serializable
         this.active = active;
     }
 
-    public StringProperty firstnameProperty(){return new SimpleStringProperty(firstname);}
-
     public String getFirstname()
     {
         return firstname;
@@ -96,8 +82,6 @@ public class Employee extends BusinessObject implements Serializable
     {
         this.firstname = firstname;
     }
-
-    public StringProperty lastnameProperty(){return new SimpleStringProperty(lastname);}
 
     public String getLastname()
     {
@@ -109,8 +93,6 @@ public class Employee extends BusinessObject implements Serializable
         this.lastname = lastname;
     }
 
-    public StringProperty emailProperty(){return new SimpleStringProperty(email);}
-
     public String getEmail()
     {
         return email;
@@ -120,8 +102,6 @@ public class Employee extends BusinessObject implements Serializable
     {
         this.email = email;
     }
-
-    public StringProperty telProperty(){return new SimpleStringProperty(usr);}
 
     public String getTel()
     {
@@ -133,8 +113,6 @@ public class Employee extends BusinessObject implements Serializable
         this.tel = tel;
     }
 
-    public StringProperty cellProperty(){return new SimpleStringProperty(usr);}
-
     public String getCell()
     {
         return cell;
@@ -144,8 +122,6 @@ public class Employee extends BusinessObject implements Serializable
     {
         this.cell = cell;
     }
-
-    public StringProperty genderProperty(){return new SimpleStringProperty(usr);}
 
     public String getGender()
     {
@@ -161,6 +137,29 @@ public class Employee extends BusinessObject implements Serializable
     {
         return getFirstname() + " " + getLastname();
     }
+
+    public String getInitials(){return new String(firstname.substring(0,1) + lastname.substring(0,1));}
+
+    //Properties
+    public StringProperty usrProperty(){return new SimpleStringProperty(usr);}
+
+    public StringProperty pwdProperty(){return new SimpleStringProperty(pwd);}
+
+    public StringProperty access_levelProperty(){return new SimpleStringProperty(String.valueOf(access_level));}
+
+    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
+
+    public StringProperty firstnameProperty(){return new SimpleStringProperty(firstname);}
+
+    public StringProperty lastnameProperty(){return new SimpleStringProperty(lastname);}
+
+    public StringProperty emailProperty(){return new SimpleStringProperty(email);}
+
+    public StringProperty telProperty(){return new SimpleStringProperty(usr);}
+
+    public StringProperty cellProperty(){return new SimpleStringProperty(usr);}
+
+    public StringProperty genderProperty(){return new SimpleStringProperty(usr);}
 
     @Override
     public void parse(String var, Object val)
@@ -237,8 +236,6 @@ public class Employee extends BusinessObject implements Serializable
         return super.get(var);
     }
 
-    public String getInitials(){return new String(firstname.substring(0,1) + lastname.substring(0,1));}
-
     @Override
     public String asUTFEncodedString()
     {
@@ -283,8 +280,9 @@ public class Employee extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +"\"usr\":\""+getUsr()+"\""
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"usr\":\""+getUsr()+"\""
                 +",\"pwd\":\""+getPwd()+"\""
                 +",\"firstname\":\""+getFirstname()+"\""
                 +",\"lastname\":\""+getLastname()+"\""
@@ -292,12 +290,7 @@ public class Employee extends BusinessObject implements Serializable
                 +",\"email\":\""+getEmail()+"\""
                 +",\"cell\":\""+getCell()+"\""
                 +",\"tel\":\""+getTel()+"\""
-                +",\"access_level\":\""+getAccessLevel()+"\"";
-        if(getCreator()!=null)
-            json_obj+=",\"creator\":\""+getCreator()+"\"";
-        if(getDate_logged()>0)
-            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
-        json_obj+=",\"other\":\""+getOther()+"\"}";
+                +",\"access_level\":\""+getAccessLevel()+"\"}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;

@@ -1510,8 +1510,8 @@ public class PDF
             line_pos = temp_pos;
 
             //right content
-            addTextToPageStream(contents, "Job Number #" + job
-                    .getJob_number(), PDType1Font.COURIER_BOLD_OBLIQUE, 15, (int) (w / 2) + 5, line_pos);
+            addTextToPageStream(contents, "Job Number #" + job.getObject_number(),
+                                    PDType1Font.COURIER_BOLD_OBLIQUE, 15, (int) (w / 2) + 5, line_pos);
             line_pos -= LINE_HEIGHT;
             addTextToPageStream(contents, "Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd")
                     .format(new Date(job.getDate_logged() * 1000))), 12, (int) (w / 2) + 5, line_pos);
@@ -2639,12 +2639,12 @@ public class PDF
         }
         if(job.getAssigned_employees()==null)
         {
-            IO.logAndAlert("Error", "Job[#"+job.getJob_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "Job[#"+job.getObject_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
             return null;
         }
         if(job.getAssigned_employees().length<=0)
         {
-            IO.logAndAlert("Error", "Job[#"+job.getJob_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "Job[#"+job.getObject_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
             return null;
         }
 
@@ -2706,7 +2706,7 @@ public class PDF
                 addTextToPageStream(contents, str_job_card, PDType1Font.HELVETICA_BOLD, 14, (int) (w / 2)-100, line_pos);
                 line_pos -= LINE_HEIGHT * 2;//next line
 
-                addTextToPageStream(contents, "JOB NUMBER: " + job.getJob_number(), 12, 20, line_pos);
+                addTextToPageStream(contents, "JOB NUMBER: " + job.getObject_number(), 12, 20, line_pos);
                 addTextToPageStream(contents, "CUSTOMER: " + job.getQuote().getClient().getClient_name(), 14, (int)(w/2)+30, line_pos);
                 line_pos -= LINE_HEIGHT;//next line
                 addTextToPageStream(contents, "SITENAME: " + job.getQuote().getSitename(), 12, 20, line_pos);

@@ -100,6 +100,22 @@ public class JobEmployee extends BusinessObject
         return null;
     }
 
+    /**
+     * @return JSON representation of JobEmployee object.
+     */
+    @Override
+    public String toString()
+    {
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"job_id\":\""+job_id+"\""
+                +",\"usr\":\""+usr+"\"";
+        json_obj+="}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
+    }
+
     @Override
     public String apiEndpoint()
     {

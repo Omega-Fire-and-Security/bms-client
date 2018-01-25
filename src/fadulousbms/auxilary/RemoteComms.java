@@ -40,7 +40,7 @@ public class RemoteComms
     public static int MAIL_SERVER_PORT = 9000;
     public static int TTL = 60*60*2;//2 hours in sec
 
-    public static Session auth(String usr, String pwd) throws IOException, LoginException
+    public static Session auth(String usr, String pwd) throws Exception
     {
         /*ArrayList<AbstractMap.SimpleEntry<String,String>> data = new ArrayList<>();
         data.add(new AbstractMap.SimpleEntry<>("usr",usr));
@@ -49,7 +49,7 @@ public class RemoteComms
         ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
         headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
         headers.add(new AbstractMap.SimpleEntry<>("usr", usr));
-        headers.add(new AbstractMap.SimpleEntry<>("pwd", pwd));
+        headers.add(new AbstractMap.SimpleEntry<>("pwd", IO.getEncryptedHexString(pwd)));
         HttpURLConnection connObj = putJSONData("/auth", null, headers);
         
         if(connObj.getResponseCode()==200)
@@ -499,8 +499,6 @@ public class RemoteComms
                             else
                             {
                                 String msg = IO.readStream(connection.getErrorStream());
-                                /*Gson gson = new GsonBuilder().create();
-                                Error error = gson.fromJson(msg, Error.class);*/
                                 IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
                             }
                             connection.disconnect();

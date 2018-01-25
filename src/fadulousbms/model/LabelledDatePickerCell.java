@@ -25,12 +25,14 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
 {
     private final SimpleDateFormat formatter;
     private final DatePicker datePicker;
+    private boolean editable;
     private final Label label = new Label("double click to set");
     private String property;
 
     public LabelledDatePickerCell(String property, boolean editable)
     {
         this.property = property;
+        this.editable=editable;
 
         formatter = new SimpleDateFormat("yyyy-MM-dd");
         datePicker = new DatePicker();
@@ -117,7 +119,7 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
     public void startEdit()
     {
         super.startEdit();
-        if (!isEmpty())
+        if (!isEmpty() && editable)
         {
             setGraphic(datePicker);
             datePicker.requestFocus();

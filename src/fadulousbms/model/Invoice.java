@@ -25,9 +25,7 @@ import java.util.HashMap;
 public class Invoice extends BusinessObject implements Serializable
 {
     private String job_id;
-    //private String quote_id;
     private String quote_revision_numbers;//semi-colon separated array of Quote revision numbers associated with Invoice.
-    //private String account;
     private double receivable;
     private int status;
 
@@ -85,8 +83,6 @@ public class Invoice extends BusinessObject implements Serializable
         this.quote_revision_numbers = quote_revision_numbers;
     }
 
-    public StringProperty accountProperty(){return new SimpleStringProperty(getAccount());}
-
     public String getAccount()
     {
         /*HashMap<String, Job> jobs_map = JobManager.getInstance().getJobs();
@@ -101,8 +97,6 @@ public class Invoice extends BusinessObject implements Serializable
         return job.getQuote().getAccount_name();
     }
 
-    public StringProperty receivableProperty(){return new SimpleStringProperty(String.valueOf(receivable));}
-
     public double getReceivable()
     {
         return receivable;
@@ -112,8 +106,6 @@ public class Invoice extends BusinessObject implements Serializable
     {
         this.receivable = receivable;
     }
-
-    private StringProperty job_idProperty(){return new SimpleStringProperty(job_id);}
 
     public String getJob_id()
     {
@@ -125,13 +117,6 @@ public class Invoice extends BusinessObject implements Serializable
         this.job_id = job_id;
     }
 
-    public StringProperty invoice_numberProperty()
-    {
-        return new SimpleStringProperty(get_id());//TODO: fix this!
-    }
-
-    private StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
-
     public int getStatus()
     {
         return status;
@@ -142,28 +127,10 @@ public class Invoice extends BusinessObject implements Serializable
         this.status = status;
     }
 
-    private StringProperty totalProperty()
-    {
-        return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));
-    }
-
     public double getTotal()
     {
         if(getJob()!=null)
             return getJob().getTotal();
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "Job object is not set");
-        return 0;
-    }
-
-    public StringProperty job_numberProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(getJob_number()));
-    }
-
-    public long getJob_number()
-    {
-        if(getJob()!=null)
-            return getJob().getJob_number();
         else IO.log(getClass().getName(), IO.TAG_ERROR, "Job object is not set");
         return 0;
     }
@@ -175,14 +142,6 @@ public class Invoice extends BusinessObject implements Serializable
                 return getJob().getQuote().getClient();
             else IO.log(getClass().getName(), IO.TAG_ERROR, "Job->Quote object is not set");
         else IO.log(getClass().getName(), IO.TAG_ERROR, "Job object is not set");
-        return null;
-    }
-
-    public StringProperty clientProperty()
-    {
-        if(getClient()!=null)
-            return new SimpleStringProperty(getClient().getClient_name());
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "Job->Quote->Client object is not set");
         return null;
     }
 
@@ -199,6 +158,38 @@ public class Invoice extends BusinessObject implements Serializable
             return JobManager.getInstance().getJobs().get(job_id);
         } else IO.log(getClass().getName(), IO.TAG_ERROR, "No Jobs were found in the database.");
         return null;
+    }
+
+    //Properties
+
+    public StringProperty accountProperty(){return new SimpleStringProperty(getAccount());}
+
+    public StringProperty receivableProperty(){return new SimpleStringProperty(String.valueOf(receivable));}
+
+    public StringProperty job_idProperty(){return new SimpleStringProperty(job_id);}
+
+    public StringProperty statusProperty(){return new SimpleStringProperty(String.valueOf(status));}
+
+    public StringProperty totalProperty()
+    {
+        IO.log(getClass().getName(), IO.TAG_INFO, ">>>>>>>>>>>>Invoice Total: " + getTotal());
+        return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));
+    }
+
+    public StringProperty clientProperty()
+    {
+        if(getClient()!=null)
+            return new SimpleStringProperty(getClient().getClient_name());
+        else IO.log(getClass().getName(), IO.TAG_ERROR, "Job->Quote->Client object is not set");
+        return null;
+    }
+
+    public StringProperty job_numberProperty()
+    {
+        if(getJob()!=null)
+            return new SimpleStringProperty(String.valueOf(getJob().getObject_number()));
+        else IO.log(getClass().getName(), IO.TAG_ERROR, "Job object for Invoice["+get_id()+"]{"+getObject_number()+"} is not set");
+        return new SimpleStringProperty("N/A");
     }
 
     @Override
@@ -282,17 +273,14 @@ public class Invoice extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +"\"job_id\":\""+getJob_id()+"\""
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"job_id\":\""+getJob_id()+"\""
                 +",\"quote_revision_numbers\":\""+getQuote_revision_numbers()+"\""
                 +",\"receivable\":\""+getReceivable()+"\"";
         if(getStatus()>0)
             json_obj+=",\"status\":\""+getStatus()+"\"";
-        if(getCreator()!=null)
-            json_obj+=",\"creator\":\""+getCreator()+"\"";
-        if(getDate_logged()>0)
-            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
-        json_obj+=",\"other\":\""+getOther()+"\"}";
+        json_obj+="}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;

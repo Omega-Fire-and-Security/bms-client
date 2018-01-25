@@ -27,7 +27,6 @@ public class Job extends BusinessObject
     private long date_assigned;
     private long date_started;
     private long date_completed;
-    private long job_number;
     private String invoice_id;
     private String quote_id;
     private int status;
@@ -119,22 +118,6 @@ public class Job extends BusinessObject
     }
 
     /**
-     * @return Job number assigned to a Job object.
-     */
-    public long getJob_number()
-    {
-        return job_number;
-    }
-
-    /**
-     * @param job_number Job number to be assigned to a Job object.
-     */
-    public void setJob_number(long job_number)
-    {
-        this.job_number = job_number;
-    }
-
-    /**
      * @return Array of Employees assigned to a Job object.
      */
     public Employee[] getAssigned_employees()
@@ -190,11 +173,6 @@ public class Job extends BusinessObject
         return new SimpleStringProperty(quote_id);
     }
 
-    public StringProperty job_numberProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(getJob_number()));
-    }
-
     public StringProperty safety_catalogueProperty()
     {
         String s="";
@@ -234,7 +212,7 @@ public class Job extends BusinessObject
         Quote quote = getQuote();
         if(quote!=null)
             if(quote.getContact_person()!=null)
-                return new SimpleStringProperty(quote.getContact_person().toString());
+                return new SimpleStringProperty(quote.getContact_person().getName());
             else return new SimpleStringProperty("N/A");
         else return new SimpleStringProperty("N/A");
     }
@@ -284,9 +262,6 @@ public class Job extends BusinessObject
                 case "date_completed":
                     date_completed = Long.parseLong(String.valueOf(val));
                     break;
-                case "job_number":
-                    job_number = Long.parseLong(String.valueOf(val));
-                    break;
                 case "invoice_id":
                     invoice_id = (String)val;
                     break;
@@ -319,8 +294,6 @@ public class Job extends BusinessObject
     {
         switch (var.toLowerCase())
         {
-            case "job_number":
-                return getJob_number();
             case "quote_id":
                 return getQuote_id();
             case "status":
@@ -395,11 +368,10 @@ public class Job extends BusinessObject
     @Override
     public String toString()
     {
-        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"");
-        json_obj+="\"quote_id\":\""+quote_id+"\""
-                +",\"status\":\""+status+"\""
-                +",\"creator\":\""+getCreator()+"\""
-                +",\"date_logged\":\""+getDate_logged()+"\"";
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"quote_id\":\""+quote_id+"\""
+                +",\"status\":\""+status+"\"";
         if(date_assigned>0)
             json_obj+=",\"date_assigned\":\""+date_assigned+"\"";
         if(planned_start_date>0)

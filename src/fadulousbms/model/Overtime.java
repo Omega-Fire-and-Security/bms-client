@@ -39,8 +39,9 @@ public class Overtime extends BusinessObject implements Serializable
     public StringProperty job_numberProperty()
     {
         if(getJob()!=null)
-            return getJob().job_numberProperty();
-        else return new SimpleStringProperty("N/A");
+            return new SimpleStringProperty(String.valueOf(getJob().getObject_number()));
+        else IO.log(getClass().getName(), IO.TAG_ERROR, "Job object for Overtime record["+get_id()+"]{"+getObject_number()+"} is not set");
+        return new SimpleStringProperty("N/A");
     }
 
     public StringProperty job_idProperty(){return new SimpleStringProperty(getJob_id());}
@@ -236,6 +237,30 @@ public class Overtime extends BusinessObject implements Serializable
             IO.log(TAG, IO.TAG_ERROR, e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * @return JSON representation of Leave object.
+     */
+    @Override
+    public String toString()
+    {
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"usr\":\""+usr+"\""
+                +",\"job_id\":\""+job_id+"\"";
+        if(status>0)
+            json_obj+=",\"status\":\""+status+"\"";
+        if(date>0)
+            json_obj+=",\"date\":\""+date+"\"";
+        if(time_in>0)
+            json_obj+=",\"time_in\":\""+time_in+"\"";
+        if(time_out>0)
+            json_obj+=",\"time_out\":\""+time_out+"\"";
+        json_obj+="}";
+
+        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        return json_obj;
     }
 
     @Override

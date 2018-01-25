@@ -250,8 +250,9 @@ public class Asset extends BusinessObject
     @Override
     public String toString()
     {
-        String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
-                +"\"asset_name\":\""+getAsset_name()+"\""
+        String super_json = super.toString();
+        String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
+                +",\"asset_name\":\""+getAsset_name()+"\""
                 +",\"asset_description\":\""+getAsset_description()+"\""
                 +",\"asset_value\":\""+getAsset_value()+"\""
                 +",\"asset_serial\":\""+getAsset_serial()+"\""
@@ -262,11 +263,7 @@ public class Asset extends BusinessObject
             json_obj+=",\"date_acquired\":\""+getDate_acquired()+"\"";
         if(getDate_exhausted()>0)
             json_obj+=",\"date_exhausted\":\""+getDate_exhausted()+"\"";
-        if(getCreator()!=null)
-            json_obj+=",\"creator\":\""+getCreator()+"\"";
-        if(getDate_logged()>0)
-            json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
-        json_obj+=",\"other\":\""+getOther()+"\"}";
+        json_obj+="}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
