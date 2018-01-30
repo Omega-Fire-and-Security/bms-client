@@ -111,7 +111,7 @@ public class JobManager extends BusinessObjectManager
                 }
                 else
                 {
-                    IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                     return;
                 }
 
@@ -206,7 +206,7 @@ public class JobManager extends BusinessObjectManager
             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new job on database
-            HttpURLConnection connection = RemoteComms.putJSON("/jobs", job.toString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/jobs", job.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -374,12 +374,12 @@ public class JobManager extends BusinessObjectManager
                     if (!active.isExpired())
                     {
                         headers.add(new AbstractMap.SimpleEntry<>("Cookie", active.getSession_id()));
-                        HttpURLConnection conn = RemoteComms.postJSON(job.apiEndpoint(), job.toString(), headers);
+                        HttpURLConnection conn = RemoteComms.postJSON(job.apiEndpoint(), job.getJSONString(), headers);
                         if (conn != null)
                         {
                             if (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
                             {
-                                IO.logAndAlert("Success", "Successfully approved Job[" + job.getObject_number() + "]", IO.TAG_ERROR);
+                                IO.logAndAlert("Success", "Successfully approved Job[" + job.getObject_number() + "]", IO.TAG_INFO);
                                 if (callback != null)
                                     callback.call(null);
                             } else IO.logAndAlert("Error", "Could not approve Job[" + job.getObject_number() + "]: "
@@ -519,7 +519,7 @@ public class JobManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
-                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -528,7 +528,7 @@ public class JobManager extends BusinessObjectManager
 
                 FileMetadata fileMetadata = new FileMetadata("job_"+job.get_id()+".pdf","application/pdf");
                 fileMetadata.setFile(finalBase64_job);
-                HttpURLConnection connection = RemoteComms.postJSON("/jobs/approval_request", fileMetadata.toString(), headers);
+                HttpURLConnection connection = RemoteComms.postJSON("/jobs/approval_request", fileMetadata.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -778,7 +778,7 @@ public class JobManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);

@@ -126,7 +126,7 @@ public class RequisitionManager extends BusinessObjectManager
 
         //create new requisition on database
         //ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-        HttpURLConnection connection = RemoteComms.putJSON("/requisitions", requisition.toString(), headers);
+        HttpURLConnection connection = RemoteComms.putJSON("/requisitions", requisition.getJSONString(), headers);
         if(connection!=null)
         {
             if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -208,7 +208,7 @@ public class RequisitionManager extends BusinessObjectManager
                     IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
                 } else
                 {
-                    IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                     return;
                 }
 
@@ -227,8 +227,7 @@ public class RequisitionManager extends BusinessObjectManager
                                 requisitions = new HashMap<>();
                                 for (Requisition requisition : requisitions_arr)
                                     requisitions.put(requisition.get_id(), requisition);
-                            }
-                            else IO.log(getClass().getName(), IO.TAG_WARN, "no requisitions were found in database.");
+                            } else IO.log(getClass().getName(), IO.TAG_WARN, "no requisitions were found in database.");
                         } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Requisitions in database.");
                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "RequisitionServerObject (containing Requisition objects & other metadata) is null");
                     IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of purchase orders.");
@@ -315,7 +314,7 @@ public class RequisitionManager extends BusinessObjectManager
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
                             .getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -490,7 +489,7 @@ public class RequisitionManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
-                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -501,7 +500,7 @@ public class RequisitionManager extends BusinessObjectManager
                 fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
                 fileMetadata.setFile(finalBase64_requisition);
 
-                HttpURLConnection connection = RemoteComms.postJSON("/requisitions/request_approval", fileMetadata.toString(), headers);
+                HttpURLConnection connection = RemoteComms.postJSON("/requisitions/request_approval", fileMetadata.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

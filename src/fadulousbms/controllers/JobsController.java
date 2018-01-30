@@ -53,17 +53,18 @@ public class JobsController extends ScreenController implements Initializable
 
         if (JobManager.getInstance().getJobs() == null)
         {
-            IO.logAndAlert(getClass().getName(), "no jobs in database", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No jobs were found in the database.", IO.TAG_WARN);
             return;
         }
         if (JobManager.getInstance().getJobs().values() == null)
         {
-            IO.logAndAlert(getClass().getName(), "no jobs in database", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No jobs were found in the database.", IO.TAG_WARN);
             return;
         }
         colJobNum.setMinWidth(100);
         colJobNum.setCellValueFactory(new PropertyValueFactory<>("object_number"));
-        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 215, "job_description", "/jobs");
+        //CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 215, "job_description", "/jobs");
+        colRequest.setCellValueFactory(new PropertyValueFactory<>("job_description"));
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_name"));
         colSitename.setCellValueFactory(new PropertyValueFactory<>("sitename"));
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
@@ -319,7 +320,7 @@ public class JobsController extends ScreenController implements Initializable
 
         colAction.setCellValueFactory(new PropertyValueFactory<>(""));
         colAction.setCellFactory(cellFactory);
-        colAction.setMinWidth(900);
+        colAction.setMinWidth(1000);
 
         tblJobs.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 JobManager.getInstance().setSelected(tblJobs.getSelectionModel().getSelectedItem()));
@@ -382,7 +383,14 @@ public class JobsController extends ScreenController implements Initializable
                             stage.setTitle("Select Quote["+job.getQuote().get_id()+"] Revisions");
                             stage.setResizable(false);
 
-                            VBox container = new VBox(new Label("Choose Quote Revisions"));
+                            VBox container = new VBox();
+
+                            TextField txt_receivable = new TextField();
+                            HBox hbx_receivable = new HBox(new Label("Amount Receivable: "), txt_receivable);
+
+                            container.getChildren().add(hbx_receivable);
+                            container.getChildren().add(new Label("Choose Quote Revisions"));
+
                             HashMap<String, Quote> quote_revs = new HashMap<>();
                             for(Quote quote_rev: job.getQuote().getSortedSiblings("revision"))
                             {
@@ -412,7 +420,7 @@ public class JobsController extends ScreenController implements Initializable
                                                 String str_quote_revs="";
                                                 for(Quote quote: quote_revs.values())
                                                     str_quote_revs+=(str_quote_revs==""?quote.getRevision():";"+quote.getRevision());//comma separated revision numbers
-                                                InvoiceManager.getInstance().createInvoice(job, str_quote_revs, callback -> null);
+                                                InvoiceManager.getInstance().createInvoice(job, str_quote_revs, Double.parseDouble(txt_receivable.getText()), callback -> null);
 
                                                 //TODO: show Invoices tab
                                                 if (ScreenManager.getInstance()
@@ -425,6 +433,9 @@ public class JobsController extends ScreenController implements Initializable
                                                             .setScreen(Screens.OPERATIONS
                                                                     .getScreen()));
                                                 } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load invoices list screen.");
+                                            } catch (NumberFormatException e)
+                                            {
+                                                IO.log(JobsController.class.getName(), IO.TAG_ERROR, "Invalid amount receivable: " + e.getMessage());
                                             } catch (IOException e)
                                             {
                                                 IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());

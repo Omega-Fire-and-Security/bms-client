@@ -5,17 +5,10 @@
  */
 package fadulousbms.managers;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Session;
 import fadulousbms.model.Employee;
-import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  *

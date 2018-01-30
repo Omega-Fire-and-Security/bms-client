@@ -161,7 +161,7 @@ public class NewAssetController extends ScreenController implements Initializabl
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.putJSON("/assets", asset.toString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/assets", asset.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

@@ -132,7 +132,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
                 }
                 else
                 {
-                    IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                     return;
                 }
 
@@ -196,7 +196,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
                                 PurchaseOrderItem[] po_items_arr = new PurchaseOrderItem[purchaseOrderItems.size()];
                                 purchaseOrderItems.toArray(po_items_arr);
                                 po.setItems(po_items_arr);
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "PO #"+po.getNumber()+" has no items.");
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "PO #"+po.getObject_number()+" has no items.");
                         }
                     }
                     IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of purchase orders.");
@@ -329,7 +329,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
-                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -338,7 +338,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
 
                 FileMetadata fileMetadata = new FileMetadata("purchase_order_"+po.get_id()+".pdf","application/pdf");
                 fileMetadata.setFile(finalBase64_po);
-                HttpURLConnection connection = RemoteComms.postJSON("/purchaseorders/approval_request", fileMetadata.toString(), headers);
+                HttpURLConnection connection = RemoteComms.postJSON("/purchaseorders/approval_request", fileMetadata.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

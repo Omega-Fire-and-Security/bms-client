@@ -176,7 +176,7 @@ public abstract class BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
-                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -186,7 +186,7 @@ public abstract class BusinessObjectManager
                 FileMetadata fileMetadata = new FileMetadata(businessObject.getClass().getSimpleName().toLowerCase()+"_"+businessObject.get_id()+".pdf","application/pdf");
                 fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
                 fileMetadata.setFile(finalBase64_obj);
-                HttpURLConnection connection = RemoteComms.postJSON(businessObject.apiEndpoint()+"/mailto", fileMetadata.toString(), headers);
+                HttpURLConnection connection = RemoteComms.postJSON(businessObject.apiEndpoint()+"/mailto", fileMetadata.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

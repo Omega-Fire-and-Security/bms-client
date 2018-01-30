@@ -46,7 +46,7 @@ public class ClientsController extends ScreenController implements Initializable
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients view..");
         if( ClientManager.getInstance().getClients()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No clients were found in the database.", IO.TAG_WARN);
             return;
         }
 

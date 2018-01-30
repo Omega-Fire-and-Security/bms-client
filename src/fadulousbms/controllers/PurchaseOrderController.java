@@ -1070,7 +1070,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             }
 
             //create new purchase order on database
-            HttpURLConnection connection = RemoteComms.putJSON("/purchaseorders", purchaseOrder.toString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/purchaseorders", purchaseOrder.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -1107,9 +1107,9 @@ public class PurchaseOrderController extends OperationsController implements Ini
                         purchaseOrderItem.setCreator(SessionManager.getInstance().getActive().getUsr());
 
                         if(purchaseOrderItem instanceof PurchaseOrderAsset)
-                            connection = RemoteComms.putJSON("/purchaseorders/assets", purchaseOrderItem.toString(), headers);
+                            connection = RemoteComms.putJSON("/purchaseorders/assets", purchaseOrderItem.getJSONString(), headers);
                         else if(purchaseOrderItem instanceof PurchaseOrderResource)
-                            connection = RemoteComms.putJSON("/purchaseorders/resources", purchaseOrderItem.toString(), headers);
+                            connection = RemoteComms.putJSON("/purchaseorders/resources", purchaseOrderItem.getJSONString(), headers);
                         else IO.logAndAlert("Purchase Order Item Creation Error", "unknown purchase order item type ["+purchaseOrderItem+"].", IO.TAG_ERROR);
 
                         if (connection != null)

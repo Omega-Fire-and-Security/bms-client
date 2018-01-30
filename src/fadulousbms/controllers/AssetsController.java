@@ -49,12 +49,12 @@ public class AssetsController extends ScreenController implements Initializable
 
         if(AssetManager.getInstance().getAssets()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no assets found in database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No assets found in the database.", IO.TAG_WARN);
             return;
         }
         if(AssetManager.getInstance().getAsset_types()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no asset types found in database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getName(), "No asset types were found in the database.", IO.TAG_WARN);
             return;
         }
 
@@ -66,20 +66,20 @@ public class AssetsController extends ScreenController implements Initializable
 
         colId.setMinWidth(100);
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colName, TextFieldTableCell.forTableColumn(), 120, "asset_name", "/api/asset");
-        CustomTableViewControls.makeEditableTableColumn(colSerial, TextFieldTableCell.forTableColumn(), 60, "asset_serial", "/api/asset");
+        CustomTableViewControls.makeEditableTableColumn(colName, TextFieldTableCell.forTableColumn(), 120, "asset_name", "/assets");
+        CustomTableViewControls.makeEditableTableColumn(colSerial, TextFieldTableCell.forTableColumn(), 60, "asset_serial", "/assets");
 
         colType.setMinWidth(120);
         colType.setCellValueFactory(new PropertyValueFactory<>("asset_type"));
-        colType.setCellFactory(col -> new ComboBoxTableCell(AssetManager.getInstance().getAsset_types(), "asset_type", "/api/asset"));
+        colType.setCellFactory(col -> new ComboBoxTableCell(AssetManager.getInstance().getAsset_types(), "asset_type", "/assets"));
 
-        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 215, "asset_description", "/api/asset");
-        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 60, "asset_value", "/api/asset");
-        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 60, "account", "/api/asset");
-        CustomTableViewControls.makeEditableTableColumn(colUnit, TextFieldTableCell.forTableColumn(), 50, "unit", "/api/asset");
+        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 215, "asset_description", "/assets");
+        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 60, "asset_value", "/assets");
+        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 60, "account", "/assets");
+        CustomTableViewControls.makeEditableTableColumn(colUnit, TextFieldTableCell.forTableColumn(), 50, "unit", "/assets");
         colQuantity.setMinWidth(80);
         colQuantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-        //CustomTableViewControls.makeEditableTableColumn(colQuantity, TextFieldTableCell.forTableColumn(), 50, "quantity", "/api/asset");
+        //CustomTableViewControls.makeEditableTableColumn(colQuantity, TextFieldTableCell.forTableColumn(), 50, "quantity", "/assets");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAcquired, "date_acquired");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateExhausted, "date_exhausted");
         CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/assets");

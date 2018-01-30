@@ -196,8 +196,7 @@ public abstract class BusinessObject implements Serializable
 
     public abstract String asUTFEncodedString();
 
-    @Override
-    public String toString()
+    public String getJSONString()
     {
         String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
                 +"\"object_number\":\""+getObject_number()+"\"";

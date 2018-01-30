@@ -47,7 +47,7 @@ public class SuppliersController extends ScreenController implements Initializab
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading suppliers view..");
         if(SupplierManager.getInstance().getSuppliers()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no suppliers found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No suppliers found in the database.", IO.TAG_WARN);
             return;
         }
         Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getSuppliers().values().toArray().length];

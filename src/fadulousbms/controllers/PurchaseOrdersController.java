@@ -53,7 +53,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
 
         if(SupplierManager.getInstance().getSuppliers()==null)
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, "no suppliers found in the database.");
+            IO.logAndAlert(getClass().getSimpleName(), "No suppliers were found in the database.", IO.TAG_WARN);
             return;
         }
         Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getSuppliers().values().toArray().length];
@@ -61,7 +61,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
 
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
         colId.setPrefWidth(100);
-        colPONumber.setCellValueFactory(new PropertyValueFactory<>("number"));
+        colPONumber.setCellValueFactory(new PropertyValueFactory<>("object_number"));
         colPONumber.setPrefWidth(80);
 
         colSupplier.setMinWidth(120);
@@ -70,7 +70,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
         //CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/api/purchaseorder");
         //CustomTableViewControls.makeEditableTableColumn(colVat, TextFieldTableCell.forTableColumn(), 50, "vat", "/api/purchaseorder");
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", false);
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/purchaseorders");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));

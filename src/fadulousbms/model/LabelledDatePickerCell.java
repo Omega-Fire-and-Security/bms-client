@@ -25,7 +25,7 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
 {
     private final SimpleDateFormat formatter;
     private final DatePicker datePicker;
-    private boolean editable;
+    private boolean editable=true;
     private final Label label = new Label("double click to set");
     private String property;
 

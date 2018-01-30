@@ -31,6 +31,7 @@ public class ViewPurchaseOrderController extends PurchaseOrderController
             if(PurchaseOrderManager.getInstance().getSelected().getSupplier()!=null)
                 cbxSuppliers.setValue(PurchaseOrderManager.getInstance().getSelected().getSupplier());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid supplier.");
+            cbxSuppliers.setPromptText("prompt text");
             //set selected supplier contact person combo box value
             if(PurchaseOrderManager.getInstance().getSelected().getContact_person()!=null)
                 cbxContactPerson.setValue(PurchaseOrderManager.getInstance().getSelected().getContact_person());
@@ -55,9 +56,9 @@ public class ViewPurchaseOrderController extends PurchaseOrderController
             toggleVatExempt.setText(PurchaseOrderManager.getInstance().getSelected().getVatVal()==QuoteManager.VAT?QuoteManager.VAT+"%":"VAT exempt");
             toggleVatExempt.setSelected(PurchaseOrderManager.getInstance().getSelected().getVatVal()==QuoteManager.VAT?false:true);
             //set selected PO number
-            txtNumber.setText(PurchaseOrderManager.getInstance().getSelected().getNumber());
+            txtNumber.setText(String.valueOf(PurchaseOrderManager.getInstance().getSelected().getObject_number()));
             //set selected PO creator Employee name
-            txtCreator.setText(PurchaseOrderManager.getInstance().getSelected().getCreator().toString());
+            txtCreator.setText(PurchaseOrderManager.getInstance().getSelected().getCreatorEmployee().getName());
 
             //load account[s] for Supplier
             if(PurchaseOrderManager.getInstance().getSelected().getSupplier()!=null)

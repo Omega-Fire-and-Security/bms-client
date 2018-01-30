@@ -6,6 +6,7 @@ import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Resource;
 import fadulousbms.model.ResourceType;
+import fadulousbms.model.Screens;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -154,25 +155,26 @@ public class NewResourceController extends ScreenController implements Initializ
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.putJSON("/resources", resource.toString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/resources", resource.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                 {
-                    String response = IO.readStream(connection.getInputStream());
+                    String resource_id = IO.readStream(connection.getInputStream());
 
-                    if(response==null)
+                    if(resource_id==null)
                     {
                         IO.logAndAlert("New Resource Creation Failure", "Invalid response.", IO.TAG_ERROR);
                         return;
                     }
-                    if(response.isEmpty())
+                    if(resource_id.isEmpty())
                     {
                         IO.logAndAlert("New Resource Creation Failure", "Invalid response.", IO.TAG_ERROR);
                         return;
                     }
                     ResourceManager.getInstance().setSelected(resource);
-                    IO.logAndAlert("New Resource Creation Success", "Successfully created a new Resource ["+response+"]", IO.TAG_INFO);
+                    IO.log(getClass().getName(), IO.TAG_INFO, "Successfully created a new Resource ["+resource_id+"]");
+                    IO.logAndAlert("New Resource Creation Success", "Successfully created a new Resource ["+resource.getResource_name()+"]", IO.TAG_INFO);
                     itemsModified = false;
                 }else
                 {
@@ -206,13 +208,28 @@ public class NewResourceController extends ScreenController implements Initializ
     @FXML
     public void back()
     {
-        try
+        ScreenManager.getInstance().showLoadingScreen(param ->
         {
-            ScreenManager.getInstance().setPreviousScreen();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            ScreenManager.getInstance().setScreen(Screens.OPERATIONS.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load operations screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 }

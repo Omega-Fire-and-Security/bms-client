@@ -51,17 +51,17 @@ public class RequisitionsController extends OperationsController implements Init
 
         if(EmployeeManager.getInstance().getEmployees()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no employees were found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getName(), "No employees were found in the database.", IO.TAG_ERROR);
             return;
         }
         if(RequisitionManager.getInstance().getRequisitions()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no requisitions were found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No requisitions were found in the database.", IO.TAG_WARN);
             return;
         }
         if(ClientManager.getInstance().getClients()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getName(), "No clients were found in the database.", IO.TAG_WARN);
             return;
         }
 
@@ -72,7 +72,7 @@ public class RequisitionsController extends OperationsController implements Init
         colResponsiblePerson.setMinWidth(120);
         colResponsiblePerson.setCellValueFactory(new PropertyValueFactory<>("responsible_person"));
         //colResponsiblePerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "responsible_person_id", "usr"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", false);
         CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "description", "/requisitions");
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
         //CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", RequisitionManager.TYPES, false,"/requisitions");
@@ -294,9 +294,7 @@ public class RequisitionsController extends OperationsController implements Init
         tblRequisitions.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 RequisitionManager.getInstance().setSelected(tblRequisitions.getSelectionModel().getSelectedItem()));
 
-        if(RequisitionManager.getInstance().getRequisitions()!=null)
-            tblRequisitions.setItems(FXCollections.observableArrayList(RequisitionManager.getInstance().getRequisitions().values()));
-        else IO.log(getClass().getName(), IO.TAG_WARN, "no requisitions were found in the database.");
+        tblRequisitions.setItems(FXCollections.observableArrayList(RequisitionManager.getInstance().getRequisitions().values()));
     }
 
     public void requestApproval()

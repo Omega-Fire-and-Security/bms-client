@@ -34,6 +34,7 @@ import javafx.util.Duration;
 import jfxtras.labs.scene.control.radialmenu.RadialContainerMenuItem;
 import jfxtras.labs.scene.control.radialmenu.RadialMenu;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+import org.controlsfx.control.MaskerPane;
 
 /**
  *
@@ -57,8 +58,8 @@ public class ScreenManager extends StackPane
     private ScreenController focused;
     private String focused_id;
     private String previous_id;
-    private Node loading_screen;
-    private ScreenController loading_screen_ctrl;
+    //private Node loading_screen;
+    //private ScreenController loading_screen_ctrl;
     private Node screen = null;
     private static ScreenManager screenManager = new ScreenManager();
     private Label lblScreenName;
@@ -67,7 +68,7 @@ public class ScreenManager extends StackPane
     private ScreenManager()
     {
         super();
-        try
+        /*try
         {
             FXMLLoader loader = new FXMLLoader(fadulousbms.FadulousBMS.class.getResource("views/loading.fxml"));
             loading_screen = loader.load();
@@ -76,7 +77,7 @@ public class ScreenManager extends StackPane
         } catch (IOException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+        }*/
     }
 
     public static ScreenManager getInstance()
@@ -290,17 +291,21 @@ public class ScreenManager extends StackPane
 
     public void showLoadingScreen(Callback callback)
     {
-        if(getChildren().setAll(new Node[]{}))//remove all screens
+        //if(getChildren().setAll(new Node[]{}))//remove all screens
         {
-            loading_screen_ctrl.refreshStatusBar("Loading data, please wait...");
-            loading_screen_ctrl.refreshView();
-            getChildren().add(loading_screen);
+            //loading_screen_ctrl.refreshStatusBar("Loading data, please wait...");
+            //loading_screen_ctrl.refreshView();
+            MaskerPane maskerPane= new MaskerPane();
+            maskerPane.setVisible(true);
+            getChildren().add(maskerPane);
+            //getChildren().add(loading_screen);
             /*if(focused!=null)
             {
                 focused.getLoadingPane().setVisible(true);
                 //System.out.println(focused.getLoadingPane()==null);
             }*/
-            callback.call(null);
+            if(callback!=null)
+                callback.call(null);
         }
     }
 

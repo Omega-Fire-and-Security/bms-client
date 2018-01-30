@@ -67,12 +67,30 @@ public class ViewQuoteController extends QuoteController
                 btnApprove.setDisable(false);
             }
 
+            /*cbxClients.setCellFactory(new Callback<ListView<Client>, ListCell<Client>>()
+            {
+                @Override
+                public ListCell<Client> call(ListView<Client> param)
+                {
+                    return new ListCell<Client>()
+                    {
+                        @Override
+                        protected void updateItem(Client item, boolean empty)
+                        {
+                            super.updateItem(item, empty);
+                            if(item!=null && !empty)
+                                setText(item.getClient_name());
+                        }
+                    };
+                }
+            });*/
             cbxClients.setValue(selected.getClient());
+            cbxClients.setPromptText("Some client");
             cbxContactPerson.setValue(selected.getContact_person());
             txtCell.setText(selected.getContact_person().getCell());
             txtTel.setText(selected.getContact_person().getTel());
             txtEmail.setText(selected.getContact_person().getEmail());
-            txtFax.setText(cbxClients.getValue().getFax());
+            txtFax.setText(selected.getClient().getFax());
             if(selected.getParent_id()!=null)
                 txtQuoteId.setText(selected.getParent().get_id());
             else txtQuoteId.setText(selected.get_id());
@@ -101,7 +119,6 @@ public class ViewQuoteController extends QuoteController
 
             try
             {
-                //String date = LocalDate.parse(new SimpleDateFormat("EEE, d MMM yyyy").format(new Date(selected.getDate_generated()*1000))).toString();
                 String date = new Date(selected.getDate_logged()).toString();
                 txtDateGenerated.setText(date);
             } catch (DateTimeException e)

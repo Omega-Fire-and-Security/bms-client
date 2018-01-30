@@ -53,7 +53,7 @@ public class InvoicesController extends ScreenController implements Initializabl
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading invoices view..");
         if(InvoiceManager.getInstance().getInvoices()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no invoices were found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No invoices were found in the database.", IO.TAG_WARN);
             return;
         }
         colInvoiceNum.setMinWidth(140);
@@ -62,7 +62,7 @@ public class InvoicesController extends ScreenController implements Initializabl
         colJobNum.setCellValueFactory(new PropertyValueFactory<>("job_number"));
         colClient.setMinWidth(80);
         colClient.setCellValueFactory(new PropertyValueFactory<>("client"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", false);
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/invoices");
         colCreator.setMinWidth(70);
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
@@ -71,7 +71,7 @@ public class InvoicesController extends ScreenController implements Initializabl
         CustomTableViewControls.makeEditableTableColumn(colReceivable, TextFieldTableCell.forTableColumn(), 80, "receivable", "/invoices");
         CustomTableViewControls.makeJobManagerAction(colAction, 600, null);
         CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 80, "other", "/invoices");
-        colAction.setMinWidth(360);
+        colAction.setMinWidth(460);
 
         ObservableList<Invoice> lst_invoices = FXCollections.observableArrayList();
         lst_invoices.addAll(InvoiceManager.getInstance().getInvoices().values());

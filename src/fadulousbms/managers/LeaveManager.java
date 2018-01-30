@@ -107,7 +107,7 @@ public class LeaveManager extends BusinessObjectManager
                         IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
                     } else
                     {
-                        IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                        IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                         return;
                     }
 
@@ -197,7 +197,7 @@ public class LeaveManager extends BusinessObjectManager
         txt_employee.setMinWidth(200);
         txt_employee.setMaxWidth(Double.MAX_VALUE);
         txt_employee.setEditable(false);
-        txt_employee.setText(employee.toString());
+        txt_employee.setText(employee.getName());
         HBox employee_container = CustomTableViewControls.getLabelledNode("Employee: ", 200, txt_employee);
 
         final ComboBox<String> cbx_type = new ComboBox<>();
@@ -484,7 +484,7 @@ public class LeaveManager extends BusinessObjectManager
                         if(employee!=null && !empty)
                         {
                             super.updateItem(employee, empty);
-                            setText(employee.toString() + " <" + employee.getEmail() + ">");
+                            setText(employee.getName() + " <" + employee.getEmail() + ">");
                         }
                     }
                 };
@@ -539,7 +539,7 @@ public class LeaveManager extends BusinessObjectManager
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
                             .getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -679,7 +679,7 @@ public class LeaveManager extends BusinessObjectManager
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
                             .getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -743,16 +743,17 @@ public class LeaveManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
                 leave.setStatus(Leave.STATUS_APPROVED);
                 try
                 {
-                    HttpURLConnection connection = RemoteComms.postData( "/api/leave_record/update/"+leave.get_id(), leave.asUTFEncodedString(), headers);
+                    HttpURLConnection connection = RemoteComms.postData( "/leave_records", leave.getJSONString(), headers);
                     if(connection!=null)
                     {
                         if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                         {
-                            IO.logAndAlert("Success", leave.getEmployee().toString()+"'s leave application has been successfully approved.", IO.TAG_INFO);
+                            IO.logAndAlert("Success", leave.getEmployee().getName()+"'s leave application has been successfully approved.", IO.TAG_INFO);
                             if(callback!=null)
                                 callback.call(null);
                         }else{

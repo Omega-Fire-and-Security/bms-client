@@ -53,17 +53,17 @@ public class QuotesController extends OperationsController implements Initializa
 
         if(EmployeeManager.getInstance().getEmployees()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no employees were found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No employees were found in the database.", IO.TAG_ERROR);
             return;
         }
         if(QuoteManager.getInstance().getQuotes()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no quotes were found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No quotes were found in the database.", IO.TAG_WARN);
             return;
         }
         if(ClientManager.getInstance().getClients()==null)
         {
-            IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_ERROR);
+            IO.logAndAlert(getClass().getSimpleName(), "No clients were found in the database.", IO.TAG_WARN);
             return;
         }
 
@@ -75,10 +75,11 @@ public class QuotesController extends OperationsController implements Initializa
         colContactPerson.setMinWidth(120);
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
         //colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr"));
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", false);
         CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", "/quotes");
         CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", "/quotes");
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/quotes");
+        colCreator.setMinWidth(100);
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colRevision.setCellValueFactory(new PropertyValueFactory<>("revision"));
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));

@@ -1,17 +1,15 @@
 package fadulousbms.model;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 /**
  * Created by ghost on 2017/01/13.
  */
 public class ResourceType extends Type
 {
+    public ResourceType(String type_name, String type_description)
+    {
+        super(type_name, type_description);
+    }
+
     @Override
     public String apiEndpoint()
     {

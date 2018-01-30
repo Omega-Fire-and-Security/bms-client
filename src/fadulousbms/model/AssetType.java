@@ -7,6 +7,11 @@ import java.io.Serializable;
  */
 public class AssetType extends Type implements Serializable
 {
+    public AssetType(String type_name, String type_description)
+    {
+        super(type_name, type_description);
+    }
+
     @Override
     public String apiEndpoint()
     {

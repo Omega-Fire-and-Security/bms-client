@@ -106,7 +106,7 @@ public class ClientManager extends BusinessObjectManager
                     IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
                 } else
                 {
-                    IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                     return;
                 }
 

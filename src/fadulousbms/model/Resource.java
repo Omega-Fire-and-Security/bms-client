@@ -254,9 +254,9 @@ public class Resource extends BusinessObject implements Serializable
     }
 
     @Override
-    public String toString()
+    public String getJSONString()
     {
-        String super_json = super.toString();
+        String super_json = super.getJSONString();
         String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
                 +",\"resource_name\":\""+getResource_name()+"\""
                 +",\"resource_description\":\""+getResource_description()+"\""

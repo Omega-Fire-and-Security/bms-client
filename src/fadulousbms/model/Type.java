@@ -16,6 +16,12 @@ public class Type extends BusinessObject implements Serializable
     private String type_name;
     private String type_description;
 
+    public Type(String type_name, String type_description)
+    {
+        setType_name(type_name);
+        setType_description(type_description);
+    }
+
     public StringProperty type_nameProperty(){return new SimpleStringProperty(type_name);}
 
     public String getType_name()
@@ -95,15 +101,21 @@ public class Type extends BusinessObject implements Serializable
     }
 
     @Override
-    public String toString()
+    public String getJSONString()
     {
-        String super_json = super.toString();
+        String super_json = super.getJSONString();
         String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
                 +",\"type_name\":\""+getType_name()+"\""
                 +",\"type_description\":\""+getType_description()+"\"}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getType_name();
     }
 
     @Override

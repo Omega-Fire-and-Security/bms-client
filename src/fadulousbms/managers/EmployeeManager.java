@@ -228,7 +228,7 @@ public class EmployeeManager extends BusinessObjectManager
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
-                HttpURLConnection connection = RemoteComms.putJSON("/employees", employee.toString(), headers);
+                HttpURLConnection connection = RemoteComms.putJSON("/employees", employee.getJSONString(), headers);
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                 {
                     IO.logAndAlert("Account Creation Success", "Successfully created new user!", IO.TAG_INFO);

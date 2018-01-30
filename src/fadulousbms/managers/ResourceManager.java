@@ -130,7 +130,7 @@ public class ResourceManager extends BusinessObjectManager
                 }
                 else
                 {
-                    IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                     return;
                 }
 
@@ -456,6 +456,16 @@ public class ResourceManager extends BusinessObjectManager
 
     public void newResourceTypeWindow(Callback callback)
     {
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Error: Session Expired", "Active session has expired.\nPlease log in.", IO.TAG_ERROR);
+            return;
+        }
         Stage stage = new Stage();
         stage.setTitle(Globals.APP_NAME.getValue() + " - Create New Material Type");
         stage.setWidth(520);
@@ -497,13 +507,18 @@ public class ResourceManager extends BusinessObjectManager
             String str_type_other = txt_other.getText();
 
             ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("type_name", str_type_name));
+            /*params.add(new AbstractMap.SimpleEntry<>("type_name", str_type_name));
             params.add(new AbstractMap.SimpleEntry<>("type_description", str_type_description));
-            params.add(new AbstractMap.SimpleEntry<>("other", String.valueOf(str_type_other)));
+            params.add(new AbstractMap.SimpleEntry<>("other", String.valueOf(str_type_other)));*/
+
+            ResourceType resourceType = new ResourceType(str_type_name, str_type_description);
+            resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
+            resourceType.setOther(str_type_other);
 
             try
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
                 if(SessionManager.getInstance().getActive()!=null)
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 else
@@ -512,7 +527,7 @@ public class ResourceManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/resource/type/add", params, headers);
+                HttpURLConnection connection = RemoteComms.putJSON("/resources/types", resourceType.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

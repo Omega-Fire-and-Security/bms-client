@@ -106,7 +106,7 @@ public class OvertimeManager extends BusinessObjectManager
                     }
                     else
                     {
-                        IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                        IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                         return;
                     }
 
@@ -169,7 +169,7 @@ public class OvertimeManager extends BusinessObjectManager
         txt_employee.setMinWidth(200);
         txt_employee.setMaxWidth(Double.MAX_VALUE);
         txt_employee.setEditable(false);
-        txt_employee.setText(employee.toString());
+        txt_employee.setText(employee.getName());
         HBox employee_container = CustomTableViewControls.getLabelledNode("Employee: ", 200, txt_employee);
 
         ComboBox<Job> cbx_jobs = new ComboBox<>();
@@ -347,7 +347,7 @@ public class OvertimeManager extends BusinessObjectManager
                     {
                         if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                         {
-                            IO.logAndAlert("Success", overtime.getEmployee().toString()+"'s overtime request has been successfully approved.", IO.TAG_INFO);
+                            IO.logAndAlert("Success", overtime.getEmployee().getName()+"'s overtime request has been successfully approved.", IO.TAG_INFO);
                             if(callback!=null)
                                 callback.call(null);
                         }else{

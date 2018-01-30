@@ -104,9 +104,9 @@ public class JobEmployee extends BusinessObject
      * @return JSON representation of JobEmployee object.
      */
     @Override
-    public String toString()
+    public String getJSONString()
     {
-        String super_json = super.toString();
+        String super_json = super.getJSONString();
         String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
                 +",\"job_id\":\""+job_id+"\""
                 +",\"usr\":\""+usr+"\"";

@@ -47,7 +47,7 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
                 if(newValue.get(comparator_property)!=null)
                     commitEdit((String) newValue.get(comparator_property));
                 else IO.log(TAG, IO.TAG_WARN, "object [" + newValue + "] parser returned null for property [" + comparator_property + "]." );
-            else IO.log(TAG, IO.TAG_WARN, "not committing to server.");
+            else IO.log(TAG, IO.TAG_WARN, "no changes were made to "+newValue.getClass()+"'s "+comparator_property+" attribute, not committing to server.");
         });
     }
 

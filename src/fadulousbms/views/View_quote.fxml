@@ -43,7 +43,12 @@
                         <Insets right="5.0" />
                     </HBox.margin>
                 </Button>
-                <Button defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#apply" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Update Quote">
+                <Button defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#newRevision" styleClass="btnDefault" stylesheets="@../styles/home.css" text="New Revision">
+                    <HBox.margin>
+                        <Insets right="5.0" />
+                    </HBox.margin>
+                </Button>
+                <Button defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#updateQuote" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Update Quote">
                     <HBox.margin>
                         <Insets right="5.0" />
                     </HBox.margin>

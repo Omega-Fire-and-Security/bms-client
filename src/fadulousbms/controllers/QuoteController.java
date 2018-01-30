@@ -202,9 +202,11 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
+        cbxClients.setItems(FXCollections.observableArrayList(ClientManager.getInstance().getClients().values()));
         cbxClients.setCellFactory(new Callback<ListView<Client>, ListCell<Client>>()
         {
-            @Override public ListCell<Client> call(ListView<Client> p)
+            @Override
+            public ListCell<Client> call(ListView<Client> param)
             {
                 return new ListCell<Client>()
                 {
@@ -212,11 +214,10 @@ public abstract class QuoteController extends ScreenController implements Initia
                     protected void updateItem(Client item, boolean empty)
                     {
                         super.updateItem(item, empty);
-
-                        if (item == null || empty)
-                        {
+                        if (item == null || empty) {
                             setGraphic(null);
-                        } else{
+                            setText(null);
+                        } else {
                             setText(item.getClient_name());
                         }
                     }
@@ -224,7 +225,6 @@ public abstract class QuoteController extends ScreenController implements Initia
             }
         });
         cbxClients.setButtonCell(null);
-        cbxClients.setItems(FXCollections.observableArrayList(ClientManager.getInstance().getClients().values()));
         /*cbxClients.setOnAction(event ->
         {
             if(cbxClients.getValue()!=null)
@@ -256,7 +256,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                 };
             }
         });
-        cbxContactPerson.setButtonCell(null);
+        //cbxContactPerson.setButtonCell(null);
         if(employees!=null)
             cbxContactPerson.setItems(FXCollections.observableArrayList(employees));
         cbxContactPerson.setOnAction(event ->
@@ -473,7 +473,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                         getTableView().getItems().remove(employee);
                                         getTableView().refresh();
                                         //TODO: remove from server
-                                        System.out.println("Successfully removed sale representative: " + employee.toString());
+                                        System.out.println("Successfully removed sale representative: " + employee.getName());
                                     });
                                     setGraphic(btnRemove);
                                     setText(null);
@@ -877,7 +877,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @FXML
-    public void apply()
+    public void newRevision()
     {
         SessionManager smgr = SessionManager.getInstance();
         if(smgr.getActive()!=null)
@@ -889,7 +889,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                 {
                     if(!txtQuoteId.getText().isEmpty())
                     {
-                        updateQuote();
+                        newQuoteRevision();
                         return;
                     }
                 }
@@ -908,9 +908,19 @@ public abstract class QuoteController extends ScreenController implements Initia
             if(selected.getStatus()!=Quote.STATUS_APPROVED)
             {
                 selected.setStatus(Quote.STATUS_APPROVED);
-                QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems());
-                refreshModel();
-                refreshView();
+
+                ObservableList<QuoteItem> quoteItems = tblQuoteItems.getItems();
+                if(!quoteItems.isEmpty())
+                {
+                    QuoteItem[] quote_items_arr = new QuoteItem[quoteItems.size()];
+                    quoteItems.toArray(quote_items_arr);
+                    /*
+                        The version on updateQuote() that takes an array of QuoteItems doesn't check whether the Quote has been approved or not
+                     */
+                    QuoteManager.getInstance().updateQuote(selected, quote_items_arr);
+                    refreshModel();
+                    refreshView();
+                } else IO.logAndAlert("Error", "Quote has no materials", IO.TAG_ERROR);
             } else IO.logAndAlert("Error", "Selected quote has already been approved.", IO.TAG_ERROR);
         } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
@@ -1050,7 +1060,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @FXML
-    public void updateQuote()
+    public void newQuoteRevision()
     {
         cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxClients.getValue()==null)
@@ -1222,7 +1232,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @FXML
-    public void updateQuoteLegacy()
+    public void updateQuote()
     {
         cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         if(cbxClients.getValue()==null)
@@ -1288,7 +1298,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         {
             if(selected.getStatus()==Quote.STATUS_APPROVED)
             {
-                IO.logAndAlert("Error", "Selected Quote has already been approved and can no longer be changed.", IO.TAG_ERROR);
+                IO.logAndAlert("Error", "Selected Quote has already been approved and can no longer be changed. \nCreate a new revision if you'd like to make updates to this quote.", IO.TAG_ERROR);
                 return;
             }
             selected.setClient_id(cbxClients.getValue().get_id());

@@ -398,7 +398,7 @@ public class PDF
         addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getDate_logged()*1000)), 16,(int)w/2+100, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "I "+leave.getEmployee().toString() + " hereby wish to apply for leave as indicated below.", PDType1Font.TIMES_ITALIC, 16 ,10, line_pos);
+        addTextToPageStream(contents, "I "+leave.getEmployee().getName() + " hereby wish to apply for leave as indicated below.", PDType1Font.TIMES_ITALIC, 16 ,10, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
         //Create column headings
@@ -559,7 +559,7 @@ public class PDF
         //line_pos-=LINE_HEIGHT;//next line
 
         //left text
-        addTextToPageStream(contents,"Purchase Order #" + purchaseOrder.getNumber(), PDType1Font.COURIER_BOLD_OBLIQUE, 17,20, line_pos);
+        addTextToPageStream(contents,"Purchase Order #" + purchaseOrder.getObject_number(), PDType1Font.COURIER_BOLD_OBLIQUE, 17,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,20, line_pos);
         line_pos-=LINE_HEIGHT;
@@ -929,11 +929,11 @@ public class PDF
         if(new File("out/pdf/").mkdirs())
             IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
         
-        String path = "out/pdf/purchase_order_" + purchaseOrder.getNumber() + ".pdf";
+        String path = "out/pdf/purchase_order_" + purchaseOrder.get_id() + ".pdf";
         int i=1;
         while(new File(path).exists())
         {
-            path = "out/pdf/purchase_order_" + purchaseOrder.getNumber() + "." + i + ".pdf";
+            path = "out/pdf/purchase_order_" + purchaseOrder.get_id() + "." + i + ".pdf";
             i++;
         }
 
@@ -978,19 +978,22 @@ public class PDF
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
-        PDPageContentStream contents = new PDPageContentStream(document, page);
-        int logo_h = 60;
-        PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
-        contents.drawImage(logo, 10, 770, 160, logo_h);
-
         float w = page.getBBox().getWidth();
         float h = page.getBBox().getHeight();
-        int line_pos = (int)h-logo_h-20;
+
+        PDPageContentStream contents = new PDPageContentStream(document, page);
+        //int logo_h = 60;
+        int header_h = 90;
+        //PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        PDImageXObject header = PDImageXObject.createFromFile("images/header.jpg", document);
+        contents.drawImage(header, 0, 760, w, header_h);
+
+        int line_pos = (int)h-header_h-0;
         int digit_font_size=9;
 
         /**Draw lines**/
         int center_vert_line_start = line_pos;
-        int bottom_line = (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT;
+        int bottom_line = (int)h-header_h-(ROW_COUNT+1)*LINE_HEIGHT;
         createLinesAndBordersOnPage(contents, (int)w, line_pos, bottom_line);
 
         /** begin text from the top**/
@@ -998,23 +1001,23 @@ public class PDF
         contents.setFont(font, 12);
         line_pos-=LINE_HEIGHT/2;
         //left text
-        addTextToPageStream(contents,"Client Information", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)((w/2)/4), line_pos);
+        addTextToPageStream(contents,"Client Details", PDType1Font.COURIER, 15,(int)((w/2)/4), line_pos);
         //right text
-        addTextToPageStream(contents,"Quotation No.: " + quote.quoteProperty().getValue(), PDType1Font.COURIER_BOLD_OBLIQUE, 11, (int)(w/2)+5, line_pos);
+        addTextToPageStream(contents,"Quotation No.: " + quote.quoteProperty().getValue(), PDType1Font.COURIER, 11, (int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
         //left text
         addTextToPageStream(contents,"Company: " + client.getClient_name(), 12, 20, line_pos);
         //right text
-        addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,(int)(w/2)+5, line_pos);
-        line_pos-=LINE_HEIGHT;
+        //addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,(int)(w/2)+5, line_pos);
+        //line_pos-=LINE_HEIGHT;
         addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(quote.getDate_logged()))), 12,(int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
         //left text
         addTextToPageStream(contents,"Company Tel: " + client.getTel(), 12,20, line_pos);
         //right text
-        addTextToPageStream(contents,"Sale Consultant(s): ", PDType1Font.COURIER_BOLD_OBLIQUE, 16,(int)((w/2)+((w/2)/4)), line_pos);
+        addTextToPageStream(contents,"Sale Consultant(s): ", PDType1Font.COURIER, 16,(int)((w/2)+((w/2)/4)), line_pos);
 
         //horizontal solid line after company details
         contents.endText();
@@ -1028,11 +1031,11 @@ public class PDF
 
         int temp_pos = line_pos;
         //left text
-        addTextToPageStream(contents,"Contact Person:  " + contact.toString(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Tel    :  " + contact.getTel(), PDType1Font.HELVETICA_BOLD, 12,120, line_pos);
+        addTextToPageStream(contents,"Contact Person:  " + contact.getName(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"Cell   :  " + contact.getCell(), PDType1Font.HELVETICA_BOLD, 12,120, line_pos);
+        line_pos-=LINE_HEIGHT;//next line
+        addTextToPageStream(contents,"Tel    :  " + contact.getTel(), PDType1Font.HELVETICA_BOLD, 12,120, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"eMail :  " + contact.getEmail(), PDType1Font.HELVETICA_BOLD, 12,120, line_pos);
 
@@ -1049,7 +1052,7 @@ public class PDF
         //Render sale representatives
         int int_rep_count=0;
         //if the page can't hold 4 more lines add a new page
-        if(line_pos-(4*LINE_HEIGHT)<h-logo_h-(ROW_COUNT*LINE_HEIGHT) || temp_pos-(4*LINE_HEIGHT)<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
+        if(line_pos-(4*LINE_HEIGHT)<h-header_h-(ROW_COUNT*LINE_HEIGHT) || temp_pos-(4*LINE_HEIGHT)<h-header_h-(ROW_COUNT*LINE_HEIGHT))
         {
             addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.HELVETICA_OBLIQUE, 14,(int)(w/2)-20, 50);
             //add new page
@@ -1058,8 +1061,8 @@ public class PDF
             //TODO: setup page, i.e. draw lines and stuff
             contents.close();
             contents = new PDPageContentStream(document, page);
-            temp_pos = (int)h-logo_h;
-            line_pos = (int)h-logo_h;
+            temp_pos = (int)h-header_h;
+            line_pos = (int)h-header_h;
 
             createLinesAndBordersOnPage(contents, (int)w, line_pos, line_pos+LINE_HEIGHT/2);
 
@@ -1070,9 +1073,9 @@ public class PDF
         //render Quote contact person
         addTextToPageStream(contents,"Contact Person: "+quote.getContact_person().getFirstname()+" "+quote.getContact_person().getLastname(), 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Tel    :  " + quote.getContact_person().getTel(), 12,120, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"Cell   :  " + quote.getContact_person().getCell(), 12,120, line_pos);
+        line_pos-=LINE_HEIGHT;//next line
+        addTextToPageStream(contents,"Tel    :  " + quote.getContact_person().getTel(), 12,120, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"eMail :  " + quote.getContact_person().getEmail(), 12,120, line_pos);
         line_pos-=LINE_HEIGHT;//next line
@@ -1089,7 +1092,7 @@ public class PDF
 
         //set the cursor to the line after the sale/client rep info
         line_pos = line_pos<temp_pos?line_pos:temp_pos;
-        addTextToPageStream(contents,"Request: " + quote.getRequest(),PDType1Font.HELVETICA, 13,20, line_pos);
+        addTextToPageStream(contents,"Request: " + quote.getRequest(),PDType1Font.COURIER, 13,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
         contents.endText();
@@ -1123,7 +1126,7 @@ public class PDF
         contents.stroke();
 
         contents.beginText();
-        addTextToPageStream(contents,"Site Location: " + quote.getSitename(),PDType1Font.HELVETICA, 13,20, line_pos);
+        addTextToPageStream(contents,"Site Location: " + quote.getSitename(),PDType1Font.COURIER, 13,20, line_pos);
         //addTextToPageStream(contents,"Total Incl. VAT: "+String.valueOf(DecimalFormat.getCurrencyInstance().format(quote.getTotal()+quote.getTotal()*(Quote.VAT/100))), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int)((w/2)+15), line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
@@ -1174,9 +1177,9 @@ public class PDF
                 //end draw columns
 
                 //if the page can't hold another 4 lines[current item, blank, sub-total, vat] add a new page
-                if(line_pos-LINE_HEIGHT<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
+                if(line_pos-LINE_HEIGHT<h-header_h-(ROW_COUNT*LINE_HEIGHT))
                 {
-                    addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
+                    addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER, 14,(int)(w/2)-20, 30);
                     //add new page
                     page = new PDPage(PDRectangle.A4);
                     document.addPage(page);
@@ -1184,7 +1187,7 @@ public class PDF
                     contents.close();
                     contents = new PDPageContentStream(document, page);
                     contents.beginText();
-                    line_pos = (int)h-logo_h;
+                    line_pos = (int)h-header_h;
                     col_divider_start = line_pos+LINE_HEIGHT;
                     createLinesAndBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, bottom_line);
                     quote_page_count++;
@@ -1218,20 +1221,7 @@ public class PDF
             IO.log(TAG, IO.TAG_INFO, "successfully created quote PDF.");
         }else IO.log(TAG, IO.TAG_INFO, "quote has no resources.");
         col_pos = 0;
-        //line_pos -= LINE_HEIGHT;//skip another line
-        /*if the page can't hold another 2 lines add a new page
-        if(line_pos-LINE_HEIGHT*2<h-logo_h-(ROW_COUNT*LINE_HEIGHT) || temp_pos-LINE_HEIGHT*2<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
-        {
-            //add new page
-            page = new PDPage(PDRectangle.A4);
-            document.addPage(page);
-            //TODO: setup page, i.e. draw lines and stuff
-            contents.close();
-            contents = new PDPageContentStream(document, page);
-            contents.beginText();
-            line_pos = (int)h-logo_h;
-            col_divider_start = line_pos+LINE_HEIGHT;
-        }*/
+
         //solid horizontal line
         int col_divider_end= line_pos;
 
@@ -1318,7 +1308,7 @@ public class PDF
 
         line_pos -= LINE_HEIGHT;//next line
         //if the page can't hold another 9 lines add a new page
-        if(line_pos-(LINE_HEIGHT*4)<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
+        if(line_pos-(LINE_HEIGHT*4)<h-header_h-(ROW_COUNT*LINE_HEIGHT))
         {
             addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
             //add new page
@@ -1327,7 +1317,7 @@ public class PDF
             contents.close();
             contents = new PDPageContentStream(document, page);
             contents.beginText();
-            line_pos = (int)h-logo_h;
+            line_pos = (int)h-header_h;
             createLinesAndBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, bottom_line);
             quote_page_count++;
         }
@@ -1550,7 +1540,7 @@ public class PDF
             temp_pos = line_pos;
             //left text
             addTextToPageStream(contents, "Contact Person:  " + contact
-                    .toString(), PDType1Font.HELVETICA_BOLD, 12, 20, line_pos);
+                    .getName(), PDType1Font.HELVETICA_BOLD, 12, 20, line_pos);
             line_pos -= LINE_HEIGHT;//next line
             addTextToPageStream(contents, "Tel    :  " + contact
                     .getTel(), PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);

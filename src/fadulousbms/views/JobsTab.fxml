@@ -1,76 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
 <Tab fx:id="jobsTab" text="Job Log Sheet" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="fadulousbms.controllers.JobsController">
     <content>
         <TableView fx:id="tblJobs" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colJobNum" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Job Number" visible="false">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="_id" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colClient" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Client">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="client_name" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colRequest" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="description" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colSitename" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Sitename" visible="false">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="sitename" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colContactPerson" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Contact Person" visible="false">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="responsible_person_id"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="80.0" text="Status" visible="true">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="status" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colDateGenerated" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Logged">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="date_generated" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colPlannedStartDate" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Planned Start Date">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="planned_start_date" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colDateAssigned" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Assigned">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="date_assigned" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colDateStarted" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Started">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="date_started" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colDateEnded" editable="false" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Date Completed">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="date_completed" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colCreator" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Creator" visible="false" />
-                <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Total" />
-                <TableColumn fx:id="colExtra" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Extra" visible="false">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="extra" />
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="400.0" prefWidth="-1.0" text="Action" />
+                <TableColumn fx:id="colJobNum" minWidth="80.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Job Number" visible="false"/>
+                <TableColumn fx:id="colClient" minWidth="80.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Client"/>
+                <TableColumn fx:id="colRequest" minWidth="120.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Description"/>
+                <TableColumn fx:id="colSitename" minWidth="120.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Sitename" visible="false"/>
+                <TableColumn fx:id="colContactPerson" minWidth="120.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Contact Person" visible="false"/>
+                <TableColumn fx:id="colStatus" minWidth="80.0" maxWidth="1.7976931348623157E308" text="Status" visible="true"/>
+                <TableColumn fx:id="colDateGenerated" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Date Logged"/>
+                <TableColumn fx:id="colPlannedStartDate" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Planned Start Date"/>
+                <TableColumn fx:id="colDateAssigned" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Date Assigned"/>
+                <TableColumn fx:id="colDateStarted" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Date Started"/>
+                <TableColumn fx:id="colDateEnded" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Date Completed"/>
+                <TableColumn fx:id="colCreator" minWidth="150.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Creator" visible="false"/>
+                <TableColumn fx:id="colTotal" minWidth="100.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Total"/>
+                <TableColumn fx:id="colExtra" minWidth="80.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Extra" visible="false"/>
+                <TableColumn fx:id="colAction" minWidth="400.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Action"/>
             </columns>
         </TableView>
     </content>

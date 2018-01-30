@@ -45,6 +45,11 @@ public class NewClientController extends ScreenController implements Initializab
     @Override
     public void refreshView()
     {
+        txtName.textProperty().addListener((observable, oldValue, newValue) ->
+        {
+            String account_name = newValue.replaceAll(" ","-");
+            txtAccount.setText(account_name.toLowerCase());
+        });
     }
 
     @Override
@@ -170,7 +175,7 @@ public class NewClientController extends ScreenController implements Initializab
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.putJSON("/clients", client.toString(), headers);
+            HttpURLConnection connection = RemoteComms.putJSON("/clients", client.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -194,7 +199,7 @@ public class NewClientController extends ScreenController implements Initializab
                     {
                         ClientManager.getInstance().reloadDataFromServer();
                         ClientManager.getInstance().setSelected(client);
-                        IO.logAndAlert("New Client Creation Success", "Successfully created new Client "+new_client_id, IO.TAG_INFO);
+                        IO.logAndAlert("New Client Creation Success", "Successfully created new Client ["+client.getClient_name()+"]", IO.TAG_INFO);
                         itemsModified = false;
                     }catch (MalformedURLException ex)
                     {

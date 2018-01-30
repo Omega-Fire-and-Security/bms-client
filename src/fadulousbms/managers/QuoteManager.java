@@ -138,7 +138,7 @@ public class QuoteManager extends BusinessObjectManager
                     filename = "quotes_"+timestamp+".dat";
                     IO.log(QuoteManager.getInstance().getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+quotes_timestamp.getCount());
                 } else {
-                    IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                     return;
                 }
 
@@ -252,7 +252,7 @@ public class QuoteManager extends BusinessObjectManager
 
         //create new quote on database
         //ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-        HttpURLConnection connection = RemoteComms.putJSON("/quotes", quote.toString(), headers);
+        HttpURLConnection connection = RemoteComms.putJSON("/quotes", quote.getJSONString(), headers);
         if(connection!=null)
         {
             if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -335,14 +335,24 @@ public class QuoteManager extends BusinessObjectManager
 
     public void updateQuote(Quote quote, ObservableList<QuoteItem> quoteItems)
     {
+        if(quote==null)
+        {
+            IO.logAndAlert("Error: Invalid Quote", "Quote is null.", IO.TAG_ERROR);
+            return;
+        }
         if(quoteItems==null)
         {
-            IO.logAndAlert("Invalid Quote", "Quote items list is null.", IO.TAG_ERROR);
+            IO.logAndAlert("Error: Invalid Quote Items", "Quote items list is null.", IO.TAG_ERROR);
             return;
         }
         if(quoteItems.size()<=0)
         {
-            IO.logAndAlert("Invalid Quote", "Quote has no items", IO.TAG_ERROR);
+            IO.logAndAlert("Error: Invalid Quote", "Quote has no items", IO.TAG_ERROR);
+            return;
+        }
+        if(quote.getStatus()==Quote.STATUS_APPROVED)
+        {
+            IO.logAndAlert("Error", "Selected quote has already been approved. \nCreate a new Revision if you would like to make changes to this quote.", IO.TAG_ERROR);
             return;
         }
 
@@ -378,19 +388,19 @@ public class QuoteManager extends BusinessObjectManager
         //Quote selected = getSelectedQuote();
         if(quote!=null)
         {
-            //prepare quote parameters
             try
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                //update quote on database
-                HttpURLConnection connection = RemoteComms.postData("/quotes/"+quote.get_id(), quote.asUTFEncodedString(), headers);
+                //update Quote on database
+                HttpURLConnection connection = RemoteComms.postJSON(quote.apiEndpoint(), quote.getJSONString(), headers);
                 if (connection != null)
                 {
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                     {
                         String response = IO.readStream(connection.getInputStream());
-                        IO.log(getClass().getName(), IO.TAG_INFO, "updated quote[" + quote.get_id() + "]. Adding representatives and resources to quote.");
+                        IO.log(QuoteManager.class.getName(), IO.TAG_INFO, "updated quote[" + quote.get_id() + "]. Updating quote resources.");
 
                         if (response == null)
                         {
@@ -403,15 +413,13 @@ public class QuoteManager extends BusinessObjectManager
                             return;
                         }
 
-                        boolean updated_all_quote_items = updateQuoteItems(quote.get_id(), quoteItems, headers);
-
-                        if (updated_all_quote_items)
+                        if (updateQuoteItems(quote.get_id(), quoteItems, headers))
                         {
-                            IO.logAndAlert("Quote Manager","successfully updated quote[" + quote.get_id() + "].", IO.TAG_INFO);
-                            loadDataFromServer();
+                            IO.logAndAlert("Quote Successfully Updated","Successfully updated quote[#" + quote.getObject_number() + "].", IO.TAG_INFO);
+                            reloadDataFromServer();
                         } else
                         {
-                            IO.logAndAlert("Quote Update Failure", "Could not update all Quote Items for Quote["+quote.get_id()+"].", IO.TAG_INFO);
+                            IO.logAndAlert("Quote Update Failure", "Could not update all Quote Materials for Quote[#"+quote.getObject_number()+"].", IO.TAG_INFO);
                         }
                     } else
                     {
@@ -425,15 +433,33 @@ public class QuoteManager extends BusinessObjectManager
                 } else IO.logAndAlert("Quote Update Failure", "Could not connect to server.", IO.TAG_ERROR);
             } catch (IOException e)
             {
-                IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+                IO.logAndAlert(QuoteManager.class.getSimpleName(), e.getMessage(), IO.TAG_ERROR);
+            } catch (ClassNotFoundException e)
+            {
+                IO.logAndAlert(QuoteManager.class.getSimpleName(), e.getMessage(), IO.TAG_ERROR);
             }
-        }else IO.logAndAlert("Update Quote","Selected Quote is invalid.", IO.TAG_ERROR);
+        }else IO.logAndAlert("Quote Update Error","Selected Quote is invalid.", IO.TAG_ERROR);
     }
 
     public boolean updateQuoteItems(String quote_id, QuoteItem[] quoteItems, ArrayList headers) throws IOException
     {
-        if(quote_id==null || quoteItems==null || headers == null)
+        if(quote_id==null)
+        {
+            IO.logAndAlert(QuoteManager.class.getSimpleName(), "Invalid quote ID", IO.TAG_ERROR);
             return false;
+        }
+
+        if(quoteItems==null)
+        {
+            IO.logAndAlert(QuoteManager.class.getSimpleName(), "Invalid quote materials.", IO.TAG_ERROR);
+            return false;
+        }
+
+        if(headers == null)
+        {
+            IO.logAndAlert(QuoteManager.class.getSimpleName(), "Invalid headers.", IO.TAG_ERROR);
+            return false;
+        }
 
         boolean all_successful = true;
         /* Update/Create QuoteItems on database */
@@ -453,18 +479,6 @@ public class QuoteManager extends BusinessObjectManager
                     all_successful = updateQuoteItem(quoteItem, headers);
                 } else
                 {
-                    //new quote_item
-                    //prepare parameters for quote_item.
-                    /*ArrayList params = new ArrayList<>();
-                    params.add(new AbstractMap.SimpleEntry<>("item_number", quoteItem.getItem_number()));
-                    params.add(new AbstractMap.SimpleEntry<>("resource_id", quoteItem.getResource().get_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("quote_id", quote_id));
-                    params.add(new AbstractMap.SimpleEntry<>("markup", quoteItem.getMarkup()));
-                    params.add(new AbstractMap.SimpleEntry<>("labour", quoteItem.getLabour()));
-                    params.add(new AbstractMap.SimpleEntry<>("quantity", quoteItem.getQuantity()));
-                    params.add(new AbstractMap.SimpleEntry<>("additional_costs", quoteItem.getAdditional_costs()));*/
-
-
                     quoteItem.setQuote_id(quote_id);
                     quoteItem.setResource_id(quoteItem.getResource().get_id());
 
@@ -490,7 +504,7 @@ public class QuoteManager extends BusinessObjectManager
         //set quote_item creator
         quoteItem.setCreator(SessionManager.getInstance().getActive().getUsr());
         //IO.log(getClass().getName(), IO.TAG_INFO, "attempting to create new quote_item for quote[" + quote_id + "].");
-        HttpURLConnection connection = RemoteComms.putJSON("/quotes/resources", quoteItem.toString(), headers);
+        HttpURLConnection connection = RemoteComms.putJSON("/quotes/resources", quoteItem.getJSONString(), headers);
 
         if (connection != null)
         {
@@ -545,7 +559,7 @@ public class QuoteManager extends BusinessObjectManager
         if(quoteItem!=null)
         {
             IO.log(getClass().getName(), IO.TAG_INFO, "attempting to update quote_item["+quoteItem.get_id()+"] for quote[" + quoteItem.getQuote_id() + "].");
-            HttpURLConnection connection = RemoteComms.postData("/quotes/resources/" + quoteItem.get_id(), quoteItem.asUTFEncodedString(), headers);
+            HttpURLConnection connection = RemoteComms.postJSON("/quotes/resources", quoteItem.getJSONString(), headers);
             if (connection != null)
             {
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
@@ -564,7 +578,7 @@ public class QuoteManager extends BusinessObjectManager
             //Close connection
             if (connection != null)
                 connection.disconnect();
-        }else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid[null] quote_item.");
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid[null] quote_item.");
         return false;
     }
 
@@ -721,7 +735,7 @@ public class QuoteManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
-                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -732,7 +746,7 @@ public class QuoteManager extends BusinessObjectManager
                 FileMetadata fileMetadata = new FileMetadata("quote_"+quote.get_id()+".pdf","application/pdf");
                 fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
                 fileMetadata.setFile(finalBase64_quote);
-                HttpURLConnection connection = RemoteComms.postJSON("/quotes/approval_request", fileMetadata.toString(), headers);
+                HttpURLConnection connection = RemoteComms.postJSON("/quotes/approval_request", fileMetadata.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

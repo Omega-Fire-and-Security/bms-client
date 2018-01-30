@@ -19,6 +19,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+import org.controlsfx.control.MaskerPane;
 
 import javax.swing.JOptionPane;
 
@@ -38,8 +39,8 @@ public class LoginController extends ScreenController implements Initializable
     public void refreshView()
     {
         //TODO: remove this
-        txtUsr.setText("gh0st");
-        txtPwd.setText("87654321");
+        txtUsr.setText("");
+        txtPwd.setText("");
     }
 
     @Override
@@ -90,10 +91,7 @@ public class LoginController extends ScreenController implements Initializable
                     SessionManager ssn_mgr = SessionManager.getInstance();
                     ssn_mgr.addSession(session);
 
-                    //load User data to memory
-                    EmployeeManager.getInstance().loadDataFromServer();
                     //Load HomeScreen
-                    final ScreenManager screenManager = ScreenManager.getInstance();
                     ScreenManager.getInstance().showLoadingScreen(param ->
                     {
                         new Thread(new Runnable()
@@ -103,12 +101,17 @@ public class LoginController extends ScreenController implements Initializable
                             {
                                 try
                                 {
-                                    if (screenManager.loadScreen(Screens.HOME.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/" + Screens.HOME.getScreen())))
-                                        screenManager.setScreen(Screens.HOME.getScreen());
+                                    //load User data to memory
+                                    EmployeeManager.getInstance().reloadDataFromServer();
+                                    if (ScreenManager.getInstance().loadScreen(Screens.HOME.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/" + Screens.HOME.getScreen())))
+                                        ScreenManager.getInstance().setScreen(Screens.HOME.getScreen());
                                     else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load home screen.");
                                 } catch (IOException e)
                                 {
                                     IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
+                                } catch (ClassNotFoundException e)
+                                {
+                                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                                 }
                             }
                         }).start();

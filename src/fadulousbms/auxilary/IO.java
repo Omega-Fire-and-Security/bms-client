@@ -6,22 +6,33 @@ import fadulousbms.managers.SessionManager;
 import fadulousbms.model.BusinessObject;
 import fadulousbms.model.FileMetadata;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Duration;
+import org.controlsfx.control.NotificationPane;
+import org.controlsfx.control.Notifications;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.print.PrintException;
+import java.awt.*;
 import java.io.*;
 import java.security.MessageDigest;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Created by ghost on 2017/01/28.
@@ -33,6 +44,10 @@ public class IO<T extends BusinessObject>
     public static final String TAG_WARN = "warning";
     public static final String TAG_ERROR = "error";
     private static final String TAG = "IO";
+    public static final String YES = "Yes";
+    public static final String NO = "No";
+    public static final String OK = "OK";
+    public static final String CANCEL = "Cancel";
     private static IO io = new IO();
     private static ScreenManager screenManager;
 
@@ -89,8 +104,8 @@ public class IO<T extends BusinessObject>
             if(current_screen!=null)
             {
                 if (src.contains("."))
-                    current_screen.refreshStatusBar(src.substring(src.lastIndexOf(".") + 1) + "> " + tag + ":: " + msg);
-                else current_screen.refreshStatusBar(src + "> " + tag + ":: " + msg);
+                    current_screen.refreshStatusBar(src.substring(src.lastIndexOf(".") + 1) + "> " + tag + ":: " + msg.replaceAll("\n",""));
+                else current_screen.refreshStatusBar(src + "> " + tag + ":: " + msg.replaceAll("\n",""));
             }else System.err.println(getInstance().getClass().getName() + "> error: focused screen is null.");
         }
         switch (tag.toLowerCase())
@@ -113,7 +128,100 @@ public class IO<T extends BusinessObject>
         }
     }
 
+    public static String showConfirm(String title, String message, String... options)
+    {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.setTitle("Choose an option");
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+
+        //To make enter key press the actual focused button, not the first one. Just like pressing "space".
+        alert.getDialogPane().addEventFilter(KeyEvent.KEY_PRESSED, event ->
+        {
+            if (event.getCode().equals(KeyCode.ENTER))
+            {
+                event.consume();
+                try
+                {
+                    Robot r = new Robot();
+                    r.keyPress(java.awt.event.KeyEvent.VK_SPACE);
+                    r.keyRelease(java.awt.event.KeyEvent.VK_SPACE);
+                } catch (Exception e)
+                {
+                    IO.log(IO.class.getName(), IO.TAG_ERROR, e.getMessage());
+                }
+            }
+        });
+
+        if (options == null || options.length == 0)
+        {
+            options = new String[]{OK, CANCEL};
+        }
+
+        ArrayList<ButtonType> buttons = new ArrayList<>();
+        for (String option : options)
+        {
+            buttons.add(new ButtonType(option));
+        }
+
+        alert.getButtonTypes().setAll(buttons);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (!result.isPresent())
+        {
+            return CANCEL;
+        } else
+        {
+            return result.get().getText();
+        }
+    }
+
+
     public static void showMessage(String title, String msg, String type)
+    {
+        Platform.runLater(() ->
+        {
+            switch (type.toLowerCase())
+            {
+                case TAG_INFO:
+                    /*NotificationPane notificationPane = new NotificationPane();
+                    notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
+                    notificationPane.setShowFromTop(true);
+                    notificationPane.setText(msg);
+                    //notificationPane.setGraphic(new Button("a button"));
+                    notificationPane.show();*/
+                    Notifications.create()
+                            .title(title)
+                            .text(msg)
+                            .hideAfter(Duration.seconds(15))
+                            .position(Pos.BOTTOM_LEFT)
+                            .showInformation();
+                    break;
+                case TAG_WARN:
+                    Notifications.create()
+                            .title(title)
+                            .text(msg)
+                            .hideAfter(Duration.seconds(30))
+                            .showWarning();
+                    break;
+                case TAG_ERROR:
+                    Notifications.create()
+                            .title(title)
+                            .text(msg)
+                            .hideAfter(Duration.INDEFINITE)
+                            .position(Pos.CENTER)
+                            .showError();
+                    break;
+                default:
+                    IO.log(IO.class.getName(), IO.TAG_ERROR, "unknown message type '" + type + "'");
+                    //Notifications.create().title(title).text(msg).showWarning();
+                    break;
+            }
+        });
+    }
+
+    /*public static void showMessage(String title, String msg, String type)
     {
         Platform.runLater(() ->
         {
@@ -151,9 +259,9 @@ public class IO<T extends BusinessObject>
                     System.err.println("IO> unknown message type '" + type + "'");
                     JOptionPane.showMessageDialog(null, msg, title, JOptionPane.PLAIN_MESSAGE);
                     break;
-            }*/
+            }*
         });
-    }
+    }*/
 
     public static void logAndAlert(String title, String msg, String type)
     {

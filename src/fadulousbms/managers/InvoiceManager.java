@@ -81,7 +81,7 @@ public class InvoiceManager extends BusinessObjectManager
                         filename = "invoices_"+timestamp+".dat";
                         IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+timestamp);
                     }else {
-                        IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                        IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
                         return;
                     }
 
@@ -255,7 +255,7 @@ public class InvoiceManager extends BusinessObjectManager
                 if(SessionManager.getInstance().getActive()!=null)
                 {
                     headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
-                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().toString()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
@@ -266,7 +266,7 @@ public class InvoiceManager extends BusinessObjectManager
                 FileMetadata fileMetadata = new FileMetadata("invoice_"+invoice.get_id()+".pdf","application/pdf");
                 fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
                 fileMetadata.setFile(finalBase64_invoice);
-                HttpURLConnection connection = RemoteComms.postJSON("/invoices/approval_request", fileMetadata.toString(), headers);
+                HttpURLConnection connection = RemoteComms.postJSON("/invoices/approval_request", fileMetadata.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -307,11 +307,21 @@ public class InvoiceManager extends BusinessObjectManager
         stage.setResizable(true);
     }
 
-    public void createInvoice(Job job, String quote_revs, Callback callback) throws IOException
+    public void createInvoice(Job job, String quote_revs, double amount_receivable, Callback callback) throws IOException
     {
         if(job.getQuote()==null)
         {
             IO.logAndAlert(getClass().getName(), "Job->Quote object is not set.", IO.TAG_ERROR);
+            return;
+        }
+        if(quote_revs==null)
+        {
+            IO.logAndAlert(getClass().getName(), "Please select valid quote revisions for the new invoice.", IO.TAG_ERROR);
+            return;
+        }
+        if(quote_revs.isEmpty())
+        {
+            IO.logAndAlert(getClass().getName(), "Invoice Quote revisions object is empty.", IO.TAG_ERROR);
             return;
         }
         SessionManager smgr = SessionManager.getInstance();
@@ -327,12 +337,10 @@ public class InvoiceManager extends BusinessObjectManager
                 Invoice invoice = new Invoice();
                 invoice.setCreator(smgr.getActiveEmployee().getUsr());
                 invoice.setJob_id(job.get_id());
-                //invoice.setQuote_id(quote_id);
+                invoice.setReceivable(amount_receivable);
                 invoice.setQuote_revision_numbers(quote_revs);
-                //invoice.setAccount_name(job.getQuote().getAccount_name());
-                invoice.setReceivable(job.getQuote().getTotal());
 
-                HttpURLConnection response = RemoteComms.putJSON("/invoices", invoice.toString(), headers);
+                HttpURLConnection response = RemoteComms.putJSON("/invoices", invoice.getJSONString(), headers);
                 if(response!=null)
                 {
                     if(response.getResponseCode()==HttpURLConnection.HTTP_OK)

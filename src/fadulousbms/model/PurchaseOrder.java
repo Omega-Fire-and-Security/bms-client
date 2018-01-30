@@ -16,7 +16,6 @@ import java.util.HashMap;
  */
 public class PurchaseOrder extends BusinessObject
 {
-    private int number;
     private String supplier_id;
     private String contact_person_id;
     private double vat;
@@ -24,21 +23,6 @@ public class PurchaseOrder extends BusinessObject
     private int status;
     public static final String TAG = "PurchaseOrder";
     public PurchaseOrderItem[] items;
-
-    public String getNumber()
-    {
-        return String.valueOf(number);
-    }
-
-    public int getNumberValue()
-    {
-        return number;
-    }
-
-    public void setNumber(int number)
-    {
-        this.number = number;
-    }
 
     public String getVat()
     {
@@ -158,8 +142,6 @@ public class PurchaseOrder extends BusinessObject
 
     private StringProperty account_nameProperty(){return new SimpleStringProperty(account_name);}
 
-    private StringProperty numberProperty(){return new SimpleStringProperty(String.valueOf(number));}
-
     private StringProperty vatProperty(){return new SimpleStringProperty(String.valueOf(getVatVal()));}
 
     public StringProperty discountProperty()
@@ -182,9 +164,6 @@ public class PurchaseOrder extends BusinessObject
         {
             switch (var.toLowerCase())
             {
-                case "number":
-                    setNumber(Integer.valueOf((String)val));
-                    break;
                 case "supplier_id":
                     setSupplier_id(String.valueOf(val));
                     break;
@@ -215,8 +194,6 @@ public class PurchaseOrder extends BusinessObject
     {
         switch (var.toLowerCase())
         {
-            case "number":
-                return getNumber();
             case "supplier_id":
                 return getSupplier_id();
             case "contact_person_id":
@@ -238,8 +215,6 @@ public class PurchaseOrder extends BusinessObject
         StringBuilder result = new StringBuilder();
         try
         {
-            result.append(URLEncoder.encode("number","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(number), "UTF-8"));
             result.append("&" + URLEncoder.encode("supplier_id","UTF-8") + "="
                     + URLEncoder.encode(supplier_id, "UTF-8"));
             result.append("&" + URLEncoder.encode("contact_person_id","UTF-8") + "="
@@ -268,11 +243,10 @@ public class PurchaseOrder extends BusinessObject
     }
 
     @Override
-    public String toString()
+    public String getJSONString()
     {
-        String super_json = super.toString();
+        String super_json = super.getJSONString();
         String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
-                +",\"number\":\""+getNumber()+"\""
                 +",\"supplier_id\":\""+getSupplier_id()+"\""
                 +",\"account_name\":\""+getAccount_name()+"\""
                 +",\"contact_person_id\":\""+getContact_person_id()+"\""

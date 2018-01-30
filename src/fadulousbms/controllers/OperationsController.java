@@ -250,6 +250,12 @@ public class OperationsController extends ScreenController implements Initializa
     }
 
     @FXML
+    public void newJob()
+    {
+        
+    }
+
+    @FXML
     public void newRequisitionClick()
     {
         final ScreenManager screenManager = ScreenManager.getInstance();

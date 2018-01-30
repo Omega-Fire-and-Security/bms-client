@@ -289,8 +289,18 @@ public class Quote extends BusinessObject
     {
         if(this.getContact_person()!=null)
         {
+            String obj_num = "";
+            if(this.getObject_number()>999)
+                obj_num=String.valueOf(getObject_number());
+            else if(this.getObject_number()>99 && this.getObject_number()<1000)
+                obj_num="0"+getObject_number();
+            else if(this.getObject_number()>9 && this.getObject_number()<100)
+                obj_num="00"+getObject_number();
+            else// if(this.getObject_number()<10)
+                obj_num="000"+getObject_number();
+
             String quote_number = this.getContact_person().getFirstname() + "-"
-                    + this.getContact_person().getInitials() + this.get_id().substring(0,8)
+                    + this.getContact_person().getInitials() + obj_num
                     + " REV" + String.valueOf(this.getRevision()).substring(0,3);
             return new SimpleStringProperty(quote_number);
         } else return new SimpleStringProperty(this.getContact_person_id());
@@ -460,9 +470,9 @@ public class Quote extends BusinessObject
     }
 
     @Override
-    public String toString()
+    public String getJSONString()
     {
-        String super_json = super.toString();
+        String super_json = super.getJSONString();
         String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
                 +",\"contact_person_id\":\""+contact_person_id+"\""
                 +",\"sitename\":\""+sitename+"\""

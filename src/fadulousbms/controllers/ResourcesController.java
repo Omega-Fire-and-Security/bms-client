@@ -52,8 +52,8 @@ public class ResourcesController extends ScreenController implements Initializab
 
         colId.setMinWidth(80);
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colName, TextFieldTableCell.forTableColumn(), 80, "resource_name", "/api/resource");
-        CustomTableViewControls.makeEditableTableColumn(colSerial, TextFieldTableCell.forTableColumn(), 80, "resource_serial", "/api/resource");
+        CustomTableViewControls.makeEditableTableColumn(colName, TextFieldTableCell.forTableColumn(), 80, "resource_name", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colSerial, TextFieldTableCell.forTableColumn(), 80, "resource_serial", "/resources");
 
         colType.setMinWidth(120);
         colType.setCellValueFactory(new PropertyValueFactory<>("resource_type"));
@@ -69,8 +69,11 @@ public class ResourcesController extends ScreenController implements Initializab
         CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 80, "other", "/resources");
 
         ObservableList<Resource> lst_resources = FXCollections.observableArrayList();
-        lst_resources.addAll(ResourceManager.getInstance().getResources().values());
-        tblResources.setItems(lst_resources);
+        if(ResourceManager.getInstance().getResources()!=null)
+        {
+            lst_resources.addAll(ResourceManager.getInstance().getResources().values());
+            tblResources.setItems(lst_resources);
+        }
 
         Callback<TableColumn<Resource, String>, TableCell<Resource, String>> cellFactory
                 =
