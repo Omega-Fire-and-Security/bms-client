@@ -14,6 +14,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -88,24 +89,25 @@ public class NewAssetController extends ScreenController implements Initializabl
             IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
             return;
         }
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         if(!Validators.isValidNode(txtName, txtName.getText(), 1, ".+"))
         {
-            txtName.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtName.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtDescription, txtDescription.getText(), 1, ".+"))
         {
-            txtDescription.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtDescription.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtSerial, txtSerial.getText(), 1, ".+"))
         {
-            txtSerial.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtSerial.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtValue, txtValue.getText(), 1, ".+"))
         {
-            txtValue.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtValue.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(cbxAssetType.getSelectionModel().getSelectedItem()==null)
@@ -129,12 +131,12 @@ public class NewAssetController extends ScreenController implements Initializabl
         }*/
         if(!Validators.isValidNode(txtQuantity, txtQuantity.getText(), 1, ".+"))
         {
-            txtQuantity.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtQuantity.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtUnit, txtUnit.getText(), 1, ".+"))
         {
-            txtUnit.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtUnit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
 
@@ -219,6 +221,28 @@ public class NewAssetController extends ScreenController implements Initializabl
     @FXML
     public void back()
     {
-        ScreenController.previousScreen();
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            ScreenManager.getInstance().setScreen(Screens.OPERATIONS.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load operations screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 }

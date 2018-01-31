@@ -74,8 +74,9 @@ public class AssetManager extends BusinessObjectManager
                         timestamp = cntr_timestamp.getCount();
                         filename = "assets_"+timestamp+".dat";
                         IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+timestamp);
-                    }else {
-                        IO.logAndAlert(this.getClass().getName(), "could not get valid timestamp", IO.TAG_ERROR);
+                    } else
+                    {
+                        IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                         return;
                     }
 
@@ -223,7 +224,8 @@ public class AssetManager extends BusinessObjectManager
         cbx_asset_type.setMaxWidth(Double.MAX_VALUE);
 
         Button btnNewType = new Button("New");
-        btnNewType.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnNewType.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         btnNewType.getStyleClass().add("btnAdd");
         btnNewType.setMinWidth(70);
         btnNewType.setMinHeight(35);
@@ -372,7 +374,6 @@ public class AssetManager extends BusinessObjectManager
 
         //Setup scene and display
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
@@ -469,7 +470,7 @@ public class AssetManager extends BusinessObjectManager
 
         //Setup scene and display stage
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
@@ -672,7 +673,7 @@ public class AssetManager extends BusinessObjectManager
 
         //Setup scene and display
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
@@ -770,7 +771,7 @@ public class AssetManager extends BusinessObjectManager
 
         //Setup scene and display stage
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 

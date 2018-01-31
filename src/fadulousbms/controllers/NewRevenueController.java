@@ -12,12 +12,14 @@ import fadulousbms.auxilary.Validators;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Revenue;
+import fadulousbms.model.Screens;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -78,24 +80,25 @@ public class NewRevenueController extends ScreenController implements Initializa
             IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
             return;
         }
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         if(!Validators.isValidNode(txtTitle, txtTitle.getText(), 1, ".+"))
         {
-            txtTitle.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtTitle.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtDescription, txtDescription.getText(), 1, ".+"))
         {
-            txtDescription.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtDescription.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtValue, txtValue.getText(), 1, ".+"))
         {
-            txtValue.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtValue.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtAccount, txtAccount.getText(), 1, ".+"))
         {
-            txtAccount.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+            txtAccount.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(dateLogged.getValue()==null)
@@ -155,10 +158,38 @@ public class NewRevenueController extends ScreenController implements Initializa
                 }
                 if(connection!=null)
                     connection.disconnect();
-            }else IO.logAndAlert("New Revenue Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
+            } else IO.logAndAlert("New Revenue Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
         } catch (IOException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
         }
+    }
+
+    @FXML
+    public void back()
+    {
+        final ScreenManager screenManager = ScreenManager.getInstance();
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(screenManager.loadScreen(Screens.OPERATIONS.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            screenManager.setScreen(Screens.OPERATIONS.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load operations screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 }

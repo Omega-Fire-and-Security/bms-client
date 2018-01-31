@@ -25,6 +25,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -369,13 +370,14 @@ public abstract class QuoteController extends ScreenController implements Initia
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnAdd.getStyleClass().add("btnAdd");
                                 btnAdd.setMinWidth(100);
                                 btnAdd.setMinHeight(35);
                                 HBox.setHgrow(btnAdd, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -454,8 +456,9 @@ public abstract class QuoteController extends ScreenController implements Initia
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
-                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -765,6 +768,8 @@ public abstract class QuoteController extends ScreenController implements Initia
             {
                 if(ResourceManager.getInstance().getResources().size()>0)
                 {
+                    File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
                     ComboBox<Resource> resourceComboBox = new ComboBox<>();
                     resourceComboBox.setMinWidth(240);
                     resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getAll_resources().values()));
@@ -775,20 +780,20 @@ public abstract class QuoteController extends ScreenController implements Initia
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnDefault");
-                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     Button btnNewMaterial = new Button("New Material");
                     btnNewMaterial.setMinWidth(130);
                     btnNewMaterial.setMinHeight(40);
                     btnNewMaterial.setDefaultButton(true);
                     btnNewMaterial.getStyleClass().add("btnAdd");
-                    btnNewMaterial.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnNewMaterial.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     HBox hBox = new HBox(new Label("Material: "), resourceComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -927,7 +932,9 @@ public abstract class QuoteController extends ScreenController implements Initia
 
     public void createQuote()
     {
-        cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+        cbxClients.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxClients.getValue()==null)
         {
             cbxClients.getStyleClass().remove("form-control-default");
@@ -938,7 +945,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             cbxClients.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxContactPerson.getValue()==null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -951,21 +958,21 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
         {
-            txtCell.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtCell.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
         {
-            txtTel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtTel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
         {
-            txtEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtEmail.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
 
-        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxAccount.getValue()==null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");
@@ -978,12 +985,12 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
-            txtSite.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtSite.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtRequest, txtRequest.getText(), 1, ".+"))
         {
-            txtRequest.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtRequest.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
 
@@ -1062,7 +1069,9 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     public void newQuoteRevision()
     {
-        cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+        cbxClients.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxClients.getValue()==null)
         {
             cbxClients.getStyleClass().remove("form-control-default");
@@ -1073,7 +1082,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             cbxClients.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxContactPerson.getValue()==null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -1086,20 +1095,20 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
         {
-            txtCell.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtCell.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
         {
-            txtTel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtTel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
         {
-            txtEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtEmail.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
-        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxAccount.getValue()==null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");
@@ -1112,12 +1121,12 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
-            txtSite.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtSite.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtRequest, txtRequest.getText(), 1, ".+"))
         {
-            txtRequest.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtRequest.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
 
@@ -1234,7 +1243,9 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     public void updateQuote()
     {
-        cbxClients.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+        cbxClients.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxClients.getValue()==null)
         {
             cbxClients.getStyleClass().remove("form-control-default");
@@ -1245,7 +1256,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             cbxClients.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxContactPerson.getValue()==null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -1258,20 +1269,20 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
         {
-            txtCell.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtCell.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
         {
-            txtTel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtTel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
         {
-            txtEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtEmail.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
-        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxAccount.getValue()==null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");
@@ -1284,12 +1295,12 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
-            txtSite.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtSite.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtRequest, txtRequest.getText(), 1, ".+"))
         {
-            txtRequest.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtRequest.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
 

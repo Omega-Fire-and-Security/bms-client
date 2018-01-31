@@ -30,8 +30,6 @@ public class Resource extends BusinessObject implements Serializable
     private String unit;
     public static final String TAG = "Resource";
 
-    public StringProperty resource_nameProperty(){return new SimpleStringProperty(resource_name);}
-
     public String getResource_name()
     {
         return resource_name;
@@ -41,8 +39,6 @@ public class Resource extends BusinessObject implements Serializable
     {
         this.resource_name = resource_name;
     }
-
-    public StringProperty resource_descriptionProperty(){return new SimpleStringProperty(resource_description);}
 
     public String getResource_description()
     {
@@ -54,8 +50,6 @@ public class Resource extends BusinessObject implements Serializable
         this.resource_description = description;
     }
 
-    public StringProperty resource_serialProperty(){return new SimpleStringProperty(resource_serial);}
-
     public String getResource_serial()
     {
         return resource_serial;
@@ -65,8 +59,6 @@ public class Resource extends BusinessObject implements Serializable
     {
         this.resource_serial = resource_serial;
     }
-
-    public StringProperty resource_typeProperty(){return new SimpleStringProperty(resource_type);}
 
     public String getResource_type()
     {
@@ -78,8 +70,6 @@ public class Resource extends BusinessObject implements Serializable
         this.resource_type = resource_type;
     }
 
-    public StringProperty resource_valueProperty(){return new SimpleStringProperty(String.valueOf(resource_value));}
-
     public double getResource_value()
     {
         return resource_value;
@@ -89,8 +79,6 @@ public class Resource extends BusinessObject implements Serializable
     {
         this.resource_value = resource_value;
     }
-
-    public StringProperty unitProperty(){return new SimpleStringProperty(unit);}
 
     public String getUnit()
     {
@@ -102,8 +90,6 @@ public class Resource extends BusinessObject implements Serializable
         this.unit = unit;
     }
 
-    public StringProperty quantityProperty(){return new SimpleStringProperty(String.valueOf(quantity));}
-
     public long getQuantity()
     {
         return quantity;
@@ -113,8 +99,6 @@ public class Resource extends BusinessObject implements Serializable
     {
         this.quantity = quantity;
     }
-
-    //public StringProperty date_acquiredProperty(){return new SimpleStringProperty(String.valueOf(date_acquired));}
 
     public long getDate_acquired()
     {
@@ -126,8 +110,6 @@ public class Resource extends BusinessObject implements Serializable
         this.date_acquired = date_acquired;
     }
 
-    //public StringProperty date_exhaustedProperty(){return new SimpleStringProperty(String.valueOf(date_exhausted));}
-
     public long getDate_exhausted()
     {
         return date_exhausted;
@@ -137,6 +119,16 @@ public class Resource extends BusinessObject implements Serializable
     {
         this.date_exhausted = date_exhausted;
     }
+
+    //Properties
+
+    public StringProperty resource_nameProperty(){return new SimpleStringProperty(resource_name);}
+    public StringProperty resource_descriptionProperty(){return new SimpleStringProperty(resource_description);}
+    public StringProperty resource_serialProperty(){return new SimpleStringProperty(resource_serial);}
+    public StringProperty resource_typeProperty(){return new SimpleStringProperty(resource_type);}
+    public StringProperty resource_valueProperty(){return new SimpleStringProperty(String.valueOf(resource_value));}
+    public StringProperty unitProperty(){return new SimpleStringProperty(unit);}
+    public StringProperty quantityProperty(){return new SimpleStringProperty(String.valueOf(quantity));}
 
     @Override
     public void parse(String var, Object val)
@@ -274,6 +266,12 @@ public class Resource extends BusinessObject implements Serializable
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getResource_name();
     }
 
     @Override

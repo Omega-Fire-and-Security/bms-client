@@ -1,5 +1,6 @@
 package fadulousbms.auxilary;
 
+import fadulousbms.FadulousBMS;
 import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
@@ -48,6 +49,7 @@ public class IO<T extends BusinessObject>
     public static final String NO = "No";
     public static final String OK = "OK";
     public static final String CANCEL = "Cancel";
+    public static final String STYLES_ROOT_PATH= "styles/";//FadulousBMS.class.getResource("styles/").getPath();
     private static IO io = new IO();
     private static ScreenManager screenManager;
 
@@ -202,7 +204,7 @@ public class IO<T extends BusinessObject>
                     Notifications.create()
                             .title(title)
                             .text(msg)
-                            .hideAfter(Duration.seconds(30))
+                            .hideAfter(Duration.seconds(10))
                             .showWarning();
                     break;
                 case TAG_ERROR:

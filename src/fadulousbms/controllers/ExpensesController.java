@@ -24,6 +24,7 @@ import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -84,13 +85,14 @@ public class ExpensesController extends ScreenController implements Initializabl
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnView.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnView.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnView.getStyleClass().add("btnApply");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);

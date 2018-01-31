@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.effect.*?>
-<?import java.lang.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.text.*?>
@@ -43,7 +41,7 @@
                         <Insets left="5.0" right="5.0" />
                      </HBox.margin>
                   </Button>
-                  <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#previousScreen" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
+                  <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#back" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
                </children>
             </HBox>
             <BorderPane>

@@ -197,17 +197,6 @@ public class EmployeeManager extends BusinessObjectManager
             //all valid, send data to server
             int access_lvl=0;
 
-            /*ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("usr", txtEmail.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("pwd", txtTelephone.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("access_level", String.valueOf(access_lvl)));
-            params.add(new AbstractMap.SimpleEntry<>("firstname", txtFirstname.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("lastname", txtLastname.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("gender", "female"));
-            params.add(new AbstractMap.SimpleEntry<>("email", txtEmail.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("tel", txtTelephone.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("cell", txtCellphone.getText()));*/
-
             Employee employee = new Employee();
             employee.setUsr(txtEmail.getText());
             employee.setPwd(txtCellphone.getText());//TODO: hash
@@ -231,7 +220,7 @@ public class EmployeeManager extends BusinessObjectManager
                 HttpURLConnection connection = RemoteComms.putJSON("/employees", employee.getJSONString(), headers);
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                 {
-                    IO.logAndAlert("Account Creation Success", "Successfully created new user!", IO.TAG_INFO);
+                    IO.logAndAlert("Account Creation Success", "Successfully created new user ["+employee.getName()+"]!", IO.TAG_INFO);
                     if(callback!=null)
                         callback.call(null);
                 } else
@@ -254,7 +243,7 @@ public class EmployeeManager extends BusinessObjectManager
 
         //Setup scene and display stage
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");//src/fadulousbms/
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
@@ -421,7 +410,7 @@ public class EmployeeManager extends BusinessObjectManager
 
         //Setup scene and display stage
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 

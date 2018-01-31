@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.text.*?>
@@ -35,7 +34,7 @@
                                 </Menu>
                             </menus>
                         </MenuBar>
-                        <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#apply" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Create Quote">
+                        <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#createJob" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Create Job">
                             <HBox.margin>
                                 <Insets left="5.0" right="5.0" />
                             </HBox.margin>

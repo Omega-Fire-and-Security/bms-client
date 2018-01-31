@@ -30,6 +30,7 @@ import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -66,9 +67,6 @@ public class PurchaseOrdersController extends ScreenController implements Initia
 
         colSupplier.setMinWidth(120);
         colSupplier.setCellValueFactory(new PropertyValueFactory<>("supplier_name"));
-        //colSupplier.setCellFactory(col -> new ComboBoxTableCell(SupplierManager.getInstance().getSuppliers(), "supplier_id", "/purchaseorders"));
-        //CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/api/purchaseorder");
-        //CustomTableViewControls.makeEditableTableColumn(colVat, TextFieldTableCell.forTableColumn(), 50, "vat", "/api/purchaseorder");
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", false);
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/purchaseorders");
@@ -98,19 +96,20 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnView.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnView.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnView.getStyleClass().add("btnDefault");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
-                                btnPDF.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnPDF.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
-                                btnEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnEmail.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
@@ -128,7 +127,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                     }
                                 }
 
-                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -196,13 +195,16 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                         PurchaseOrderManager.getInstance().setSelected(po);
                                         try
                                         {
-                                            String path = PDF.createPurchaseOrderPdf(po);
-                                            if(path!=null)
+                                            PDF.createPurchaseOrderPdf(po, path ->
                                             {
-                                                PDFViewer pdfViewer = PDFViewer.getInstance();
-                                                pdfViewer.setVisible(true);
-                                                pdfViewer.doOpen(path);
-                                            } else IO.logAndAlert("Error", "Could not get path of generated Purchase Order PDF document.", IO.TAG_ERROR);
+                                                if(path !=null)
+                                                {
+                                                    PDFViewer pdfViewer = PDFViewer.getInstance();
+                                                    pdfViewer.setVisible(true);
+                                                    pdfViewer.doOpen((String) path);
+                                                } else IO.logAndAlert("Error", "Could not get path of generated Purchase Order PDF document.", IO.TAG_ERROR);
+                                                return null;
+                                            });
                                         } catch (IOException e)
                                         {
                                             IO.logAndAlert("IO Error " + getClass().getName(), e.getMessage(), IO.TAG_ERROR);
@@ -219,7 +221,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                         }
                                         try
                                         {
-                                            PurchaseOrderManager.getInstance().emailBusinessObject(po, PDF.createPurchaseOrderPdf(po), null);
+                                            PurchaseOrderManager.getInstance().emailBusinessObject(po, PDF.createPurchaseOrderPdf(po, null), null);
                                         } catch (IOException e)
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());

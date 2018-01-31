@@ -300,7 +300,7 @@ public class ClientManager extends BusinessObjectManager
 
         //Setup scene and display stage
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 

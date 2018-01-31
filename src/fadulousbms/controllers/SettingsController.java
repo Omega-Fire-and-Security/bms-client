@@ -47,9 +47,20 @@ public class SettingsController extends ScreenController implements Initializabl
     @Override
     public void refreshView()
     {
-        txtIP.setText("127.0.0.1");
-        txtPort.setText("9000");
-        RemoteComms.host = "http://127.0.0.1:9000";
+        try
+        {
+            String server_ip = IO.readAttributeFromConfig("SERVER_IP");
+            String server_port = IO.readAttributeFromConfig("SERVER_PORT");
+
+            if(server_ip!=null)
+                txtIP.setText(server_ip);
+
+            if(server_port!=null)
+                txtPort.setText(server_port);
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
     }
 
     @Override
@@ -127,7 +138,15 @@ public class SettingsController extends ScreenController implements Initializabl
         if(txtPort.getText()!=null && txtIP.getText()!=null)
         {
             RemoteComms.setHost("http://" + txtIP.getText() + ":" + txtPort.getText());
-            IO.logAndAlert(getClass().getName(), "successfully updated system configuration.", IO.TAG_INFO);
+            try
+            {
+                IO.writeAttributeToConfig("SERVER_IP", txtIP.getText());
+                IO.writeAttributeToConfig("SERVER_PORT", txtPort.getText());
+            } catch (IOException e)
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            }
+            IO.logAndAlert(getClass().getName(), "Successfully updated system configuration.", IO.TAG_INFO);
         } else IO.logAndAlert(SettingsController.class.getName(), "Empty entries are not allowed for required fields.", IO.TAG_ERROR);
     }
     

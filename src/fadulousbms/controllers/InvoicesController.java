@@ -28,6 +28,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -98,31 +99,32 @@ public class InvoicesController extends ScreenController implements Initializabl
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnApproval.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnApproval.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnApproval.getStyleClass().add("btnAdd");
                                 btnApproval.setMinWidth(100);
                                 btnApproval.setMinHeight(35);
                                 HBox.setHgrow(btnApproval, Priority.ALWAYS);
 
-                                btnViewQuote.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnViewQuote.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnViewQuote.getStyleClass().add("btnDefault");
                                 btnViewQuote.setMinWidth(100);
                                 btnViewQuote.setMinHeight(35);
                                 HBox.setHgrow(btnViewQuote, Priority.ALWAYS);
 
-                                btnViewJob.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnViewJob.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnViewJob.getStyleClass().add("btnDefault");
                                 btnViewJob.setMinWidth(100);
                                 btnViewJob.setMinHeight(35);
                                 HBox.setHgrow(btnViewJob, Priority.ALWAYS);
 
-                                btnPDF.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnPDF.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
-                                btnEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnEmail.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnEmail.getStyleClass().add("btnDefault");
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
@@ -145,7 +147,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                     }
                                 }
 
-                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);

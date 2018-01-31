@@ -26,6 +26,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -163,8 +164,8 @@ public class PurchaseOrderController extends OperationsController implements Ini
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnRemove.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -276,6 +277,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             {
                 if (ResourceManager.getInstance().getResources().size() > 0)
                 {
+                    File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
                     ComboBox<Resource> resourceComboBox = new ComboBox<>();
                     resourceComboBox.setMinWidth(120);
                     resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getAll_resources().values()));
@@ -286,7 +288,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnAdd");
-                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     Button btnNewMaterial = new Button("New Material");
                     btnNewMaterial.setMinWidth(80);
@@ -294,13 +296,13 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnNewMaterial.setDefaultButton(true);
                     btnNewMaterial.getStyleClass().add("btnAdd");
                     btnNewMaterial.getStylesheets()
-                            .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                            .add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     HBox hBox = new HBox(new Label("Resource: "), resourceComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -394,8 +396,9 @@ public class PurchaseOrderController extends OperationsController implements Ini
             IO.logAndAlert(getClass().getName(), "selected purchase order has already been approved and can no longer be edited.", IO.TAG_ERROR);
             return;
         }
-
-        cbxSuppliers.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        
+        cbxSuppliers.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if (cbxSuppliers.getValue() == null)
         {
             cbxSuppliers.getStyleClass().remove("form-control-default");
@@ -408,7 +411,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             cbxSuppliers.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if (cbxContactPerson.getValue() == null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -423,11 +426,11 @@ public class PurchaseOrderController extends OperationsController implements Ini
 
         /*if (!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
         {
-            txtVat.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtVat.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }*/
 
-        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if (cbxAccount.getValue() == null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");
@@ -747,6 +750,8 @@ public class PurchaseOrderController extends OperationsController implements Ini
             {
                 if (ResourceManager.getInstance().getAll_resources().size() > 0)
                 {
+                    File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
                     ComboBox<Resource> resourceComboBox = new ComboBox<>();
                     resourceComboBox.setMinWidth(120);
                     resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getAll_resources().values()));
@@ -757,20 +762,20 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnDefault");
-                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     Button btnNewMaterial = new Button("New Material");
                     btnNewMaterial.setMinWidth(130);
                     btnNewMaterial.setMinHeight(40);
                     btnNewMaterial.setDefaultButton(true);
                     btnNewMaterial.getStyleClass().add("btnAdd");
-                    btnNewMaterial.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnNewMaterial.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     HBox hBox = new HBox(new Label("Material: "), resourceComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -857,6 +862,8 @@ public class PurchaseOrderController extends OperationsController implements Ini
             {
                 if (AssetManager.getInstance().getAll_assets().size() > 0)
                 {
+                    File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
                     ComboBox<Asset> assetComboBox = new ComboBox<>();
                     assetComboBox.setMinWidth(120);
                     assetComboBox.setItems(FXCollections.observableArrayList(AssetManager.getInstance().getAll_assets().values()));
@@ -867,7 +874,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnAdd.setMinHeight(40);
                     btnAdd.setDefaultButton(true);
                     btnAdd.getStyleClass().add("btnAdd");
-                    btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     Button btnNew = new Button("New Asset");
                     btnNew.setMinWidth(80);
@@ -875,13 +882,13 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     btnNew.setDefaultButton(true);
                     btnNew.getStyleClass().add("btnAdd");
                     btnNew.getStylesheets()
-                            .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                            .add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     Button btnCancel = new Button("Close");
                     btnCancel.setMinWidth(80);
                     btnCancel.setMinHeight(40);
                     btnCancel.getStyleClass().add("btnBack");
-                    btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                    btnCancel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                     HBox hBox = new HBox(new Label("Asset: "), assetComboBox);
                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -968,8 +975,9 @@ public class PurchaseOrderController extends OperationsController implements Ini
         }
 
         String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
-        cbxSuppliers.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxSuppliers.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxSuppliers.getValue()==null)
         {
             cbxSuppliers.getStyleClass().remove("form-control-default");
@@ -980,7 +988,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
             cbxSuppliers.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxContactPerson.getValue()==null)
         {
             cbxContactPerson.getStyleClass().remove("form-control-default");
@@ -993,15 +1001,15 @@ public class PurchaseOrderController extends OperationsController implements Ini
 
         /*if(!Validators.isValidNode(txtVat, txtVat.getText(), 1, ".+"))
         {
-            txtVat.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtVat.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
         if(!Validators.isValidNode(txtAccount, txtAccount.getText(), 1, ".+"))
         {
-            txtAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtAccount.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }*/
-        cbxAccount.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxAccount.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if (cbxAccount.getValue() == null)
         {
             cbxAccount.getStyleClass().remove("form-control-default");

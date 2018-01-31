@@ -242,7 +242,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
             IO.logAndAlert("Error: Invalid Employee Session", "Could not find any active employee sessions.", IO.TAG_ERROR);
             return;
         }
-        String path = PDF.createPurchaseOrderPdf(po);
+        String path = PDF.createPurchaseOrderPdf(po, null);
         String base64_po = null;
         if(path!=null)
         {
@@ -279,7 +279,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
         txt_subject.setMinWidth(200);
         txt_subject.setMaxWidth(Double.MAX_VALUE);
         txt_subject.setPromptText("Type in an eMail subject");
-        txt_subject.setText("PURCHASE ORDER ["+po.get_id()+"] APPROVAL REQUEST");
+        txt_subject.setText("PURCHASE ORDER ["+po.getObject_number()+"] APPROVAL REQUEST");
         HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
 
         final TextArea txt_message = new TextArea();
@@ -365,7 +365,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
 
         //Setup scene and display stage
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 

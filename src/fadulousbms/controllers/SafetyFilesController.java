@@ -15,6 +15,7 @@ import fadulousbms.managers.SessionManager;
 import fadulousbms.model.CustomTableViewControls;
 import fadulousbms.model.Employee;
 import fadulousbms.model.FileMetadata;
+import fadulousbms.model.Screens;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -217,5 +218,33 @@ public class SafetyFilesController extends ScreenController implements Initializ
                 }
             }else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         }else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+    }
+
+    @FXML
+    public void back()
+    {
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            ScreenManager.getInstance().setScreen(Screens.OPERATIONS.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load operations screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 }

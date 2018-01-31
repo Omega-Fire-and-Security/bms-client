@@ -117,14 +117,14 @@ public class JobsController extends ScreenController implements Initializable
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnView.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnView.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnView.getStyleClass().add("btnDefault");
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
 
-                                btnUpload.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnUpload.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnUpload.getStyleClass().add("btnDefault");
                                 btnUpload.setMinWidth(130);
                                 btnUpload.setMinHeight(35);
@@ -135,7 +135,7 @@ public class JobsController extends ScreenController implements Initializable
                                 //btnSign.setStyle("-fx-border-radius: 20;");
                                 btnApprove.setMinWidth(100);
                                 btnApprove.setMinHeight(35);
-                                btnApprove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnApprove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 if(SessionManager.getInstance().getActiveEmployee()!=null)
                                 {
                                     //disable [Approve] button if not authorised
@@ -151,29 +151,25 @@ public class JobsController extends ScreenController implements Initializable
 
                                 HBox.setHgrow(btnApprove, Priority.ALWAYS);
 
-                                btnViewSigned.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnViewSigned.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnViewSigned.getStyleClass().add("btnDefault");
                                 btnViewSigned.setMinWidth(130);
                                 btnViewSigned.setMinHeight(35);
                                 HBox.setHgrow(btnViewSigned, Priority.ALWAYS);
 
-                                btnInvoice.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnInvoice.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnInvoice.getStyleClass().add("btnDefault");
                                 btnInvoice.setMinWidth(100);
                                 btnInvoice.setMinHeight(35);
                                 HBox.setHgrow(btnInvoice, Priority.ALWAYS);
 
-                                btnPDF.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnPDF.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
-                                btnEmail.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnEmail.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
@@ -190,8 +186,7 @@ public class JobsController extends ScreenController implements Initializable
                                     }
                                 }
 
-                                btnEmailSigned.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnEmailSigned.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnEmailSigned.setMinWidth(100);
                                 btnEmailSigned.setMinHeight(35);
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
@@ -209,8 +204,7 @@ public class JobsController extends ScreenController implements Initializable
                                     }
                                 }
 
-                                btnRemove.getStylesheets()
-                                        .add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);

@@ -54,7 +54,7 @@
                         </HBox>
                         <BorderPane>
                            <center>
-                              <Button mnemonicParsing="false" prefHeight="60.0" prefWidth="150.0" text="Apply" BorderPane.alignment="CENTER">
+                              <Button mnemonicParsing="false" prefHeight="60.0" prefWidth="150.0" text="Apply" onMouseClicked="#applySettings" BorderPane.alignment="CENTER">
                                  <BorderPane.margin>
                                     <Insets bottom="20.0" />
                                  </BorderPane.margin>

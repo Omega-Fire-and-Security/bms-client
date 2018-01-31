@@ -43,57 +43,57 @@
 
 .btnPrev
 {
-    -fx-image:url("../gfx/chevron_left_black.png");
+    -fx-image:url("../images/chevron_left_black.png");
     -fx-width:20px;
 }
 
 .btnPrev:hover
 {
-    -fx-image:url("../gfx/chevron_left_white.png");
+    -fx-image:url("../images/chevron_left_white.png");
 }
 
 .btnNext
 {
-    -fx-image:url("../gfx/chevron_right_black.png");
+    -fx-image:url("../images/chevron_right_black.png");
     -fx-width:20px;
 }
 
 .btnNext:hover
 {
-    -fx-image:url("../gfx/chevron_right_white.png");
+    -fx-image:url("../images/chevron_right_white.png");
 }
 
 .btnHome
 {
-    -fx-image:url("../gfx/home_black.png");
+    -fx-image:url("../images/home_black.png");
     -fx-width:20px;
 }
 
 .btnHome:hover
 {
-    -fx-image:url("../gfx/home_white.png");
+    -fx-image:url("../images/home_white.png");
 }
 
 .btnLogin
 {
-    -fx-image:url("../gfx/key_black.png");
+    -fx-image:url("../images/key_black.png");
     -fx-width:20px;
 }
 
 .btnLogin:hover
 {
-    -fx-image:url("../gfx/key_white.png");
+    -fx-image:url("../images/key_white.png");
 }
 
 .btnMenu
 {
-    -fx-image:url("../gfx/menu_black.png");
+    -fx-image:url("../images/menu_black.png");
     -fx-width:20px;
 }
 
 .btnMenu:hover
 {
-    -fx-image:url("../gfx/menu_white.png");
+    -fx-image:url("../images/menu_white.png");
 }
 
 .btnBack

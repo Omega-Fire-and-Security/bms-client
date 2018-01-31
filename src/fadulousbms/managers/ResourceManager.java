@@ -272,7 +272,8 @@ public class ResourceManager extends BusinessObjectManager
         cbx_resource_type.setMaxWidth(Double.MAX_VALUE);
 
         Button btnNewType = new Button("New");
-        btnNewType.getStylesheets().add(this.getClass().getResource("../styles/home.css").toExternalForm());
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnNewType.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         btnNewType.getStyleClass().add("btnAdd");
         btnNewType.setMinWidth(70);
         btnNewType.setMinHeight(35);
@@ -443,7 +444,6 @@ public class ResourceManager extends BusinessObjectManager
 
         //Setup scene and display
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
@@ -574,7 +574,7 @@ public class ResourceManager extends BusinessObjectManager
 
         //Setup scene and display stage
         Scene scene = new Scene(vbox);
-        File fCss = new File("src/fadulousbms/styles/home.css");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 

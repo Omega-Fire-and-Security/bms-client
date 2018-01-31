@@ -26,6 +26,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.bouncycastle.cert.ocsp.Req;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -165,18 +166,20 @@ public class NewRequisitionController extends ScreenController implements Initia
     @FXML
     public void createRequisition()
     {
-        cbxClient.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        cbxClient.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxClient.getValue()==null)
         {
             cbxClient.getStyleClass().remove("form-control-default");
             cbxClient.getStyleClass().add("control-input-error");
             return;
-        }else{
+        } else
+        {
             cbxClient.getStyleClass().remove("control-input-error");
             cbxClient.getStyleClass().add("form-control-default");
         }
 
-        cbxResponsiblePerson.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxResponsiblePerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxResponsiblePerson.getValue()==null)
         {
             cbxResponsiblePerson.getStyleClass().remove("form-control-default");
@@ -188,7 +191,7 @@ public class NewRequisitionController extends ScreenController implements Initia
             cbxResponsiblePerson.getStyleClass().add("form-control-default");
         }
 
-        cbxType.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        cbxType.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
         if(cbxType.getValue()==null)
         {
             cbxType.getStyleClass().remove("form-control-default");
@@ -202,7 +205,7 @@ public class NewRequisitionController extends ScreenController implements Initia
 
         if(!Validators.isValidNode(txtDescription, txtDescription.getText(), 1, ".+"))
         {
-            txtDescription.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            txtDescription.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
 
@@ -218,38 +221,6 @@ public class NewRequisitionController extends ScreenController implements Initia
         try
         {
             RequisitionManager.getInstance().createRequisition(requisition, null);
-            /*new Callback()
-            {
-                @Override
-                public Object call(Object quote_id)
-                {
-                    ScreenManager.getInstance().showLoadingScreen(param ->
-                    {
-                        new Thread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                try
-                                {
-                                    if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
-                                    {
-                                        //Platform.runLater(() ->
-                                        ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen());
-                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load view quote screen.");
-                                } catch (IOException e)
-                                {
-                                    e.printStackTrace();
-                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                }
-                            }
-                        }).start();
-                        return null;
-                    });
-                    txtStatus.setText(quote_id.toString());
-                    return null;
-                }
-            }*/
         } catch (IOException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);

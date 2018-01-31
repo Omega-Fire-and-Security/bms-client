@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.shape.*?>
-<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.text.*?>
@@ -35,92 +34,7 @@
             </MenuBar>
          </children>
       </HBox>
-       <BorderPane styleClass="sys-nav" stylesheets="@../styles/home.css">
-           <bottom>
-               <BorderPane style="-fx-border-insets: -50 -10 0 -10;" BorderPane.alignment="CENTER">
-                   <center>
-                       <VBox alignment="CENTER" BorderPane.alignment="CENTER">
-                           <children>
-                               <Label text="Safety">
-                                   <font>
-                                       <Font size="24.0" />
-                                   </font>
-                               </Label>
-                           </children>
-                       </VBox>
-                   </center>
-                   <left>
-                       <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
-                           <children>
-                               <ImageView fx:id="btnBack" fitHeight="60.0" fitWidth="60.0" onMouseClicked="#previousScreen" pickOnBounds="true" preserveRatio="true" />
-                               <ImageView fx:id="btnNext" fitHeight="60.0" fitWidth="60.0" layoutX="10.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true" />
-                               <ImageView fx:id="btnHome" fitHeight="60.0" fitWidth="60.0" onMouseClicked="#showMain" pickOnBounds="true" preserveRatio="true" />
-                           </children>
-                       </HBox>
-                   </left>
-                   <right>
-                       <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
-                           <children>
-                               <HBox alignment="CENTER_LEFT">
-                                   <children>
-                                       <Label fx:id="user_name" text="not signed in" HBox.hgrow="ALWAYS">
-                                           <font>
-                                               <Font size="20.0" />
-                                           </font>
-                                           <HBox.margin>
-                                               <Insets right="10.0" />
-                                           </HBox.margin>
-                                       </Label>
-                                       <ImageView fx:id="img_profile" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
-                                           <image>
-                                               <Image url="@../../../images/profile.png" />
-                                           </image>
-                                       </ImageView>
-                                   </children>
-                               </HBox>
-                           </children>
-                       </HBox>
-                   </right>
-               </BorderPane>
-           </bottom>
-           <center>
-               <BorderPane style="-fx-border-insets: -50 -10 0 -10;" BorderPane.alignment="CENTER">
-                   <center>
-                       <VBox alignment="CENTER" BorderPane.alignment="CENTER">
-                           <children>
-                               <Label fx:id="company_name" text="Enterprise Resource Engine">
-                                   <font>
-                                       <Font size="30.0" />
-                                   </font>
-                               </Label>
-                           </children>
-                       </VBox>
-                   </center>
-                   <left>
-                       <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
-                           <children>
-                               <ImageView fx:id="img_profile1" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
-                                   <image>
-                                       <Image url="@../images/logo.png" />
-                                   </image>
-                               </ImageView>
-                           </children>
-                       </HBox>
-                   </left>
-                   <right>
-                       <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
-                           <children>
-                               <ImageView fx:id="btnLogin" fitHeight="60.0" fitWidth="60.0" onMouseClicked="#showLogin" pickOnBounds="true" preserveRatio="true">
-                                   <HBox.margin>
-                                       <Insets right="10.0" />
-                                   </HBox.margin>
-                               </ImageView>
-                           </children>
-                       </HBox>
-                   </right>
-               </BorderPane>
-           </center>
-       </BorderPane>
+       <fx:include source="SystemNav.fxml"/>
       <TableView fx:id="tblSafety" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
         <columns>
           <TableColumn fx:id="colIndex" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Index" visible="false">

@@ -25,6 +25,7 @@ import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -97,26 +98,26 @@ public class RequisitionsController extends OperationsController implements Init
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-
-                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
                                 HBox.setHgrow(btnRemove, Priority.ALWAYS);
 
-                                btnNewQuote.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnNewQuote.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnNewQuote.getStyleClass().add("btnAdd");
                                 btnNewQuote.setMinWidth(100);
                                 btnNewQuote.setMinHeight(35);
                                 HBox.setHgrow(btnNewQuote, Priority.ALWAYS);
 
-                                btnRequestAppproval.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRequestAppproval.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRequestAppproval.getStyleClass().add("btnAdd");
                                 btnRequestAppproval.setMinWidth(100);
                                 btnRequestAppproval.setMinHeight(35);
                                 HBox.setHgrow(btnRequestAppproval, Priority.ALWAYS);
 
-                                btnEmail.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnEmail.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnEmail.setMinWidth(100);
                                 btnEmail.setMinHeight(35);
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);

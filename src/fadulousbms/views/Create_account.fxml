@@ -2,14 +2,10 @@
 
 <?import javafx.scene.shape.*?>
 <?import javafx.collections.*?>
-<?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.collections.FXCollections?>
 
 <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" minWidth="650.0" styleClass="border-pane" stylesheets="@../styles/home.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.AccountCreationController">
    <center>

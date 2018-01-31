@@ -1,8 +1,8 @@
 package fadulousbms.auxilary;
 
-import fadulousbms.FadulousBMS;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
+import javafx.util.Callback;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -10,7 +10,6 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
@@ -45,6 +44,8 @@ public class PDF
     private static final Insets page_margins = new Insets(100,10,100,10);
     private static int quote_page_count=1;
     private PDFont default_font;
+    private static String logo_path = "images/logo.png";
+    private static String header_path = "images/header.jpg";
 
     public static void printPDF(final byte[] byteStream) throws PrintException
     {
@@ -118,7 +119,7 @@ public class PDF
 
         PDPageContentStream contents = new PDPageContentStream(document, page);
         int logo_h = 60;
-        PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
         contents.drawImage(logo, (w/2)-80, 770, 160, logo_h);
 
         int line_pos = (int)h-logo_h-LINE_HEIGHT;
@@ -270,7 +271,7 @@ public class PDF
 
         PDPageContentStream contents = new PDPageContentStream(document, page);
         int logo_h = 60;
-        PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
         contents.drawImage(logo, (w/2)-80, 770, 160, logo_h);
 
         int line_pos = (int)h-logo_h-LINE_HEIGHT;
@@ -374,7 +375,7 @@ public class PDF
 
         PDPageContentStream contents = new PDPageContentStream(document, page);
         int logo_h = 60;
-        PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
         contents.drawImage(logo, (w/2)-80, 770, 160, logo_h);
 
         int line_pos = (int)h-logo_h-LINE_HEIGHT;
@@ -478,7 +479,7 @@ public class PDF
         return path;
     }
 
-    public static String createPurchaseOrderPdf(PurchaseOrder purchaseOrder) throws IOException
+    public static String createPurchaseOrderPdf(PurchaseOrder purchaseOrder, Callback callback) throws IOException
     {
         if(purchaseOrder==null)
         {
@@ -513,22 +514,22 @@ public class PDF
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
 
-        // Adobe Acrobat uses Helvetica as a default font and
-        // stores that under the name '/Helv' in the resources dictionary
-        //PDFont font = PDType1Font.HELVETICA;
-        File font_file = new File(FadulousBMS.class.getResource("fonts/Ubuntu-L.ttf").getFile());
+        /*File font_file = new File(FadulousBMS.class.getResource("fonts/Ubuntu-L.ttf").getFile());
         if(font_file==null)
         {
             IO.log("Purchase Order PDF generator Error", IO.TAG_ERROR, "Could not find default system font file [fonts/Raleway-Light.ttf]");
             return null;
         }
-        PDFont font = PDType0Font.load(document, font_file);
+        PDFont font = PDType0Font.load(document, font_file);*/
+        PDFont font = PDType1Font.COURIER;
         PDResources resources = new PDResources();
+        // Adobe Acrobat uses Helvetica as a default font and
+        // stores that under the name '/Helv' in the resources dictionary
         resources.put(COSName.getPDFName("Helv"), font);
 
         PDPageContentStream contents = new PDPageContentStream(document, page);
         int logo_h = 60;
-        //PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
         //contents.drawImage(logo, 10, 770, 160, logo_h);
 
         float w = page.getBBox().getWidth();
@@ -551,7 +552,9 @@ public class PDF
         //addTextToPageStream(contents,"PURCHASE ORDER", PDType1Font.COURIER_BOLD_OBLIQUE, 17, (int)(w/2)+20, line_pos);
         //line_pos-=LINE_HEIGHT;//next line
         contents.endText();
-        PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        //System.out.println(">>>>>>"+new File("images/logo.png").getPath());
+        //System.out.println(">>>>>>"+(new File(logo_path).exists()));
+        PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
         contents.drawImage(logo, (int)(w/2)+ 20, line_pos-logo_h, 150, logo_h);
         contents.beginText();
 
@@ -599,7 +602,7 @@ public class PDF
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,Globals.COMPANY.getValue(), PDType1Font.HELVETICA_BOLD, 16,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"VAT No.: #############", 12,20, line_pos);
+        addTextToPageStream(contents,"VAT No.: #########", 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents,"POSTAL ADDRESS: ##########", 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
@@ -627,7 +630,7 @@ public class PDF
         line_pos-=LINE_HEIGHT;//next line
         addTextToPageStream(contents, purchaseOrder.getSupplier().getSupplier_name(), PDType1Font.HELVETICA_BOLD, 16, supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"VAT No.: #############", 12,supplier_text_x, line_pos);
+        addTextToPageStream(contents,"VAT No.: "+purchaseOrder.getSupplier().getVat_number(), 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         //addTextToPageStream(contents,"POSTAL ADDRESS: " + purchaseOrder.getSupplier().getPostal_address(), 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
@@ -831,8 +834,8 @@ public class PDF
         contents.stroke();
 
         contents.beginText();
-        addTextToPageStream(contents, "Sub-Total [Excl. VAT]: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14,20, line_pos);
-        addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total)), PDType1Font.COURIER_BOLD_OBLIQUE, 14,(int)(5+(w/2)), line_pos);
+        addTextToPageStream(contents, "Sub-Total [Excl. VAT]: ", PDType1Font.COURIER, 14,20, line_pos);
+        addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total)), PDType1Font.COURIER, 14,(int)(5+(w/2)), line_pos);
         line_pos -= LINE_HEIGHT;//next line
 
         //solid horizontal line
@@ -942,6 +945,9 @@ public class PDF
         document.save(path);
         document.close();
 
+        if(callback!=null)
+            callback.call(path);
+
         return path;
     }
 
@@ -984,8 +990,8 @@ public class PDF
         PDPageContentStream contents = new PDPageContentStream(document, page);
         //int logo_h = 60;
         int header_h = 90;
-        //PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
-        PDImageXObject header = PDImageXObject.createFromFile("images/header.jpg", document);
+        //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
+        PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
         contents.drawImage(header, 0, 760, w, header_h);
 
         int line_pos = (int)h-header_h-0;
@@ -1432,7 +1438,7 @@ public class PDF
 
             PDPageContentStream contents = new PDPageContentStream(document, page);
             int logo_h = 60;
-            //PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+            //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
             //contents.drawImage(logo, 10, 770, 160, logo_h);
 
             float w = page.getBBox().getWidth();
@@ -1470,7 +1476,7 @@ public class PDF
 
             //right content
             contents.endText();
-            PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+            PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
             contents.drawImage(logo, (int) (w / 2) + 20, line_pos - logo_h - 10, 150, logo_h);
 
             line_pos -= LINE_HEIGHT * 5;
@@ -1514,7 +1520,7 @@ public class PDF
             line_pos -= LINE_HEIGHT;
             addTextToPageStream(contents, "Creator:  " + invoice.getCreator(), 12, (int) (w / 2) + 5, line_pos);
             //contents.endText();
-            //PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+            //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
             //contents.drawImage(logo, (int)(w/2)+ 20, line_pos-logo_h, 150, logo_h);
 
             line_pos -= LINE_HEIGHT;
@@ -1952,7 +1958,7 @@ public class PDF
 
         PDPageContentStream contents = new PDPageContentStream(document, page);
         int logo_h = 60;
-        PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
         contents.drawImage(logo, 10, 770, 160, logo_h);
 
         float w = page.getBBox().getWidth();
@@ -2170,7 +2176,7 @@ public class PDF
 
         PDPageContentStream contents = new PDPageContentStream(document, page);
         int logo_h = 60;
-        PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+        PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
         contents.drawImage(logo, 10, 770, 160, logo_h);
 
         float w = page.getBBox().getWidth();
@@ -2660,7 +2666,7 @@ public class PDF
 
         if(job.getAssigned_employees()!=null)
         {
-            PDImageXObject logo = PDImageXObject.createFromFile("images/logo.png", document);
+            PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
 
             for (Employee employee : job.getAssigned_employees())
             {
@@ -2827,7 +2833,7 @@ public class PDF
             Character c = text_arr[i];
             int code = 0;
             System.out.println(String.format("Character [%s] has codename: [%s] and code [%s]", c, e.getName(c), String.valueOf(e.getNameToCodeMap().get(c))));
-            if(e.getName(c).toLowerCase().equals(".notdef"))
+            if(e.getName(c).toLowerCase().equals(".notdef") || e.getName(c).toLowerCase().equals("nbspace"))
                 str_builder.append("[?]");
             else str_builder.append(c);
             /*if(Character.isWhitespace(c))
@@ -2839,7 +2845,7 @@ public class PDF
             }
             str_builder.appendCodePoint(code);*/
         }
-        contents.showText(str_builder.toString());
+        contents.showText(str_builder.toString().replaceAll("\u00A0","").trim());
     }
 
     /**

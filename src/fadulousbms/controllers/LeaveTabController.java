@@ -83,7 +83,8 @@ public class LeaveTabController extends ScreenController implements Initializabl
                             public void updateItem(String item, boolean empty)
                             {
                                 super.updateItem(item, empty);
-                                btnApprove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnApprove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnApprove.setMinWidth(100);
                                 btnApprove.setMinHeight(35);
                                 HBox.setHgrow(btnApprove, Priority.ALWAYS);
@@ -96,33 +97,33 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                         btnApprove.getStyleClass().add("btnDefault");
                                         btnApprove.setDisable(false);
                                     } else btnApprove.getStyleClass().add("btnDisabled");
-                                } else IO.logAndAlert("Error", "No valid active employee session found, please log in.", IO.TAG_ERROR);
+                                } else IO.logAndAlert("Error: Invalid Session", "No valid active employee session found, please log in.", IO.TAG_ERROR);
 
-                                btnRequestApproval.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRequestApproval.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRequestApproval.getStyleClass().add("btnDefault");
                                 btnRequestApproval.setMinWidth(100);
                                 btnRequestApproval.setMinHeight(35);
                                 HBox.setHgrow(btnRequestApproval, Priority.ALWAYS);
 
-                                btnPDF.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnPDF.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnPDF.getStyleClass().add("btnDefault");
                                 btnPDF.setMinWidth(100);
                                 btnPDF.setMinHeight(35);
                                 HBox.setHgrow(btnPDF, Priority.ALWAYS);
 
-                                btnUpload.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnUpload.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnUpload.getStyleClass().add("btnAdd");
                                 btnUpload.setMinWidth(100);
                                 btnUpload.setMinHeight(35);
                                 HBox.setHgrow(btnUpload, Priority.ALWAYS);
 
-                                btnViewSigned.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnViewSigned.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnViewSigned.getStyleClass().add("btnDefault");
                                 btnViewSigned.setMinWidth(100);
                                 btnViewSigned.setMinHeight(35);
                                 HBox.setHgrow(btnViewSigned, Priority.ALWAYS);
 
-                                btnEmailSigned.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnEmailSigned.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnEmailSigned.setMinWidth(100);
                                 btnEmailSigned.setMinHeight(35);
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
@@ -139,7 +140,7 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                     }
                                 }
 
-                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);

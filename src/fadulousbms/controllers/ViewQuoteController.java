@@ -13,6 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
+import java.io.IOException;
 import java.time.DateTimeException;
 import java.util.*;
 
@@ -237,6 +238,28 @@ public class ViewQuoteController extends QuoteController
     @FXML
     public void back()
     {
-        ScreenController.previousScreen();
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.OPERATIONS.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.OPERATIONS.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            ScreenManager.getInstance().setScreen(Screens.OPERATIONS.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load operations screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 }

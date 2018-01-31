@@ -62,12 +62,14 @@ public class RemoteComms
                     IO.log("User Authenticator", IO.TAG_INFO, "successfully signed in.");
                     connObj.disconnect();
                     return session;
-            }else{
+            } else
+            {
                 connObj.disconnect();
                 IO.logAndAlert("Authentication Error", "Could not parse Session JSON object.", IO.TAG_ERROR);
                //throw new LoginException("Cookie object is not set.");
             }
-        }else{
+        } else
+        {
             connObj.disconnect();
             IO.log("User Authenticator", IO.TAG_ERROR, "could not sign in.");
             if(connObj.getResponseCode()==HttpURLConnection.HTTP_NOT_FOUND)
@@ -491,7 +493,7 @@ public class RemoteComms
                     headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
                     try
                     {
-                        HttpURLConnection connection = RemoteComms.patchJSON(bo.apiEndpoint(), bo.toString(), headers);
+                        HttpURLConnection connection = RemoteComms.patchJSON(bo.apiEndpoint(), bo.getJSONString(), headers);
                         if(connection!=null)
                         {
                             if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

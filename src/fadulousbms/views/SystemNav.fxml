@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.text.*?>
@@ -15,7 +14,7 @@
                     <children>
                         <ImageView fx:id="img_logo" fitHeight="70.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@../gfx/logo.png" />
+                                <Image url="@../images/logo.png" />
                             </image>
                             <HBox.margin>
                                 <Insets left="10.0" />
@@ -23,7 +22,7 @@
                         </ImageView>
                           <ImageView fx:id="img_profile" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
                               <image>
-                                  <Image url="@../gfx/profile.png" />
+                                  <Image url="@../images/profile.png" />
                               </image>
                           </ImageView>
                           <Label fx:id="user_name" text="not signed in" textFill="WHITE" HBox.hgrow="ALWAYS">

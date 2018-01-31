@@ -27,6 +27,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -272,7 +273,8 @@ public class ViewJobController extends ScreenController implements Initializable
                             {
                                 super.updateItem(item, empty);
 
-                                btnRemove.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
                                 btnRemove.setMinWidth(100);
                                 btnRemove.setMinHeight(35);
@@ -320,6 +322,8 @@ public class ViewJobController extends ScreenController implements Initializable
         {
             if(EmployeeManager.getInstance().getEmployees().size()>0)
             {
+                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
                 Employee[] employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
                 EmployeeManager.getInstance().getEmployees().values().toArray(employees);
 
@@ -333,13 +337,13 @@ public class ViewJobController extends ScreenController implements Initializable
                 btnAdd.setMinHeight(40);
                 btnAdd.setDefaultButton(true);
                 btnAdd.getStyleClass().add("btnApply");
-                btnAdd.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                 Button btnCancel = new Button("Close");
                 btnCancel.setMinWidth(80);
                 btnCancel.setMinHeight(40);
                 btnCancel.getStyleClass().add("btnBack");
-                btnCancel.getStylesheets().add(fadulousbms.FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+                btnCancel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
                 HBox hBox = new HBox(new Label("Employee: "), employeeComboBox);
                 HBox.setHgrow(hBox, Priority.ALWAYS);
