@@ -63,16 +63,6 @@
     -fx-image:url("../images/chevron_right_white.png");
 }
 
-.btnRefresh
-{
-    -fx-image:url("../images/refresh.png");
-}
-
-.btnRefresh:hover
-{
-    -fx-image:url("../images/refresh_white.png");
-}
-
 .btnHome
 {
     -fx-image:url("../images/home_black.png");

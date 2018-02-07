@@ -52,10 +52,10 @@ public class LeaveTabController extends ScreenController implements Initializabl
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
         CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/leave_records");
 
-        if(LeaveManager.getInstance().getLeaveRecords()!=null)
+        if(LeaveManager.getInstance().getDataset()!=null)
         {
             ObservableList<Leave> lst_leave = FXCollections.observableArrayList();
-            lst_leave.addAll(LeaveManager.getInstance().getLeaveRecords().values());
+            lst_leave.addAll(LeaveManager.getInstance().getDataset().values());
             tblLeave.setItems(lst_leave);
         } else IO.log(getClass().getName(), IO.TAG_WARN, "no leave records were found in the database.");
 
@@ -170,28 +170,19 @@ public class LeaveTabController extends ScreenController implements Initializabl
 
                                     btnPDF.setOnAction(event ->
                                     {
-                                        try
+                                        LeaveManager.getInstance().initialize();
+                                        if (leave == null)
                                         {
-                                            LeaveManager.getInstance().reloadDataFromServer();
-                                            if (leave == null)
-                                            {
-                                                IO.logAndAlert("Error " + getClass()
-                                                        .getName(), "Leave object is not set", IO.TAG_ERROR);
-                                                return;
-                                            }
-                                            //update selected leave object on respective manager
-                                            if(LeaveManager.getInstance().getLeaveRecords()!=null)
-                                                LeaveManager.getInstance().setSelected(LeaveManager.getInstance().getLeaveRecords().get(leave.get_id()));
-                                            else IO.log(getClass().getName(), IO.TAG_ERROR, "no leave applications were found in the database." );
-
-                                            LeaveManager.getInstance().viewPDF(leave);
-                                        } catch (ClassNotFoundException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        } catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                            IO.logAndAlert("Error " + getClass()
+                                                    .getName(), "Leave object is not set", IO.TAG_ERROR);
+                                            return;
                                         }
+                                        //update selected leave object on respective manager
+                                        if(LeaveManager.getInstance().getDataset()!=null)
+                                            LeaveManager.getInstance().setSelected(LeaveManager.getInstance().getDataset().get(leave.get_id()));
+                                        else IO.log(getClass().getName(), IO.TAG_ERROR, "no leave applications were found in the database." );
+
+                                        LeaveManager.getInstance().viewPDF(leave);
                                     });
 
                                     btnUpload.setOnAction(event ->
@@ -241,27 +232,11 @@ public class LeaveTabController extends ScreenController implements Initializabl
         colAction.setMinWidth(700);
     }
 
-    public void refreshTable()
-    {
-        tblLeave.refresh();
-    }
-
     @Override
     public void refreshModel()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading leave tab model.");
-        try
-        {
-            LeaveManager.getInstance().reloadDataFromServer();
-        } catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+        LeaveManager.getInstance().initialize();
     }
 
     private static void viewSignedLeaveApplication(Leave leave)
@@ -345,49 +320,38 @@ public class LeaveTabController extends ScreenController implements Initializabl
     public static RadialMenuItem[] getContextMenu()
     {
         RadialMenuItem menuLeave = new RadialMenuItemCustom(30, "Approve", null, null, event ->
-                LeaveManager.approveLeave(LeaveManager.getInstance().getSelected(), param ->
+            LeaveManager.approveLeave((Leave) LeaveManager.getInstance().getSelected(), param ->
+            {
+                //refresh UI on approve
+                //refresh model
+                LeaveManager.getInstance().initialize();
+                //refresh view
+                final ScreenManager screenManager = ScreenManager.getInstance();
+                ScreenManager.getInstance().showLoadingScreen(arg ->
                 {
-                    //refresh UI on approve
-                    try
+                    new Thread(new Runnable()
                     {
-                        //refresh model
-                        LeaveManager.getInstance().reloadDataFromServer();
-                        //refresh view
-                        final ScreenManager screenManager = ScreenManager.getInstance();
-                        ScreenManager.getInstance().showLoadingScreen(arg ->
+                        @Override
+                        public void run()
                         {
-                            new Thread(new Runnable()
+                            try
                             {
-                                @Override
-                                public void run()
+                                if(screenManager.loadScreen(Screens.HR.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.HR.getScreen())))
                                 {
-                                    try
-                                    {
-                                        if(screenManager.loadScreen(Screens.HR.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.HR.getScreen())))
-                                        {
-                                            //Platform.runLater(() ->
-                                            screenManager.setScreen(Screens.HR.getScreen());
-                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load HR screen.");
-                                    } catch (IOException e)
-                                    {
-                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }).start();
-                            return null;
-                        });
-                    } catch (ClassNotFoundException e)
-                    {
-                        e.printStackTrace();
-                        IO.log(LeaveTabController.class.getName(), IO.TAG_ERROR, e.getMessage());
-                    } catch (IOException e)
-                    {
-                        e.printStackTrace();
-                        IO.log(LeaveTabController.class.getName(), IO.TAG_ERROR, e.getMessage());
-                    }
+                                    //Platform.runLater(() ->
+                                    screenManager.setScreen(Screens.HR.getScreen());
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load HR screen.");
+                            } catch (IOException e)
+                            {
+                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
                     return null;
-                }));
+                });
+                return null;
+            }));
         return new RadialMenuItem[]{menuLeave};
     }
 

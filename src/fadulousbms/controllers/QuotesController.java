@@ -51,17 +51,17 @@ public class QuotesController extends OperationsController implements Initializa
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading quotes view..");
 
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No employees were found in the database.", IO.TAG_ERROR);
             return;
         }
-        if(QuoteManager.getInstance().getQuotes()==null)
+        if(QuoteManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No quotes were found in the database.", IO.TAG_WARN);
             return;
         }
-        if(ClientManager.getInstance().getClients()==null)
+        if(ClientManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No clients were found in the database.", IO.TAG_WARN);
             return;
@@ -208,7 +208,7 @@ public class QuotesController extends OperationsController implements Initializa
                                                 @Override
                                                 public void run()
                                                 {
-                                                    QuoteManager.getInstance().setSelectedQuote(quote);
+                                                    QuoteManager.getInstance().setSelected(quote);
                                                     try
                                                     {
                                                         if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
@@ -281,10 +281,10 @@ public class QuotesController extends OperationsController implements Initializa
         colAction.setCellFactory(cellFactory);
 
         tblQuotes.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
-                QuoteManager.getInstance().setSelectedQuote(tblQuotes.getSelectionModel().getSelectedItem()));
+                QuoteManager.getInstance().setSelected(tblQuotes.getSelectionModel().getSelectedItem()));
 
         HashMap<String, Quote> latest_rev_quotes = new HashMap<>();
-        for(Quote quote: QuoteManager.getInstance().getQuotes().values())
+        for(Quote quote: QuoteManager.getInstance().getDataset().values())
         {
             if(quote.getParent_id()!=null)//if quote has parent, i.e. siblings
             {
@@ -309,10 +309,10 @@ public class QuotesController extends OperationsController implements Initializa
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading quotes data model..");
 
-        EmployeeManager.getInstance().loadDataFromServer();
-        ClientManager.getInstance().loadDataFromServer();
-        ResourceManager.getInstance().loadDataFromServer();
-        QuoteManager.getInstance().loadDataFromServer();
+        EmployeeManager.getInstance().initialize();
+        ClientManager.getInstance().initialize();
+        ResourceManager.getInstance().initialize();
+        QuoteManager.getInstance().initialize();
     }
 
     /**

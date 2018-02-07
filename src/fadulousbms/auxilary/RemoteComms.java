@@ -25,6 +25,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 
@@ -91,6 +92,8 @@ public class RemoteComms
     {
         URL urlConn = new URL(host);
         HttpURLConnection httpConn =  (HttpURLConnection)urlConn.openConnection();
+        httpConn.setConnectTimeout(5000);
+        httpConn.setReadTimeout(5000);
 
         boolean response = (httpConn.getResponseCode() == HttpURLConnection.HTTP_OK);
         httpConn.disconnect();

@@ -30,15 +30,15 @@ public class LeaveManager extends BusinessObjectManager
     public static final String ROOT_PATH = "cache/leave/";
     public String filename = "";
     private long timestamp;
-    private Leave selected;
 
     private LeaveManager()
     {
     }
 
-    public HashMap<String, Leave> getLeaveRecords()
+    @Override
+    public void initialize()
     {
-        return this.leave_records;
+        synchroniseDataset();
     }
 
     public static LeaveManager getInstance()
@@ -46,112 +46,92 @@ public class LeaveManager extends BusinessObjectManager
         return leaveManager;
     }
 
-    public Leave getSelected()
+    @Override
+    public HashMap<String, Leave> getDataset()
     {
-        return selected;
-    }
-
-    public void setSelected(Leave selected)
-    {
-        this.selected = selected;
+        return this.leave_records;
     }
 
     @Override
-    public void initialize()
+    Callback getSynchronisationCallback()
     {
-        loadDataFromServer();
-    }
-
-    public void loadDataFromServer()
-    {
-        try
+        return new Callback()
         {
-            if (leave_records == null)
-                reloadDataFromServer();
-            else IO.log(getClass().getName(), IO.TAG_INFO, "leave_records object has already been set.");
-        } catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        } catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        } catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    public void reloadDataFromServer() throws ClassNotFoundException, IOException
-    {
-        try
-        {
-            SessionManager smgr = SessionManager.getInstance();
-            if (smgr.getActive() != null)
+            @Override
+            public Object call(Object param)
             {
-                if (!smgr.getActive().isExpired())
+                try
                 {
-                    gson = new GsonBuilder().create();
-                    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                    //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/leave_timestamp", headers);
-                    Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
-                    if (cntr_timestamp != null)
+                    SessionManager smgr = SessionManager.getInstance();
+                    if (smgr.getActive() != null)
                     {
-                        timestamp = cntr_timestamp.getCount();
-                        filename = "leave_" + timestamp + ".dat";
-                        IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
-                    } else
-                    {
-                        IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
-                        return;
-                    }
-
-                    if (!isSerialized(ROOT_PATH + filename))
-                    {
-                        String leave_records_json = RemoteComms.sendGetRequest("/leave_records", headers);
-                        LeaveServerObject leaveServerObject = gson.fromJson(leave_records_json, LeaveServerObject.class);
-                        if (leaveServerObject != null)
+                        if (!smgr.getActive().isExpired())
                         {
-                            if(leaveServerObject.get_embedded()!=null)
+                            gson = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+
+                            //Get Timestamp
+                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/leave_timestamp", headers);
+                            Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
+                            if (cntr_timestamp != null)
                             {
-                                Leave[] leave_records_arr = leaveServerObject.get_embedded().getLeave_records();
+                                timestamp = cntr_timestamp.getCount();
+                                filename = "leave_" + timestamp + ".dat";
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
+                            } else
+                            {
+                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                return null;
+                            }
 
-                                if(leave_records_arr!=null)
+                            if (!isSerialized(ROOT_PATH + filename))
+                            {
+                                String leave_records_json = RemoteComms.sendGetRequest("/leave_records", headers);
+                                LeaveServerObject leaveServerObject = gson.fromJson(leave_records_json, LeaveServerObject.class);
+                                if (leaveServerObject != null)
                                 {
-                                    leave_records = new HashMap<>();
-                                    for (Leave leave : leave_records_arr)
-                                        leave_records.put(leave.get_id(), leave);
-                                } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any leave_records in database");
-                            } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Leave records in the database.");
-                        } else IO.log(getClass().getName(), IO.TAG_WARN, "no Leave records were found in the database.");
+                                    if(leaveServerObject.get_embedded()!=null)
+                                    {
+                                        Leave[] leave_records_arr = leaveServerObject.get_embedded().getLeave_records();
 
-                        IO.log(getClass().getName(), IO.TAG_INFO, "reloaded leave_records collection.");
-                        this.serialize(ROOT_PATH + filename, leave_records);
+                                        if(leave_records_arr!=null)
+                                        {
+                                            leave_records = new HashMap<>();
+                                            for (Leave leave : leave_records_arr)
+                                                leave_records.put(leave.get_id(), leave);
+                                        } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any leave_records in database");
+                                    } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Leave records in the database.");
+                                } else IO.log(getClass().getName(), IO.TAG_WARN, "no Leave records were found in the database.");
+
+                                IO.log(getClass().getName(), IO.TAG_INFO, "reloaded leave_records collection.");
+                                serialize(ROOT_PATH + filename, leave_records);
+                            } else
+                            {
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                                leave_records = (HashMap<String, Leave>) deserialize(ROOT_PATH + filename);
+                            }
+                        } else
+                        {
+                            IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                        }
                     } else
                     {
-                        IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
-                        leave_records = (HashMap<String, Leave>) this.deserialize(ROOT_PATH + filename);
+                        IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
                     }
-                } else
+                } catch (MalformedURLException e)
                 {
-                    IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (ClassNotFoundException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                 }
-            } else
-            {
-                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                return null;
             }
-        } catch (MalformedURLException ex)
-        {
-            IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        } catch (IOException ex)
-        {
-            IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        }
+        };
     }
 
     public static void viewPDF(Leave leave)
@@ -304,7 +284,7 @@ public class LeaveManager extends BusinessObjectManager
         scene.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
 
         stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
+                synchroniseDataset());
 
         stage.setScene(scene);
         stage.show();
@@ -426,7 +406,7 @@ public class LeaveManager extends BusinessObjectManager
             IO.logAndAlert("Error", "Invalid Leave object.", IO.TAG_ERROR);
             return;
         }
-        if(LeaveManager.getInstance().getLeaveRecords()==null)
+        if(LeaveManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert("Error", "Could not find any leave applications in the system.", IO.TAG_ERROR);
             return;
@@ -460,7 +440,7 @@ public class LeaveManager extends BusinessObjectManager
 
         //gather list of Employees with enough clearance to sign leaves
         ArrayList<Employee> lst_auth_employees = new ArrayList<>();
-        for(Employee employee: EmployeeManager.getInstance().getEmployees().values())
+        for(Employee employee: EmployeeManager.getInstance().getDataset().values())
             if(employee.getAccessLevel()>=AccessLevels.SUPERUSER.getLevel())
                 lst_auth_employees.add(employee);
 

@@ -4,8 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -40,76 +38,96 @@ public class RequisitionManager extends BusinessObjectManager
     {
     }
 
+    @Override
+    public void initialize()
+    {
+        synchroniseDataset();
+    }
+
     public static RequisitionManager getInstance()
     {
         return requisition_manager;
     }
 
-    public HashMap<String, Requisition> getRequisitions()
+    @Override
+    public HashMap<String, Requisition> getDataset()
     {
         return requisitions;
     }
 
-    public void setSelected(Requisition requisition)
-    {
-        if(requisition!=null)
-            this.selected=requisition;
-        else IO.log(getClass().getName()+">setSelected()", IO.TAG_WARN, "invalid requisition.");
-    }
-
-    public void setSelected(String requisition_id)
-    {
-        if(requisitions!=null && requisition_id!=null)
-            this.selected=requisitions.get(requisition_id);
-        else IO.log(getClass().getName(), IO.TAG_WARN, "collection of requisitions or requisition_id not set.");
-    }
-
-    public Requisition getSelected()
-    {
-        return this.selected;
-    }
-
     @Override
-    public void initialize()
+    Callback getSynchronisationCallback()
     {
-        try
+        return new Callback()
         {
-            reloadDataFromServer();
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
+            @Override
+            public Object call(Object param)
+            {
+                try
+                {
+                    SessionManager smgr = SessionManager.getInstance();
+                    if (smgr.getActive() != null)
+                    {
+                        if (!smgr.getActive().isExpired())
+                        {
+                            gson = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-    public void loadDataFromServer()
-    {
-        try
-        {
-            if(requisitions==null)
-                reloadDataFromServer();
-            else IO.log(getClass().getName(), IO.TAG_INFO, "requisitions object has already been set.");
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
+                            //Get Timestamp
+                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/requisitions_timestamp", headers);
+                            Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
+                            if (cntr_timestamp != null)
+                            {
+                                timestamp = cntr_timestamp.getCount();
+                                filename = "requisitions_" + timestamp + ".dat";
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
+                            } else
+                            {
+                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                return null;
+                            }
+
+                            if (!isSerialized(ROOT_PATH + filename))
+                            {
+                                String requisitions_json = RemoteComms.sendGetRequest("/requisitions", headers);
+                                RequisitionServerObject requisitionServerObject= gson.fromJson(requisitions_json, RequisitionServerObject.class);
+                                if(requisitionServerObject!=null)
+                                {
+                                    if(requisitionServerObject.get_embedded()!=null)
+                                    {
+                                        Requisition[] requisitions_arr = requisitionServerObject.get_embedded().getPurchase_orders();
+
+                                        if (requisitions_arr != null)
+                                        {
+                                            requisitions = new HashMap<>();
+                                            for (Requisition requisition : requisitions_arr)
+                                                requisitions.put(requisition.get_id(), requisition);
+                                        } else IO.log(getClass().getName(), IO.TAG_WARN, "no requisitions were found in database.");
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Requisitions in database.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "RequisitionServerObject (containing Requisition objects & other metadata) is null");
+                                IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of purchase orders.");
+                                serialize(ROOT_PATH + filename, requisitions);
+                            } else
+                            {
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                                requisitions = (HashMap<String, Requisition>) deserialize(ROOT_PATH + filename);
+                            }
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                } catch (MalformedURLException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (ClassNotFoundException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+                return null;
+            }
+        };
     }
 
     public void createRequisition(Requisition requisition, Callback callback) throws IOException
@@ -153,29 +171,16 @@ public class RequisitionManager extends BusinessObjectManager
                 if(connection!=null)
                     connection.disconnect();
 
-                try
-                {
-                    //update selected requisition
-                    RequisitionManager.getInstance().reloadDataFromServer();
-                    RequisitionManager.getInstance().setSelected(new_requisition_id);
+                //update selected requisition
+                forceSynchronise();
+                if(new_requisition_id!=null && RequisitionManager.getInstance().getDataset()!=null)
+                    RequisitionManager.getInstance().setSelected(RequisitionManager.getInstance().getDataset().get(new_requisition_id));
 
-                    IO.logAndAlert("New Requisition Creation Success", "Successfully created new Requisition.", IO.TAG_INFO);
-                    if(callback!=null)
-                        if(new_requisition_id!=null)
-                            callback.call(new_requisition_id);
-                }catch (MalformedURLException ex)
-                {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                    IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                }catch (ClassNotFoundException e)
-                {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                    IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                }catch (IOException ex)
-                {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                    IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                }
+                IO.logAndAlert("New Requisition Creation Success", "Successfully created new Requisition.", IO.TAG_INFO);
+
+                if(callback!=null)
+                    if(new_requisition_id!=null)
+                        callback.call(new_requisition_id);
             } else
             {
                 //Get error message
@@ -185,60 +190,6 @@ public class RequisitionManager extends BusinessObjectManager
             if(connection!=null)
                 connection.disconnect();
         } else IO.logAndAlert("New Requisition Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
-    }
-    
-    public void reloadDataFromServer() throws ClassNotFoundException, IOException
-    {
-        SessionManager smgr = SessionManager.getInstance();
-        if (smgr.getActive() != null)
-        {
-            if (!smgr.getActive().isExpired())
-            {
-                gson = new GsonBuilder().create();
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                //Get Timestamp
-                String timestamp_json = RemoteComms.sendGetRequest("/timestamp/requisitions_timestamp", headers);
-                Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
-                if (cntr_timestamp != null)
-                {
-                    timestamp = cntr_timestamp.getCount();
-                    filename = "requisitions_" + timestamp + ".dat";
-                    IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
-                } else
-                {
-                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
-                    return;
-                }
-
-                if (!isSerialized(ROOT_PATH + filename))
-                {
-                    String requisitions_json = RemoteComms.sendGetRequest("/requisitions", headers);
-                    RequisitionServerObject requisitionServerObject= gson.fromJson(requisitions_json, RequisitionServerObject.class);
-                    if(requisitionServerObject!=null)
-                    {
-                        if(requisitionServerObject.get_embedded()!=null)
-                        {
-                            Requisition[] requisitions_arr = requisitionServerObject.get_embedded().getPurchase_orders();
-
-                            if (requisitions_arr != null)
-                            {
-                                requisitions = new HashMap<>();
-                                for (Requisition requisition : requisitions_arr)
-                                    requisitions.put(requisition.get_id(), requisition);
-                            } else IO.log(getClass().getName(), IO.TAG_WARN, "no requisitions were found in database.");
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Requisitions in database.");
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "RequisitionServerObject (containing Requisition objects & other metadata) is null");
-                    IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of purchase orders.");
-                    this.serialize(ROOT_PATH + filename, requisitions);
-                } else
-                {
-                    IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
-                    requisitions = (HashMap<String, Requisition>) this.deserialize(ROOT_PATH + filename);
-                }
-            } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
     public static void emailRequisition(Requisition requisition, Callback callback)
@@ -366,7 +317,7 @@ public class RequisitionManager extends BusinessObjectManager
             IO.logAndAlert("Error", "Invalid Requisition.", IO.TAG_ERROR);
             return;
         }
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert("Error", "Could not find any employees in the system.", IO.TAG_ERROR);
             return;

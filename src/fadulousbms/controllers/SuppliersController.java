@@ -46,13 +46,13 @@ public class SuppliersController extends ScreenController implements Initializab
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading suppliers view..");
-        if(SupplierManager.getInstance().getSuppliers()==null)
+        if(SupplierManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No suppliers found in the database.", IO.TAG_WARN);
             return;
         }
-        Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getSuppliers().values().toArray().length];
-        SupplierManager.getInstance().getSuppliers().values().toArray(suppliers);
+        Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getDataset().values().toArray().length];
+        SupplierManager.getInstance().getDataset().values().toArray(suppliers);
 
         colSupplierId.setMinWidth(100);
         colSupplierId.setCellValueFactory(new PropertyValueFactory<>("_id"));

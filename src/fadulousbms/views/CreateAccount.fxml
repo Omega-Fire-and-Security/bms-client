@@ -71,12 +71,12 @@
                                     <Insets bottom="2.5" left="2.5" right="2.5" top="2.5" />
                                  </HBox.margin>
                               </PasswordField>
-                              <Button minWidth="60.0" mnemonicParsing="false" text="show" wrapText="true">
+                              <Button fx:id="btnShow" minWidth="60.0" mnemonicParsing="false" onAction="#togglePasswordMask" text="show" wrapText="true">
                                  <HBox.margin>
                                     <Insets bottom="2.5" left="2.5" right="2.5" top="2.5" />
                                  </HBox.margin>
                               </Button>
-                              <Button minWidth="80.0" mnemonicParsing="false" text="generate" wrapText="true">
+                              <Button minWidth="80.0" mnemonicParsing="false" onAction="#generatePassword" text="generate" wrapText="true">
                                  <HBox.margin>
                                     <Insets bottom="2.5" left="2.5" right="2.5" top="2.5" />
                                  </HBox.margin>
@@ -101,7 +101,7 @@
       </StackPane>
    </center>
    <top>
-      <fx:include source="SystemNav.fxml"/>
+      <fx:include source="SystemNav.fxml" />
    </top>
    <bottom>
       <HBox BorderPane.alignment="CENTER">

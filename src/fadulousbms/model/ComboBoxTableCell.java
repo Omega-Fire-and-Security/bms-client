@@ -91,10 +91,13 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
                 String upd_id = (String)row_item.get(update_property);
 
                 //use the property value to get selected object for combo box
-                BusinessObject selected_cbx_item = business_objects.get(upd_id);
-                if(selected_cbx_item!=null)
-                    comboBox.setValue(selected_cbx_item);
-                setGraphic(comboBox);
+                if(business_objects!=null && upd_id!=null)
+                {
+                    BusinessObject selected_cbx_item = business_objects.get(upd_id);
+                    if (selected_cbx_item != null)
+                        comboBox.setValue(selected_cbx_item);
+                    setGraphic(comboBox);
+                }
             } else IO.log(TAG, IO.TAG_ERROR, String.format("unknown row object type: " + getTableRow().getItem()));
         } else IO.log(TAG, IO.TAG_ERROR, "selected row is null.");
     }

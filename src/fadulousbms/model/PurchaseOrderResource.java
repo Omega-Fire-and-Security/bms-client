@@ -50,7 +50,7 @@ public class PurchaseOrderResource extends PurchaseOrderItem
         //if(super.getItem()!=null)
         //    return (Resource) super.getItem();
 
-        ResourceManager.getInstance().loadDataFromServer();
+        ResourceManager.getInstance().initialize();
         if (ResourceManager.getInstance().getAll_resources() != null)
         {
             Resource resource = ResourceManager.getInstance().getAll_resources().get(getItem_id());

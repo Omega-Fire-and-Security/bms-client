@@ -51,12 +51,12 @@ public class JobsController extends ScreenController implements Initializable
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading jobs view..");
 
-        if (JobManager.getInstance().getJobs() == null)
+        if (JobManager.getInstance().getDataset() == null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No jobs were found in the database.", IO.TAG_WARN);
             return;
         }
-        if (JobManager.getInstance().getJobs().values() == null)
+        if (JobManager.getInstance().getDataset().values() == null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No jobs were found in the database.", IO.TAG_WARN);
             return;
@@ -91,7 +91,7 @@ public class JobsController extends ScreenController implements Initializable
         //invoice_id.setCellValueFactory(new PropertyValueFactory<>("invoice_id"));
 
         ObservableList<Job> lst_jobs = FXCollections.observableArrayList();
-        lst_jobs.addAll(JobManager.getInstance().getJobs().values());
+        lst_jobs.addAll(JobManager.getInstance().getDataset().values());
         tblJobs.setItems(lst_jobs);
 
         Callback<TableColumn<Job, String>, TableCell<Job, String>> cellFactory
@@ -223,24 +223,15 @@ public class JobsController extends ScreenController implements Initializable
 
                                     btnView.setOnAction(event ->
                                     {
-                                        try
+                                        JobManager.getInstance().initialize();
+                                        if (job == null)
                                         {
-                                            JobManager.getInstance().reloadDataFromServer();
-                                            if (job == null)
-                                            {
-                                                IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
-                                                return;
-                                            }
-                                            //set selected Job
-                                            JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(job.get_id()));
-                                            viewJob(JobManager.getInstance().getSelected());
-                                        } catch (ClassNotFoundException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        } catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            return;
                                         }
+                                        //set selected Job
+                                        JobManager.getInstance().setSelected(JobManager.getInstance().getDataset().get(job.get_id()));
+                                        viewJob((Job)JobManager.getInstance().getSelected());
                                     });
 
                                     btnUpload.setOnAction(event ->
@@ -325,22 +316,13 @@ public class JobsController extends ScreenController implements Initializable
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading jobs data model..");
 
-        try
-        {
-            ResourceManager.getInstance().reloadDataFromServer();
-            SupplierManager.getInstance().reloadDataFromServer();
-            ClientManager.getInstance().reloadDataFromServer();
-            QuoteManager.getInstance().reloadDataFromServer();
-            JobManager.getInstance().reloadDataFromServer();
-        } catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+        //synchronise dependencies
+        ResourceManager.getInstance().forceSynchronise();
+        SupplierManager.getInstance().forceSynchronise();
+        ClientManager.getInstance().forceSynchronise();
+        QuoteManager.getInstance().forceSynchronise();
+        //synchronise model data set
+        JobManager.getInstance().forceSynchronise();
     }
 
     /**
@@ -351,7 +333,12 @@ public class JobsController extends ScreenController implements Initializable
     {
         new Thread(() ->
         {
-            refreshModel();
+            ResourceManager.getInstance().initialize();
+            SupplierManager.getInstance().initialize();
+            ClientManager.getInstance().initialize();
+            QuoteManager.getInstance().initialize();
+            JobManager.getInstance().initialize();
+
             Platform.runLater(() -> refreshView());
         }).start();
     }
@@ -575,7 +562,7 @@ public class JobsController extends ScreenController implements Initializable
 
         //View Job Menu item
         context_menu[0] = new RadialMenuItemCustom(30, "View Job", null, null, event ->
-                viewJob(JobManager.getInstance().getSelected()));
+                viewJob((Job)JobManager.getInstance().getSelected()));
 
         //Sign Job menu item
         context_menu[1] = new RadialMenuItemCustom(30, "Sign Job", null, null, event ->
@@ -585,7 +572,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            JobManager.approveJob(JobManager.getInstance().getSelected(), null);
+            JobManager.approveJob((Job)JobManager.getInstance().getSelected(), null);
         });
 
         //View signed Job menu item
@@ -596,7 +583,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            viewSignedJob(JobManager.getInstance().getSelected());
+            viewSignedJob((Job) JobManager.getInstance().getSelected());
         });
 
         //Generate Job Invoice menu item
@@ -607,7 +594,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            viewSignedJob(JobManager.getInstance().getSelected());
+            viewSignedJob((Job) JobManager.getInstance().getSelected());
         });
 
         //eMail Job menu item
@@ -620,7 +607,7 @@ public class JobsController extends ScreenController implements Initializable
             }
             try
             {
-                JobManager.getInstance().emailBusinessObject(JobManager.getInstance().getSelected(), PDF.createJobCardPdf(JobManager.getInstance().getSelected()), null);
+                JobManager.getInstance().emailBusinessObject(JobManager.getInstance().getSelected(), PDF.createJobCardPdf((Job) JobManager.getInstance().getSelected()), null);
             } catch (IOException e)
             {
                 IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
@@ -635,7 +622,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            JobManager.getInstance().emailSignedJobCard(JobManager.getInstance().getSelected(), null);
+            JobManager.getInstance().emailSignedJobCard((Job) JobManager.getInstance().getSelected(), null);
         });
 
         //View Job PDF menu item
@@ -646,7 +633,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            JobManager.showJobCard(JobManager.getInstance().getSelected());
+            JobManager.showJobCard((Job) JobManager.getInstance().getSelected());
         });
         return context_menu;
     }

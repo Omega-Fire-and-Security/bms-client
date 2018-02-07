@@ -20,6 +20,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import javax.swing.*;
 import java.io.File;
@@ -28,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/02/24.
@@ -79,6 +81,18 @@ public class OHSManager extends BusinessObjectManager
         {
             IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
         }
+    }
+
+    @Override
+    public HashMap<String, FileMetadata> getDataset()
+    {
+        return null;
+    }
+
+    @Override
+    Callback getSynchronisationCallback()
+    {
+        return null;
     }
 
     public void newWindow()

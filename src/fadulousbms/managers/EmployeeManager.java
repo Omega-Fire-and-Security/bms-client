@@ -6,27 +6,20 @@ import fadulousbms.auxilary.*;
 import fadulousbms.controllers.JobsController;
 import fadulousbms.model.*;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +39,14 @@ public class EmployeeManager extends BusinessObjectManager
     {
     }
 
-    public HashMap<String, Employee> getEmployees(){return this.employees;}
+    @Override
+    public void initialize()
+    {
+        synchroniseDataset();
+    }
+
+    @Override
+    public HashMap<String, Employee> getDataset(){return this.employees;}
 
     public static EmployeeManager getInstance()
     {
@@ -54,74 +54,51 @@ public class EmployeeManager extends BusinessObjectManager
     }
 
     @Override
-    public void initialize()
+    Callback getSynchronisationCallback()
     {
-        loadDataFromServer();
-    }
-
-    public void loadDataFromServer()
-    {
-        try
+        return new Callback()
         {
-            if(employees==null)
-                reloadDataFromServer();
-            else IO.log(getClass().getName(), IO.TAG_INFO, "clients object has already been set.");
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    public void reloadDataFromServer() throws ClassNotFoundException, IOException
-    {
-        try
-        {
-            SessionManager smgr = SessionManager.getInstance();
-            if(smgr.getActive()!=null)
+            @Override
+            public Object call(Object param)
             {
-                if(!smgr.getActive().isExpired())
+                try
                 {
-                    gson  = new GsonBuilder().create();
-                    ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                    String employee_json_object = RemoteComms.sendGetRequest("/employees", headers);
-                    EmployeeServerObject employeeServerObject = gson.fromJson(employee_json_object, EmployeeServerObject.class);
-                    //Employee employeeObject = gson.fromJson(employees_json, Employee.class);
-                    //System.out.println("Embedded: "+employeeObject.get_embedded());
-                    if(employeeServerObject!=null)
+                    SessionManager smgr = SessionManager.getInstance();
+                    if(smgr.getActive()!=null)
                     {
-                        if(employeeServerObject.get_embedded()!=null)
+                        if(!smgr.getActive().isExpired())
                         {
-                            Employee[] users = employeeServerObject.get_embedded().get_employees();
-                            /*System.out.println("Employee count: " + employeeServerObject.getPage().getTotalElements());
-                            System.out
-                                    .println("Employee link: " + employeeServerObject.get_links().getSelf().getHref());*/
+                            gson  = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-                            employees = new HashMap();
-                            for (Employee employee : users)
-                                employees.put(employee.getUsr(), employee);
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Employees in database.");
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "EmployeeServerObject (containing Employee objects & other metadata) is null");
-                    IO.log(getClass().getName(), IO.TAG_INFO, "reloaded employee collection.");
-                } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-            } else IO.logAndAlert("Session Expired", "Active session is invalid", IO.TAG_ERROR);
-        } catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        } catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        }
+                            String employee_json_object = RemoteComms.sendGetRequest("/employees", headers);
+                            EmployeeServerObject employeeServerObject = gson.fromJson(employee_json_object, EmployeeServerObject.class);
+
+                            if(employeeServerObject!=null)
+                            {
+                                if(employeeServerObject.get_embedded()!=null)
+                                {
+                                    Employee[] users = employeeServerObject.get_embedded().get_employees();
+
+                                    employees = new HashMap();
+                                    for (Employee employee : users)
+                                        employees.put(employee.getUsr(), employee);
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Employees in database.");
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "EmployeeServerObject (containing Employee objects & other metadata) is null");
+                            IO.log(getClass().getName(), IO.TAG_INFO, "reloaded employee collection.");
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Session Expired", "Active session is invalid", IO.TAG_ERROR);
+                } catch (MalformedURLException ex)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                } catch (IOException ex)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                }
+                return null;
+            }
+        };
     }
 
     public void newExternalEmployeeWindow(String title, Callback callback)
@@ -199,11 +176,18 @@ public class EmployeeManager extends BusinessObjectManager
 
             Employee employee = new Employee();
             employee.setUsr(txtEmail.getText());
-            employee.setPwd(txtCellphone.getText());//TODO: hash
+            try
+            {
+                employee.setPwd(IO.getEncryptedHexString(txtCellphone.getText()));//TODO: hash
+            } catch (Exception e)
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            }
+
             employee.setAccessLevel(access_lvl);
             employee.setFirstname(txtFirstname.getText());
             employee.setLastname(txtLastname.getText());
-            employee.setGender("male");
+            employee.setGender("Male");
             employee.setEmail(txtEmail.getText());
             employee.setTel(txtTelephone.getText());
             employee.setCell(txtCellphone.getText());
@@ -248,7 +232,7 @@ public class EmployeeManager extends BusinessObjectManager
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
         stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
+                synchroniseDataset());
 
         stage.setScene(scene);
         stage.show();
@@ -415,7 +399,7 @@ public class EmployeeManager extends BusinessObjectManager
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
         stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
+                synchroniseDataset());
 
         stage.setScene(scene);
         stage.show();

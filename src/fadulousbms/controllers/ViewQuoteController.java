@@ -30,7 +30,7 @@ public class ViewQuoteController extends QuoteController
         super.refreshView();
 
         //Populate fields
-        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        Quote selected = ((Quote)QuoteManager.getInstance().getSelected());
         if(selected!=null)
         {
             if(selected.getRoot()==null)
@@ -105,14 +105,14 @@ public class ViewQuoteController extends QuoteController
             }*/
 
             //set VAT toggle button value
-            toggleVatExempt.setText(QuoteManager.getInstance().getSelectedQuote().getVat()==QuoteManager.VAT?QuoteManager.VAT+"%":"VAT exempt");
-            toggleVatExempt.setSelected(QuoteManager.getInstance().getSelectedQuote().getVat()==QuoteManager.VAT?false:true);
+            toggleVatExempt.setText(((Quote)QuoteManager.getInstance().getSelected()).getVat()==QuoteManager.VAT?QuoteManager.VAT+"%":"VAT exempt");
+            toggleVatExempt.setSelected(((Quote)QuoteManager.getInstance().getSelected()).getVat()==QuoteManager.VAT?false:true);
             //load account[s] for Client
-            if(QuoteManager.getInstance().getSelectedQuote().getClient()!=null)
-                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", QuoteManager.getInstance().getSelectedQuote().getClient().getAccount_name()}));
+            if(((Quote)QuoteManager.getInstance().getSelected()).getClient()!=null)
+                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", ((Quote)QuoteManager.getInstance().getSelected()).getClient().getAccount_name()}));
             else IO.log(getClass().getName(), IO.TAG_ERROR, "Selected Quote Client is null.");
             //set selected Supplier account
-            cbxAccount.getSelectionModel().select(QuoteManager.getInstance().getSelectedQuote().getAccount_name());
+            cbxAccount.getSelectionModel().select(((Quote)QuoteManager.getInstance().getSelected()).getAccount_name());
             //cbxAccount.setValue(QuoteManager.getInstance().getSelectedQuote().getAccount_name());
             txtSite.setText(selected.getSitename());
             txtRequest.setText(selected.getRequest());
@@ -171,7 +171,7 @@ public class ViewQuoteController extends QuoteController
 
     public void viewBase()
     {
-        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        Quote selected = ((Quote)QuoteManager.getInstance().getSelected());
         if(selected!=null)
             if(selected.getParent_id()!=null)
             {
@@ -189,7 +189,7 @@ public class ViewQuoteController extends QuoteController
 
     public void nextRev()
     {
-        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        Quote selected = ((Quote)QuoteManager.getInstance().getSelected());
         if(selected!=null)
         {
             //get selected Quote's siblings and traverse through them
@@ -213,7 +213,7 @@ public class ViewQuoteController extends QuoteController
 
     public void prevRev()
     {
-        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        Quote selected = ((Quote)QuoteManager.getInstance().getSelected());
         if(selected!=null)
         {
             //get selected Quote's parent's children and traverse through them

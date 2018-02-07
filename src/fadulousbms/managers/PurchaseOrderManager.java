@@ -24,8 +24,7 @@ import java.util.*;
  */
 public class PurchaseOrderManager extends BusinessObjectManager
 {
-    private HashMap<String, PurchaseOrder> purchaseOrders;
-    private PurchaseOrder selected;
+    private HashMap<String, PurchaseOrder> purchase_orders;
     private Gson gson;
     private static PurchaseOrderManager po_manager = new PurchaseOrderManager();
     public static final String TAG = "PurchaseOrderManager";
@@ -37,24 +36,21 @@ public class PurchaseOrderManager extends BusinessObjectManager
     {
     }
 
+    @Override
+    public void initialize()
+    {
+        synchroniseDataset();
+    }
+
     public static PurchaseOrderManager getInstance()
     {
         return po_manager;
     }
 
-    public HashMap<String, PurchaseOrder> getPurchaseOrders()
+    @Override
+    public HashMap<String, PurchaseOrder> getDataset()
     {
-        return purchaseOrders;
-    }
-
-    public void setSelected(PurchaseOrder purchaseOrder)
-    {
-        this.selected=purchaseOrder;
-    }
-
-    public PurchaseOrder getSelected()
-    {
-        return this.selected;
+        return purchase_orders;
     }
 
     public static double computePurchaseOrderTotal(List<PurchaseOrderItem> poItems)
@@ -67,147 +63,125 @@ public class PurchaseOrderManager extends BusinessObjectManager
     }
 
     @Override
-    public void initialize()
+    Callback getSynchronisationCallback()
     {
-        try
+        return new Callback()
         {
-            reloadDataFromServer();
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    public void loadDataFromServer()
-    {
-        try
-        {
-            if(purchaseOrders==null)
-                reloadDataFromServer();
-            else IO.log(getClass().getName(), IO.TAG_INFO, "purchase orders object has already been set.");
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    public void reloadDataFromServer() throws ClassNotFoundException, IOException
-    {
-        SessionManager smgr = SessionManager.getInstance();
-        if (smgr.getActive() != null)
-        {
-            if (!smgr.getActive().isExpired())
+            @Override
+            public Object call(Object param)
             {
-                gson = new GsonBuilder().create();
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                //Get Timestamp
-                String timestamp_json = RemoteComms
-                        .sendGetRequest("/timestamp/purchase_orders_timestamp", headers);
-                Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
-                if (cntr_timestamp != null)
+                try
                 {
-                    timestamp = cntr_timestamp.getCount();
-                    filename = "purchase_order_" + timestamp + ".dat";
-                    IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
-                }
-                else
-                {
-                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
-                    return;
-                }
-
-                if (!isSerialized(ROOT_PATH + filename))
-                {
-                    String purchaseorders_json = RemoteComms.sendGetRequest("/purchaseorders", headers);
-                    PurchaseOrderServerObject purchaseOrderServerObject= gson.fromJson(purchaseorders_json, PurchaseOrderServerObject.class);
-                    if(purchaseOrderServerObject!=null)
+                    SessionManager smgr = SessionManager.getInstance();
+                    if (smgr.getActive() != null)
                     {
-                        if(purchaseOrderServerObject.get_embedded()!=null)
+                        if (!smgr.getActive().isExpired())
                         {
-                            PurchaseOrder[] purchase_orders_arr = purchaseOrderServerObject.get_embedded().getPurchase_orders();
+                            gson = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-                            if (purchase_orders_arr != null)
+                            //Get Timestamp
+                            String timestamp_json = RemoteComms
+                                    .sendGetRequest("/timestamp/purchase_orders_timestamp", headers);
+                            Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
+                            if (cntr_timestamp != null)
                             {
-                                purchaseOrders = new HashMap<>();
-                                for (PurchaseOrder purchaseOrder : purchase_orders_arr)
-                                    purchaseOrders.put(purchaseOrder.get_id(), purchaseOrder);
+                                timestamp = cntr_timestamp.getCount();
+                                filename = "purchase_order_" + timestamp + ".dat";
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
                             }
-                            else IO.log(getClass().getName(), IO.TAG_WARN, "no purchase orders found in database.");
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Purchase Orders in database.");
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderServerObject (containing PurchaseOrder objects & other metadata) is null");
-
-                    if (purchaseOrders != null)
-                    {
-                        for (PurchaseOrder po : purchaseOrders.values())
-                        {
-                            ArrayList<PurchaseOrderItem> purchaseOrderItems = new ArrayList<>();
-
-                            //get po items from server and set them to local object
-                            String purchase_order_items_json = RemoteComms.sendGetRequest("/purchaseorders/resources/" + po.get_id(), headers);
-                            PurchaseOrderResourceServerObject purchaseOrderResourceServerObject= gson.fromJson(purchase_order_items_json, PurchaseOrderResourceServerObject.class);
-                            if(purchaseOrderResourceServerObject!=null)
+                            else
                             {
-                                if(purchaseOrderResourceServerObject.get_embedded()!=null)
+                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                return null;
+                            }
+
+                            if (!isSerialized(ROOT_PATH + filename))
+                            {
+                                String purchaseorders_json = RemoteComms.sendGetRequest("/purchaseorders", headers);
+                                PurchaseOrderServerObject purchaseOrderServerObject= gson.fromJson(purchaseorders_json, PurchaseOrderServerObject.class);
+                                if(purchaseOrderServerObject!=null)
                                 {
-                                    PurchaseOrderResource[] purchase_order_resources_arr = purchaseOrderResourceServerObject
-                                            .get_embedded().getPurchase_order_resources();
-                                    purchaseOrderItems
-                                            .addAll(FXCollections.observableArrayList(purchase_order_resources_arr));
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources for PO #"+ po.get_id());
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderResourceServerObject (containing PurchaseOrderResource objects & other metadata) is null");
+                                    if(purchaseOrderServerObject.get_embedded()!=null)
+                                    {
+                                        PurchaseOrder[] purchase_orders_arr = purchaseOrderServerObject.get_embedded().getPurchase_orders();
 
-                            String purchase_order_assets_json = RemoteComms
-                                    .sendGetRequest("/purchaseorders/assets/" + po.get_id(), headers);
-                            PurchaseOrderAssetServerObject purchaseOrderAssetServerObject= gson.fromJson(purchase_order_assets_json, PurchaseOrderAssetServerObject.class);
-                            if(purchaseOrderAssetServerObject!=null)
-                            {
-                                if(purchaseOrderAssetServerObject.get_embedded()!=null)
+                                        if (purchase_orders_arr != null)
+                                        {
+                                            purchase_orders = new HashMap<>();
+                                            for (PurchaseOrder purchaseOrder : purchase_orders_arr)
+                                                purchase_orders.put(purchaseOrder.get_id(), purchaseOrder);
+                                        }
+                                        else IO.log(getClass().getName(), IO.TAG_WARN, "no purchase orders found in database.");
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Purchase Orders in database.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderServerObject (containing PurchaseOrder objects & other metadata) is null");
+
+                                if (purchase_orders != null)
                                 {
-                                    PurchaseOrderAsset[] purchase_order_assets_arr = purchaseOrderAssetServerObject
-                                            .get_embedded().getPurchase_order_assets();
-                                    purchaseOrderItems
-                                            .addAll(FXCollections.observableArrayList(purchase_order_assets_arr));
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Assets for PO #"+ po.get_id());
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderAssetServerObject (containing PurchaseOrderAsset objects & other metadata) is null");
+                                    for (PurchaseOrder po : purchase_orders.values())
+                                    {
+                                        ArrayList<PurchaseOrderItem> purchaseOrderItems = new ArrayList<>();
+
+                                        //get po items from server and set them to local object
+                                        String purchase_order_items_json = RemoteComms.sendGetRequest("/purchaseorders/resources/" + po.get_id(), headers);
+                                        PurchaseOrderResourceServerObject purchaseOrderResourceServerObject= gson.fromJson(purchase_order_items_json, PurchaseOrderResourceServerObject.class);
+                                        if(purchaseOrderResourceServerObject!=null)
+                                        {
+                                            if(purchaseOrderResourceServerObject.get_embedded()!=null)
+                                            {
+                                                PurchaseOrderResource[] purchase_order_resources_arr = purchaseOrderResourceServerObject
+                                                        .get_embedded().getPurchase_order_resources();
+                                                purchaseOrderItems
+                                                        .addAll(FXCollections.observableArrayList(purchase_order_resources_arr));
+                                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources for PO #"+ po.get_id());
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderResourceServerObject (containing PurchaseOrderResource objects & other metadata) is null");
+
+                                        String purchase_order_assets_json = RemoteComms
+                                                .sendGetRequest("/purchaseorders/assets/" + po.get_id(), headers);
+                                        PurchaseOrderAssetServerObject purchaseOrderAssetServerObject= gson.fromJson(purchase_order_assets_json, PurchaseOrderAssetServerObject.class);
+                                        if(purchaseOrderAssetServerObject!=null)
+                                        {
+                                            if(purchaseOrderAssetServerObject.get_embedded()!=null)
+                                            {
+                                                PurchaseOrderAsset[] purchase_order_assets_arr = purchaseOrderAssetServerObject
+                                                        .get_embedded().getPurchase_order_assets();
+                                                purchaseOrderItems
+                                                        .addAll(FXCollections.observableArrayList(purchase_order_assets_arr));
+                                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Assets for PO #"+ po.get_id());
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderAssetServerObject (containing PurchaseOrderAsset objects & other metadata) is null");
 
 
-                            if(!purchaseOrderItems.isEmpty())
+                                        if(!purchaseOrderItems.isEmpty())
+                                        {
+                                            PurchaseOrderItem[] po_items_arr = new PurchaseOrderItem[purchaseOrderItems.size()];
+                                            purchaseOrderItems.toArray(po_items_arr);
+                                            po.setItems(po_items_arr);
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "PO #"+po.getObject_number()+" has no items.");
+                                    }
+                                }
+                                IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of purchase orders.");
+                                serialize(ROOT_PATH + filename, purchase_orders);
+                            } else
                             {
-                                PurchaseOrderItem[] po_items_arr = new PurchaseOrderItem[purchaseOrderItems.size()];
-                                purchaseOrderItems.toArray(po_items_arr);
-                                po.setItems(po_items_arr);
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "PO #"+po.getObject_number()+" has no items.");
-                        }
-                    }
-                    IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of purchase orders.");
-                    this.serialize(ROOT_PATH + filename, purchaseOrders);
-                } else
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                                purchase_orders = (HashMap<String, PurchaseOrder>) deserialize(ROOT_PATH + filename);
+                            }
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                } catch (MalformedURLException e)
                 {
-                    IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
-                    purchaseOrders = (HashMap<String, PurchaseOrder>) this.deserialize(ROOT_PATH + filename);
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (ClassNotFoundException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                 }
-            } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                return null;
+            }
+        };
     }
 
     public void requestPOApproval(PurchaseOrder po, Callback callback) throws IOException
@@ -222,7 +196,7 @@ public class PurchaseOrderManager extends BusinessObjectManager
             IO.logAndAlert("Error", "Invalid Purchase Order->Supplier.", IO.TAG_ERROR);
             return;
         }
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert("Error", "Could not find any employees in the system.", IO.TAG_ERROR);
             return;

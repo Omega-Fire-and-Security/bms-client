@@ -30,9 +30,7 @@ public class JobManager extends BusinessObjectManager
     private HashMap<String, Job> jobs;
     private String[] genders=null, domains=null;
     private Gson gson;
-    private ScreenManager screenManager = null;
     private static JobManager job_manager = new JobManager();
-    private Job selected_job;
     public static final String TAG = "JobManager";
     public static final String ROOT_PATH = "cache/jobs/";
     public String filename = "";
@@ -56,139 +54,127 @@ public class JobManager extends BusinessObjectManager
         //init domains
         domains = new String[]{"internal", "external"};
 
-        loadDataFromServer();
-    }
-
-    /**
-     * Method to load Job objects from the server if they have not already been reloaded.
-     */
-    public void loadDataFromServer()
-    {
-        try
-        {
-            if(jobs==null)
-                reloadDataFromServer();
-            else IO.log(getClass().getName(), IO.TAG_INFO, "jobs object has already been set.");
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    /**
-     * Method to force synchronize Job objects from the server with local storage.
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    public void reloadDataFromServer() throws ClassNotFoundException, IOException
-    {
-        SessionManager smgr = SessionManager.getInstance();
-        if(smgr.getActive()!=null)
-        {
-            if(!smgr.getActive().isExpired())
-            {
-                gson = new GsonBuilder().create();
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                //Get Timestamp
-                String timestamp_json = RemoteComms.sendGetRequest("/timestamp/jobs_timestamp", headers);
-                Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
-                if (cntr_timestamp != null)
-                {
-                    timestamp = cntr_timestamp.getCount();
-                    filename = "jobs_" + timestamp + ".dat";
-                    IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
-                }
-                else
-                {
-                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
-                    return;
-                }
-
-                if (!isSerialized(ROOT_PATH + filename))
-                {
-                    //Load Job objects from server
-                    String jobs_json = RemoteComms.sendGetRequest("/jobs", headers);
-                    JobServerObject jobServerObject = gson.fromJson(jobs_json, JobServerObject.class);
-                    if (jobServerObject != null)
-                    {
-                        if (jobServerObject.get_embedded() != null)
-                        {
-                            Job[] jobs_arr = jobServerObject.get_embedded().getJobs();
-
-                            jobs = new HashMap<>();
-                            for (Job job : jobs_arr)
-                            {
-                                System.out.println(">>>>>>>>>>>> "+job);
-                                jobs.put(job.get_id(), job);
-                            }
-                        }
-                        else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
-                    }
-                    if (jobs != null)
-                    {
-                        for (Job job : jobs.values())
-                        {
-                            //Load JobEmployee objects using Job_id
-                            String job_employees_json = RemoteComms.sendGetRequest("/jobs/employees/" + job.get_id(), headers);
-                            JobEmployeeServerObject jobEmployeeServerObject = gson.fromJson(job_employees_json, JobEmployeeServerObject.class);
-                            if (jobEmployeeServerObject != null)
-                            {
-                                if(jobEmployeeServerObject.get_embedded()!=null)
-                                {
-                                    JobEmployee[] job_employees_arr = jobEmployeeServerObject.get_embedded().getJobemployees();
-                                    if (job_employees_arr != null)
-                                    {
-                                        // make Employee[] of same size as JobEmployee[]
-                                        Employee[] employees_arr = new Employee[job_employees_arr.length];
-                                        // Load actual Employee objects from JobEmployee[] objects
-                                        int i = 0;
-                                        for (JobEmployee jobEmployee : job_employees_arr)
-                                            if (EmployeeManager.getInstance().getEmployees() != null)
-                                                employees_arr[i++] = EmployeeManager.getInstance().getEmployees().get(jobEmployee.getUsr());
-                                            else IO.log(getClass()
-                                                    .getName(), IO.TAG_ERROR, "no Employees found in database.");
-                                        // Set Employee objects on to Job object.
-                                        job.setAssigned_employees(employees_arr);
-                                    } else IO.log(getClass()
-                                            .getName(), IO.TAG_ERROR, "could not load assigned Employees for job #" + job
-                                            .get_id());
-
-                                } else IO.log(getClass()
-                                        .getName(), IO.TAG_ERROR, "could not load assigned Employees for job #"
-                                        + job.get_id()+". Could not find any JobEmployee documents in collection.");
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid JobEmployeeServerObject for Job#"+job.get_id());
-                        }
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
-                    IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of jobs.");
-                    this.serialize(ROOT_PATH + filename, jobs);
-                } else
-                {
-                    IO.log(this.getClass()
-                            .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
-                    jobs = (HashMap<String, Job>) this.deserialize(ROOT_PATH + filename);
-                }
-            } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        } else IO.logAndAlert("Session Expired", "No valid active sessions found.", IO.TAG_ERROR);
+        synchroniseDataset();
     }
 
     /**
      * Method to get a map of all Jobs in the database.
      * @return
      */
-    public HashMap<String, Job> getJobs()
+    @Override
+    public HashMap<String, Job> getDataset()
     {
         return this.jobs;
+    }
+
+    @Override
+    Callback getSynchronisationCallback()
+    {
+        return new Callback()
+        {
+            @Override
+            public Object call(Object param)
+            {
+                try
+                {
+                    SessionManager smgr = SessionManager.getInstance();
+                    if(smgr.getActive()!=null)
+                    {
+                        if(!smgr.getActive().isExpired())
+                        {
+                            gson = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+
+                            //Get Timestamp
+                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/jobs_timestamp", headers);
+                            Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
+                            if (cntr_timestamp != null)
+                            {
+                                timestamp = cntr_timestamp.getCount();
+                                filename = "jobs_" + timestamp + ".dat";
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
+                            }
+                            else
+                            {
+                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                return null;
+                            }
+
+                            if (!isSerialized(ROOT_PATH + filename))
+                            {
+                                //Load Job objects from server
+                                String jobs_json = RemoteComms.sendGetRequest("/jobs", headers);
+                                JobServerObject jobServerObject = gson.fromJson(jobs_json, JobServerObject.class);
+                                if (jobServerObject != null)
+                                {
+                                    if (jobServerObject.get_embedded() != null)
+                                    {
+                                        Job[] jobs_arr = jobServerObject.get_embedded().getJobs();
+
+                                        jobs = new HashMap<>();
+                                        for (Job job : jobs_arr)
+                                            jobs.put(job.get_id(), job);
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
+                                }
+                                if (jobs != null)
+                                {
+                                    for (Job job : jobs.values())
+                                    {
+                                        //Load JobEmployee objects using Job_id
+                                        String job_employees_json = RemoteComms.sendGetRequest("/jobs/employees/" + job.get_id(), headers);
+                                        JobEmployeeServerObject jobEmployeeServerObject = gson.fromJson(job_employees_json, JobEmployeeServerObject.class);
+                                        if (jobEmployeeServerObject != null)
+                                        {
+                                            if(jobEmployeeServerObject.get_embedded()!=null)
+                                            {
+                                                JobEmployee[] job_employees_arr = jobEmployeeServerObject.get_embedded().getJobemployees();
+                                                if (job_employees_arr != null)
+                                                {
+                                                    // make Employee[] of same size as JobEmployee[]
+                                                    Employee[] employees_arr = new Employee[job_employees_arr.length];
+                                                    // Load actual Employee objects from JobEmployee[] objects
+                                                    int i = 0;
+                                                    for (JobEmployee jobEmployee : job_employees_arr)
+                                                        if (EmployeeManager.getInstance().getDataset() != null)
+                                                            employees_arr[i++] = EmployeeManager.getInstance().getDataset().get(jobEmployee.getUsr());
+                                                        else IO.log(getClass()
+                                                                .getName(), IO.TAG_ERROR, "no Employees found in database.");
+                                                    // Set Employee objects on to Job object.
+                                                    job.setAssigned_employees(employees_arr);
+                                                } else IO.log(getClass()
+                                                        .getName(), IO.TAG_ERROR, "could not load assigned Employees for job #" + job
+                                                        .get_id());
+
+                                            } else IO.log(getClass()
+                                                    .getName(), IO.TAG_ERROR, "could not load assigned Employees for job #"
+                                                    + job.get_id()+". Could not find any JobEmployee documents in collection.");
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid JobEmployeeServerObject for Job#"+job.get_id());
+                                    }
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
+                                IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of jobs.");
+                                serialize(ROOT_PATH + filename, jobs);
+                            } else
+                            {
+                                IO.log(this.getClass()
+                                        .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                                jobs = (HashMap<String, Job>) deserialize(ROOT_PATH + filename);
+                            }
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Session Expired", "No valid active sessions found.", IO.TAG_ERROR);
+                } catch (MalformedURLException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (ClassNotFoundException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+                return null;
+            }
+        };
     }
 
     /**
@@ -212,13 +198,16 @@ public class JobManager extends BusinessObjectManager
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                 {
                     String response = IO.readStream(connection.getInputStream());
+
                     //server will return message object in format "<job_id>"
                     String new_job_id = response.replaceAll("\"","");//strip inverted commas around job_id
                     new_job_id = new_job_id.replaceAll("\n","");//strip new line chars
                     new_job_id = new_job_id.replaceAll(" ","");//strip whitespace chars
+
                     IO.log(getClass().getName(), IO.TAG_INFO, "successfully created a new job: " + new_job_id);
 
-                    JobManager.getInstance().reloadDataFromServer();
+                    JobManager.getInstance().synchroniseDataset();
+
                     if(callback!=null)
                         callback.call(new_job_id);
 
@@ -234,37 +223,12 @@ public class JobManager extends BusinessObjectManager
                         connection.disconnect();
                     return null;
                 }
-            }else IO.logAndAlert("Job Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Job Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
         } catch (IOException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        } catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
         return null;
-    }
-
-    /**
-     * Method to set the currently selected Job object.
-     * @param job Job object to be set as selected Job object.
-     */
-    public void setSelected(Job job)
-    {
-        this.selected_job = job;
-        if(selected_job!=null)
-            IO.log(getClass().getName(), IO.TAG_INFO, "set selected job to: " + job);
-        //}else IO.log(getClass().getName(), IO.TAG_ERROR, "job to be set as selected is null.");
-    }
-
-    /**
-     * Method to return the currently selected Job object.
-     * @return selected Job object.
-     */
-    public Job getSelected()
-    {
-        return selected_job;
     }
 
     /**
@@ -412,7 +376,7 @@ public class JobManager extends BusinessObjectManager
             IO.logAndAlert("Error", "Invalid Job->Quote->Client.", IO.TAG_ERROR);
             return;
         }
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert("Error", "Could not find any employees in the system.", IO.TAG_ERROR);
             return;
@@ -940,7 +904,7 @@ public class JobManager extends BusinessObjectManager
                 stage.setOnCloseRequest(event ->
                 {
                     IO.log(TAG, IO.TAG_INFO,"reloading local data.");
-                    loadDataFromServer();
+                    synchroniseDataset();
                     stage.close();
                 });
 

@@ -2,7 +2,6 @@ package fadulousbms.managers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
 import javafx.collections.FXCollections;
@@ -19,7 +18,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import javax.print.PrintException;
 import javax.swing.*;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -27,16 +25,26 @@ import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/02/24.
  */
 public class SafetyManager extends BusinessObjectManager
 {
-    private TableView tblSafety;
-    private static FileMetadata[] documents;
+    private static HashMap<String, FileMetadata> documents;
     private static SafetyManager safety_manager = new SafetyManager();
     public static final String TAG = "SafetyManager";
+
+    private SafetyManager()
+    {
+    }
+
+    @Override
+    public void initialize()
+    {
+        synchroniseDataset();
+    }
 
     public static SafetyManager getInstance()
     {
@@ -44,85 +52,74 @@ public class SafetyManager extends BusinessObjectManager
     }
 
     @Override
-    public void initialize()
-    {
-        loadDataFromServer();
-    }
-
-    private static void loadDataFromServer()
-    {
-        try
-        {
-            //Validate session - also done on server-side don't worry ;)
-            SessionManager smgr = SessionManager.getInstance();
-            if (smgr.getActive() != null)
-            {
-                if (!smgr.getActive().isExpired())
-                {
-                    //Create & init Gson builder object
-                    Gson gson = new GsonBuilder().create();
-                    //Prepare headers
-                    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                    //Request index
-                    String resources_json = RemoteComms.sendGetRequest("/api/safety/indices", headers);
-                    //Convert to local model - FileMetadata[]
-                    documents = gson.fromJson(resources_json, FileMetadata[].class);
-
-                    //System.out.println("\n\n>>>>>Documents successfully loaded, size: " + documents.length + "<<<<<\n\n");
-
-                    //Sort array in ascending order
-                    /*if(documents!=null)
-                        if(documents.length>0)
-                            //TODO:IO.getInstance().quickSort(documents, 0, documents.length-1);
-                        else IO.log("No documents found", IO.TAG_ERROR, "No safety documents were found in the database.");
-                    else IO.log("No documents found", IO.TAG_ERROR, "No safety documents were found in the database.");*/
-
-                } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-            } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-        }catch (JsonSyntaxException ex)
-        {
-            IO.logAndAlert(TAG, ex.getMessage(), IO.TAG_ERROR);
-        }catch (MalformedURLException ex)
-        {
-            IO.logAndAlert(TAG, ex.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.logAndAlert(TAG, ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    public FileMetadata[] getDocuments()
+    public HashMap<String, FileMetadata> getDataset()
     {
         return documents;
     }
 
-    private void swap(int pos, int min_max)
+    @Override
+    Callback getSynchronisationCallback()
     {
-        FileMetadata temp = documents[pos];
-
-        if(min_max==1)//max
+        return new Callback()
         {
-            //Shift all to right of pos one position left
-            for (int i = pos + 1; i < documents.length; i++)
-                if (i - 1 >= 0)
-                    documents[i - 1] = documents[i];
+            @Override
+            public Object call(Object param)
+            {
+                try
+                {
+                    //Validate session - also done on server-side don't worry ;)
+                    SessionManager smgr = SessionManager.getInstance();
+                    if (smgr.getActive() != null)
+                    {
+                        if (!smgr.getActive().isExpired())
+                        {
+                            //Create & init Gson builder object
+                            Gson gson = new GsonBuilder().create();
+                            //Prepare headers
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-            documents[documents.length - 1] = temp;
-        }else{//min
-            //Shift all to left of pos one position right
-            for (int i = pos - 1; i >= 0; i--)
-                //if (i + 1 < documents.length)
-                    documents[i + 1] = documents[i];
+                            //Request index
+                            String resources_json = RemoteComms.sendGetRequest("/safety/indices", headers);
+                            //Convert to local model - FileMetadata[]
+                            FileMetadata[] documents_arr = gson.fromJson(resources_json, FileMetadata[].class);
+                            documents = new HashMap<>();
+                            for(FileMetadata fileMetadata: documents_arr)
+                                documents.put(fileMetadata.getFilename(), fileMetadata);
 
-            documents[0] = temp;
-        }
+                            //System.out.println("\n\n>>>>>Documents successfully loaded, size: " + documents.length + "<<<<<\n\n");
+
+                            //Sort array in ascending order
+                            /*if(documents!=null)
+                                if(documents.length>0)
+                                    //TODO:IO.getInstance().quickSort(documents, 0, documents.length-1);
+                                else IO.log("No documents found", IO.TAG_ERROR, "No safety documents were found in the database.");
+                            else IO.log("No documents found", IO.TAG_ERROR, "No safety documents were found in the database.");*/
+
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                } catch (MalformedURLException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+                return null;
+            }
+        };
     }
+
+
 
     public void newWindow()
     {
-        listSafetyDocuments(documents, null);
+        if(documents!=null)
+        {
+            FileMetadata[] files_arr = new FileMetadata[documents.size()];
+            documents.values().toArray(files_arr);
+            listSafetyDocuments(files_arr, null);
+        }
     }
 
     public static void listSafetyDocuments(FileMetadata[] docs, String job_id)
@@ -267,27 +264,27 @@ public class SafetyManager extends BusinessObjectManager
                 border_pane.setTop(menu_bar);
                 border_pane.setCenter(tblSafety);
 
-                stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                        loadDataFromServer());
+                /*stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
+                        synchroniseDataset());*/
 
                 Scene scene = new Scene(border_pane);
                 stage.setScene(scene);
                 stage.show();
                 stage.centerOnScreen();
                 stage.setResizable(true);
-            }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
     public static void addToJobCatalogue(Stage parentStage, TableView tblSafety)
     {
-        int selected = tblSafety.getSelectionModel().selectedIndexProperty().get();
-        if(selected<0 || selected>documents.length)
+        if(tblSafety.getSelectionModel().selectedItemProperty().get()==null)
         {
             IO.log(TAG, IO.TAG_ERROR, "addToJobCatalogue> selected safety document index out of bounds.");
             return;
         }
-        FileMetadata selected_doc = documents[selected];
+        FileMetadata selected = (FileMetadata) tblSafety.getSelectionModel().selectedItemProperty().get();
+        FileMetadata selected_doc = documents.get(selected);
 
         parentStage.setAlwaysOnTop(false);
         Stage stage = new Stage();
@@ -297,8 +294,8 @@ public class SafetyManager extends BusinessObjectManager
         //stage.setAlwaysOnTop(true);
 
         JobManager jobManager = JobManager.getInstance();
-        jobManager.loadDataFromServer();
-        Collection<Job> jobs_arr = jobManager.getJobs().values();
+        jobManager.synchroniseDataset();
+        Collection<Job> jobs_arr = jobManager.getDataset().values();
         Job[] jobs = new Job[jobs_arr.size()];
         jobs_arr.toArray(jobs);
 
@@ -402,8 +399,8 @@ public class SafetyManager extends BusinessObjectManager
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
-        stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
+        /*stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
+                synchroniseDataset());*/
 
         stage.setScene(scene);
         stage.show();
@@ -511,8 +508,8 @@ public class SafetyManager extends BusinessObjectManager
         scene.getStylesheets().clear();
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
-        stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
+        /*stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
+                synchroniseDataset());*/
 
         stage.setScene(scene);
         stage.show();

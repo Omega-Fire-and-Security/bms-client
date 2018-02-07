@@ -87,7 +87,7 @@ public class ViewJobController extends ScreenController implements Initializable
         colActive.setCellValueFactory(new PropertyValueFactory<>("active"));
 
         //Populate fields
-        Job selected = JobManager.getInstance().getSelected();
+        Job selected = ((Job)JobManager.getInstance().getSelected());
         if(selected!=null)
         {
             if(selected.getQuote()==null)
@@ -316,16 +316,16 @@ public class ViewJobController extends ScreenController implements Initializable
     @FXML
     public void assignEmployee()
     {
-        EmployeeManager.getInstance().loadDataFromServer();
+        EmployeeManager.getInstance().initialize();
 
-        if(EmployeeManager.getInstance().getEmployees()!=null)
+        if(EmployeeManager.getInstance().getDataset()!=null)
         {
-            if(EmployeeManager.getInstance().getEmployees().size()>0)
+            if(EmployeeManager.getInstance().getDataset().size()>0)
             {
                 File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
-                Employee[] employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
-                EmployeeManager.getInstance().getEmployees().values().toArray(employees);
+                Employee[] employees = new Employee[EmployeeManager.getInstance().getDataset().values().toArray().length];
+                EmployeeManager.getInstance().getDataset().values().toArray(employees);
 
                 ComboBox<Employee> employeeComboBox = new ComboBox<>();
                 employeeComboBox.setMinWidth(120);
@@ -387,10 +387,10 @@ public class ViewJobController extends ScreenController implements Initializable
     {
         if(JobManager.getInstance().getSelected()!=null)
         {
-            if(JobManager.getInstance().getSelected().getAssigned_employees()!=null)
+            if(((Job)JobManager.getInstance().getSelected()).getAssigned_employees()!=null)
             {
-                if(JobManager.getInstance().getSelected().getAssigned_employees().length>0)
-                    JobManager.showJobCard(JobManager.getInstance().getSelected());
+                if(((Job)JobManager.getInstance().getSelected()).getAssigned_employees().length>0)
+                    JobManager.showJobCard(((Job)JobManager.getInstance().getSelected()));
                 else IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
             } else IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
         } else IO.logAndAlert("Error", "Selected job is invalid.", IO.TAG_ERROR);
@@ -404,7 +404,7 @@ public class ViewJobController extends ScreenController implements Initializable
         {
             if(!smgr.getActive().isExpired())
             {
-                Job selected = JobManager.getInstance().getSelected();
+                Job selected = ((Job)JobManager.getInstance().getSelected());
                 if(selected!=null)
                 {
                     //update Job object on server (only the date_assigned attribute is modified so far)
@@ -418,8 +418,7 @@ public class ViewJobController extends ScreenController implements Initializable
                         headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
                         try
                         {
-                            HttpURLConnection connection = RemoteComms
-                                    .postJSON(selected.apiEndpoint(), selected.getJSONString(), headers);
+                            HttpURLConnection connection = RemoteComms.postJSON(selected.apiEndpoint(), selected.getJSONString(), headers);
                             if (connection != null)
                             {
                                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
@@ -437,13 +436,13 @@ public class ViewJobController extends ScreenController implements Initializable
                                                 .valueOf(JobManager.getInstance().getSelected().getObject_number())
                                                 + "] representatives.", IO.TAG_INFO);
 
-                                        JobManager.getInstance().reloadDataFromServer();
+                                        JobManager.getInstance().initialize();
                                         //JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(new_job_id));
 
-                                        JobManager.getInstance().setSelected(JobManager.getInstance().getJobs()
+                                        JobManager.getInstance().setSelected(JobManager.getInstance().getDataset()
                                                 .get(JobManager.getInstance().getSelected().get_id()));
 
-                                        if (JobManager.getInstance().getJobs() != null)
+                                        if (JobManager.getInstance().getDataset() != null)
                                         {
                                             ScreenManager.getInstance().showLoadingScreen(param ->
                                             {
@@ -500,10 +499,6 @@ public class ViewJobController extends ScreenController implements Initializable
                         {
                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
                             IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                        } catch (ClassNotFoundException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
                         } catch (IOException ex)
                         {
                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
@@ -550,7 +545,7 @@ public class ViewJobController extends ScreenController implements Initializable
         {
             //send email requesting approval of Job
             if(JobManager.getInstance().getSelected()!=null)
-                JobManager.getInstance().requestJobApproval(JobManager.getInstance().getSelected(), null);
+                JobManager.getInstance().requestJobApproval((Job)JobManager.getInstance().getSelected(), null);
         } catch (IOException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
@@ -566,7 +561,7 @@ public class ViewJobController extends ScreenController implements Initializable
             return;
         }
 
-        JobManager.getInstance().approveJob(JobManager.getInstance().getSelected(), param1 ->
+        JobManager.getInstance().approveJob((Job) JobManager.getInstance().getSelected(), param1 ->
         {
             //Refresh UI
             new Thread(() ->
@@ -581,45 +576,36 @@ public class ViewJobController extends ScreenController implements Initializable
     @FXML
     public void viewQuote()
     {
-        try
+        QuoteManager.getInstance().initialize();
+        if (JobManager.getInstance().getSelected() == null)
         {
-            QuoteManager.getInstance().reloadDataFromServer();
-            if (JobManager.getInstance().getSelected() == null)
-            {
-                IO.logAndAlert("Error " + getClass().getName(), "Selected Job object invalid.", IO.TAG_ERROR);
-                return;
-            }
-            //set selected Quote
-            QuoteManager.getInstance().setSelectedQuote(JobManager.getInstance().getSelected().getQuote());
-            //load Quote viewer
-            ScreenManager.getInstance().showLoadingScreen(param ->
-            {
-                new Thread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        try
-                        {
-                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
-                            {
-                                Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen()));
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quotes viewer screen.");
-                        } catch (IOException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                        }
-                    }
-                }).start();
-                return null;
-            });
-        } catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        } catch (IOException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            IO.logAndAlert("Error " + getClass().getName(), "Selected Job object invalid.", IO.TAG_ERROR);
+            return;
         }
+        //set selected Quote
+        QuoteManager.getInstance().setSelected(((Job) JobManager.getInstance().getSelected()).getQuote());
+        //load Quote viewer
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
+                        {
+                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen()));
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quotes viewer screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 
     class ComboBoxTableCell extends TableCell<BusinessObject, String>

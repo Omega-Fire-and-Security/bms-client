@@ -12,21 +12,108 @@ import javafx.util.Callback;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/11.
  */
 public abstract class BusinessObjectManager
 {
+    private BusinessObject selected;
+    private long refresh_lock = 0;
+
     public abstract void initialize();
+
+    protected long getRefresh_lock()
+    {
+        return refresh_lock;
+    }
+
+    protected void setRefresh_lock(long refresh_lock)
+    {
+        this.refresh_lock = refresh_lock;
+    }
 
     public boolean isSerialized(String path)
     {
         File file = new File(path);
         return file.exists();
+    }
+
+    public void forceSynchronise()
+    {
+        try
+        {
+            if(getRefresh_lock()<=0)//if there's no other thread synchronising the data-set, synchronise the data-set
+                reloadDataFromServer(getSynchronisationCallback());
+            else IO.log(getClass().getName(), IO.TAG_WARN, "can't synchronize model's data-set, thread started at ["+getRefresh_lock()+"] is still busy.");
+        } catch (MalformedURLException ex)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
+        } catch (ClassNotFoundException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
+        } catch (IOException ex)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
+        }
+    }
+
+    protected void synchroniseDataset()
+    {
+        try
+        {
+            if(getDataset()==null)//TODO: improve data set timestamp checks before synchronization
+                if(getRefresh_lock()<=0)//if there's no other thread synchronising the data-set, synchronise the data-set
+                    reloadDataFromServer(getSynchronisationCallback());
+                else IO.log(getClass().getName(), IO.TAG_WARN, "can't synchronize model's data-set, thread started at ["+getRefresh_lock()+"] is still busy.");
+            else IO.log(getClass().getName(), IO.TAG_WARN, "model's data-set has already been set, not synchronizing.");
+        } catch (MalformedURLException ex)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
+        } catch (ClassNotFoundException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
+        } catch (IOException ex)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
+        }
+    }
+
+    private void reloadDataFromServer(Callback callback) throws ClassNotFoundException, IOException
+    {
+        //set model refresh lock
+        setRefresh_lock(System.currentTimeMillis());
+        if(callback!=null)
+        {
+            callback.call(null);//execute anonymous method to reload model's data-set
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "no anonymous function was provided to be executed when reloading " + getClass().getName() + "'s data-set.");
+        //unlock model's refresh lock
+        setRefresh_lock(0);
+    }
+
+    abstract Callback getSynchronisationCallback();
+
+    public abstract HashMap<String, ? extends BusinessObject> getDataset();
+
+    public void setSelected(BusinessObject selected)
+    {
+        this.selected=selected;
+    }
+
+    public BusinessObject getSelected()
+    {
+        return this.selected;
     }
 
     public void serialize(String file_path, Object obj) throws IOException
@@ -71,7 +158,7 @@ public abstract class BusinessObjectManager
             IO.logAndAlert("Error", "Invalid "+businessObject.getClass().getName(), IO.TAG_ERROR);
             return;
         }
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert("Error", "Could not find any employees in the system.", IO.TAG_ERROR);
             return;

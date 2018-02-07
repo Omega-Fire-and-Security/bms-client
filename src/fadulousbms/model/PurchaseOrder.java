@@ -95,7 +95,7 @@ public class PurchaseOrder extends BusinessObject
 
     public Supplier getSupplier()
     {
-        HashMap<String, Supplier> suppliers = SupplierManager.getInstance().getSuppliers();
+        HashMap<String, Supplier> suppliers = SupplierManager.getInstance().getDataset();
         if(suppliers!=null)
             return suppliers.get(supplier_id);
         else IO.log(getClass().getName(), IO.TAG_ERROR, "no Suppliers were found in database.");
@@ -104,8 +104,8 @@ public class PurchaseOrder extends BusinessObject
 
     public Employee getContact_person()
     {
-        EmployeeManager.getInstance().loadDataFromServer();
-        HashMap<String, Employee> employees = EmployeeManager.getInstance().getEmployees();
+        EmployeeManager.getInstance().initialize();
+        HashMap<String, Employee> employees = EmployeeManager.getInstance().getDataset();
         if(employees!=null)
             return employees.get(contact_person_id);
         return null;

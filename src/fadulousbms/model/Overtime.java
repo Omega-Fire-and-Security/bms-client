@@ -60,7 +60,7 @@ public class Overtime extends BusinessObject implements Serializable
     {
         if(job_id==null)
             return null;
-        HashMap<String, Job> jobs = JobManager.getInstance().getJobs();
+        HashMap<String, Job> jobs = JobManager.getInstance().getDataset();
         if(jobs!=null)
             return jobs.get(job_id);
         return null;
@@ -137,7 +137,7 @@ public class Overtime extends BusinessObject implements Serializable
     {
         if(usr==null)
             return null;
-        HashMap<String, Employee> employees = EmployeeManager.getInstance().getEmployees();
+        HashMap<String, Employee> employees = EmployeeManager.getInstance().getDataset();
         if(employees!=null)
             return employees.get(usr);
         return null;

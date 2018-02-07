@@ -8,7 +8,6 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
-import fadulousbms.auxilary.Session;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -71,12 +70,12 @@ public class PurchaseOrderController extends OperationsController implements Ini
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading view purchase order view..");
 
-        if(SupplierManager.getInstance().getSuppliers()==null)
+        if(SupplierManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no suppliers found in the database.", IO.TAG_ERROR);
             return;
         }
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no employees found in the database.", IO.TAG_ERROR);
             return;
@@ -85,15 +84,15 @@ public class PurchaseOrderController extends OperationsController implements Ini
         cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
 
         //setup suppliers combo box
-        Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getSuppliers().values().toArray().length];
-        SupplierManager.getInstance().getSuppliers().values().toArray(suppliers);
+        Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getDataset().values().toArray().length];
+        SupplierManager.getInstance().getDataset().values().toArray(suppliers);
         cbxSuppliers.setItems(FXCollections.observableArrayList(suppliers));
         cbxSuppliers.valueProperty().addListener((observable, oldValue, newValue) ->
                 cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()})));
 
         //setup employees combo box
-        Employee[] employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
-        EmployeeManager.getInstance().getEmployees().values().toArray(employees);
+        Employee[] employees = new Employee[EmployeeManager.getInstance().getDataset().values().toArray().length];
+        EmployeeManager.getInstance().getDataset().values().toArray(employees);
         cbxContactPerson.setItems(FXCollections.observableArrayList(employees));
         //set default total
         //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " 0");
@@ -231,21 +230,10 @@ public class PurchaseOrderController extends OperationsController implements Ini
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase order data model..");
 
-        try
-        {
-            EmployeeManager.getInstance().reloadDataFromServer();
-            ResourceManager.getInstance().reloadDataFromServer();
-            SupplierManager.getInstance().reloadDataFromServer();
-            PurchaseOrderManager.getInstance().reloadDataFromServer();
-        } catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+        EmployeeManager.getInstance().initialize();
+        ResourceManager.getInstance().initialize();
+        SupplierManager.getInstance().initialize();
+        PurchaseOrderManager.getInstance().initialize();
         AssetManager.getInstance().loadDataFromServer();
     }
 
@@ -273,9 +261,9 @@ public class PurchaseOrderController extends OperationsController implements Ini
     {
         if (ResourceManager.getInstance() != null)
         {
-            if (ResourceManager.getInstance().getResources() != null)
+            if (ResourceManager.getInstance().getDataset() != null)
             {
-                if (ResourceManager.getInstance().getResources().size() > 0)
+                if (ResourceManager.getInstance().getDataset().size() > 0)
                 {
                     File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
                     ComboBox<Resource> resourceComboBox = new ComboBox<>();
@@ -385,7 +373,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
     public void updatePurchaseOrder()
     {
         String date_regex = "\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
-        PurchaseOrder purchaseOrder = PurchaseOrderManager.getInstance().getSelected();
+        PurchaseOrder purchaseOrder = (PurchaseOrder) PurchaseOrderManager.getInstance().getSelected();
         if(purchaseOrder==null)
         {
             IO.logAndAlert(getClass().getName(), "selected purchase order is invalid.", IO.TAG_ERROR);
@@ -596,30 +584,15 @@ public class PurchaseOrderController extends OperationsController implements Ini
                         tblPurchaseOrderItems.getItems().toArray(po_items);
                         purchaseOrder.setItems(po_items);
 
-                        try
-                        {
-                            //refresh data model after PO update
-                            PurchaseOrderManager.getInstance().reloadDataFromServer();
-                            PurchaseOrderManager.getInstance().setSelected(purchaseOrder);
-                            tblPurchaseOrderItems.setItems(FXCollections
-                                .observableArrayList(PurchaseOrderManager.getInstance().getSelected().getItems()));
-                            tblPurchaseOrderItems.refresh();
+                        //refresh model's data-set after PO update
+                        PurchaseOrderManager.getInstance().initialize();
+                        PurchaseOrderManager.getInstance().setSelected(purchaseOrder);
+                        tblPurchaseOrderItems.setItems(FXCollections
+                            .observableArrayList(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getItems()));
+                        tblPurchaseOrderItems.refresh();
 
-                            IO.logAndAlert("Purchase Order Update Success", "Successfully updated Purchase Order.", IO.TAG_INFO);
-                            //itemsModified = false;
-                        }catch (MalformedURLException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                        }catch (ClassNotFoundException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                        }catch (IOException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                        }
+                        IO.logAndAlert("Purchase Order Update Success", "Successfully updated Purchase Order.", IO.TAG_INFO);
+                        //itemsModified = false;
                     }
                     else IO.logAndAlert("Purchase Order Update Failure", "Could not add items to Purchase Order.", IO.TAG_ERROR);
                 }
@@ -646,7 +619,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
         {
             //send email requesting approval of PO
             if(PurchaseOrderManager.getInstance().getSelected()!=null)
-                PurchaseOrderManager.getInstance().requestPOApproval(PurchaseOrderManager.getInstance().getSelected(), null);
+                PurchaseOrderManager.getInstance().requestPOApproval((PurchaseOrder) PurchaseOrderManager.getInstance().getSelected(), null);
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -672,10 +645,10 @@ public class PurchaseOrderController extends OperationsController implements Ini
 
         if(PurchaseOrderManager.getInstance().getSelected()!=null)
         {
-            if(PurchaseOrderManager.getInstance().getSelected().getStatus()!=BusinessObject.STATUS_APPROVED)
+            if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getStatus()!=BusinessObject.STATUS_APPROVED)
             {
                 // set PO status and update it on server.
-                PurchaseOrderManager.getInstance().getSelected().setStatus(BusinessObject.STATUS_APPROVED);
+                ((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).setStatus(BusinessObject.STATUS_APPROVED);
                 RemoteComms.updateBusinessObjectOnServer(PurchaseOrderManager.getInstance().getSelected(), "status");
                 //updatePurchaseOrder();
                 //System.out.println("Status::::::::: " + PurchaseOrderManager.getInstance().getSelected().getStatus());
@@ -684,7 +657,7 @@ public class PurchaseOrderController extends OperationsController implements Ini
                 // - making them visible in their respective viewers, i.e Resources.fxml, Assets.fxml etc.
                 boolean updated_all = false;
                 HttpURLConnection connection=null;
-                for(PurchaseOrderItem item: PurchaseOrderManager.getInstance().getSelected().getItems())
+                for(PurchaseOrderItem item: ((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getItems())
                 {
                     long date_acquired = System.currentTimeMillis()/1000;
                     BusinessObject obj = item.getItem();
@@ -1136,56 +1109,32 @@ public class PurchaseOrderController extends OperationsController implements Ini
                     }
                     if(added_all_po_items)
                     {
-                        //System.out.println("po_id: "+response);
-                        /*purchaseOrder.set_id(response);
-                        PurchaseOrderItem[] arr_items = new PurchaseOrderItem[purchaseOrderItems.size()];
-                        purchaseOrderItems.toArray(arr_items);
-                        purchaseOrder.setItems(arr_items);
-                        PurchaseOrderManager.getInstance().loadDataFromServer();
-                        PurchaseOrderManager.getInstance().setSelected(purchaseOrder);
-                        //tblPurchaseOrderItems.setItems(FXCollections.observableArrayList(PurchaseOrderManager.getInstance().getSelected().getItems()));*/
-
                         IO.logAndAlert("New Purchase Order Creation Success", "Successfully created a new Purchase Order.", IO.TAG_INFO);
 
-                        try
-                        {
-                            PurchaseOrderManager.getInstance().reloadDataFromServer();
-                            PurchaseOrderManager.getInstance().setSelected(PurchaseOrderManager.getInstance().getPurchaseOrders().get(new_po_id));
+                        PurchaseOrderManager.getInstance().initialize();
+                        PurchaseOrderManager.getInstance().setSelected(PurchaseOrderManager.getInstance().getDataset().get(new_po_id));
 
-                            ScreenManager.getInstance().showLoadingScreen(param ->
+                        ScreenManager.getInstance().showLoadingScreen(param ->
+                        {
+                            new Thread(new Runnable()
                             {
-                                new Thread(new Runnable()
+                                @Override
+                                public void run()
                                 {
-                                    @Override
-                                    public void run()
+                                    try
                                     {
-                                        try
+                                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_PURCHASE_ORDER.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_PURCHASE_ORDER.getScreen())))
                                         {
-                                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_PURCHASE_ORDER.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_PURCHASE_ORDER.getScreen())))
-                                            {
-                                                Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_PURCHASE_ORDER.getScreen()));
-                                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load purchase order viewer screen.");
-                                        } catch (IOException e)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        }
+                                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_PURCHASE_ORDER.getScreen()));
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load purchase order viewer screen.");
+                                    } catch (IOException e)
+                                    {
+                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                     }
-                                }).start();
-                                return null;
-                            });
-                        } catch (MalformedURLException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                        } catch (ClassNotFoundException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                        } catch (IOException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                        }
+                                }
+                            }).start();
+                            return null;
+                        });
                     } else IO.logAndAlert("New Purchase Order Creation Failure", "Could not add items to Purchase Order.", IO.TAG_ERROR);
                 } else
                 {

@@ -27,10 +27,9 @@ public class ResourceManager extends BusinessObjectManager
 {
     private HashMap<String, Resource> resources;//resources that have been approved/acquired/delivered
     private HashMap<String, Resource> all_resources;
-    private Resource selected;
+    private HashMap<String, ResourceType> resource_types;
     private Gson gson;
     private static ResourceManager resource_manager = new ResourceManager();
-    private HashMap<String, ResourceType> resource_types;
     public static final String TAG = "ResourceManager";
     public static final String ROOT_PATH = "cache/resources/";
     public String filename = "";
@@ -38,6 +37,12 @@ public class ResourceManager extends BusinessObjectManager
 
     private ResourceManager()
     {
+    }
+
+    @Override
+    public void initialize()
+    {
+        synchroniseDataset();
     }
 
     public static ResourceManager getInstance()
@@ -49,7 +54,8 @@ public class ResourceManager extends BusinessObjectManager
      *
      * @return Approved Resource objects.
      */
-    public HashMap<String, Resource> getResources()
+    @Override
+    public HashMap<String, Resource> getDataset()
     {
         return resources;
     }
@@ -59,144 +65,121 @@ public class ResourceManager extends BusinessObjectManager
         return all_resources;
     }
 
-    public void setAll_resources(HashMap<String, Resource> all_resources)
-    {
-        this.all_resources = all_resources;
-    }
-
-    public void setSelected(Resource resource)
-    {
-        this.selected=resource;
-    }
-
-    public Resource getSelected()
-    {
-        return this.selected;
-    }
-
     public HashMap<String, ResourceType> getResource_types()
     {
         return resource_types;
     }
 
     @Override
-    public void initialize()
+    Callback getSynchronisationCallback()
     {
-        loadDataFromServer();
-    }
-
-    public void loadDataFromServer()
-    {
-        try
+        return new Callback()
         {
-            if(resources==null)
-                reloadDataFromServer();
-            else IO.log(getClass().getName(), IO.TAG_INFO, "clients object has already been set.");
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    public void reloadDataFromServer() throws ClassNotFoundException, IOException
-    {
-        SessionManager smgr = SessionManager.getInstance();
-        if (smgr.getActive() != null)
-        {
-            if (!smgr.getActive().isExpired())
+            @Override
+            public Object call(Object param)
             {
-                gson = new GsonBuilder().create();
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                //Get Timestamp
-                String timestamp_json = RemoteComms
-                        .sendGetRequest("/timestamp/resources_timestamp", headers);
-                Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
-                if (cntr_timestamp != null)
+                try
                 {
-                    timestamp = cntr_timestamp.getCount();
-                    filename = "resources_" + timestamp + ".dat";
-                    IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
-                }
-                else
-                {
-                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
-                    return;
-                }
-
-                if (!isSerialized(ROOT_PATH + filename))
-                {
-                    String resources_json = RemoteComms.sendGetRequest("/resources", headers);
-                    ResourceServerObject resources_server_object = gson.fromJson(resources_json, ResourceServerObject.class);
-
-                    if(resources_server_object!=null)
+                    SessionManager smgr = SessionManager.getInstance();
+                    if (smgr.getActive() != null)
                     {
-                        if(resources_server_object.get_embedded()!=null)
+                        if (!smgr.getActive().isExpired())
                         {
-                            Resource[] resources_arr = resources_server_object.get_embedded().getResources();
+                            gson = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-                            resources = new HashMap();
-                            all_resources = new HashMap();
-                            if (resources_arr != null)
+                            //Get Timestamp
+                            String timestamp_json = RemoteComms
+                                    .sendGetRequest("/timestamp/resources_timestamp", headers);
+                            Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
+                            if (cntr_timestamp != null)
                             {
-                                for (Resource res : resources_arr)
+                                timestamp = cntr_timestamp.getCount();
+                                filename = "resources_" + timestamp + ".dat";
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
+                            }
+                            else
+                            {
+                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                return null;
+                            }
+
+                            if (!isSerialized(ROOT_PATH + filename))
+                            {
+                                String resources_json = RemoteComms.sendGetRequest("/resources", headers);
+                                ResourceServerObject resources_server_object = gson.fromJson(resources_json, ResourceServerObject.class);
+
+                                if(resources_server_object!=null)
                                 {
-                                    all_resources.put(res.get_id(), res);
-                                    if (res.getDate_acquired() > 0)
-                                        resources.put(res.get_id(), res);
-                                    else IO.log(getClass().getName(), IO.TAG_WARN, "material [" + res + "] has not been approved yet. [date_acquired not set]");
-                                }
-                            } else IO.log(getClass().getName(), IO.TAG_WARN, "no resources found in database.");
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources in database.");
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceServerObject (containing Resource objects & other metadata) is null");
+                                    if(resources_server_object.get_embedded()!=null)
+                                    {
+                                        Resource[] resources_arr = resources_server_object.get_embedded().getResources();
+
+                                        resources = new HashMap();
+                                        all_resources = new HashMap();
+                                        if (resources_arr != null)
+                                        {
+                                            for (Resource res : resources_arr)
+                                            {
+                                                all_resources.put(res.get_id(), res);
+                                                if (res.getDate_acquired() > 0)
+                                                    resources.put(res.get_id(), res);
+                                                else IO.log(getClass().getName(), IO.TAG_WARN, "material [" + res + "] has not been approved yet. [date_acquired not set]");
+                                            }
+                                        } else IO.log(getClass().getName(), IO.TAG_WARN, "no resources found in database.");
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources in database.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceServerObject (containing Resource objects & other metadata) is null");
 
 
-                    String resource_types_json = RemoteComms.sendGetRequest("/resources/types", headers);
-                    ResourceTypeServerObject resourceTypeServerObject = gson.fromJson(resource_types_json, ResourceTypeServerObject.class);
-                    if(resourceTypeServerObject!=null)
-                    {
-                        if(resourceTypeServerObject.get_embedded()!=null)
-                        {
-                            ResourceType[] resource_types_arr = resourceTypeServerObject.get_embedded()
-                                    .getResource_types();
+                                String resource_types_json = RemoteComms.sendGetRequest("/resources/types", headers);
+                                ResourceTypeServerObject resourceTypeServerObject = gson.fromJson(resource_types_json, ResourceTypeServerObject.class);
+                                if(resourceTypeServerObject!=null)
+                                {
+                                    if(resourceTypeServerObject.get_embedded()!=null)
+                                    {
+                                        ResourceType[] resource_types_arr = resourceTypeServerObject.get_embedded()
+                                                .getResource_types();
 
-                            resource_types = new HashMap<>();
-                            for (ResourceType resource_type : resource_types_arr)
-                                resource_types.put(resource_type.get_id(), resource_type);
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resource Types in the database.");
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceTypeServerObject (containing ResourceType objects & other metadata) is null");
+                                        resource_types = new HashMap<>();
+                                        for (ResourceType resource_type : resource_types_arr)
+                                            resource_types.put(resource_type.get_id(), resource_type);
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resource Types in the database.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceTypeServerObject (containing ResourceType objects & other metadata) is null");
 
-                    IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of materials.");
+                                IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of materials.");
 
-                    this.serialize(ROOT_PATH + filename, all_resources);
-                    this.serialize(ROOT_PATH + "resource_types.dat", resource_types);
-                } else
+                                serialize(ROOT_PATH + filename, all_resources);
+                                serialize(ROOT_PATH + "resource_types.dat", resource_types);
+                            } else
+                            {
+                                IO.log(this.getClass()
+                                        .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                                all_resources = (HashMap<String, Resource>) deserialize(ROOT_PATH + filename);
+                                resource_types = (HashMap<String, ResourceType>) deserialize(ROOT_PATH + "resource_types.dat");
+
+                                resources = new HashMap<>();
+                                if (all_resources != null)
+                                {
+                                    for (Resource resource : all_resources.values())
+                                        if(resource.getDate_acquired() > 0)
+                                            resources.put(resource.get_id(), resource);
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "serialized materials are null.");
+                            }
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                } catch (ClassNotFoundException e)
                 {
-                    IO.log(this.getClass()
-                            .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
-                    all_resources = (HashMap<String, Resource>) this.deserialize(ROOT_PATH + filename);
-                    resource_types = (HashMap<String, ResourceType>) this.deserialize(ROOT_PATH + "resource_types.dat");
-
-                    resources = new HashMap<>();
-                    if (all_resources != null)
-                    {
-                        for (Resource resource : all_resources.values())
-                            if(resource.getDate_acquired() > 0)
-                                resources.put(resource.get_id(), resource);
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "serialized materials are null.");
+                    e.printStackTrace();
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                 }
-            } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                return null;
+            }
+        };
     }
 
     public void newResourceWindow(Callback callback)
@@ -396,26 +379,12 @@ public class ResourceManager extends BusinessObjectManager
                         stage.close();
 
                         IO.logAndAlert("Success", "Successfully created a new resource!", IO.TAG_INFO);
-                        try
-                        {
-                            //refresh model & view when material has been created.
-                            reloadDataFromServer();
-                        }catch (MalformedURLException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                        }catch (ClassNotFoundException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                        }catch (IOException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                        }
+                        //refresh model & view when material has been created.
+                        forceSynchronise();
+
                         if(callback!=null)
                             callback.call(null);
-                    }else
+                    } else
                     {
                         //Get error message
                         String msg = IO.readStream(connection.getErrorStream());
@@ -448,7 +417,7 @@ public class ResourceManager extends BusinessObjectManager
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
         stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
+                forceSynchronise());
 
         stage.setScene(scene);
         stage.show();
@@ -506,11 +475,6 @@ public class ResourceManager extends BusinessObjectManager
             String str_type_description = txt_type_description.getText();
             String str_type_other = txt_other.getText();
 
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            /*params.add(new AbstractMap.SimpleEntry<>("type_name", str_type_name));
-            params.add(new AbstractMap.SimpleEntry<>("type_description", str_type_description));
-            params.add(new AbstractMap.SimpleEntry<>("other", String.valueOf(str_type_other)));*/
-
             ResourceType resourceType = new ResourceType(str_type_name, str_type_description);
             resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
             resourceType.setOther(str_type_other);
@@ -533,28 +497,14 @@ public class ResourceManager extends BusinessObjectManager
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         IO.logAndAlert("Success", "Successfully added new material type!", IO.TAG_INFO);
-                        try
-                        {
-                            //refresh model & view when material type has been created.
-                            reloadDataFromServer();
-                        }catch (MalformedURLException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                        }catch (ClassNotFoundException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                        }catch (IOException ex)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                        }
+                        //refresh model & view when material type has been created.
+                        forceSynchronise();
 
                         if(callback!=null)
                             callback.call(null);
                         stage.close();
-                    }else{
+                    } else
+                    {
                         IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                     }
                     connection.disconnect();
@@ -563,7 +513,6 @@ public class ResourceManager extends BusinessObjectManager
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
             }
-
         });
 
         //Add form controls vertically on the scene
@@ -579,7 +528,7 @@ public class ResourceManager extends BusinessObjectManager
         scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
 
         stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
+                forceSynchronise());
 
         stage.setScene(scene);
         stage.show();

@@ -128,8 +128,8 @@ public class Quote extends BusinessObject
             return null;
         else
         {
-            QuoteManager.getInstance().loadDataFromServer();
-            return QuoteManager.getInstance().getQuotes().get(parent_id);
+            QuoteManager.getInstance().initialize();
+            return QuoteManager.getInstance().getDataset().get(parent_id);
         }
     }
 
@@ -176,18 +176,18 @@ public class Quote extends BusinessObject
 
     public Client getClient()
     {
-        HashMap<String, Client> clients = ClientManager.getInstance().getClients();
-        if(clients!=null)
+        if(ClientManager.getInstance().getDataset()!=null)
         {
-            return clients.get(client_id);
-        }else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in database.");
+            return (Client) ClientManager.getInstance().getDataset().get(client_id);
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in database.");
         return null;
     }
 
     public Employee getContact_person()
     {
-        EmployeeManager.getInstance().loadDataFromServer();
-        HashMap<String, Employee> employees = EmployeeManager.getInstance().getEmployees();
+        EmployeeManager.getInstance().initialize();
+        HashMap<String, Employee> employees = EmployeeManager.getInstance().getDataset();
+
         if(employees!=null)
         {
             return employees.get(contact_person_id);
@@ -215,11 +215,11 @@ public class Quote extends BusinessObject
         siblings.put(this.getRevision(), this);//make self be first child of requested siblings
         if(getParent_id()!=null)
         {
-            QuoteManager.getInstance().loadDataFromServer();
+            QuoteManager.getInstance().initialize();
             siblings.put(getParent().getRevision(), getParent());//make parent_id be second child of requested siblings
-            if (QuoteManager.getInstance().getQuotes() != null)
+            if (QuoteManager.getInstance().getDataset() != null)
             {
-                for (Quote quote : QuoteManager.getInstance().getQuotes().values())
+                for (Quote quote : QuoteManager.getInstance().getDataset().values())
                     if (getParent_id().equals(quote.getParent_id()))
                         siblings.put(quote.getRevision(), quote);
             }
@@ -252,10 +252,10 @@ public class Quote extends BusinessObject
     public HashMap<Double, Quote> getChildrenMap()
     {
         HashMap<Double, Quote> children = new HashMap<>();
-        QuoteManager.getInstance().loadDataFromServer();//refresh data model//TODO: remove
-        if (QuoteManager.getInstance().getQuotes() != null)
+        QuoteManager.getInstance().initialize();//refresh data model//TODO: remove
+        if (QuoteManager.getInstance().getDataset() != null)
         {
-            for (Quote quote : QuoteManager.getInstance().getQuotes().values())
+            for (Quote quote : QuoteManager.getInstance().getDataset().values())
                 if(quote.getParent_id()!=null)//if Quote has parent
                     if (quote.getParent_id().equals(get_id()))//if Quote's parent_id equals this Quote's _id
                         children.put(quote.getRevision(), quote);//add that Quote to the Map

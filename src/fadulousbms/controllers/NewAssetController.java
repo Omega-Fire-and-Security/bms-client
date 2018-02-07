@@ -65,7 +65,7 @@ public class NewAssetController extends ScreenController implements Initializabl
         new Thread(() ->
         {
             refreshModel();
-            if(PurchaseOrderManager.getInstance().getPurchaseOrders()!=null)
+            if(PurchaseOrderManager.getInstance().getDataset()!=null)
                 Platform.runLater(() -> refreshView());
         }).start();
     }
@@ -211,7 +211,7 @@ public class NewAssetController extends ScreenController implements Initializabl
             new Thread(() ->
             {
                 refreshModel();
-                if(PurchaseOrderManager.getInstance().getPurchaseOrders()!=null)
+                if(PurchaseOrderManager.getInstance().getDataset()!=null)
                     Platform.runLater(() -> refreshView());
             }).start();
             return null;

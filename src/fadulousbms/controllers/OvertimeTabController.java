@@ -55,10 +55,10 @@ public class OvertimeTabController extends ScreenController implements Initializ
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
         CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "");
 
-        if(OvertimeManager.getInstance().getOvertimeRecords()!=null)
+        if(OvertimeManager.getInstance().getDataset()!=null)
         {
             ObservableList<Overtime> lst_overtime = FXCollections.observableArrayList();
-            lst_overtime.addAll(OvertimeManager.getInstance().getOvertimeRecords().values());
+            lst_overtime.addAll(OvertimeManager.getInstance().getDataset().values());
             tblOvertime.setItems(lst_overtime);
         } else IO.log(getClass().getName(), IO.TAG_WARN, "no overtime records were found in the database.");
 
@@ -143,74 +143,47 @@ public class OvertimeTabController extends ScreenController implements Initializ
         colAction.setMinWidth(700);
     }
 
-    public void refreshTable()
-    {
-        tblOvertime.refresh();
-    }
-
     @Override
     public void refreshModel()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading overtime tab model.");
-        try
-        {
-            OvertimeManager.getInstance().reloadDataFromServer();
-            JobManager.getInstance().reloadDataFromServer();
-        } catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+        OvertimeManager.getInstance().initialize();
+        JobManager.getInstance().initialize();
     }
 
     public static RadialMenuItem[] getContextMenu()
     {
         RadialMenuItem menuOvertime = new RadialMenuItemCustom(30, "Approve", null, null, event ->
-                OvertimeManager.approveOvertime(OvertimeManager.getInstance().getSelected(), param ->
+                OvertimeManager.approveOvertime((Overtime) OvertimeManager.getInstance().getSelected(), param ->
                 {
                     //refresh UI on approve
-                    try
+                    //refresh model
+                    OvertimeManager.getInstance().initialize();
+                    //refresh view
+                    final ScreenManager screenManager = ScreenManager.getInstance();
+                    ScreenManager.getInstance().showLoadingScreen(arg ->
                     {
-                        //refresh model
-                        OvertimeManager.getInstance().reloadDataFromServer();
-                        //refresh view
-                        final ScreenManager screenManager = ScreenManager.getInstance();
-                        ScreenManager.getInstance().showLoadingScreen(arg ->
+                        new Thread(new Runnable()
                         {
-                            new Thread(new Runnable()
+                            @Override
+                            public void run()
                             {
-                                @Override
-                                public void run()
+                                try
                                 {
-                                    try
+                                    if(screenManager.loadScreen(Screens.HR.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.HR.getScreen())))
                                     {
-                                        if(screenManager.loadScreen(Screens.HR.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.HR.getScreen())))
-                                        {
-                                            //Platform.runLater(() ->
-                                            screenManager.setScreen(Screens.HR.getScreen());
-                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load HR screen.");
-                                    } catch (IOException e)
-                                    {
-                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        e.printStackTrace();
-                                    }
+                                        //Platform.runLater(() ->
+                                        screenManager.setScreen(Screens.HR.getScreen());
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load HR screen.");
+                                } catch (IOException e)
+                                {
+                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                    e.printStackTrace();
                                 }
-                            }).start();
-                            return null;
-                        });
-                    } catch (ClassNotFoundException e)
-                    {
-                        e.printStackTrace();
-                        IO.log(OvertimeTabController.class.getName(), IO.TAG_ERROR, e.getMessage());
-                    } catch (IOException e)
-                    {
-                        e.printStackTrace();
-                        IO.log(OvertimeTabController.class.getName(), IO.TAG_ERROR, e.getMessage());
-                    }
+                            }
+                        }).start();
+                        return null;
+                    });
                     return null;
                 }));
         return new RadialMenuItem[]{menuOvertime};

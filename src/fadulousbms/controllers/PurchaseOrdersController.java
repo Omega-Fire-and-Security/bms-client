@@ -8,8 +8,6 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.PDF;
 import fadulousbms.auxilary.PDFViewer;
-import fadulousbms.auxilary.RadialMenuItemCustom;
-import fadulousbms.managers.InvoiceManager;
 import fadulousbms.managers.PurchaseOrderManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SupplierManager;
@@ -52,13 +50,13 @@ public class PurchaseOrdersController extends ScreenController implements Initia
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase orders view..");
 
-        if(SupplierManager.getInstance().getSuppliers()==null)
+        if(SupplierManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No suppliers were found in the database.", IO.TAG_WARN);
             return;
         }
-        Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getSuppliers().values().toArray().length];
-        SupplierManager.getInstance().getSuppliers().values().toArray(suppliers);
+        Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getDataset().values().toArray().length];
+        SupplierManager.getInstance().getDataset().values().toArray(suppliers);
 
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
         colId.setPrefWidth(100);
@@ -75,7 +73,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
         CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 215, "extra", "/purchaseorders");
 
         ObservableList<PurchaseOrder> lst_po = FXCollections.observableArrayList();
-        lst_po.addAll(PurchaseOrderManager.getInstance().getPurchaseOrders().values());
+        lst_po.addAll(PurchaseOrderManager.getInstance().getDataset().values());
         tblPurchaseOrders.setItems(lst_po);
 
         Callback<TableColumn<PurchaseOrder, String>, TableCell<PurchaseOrder, String>> cellFactory
@@ -159,10 +157,10 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                                 {
                                                     try
                                                     {
-                                                        //refresh model
-                                                        PurchaseOrderManager.getInstance().reloadDataFromServer();
-                                                        if(PurchaseOrderManager.getInstance().getPurchaseOrders()!=null)
-                                                            PurchaseOrderManager.getInstance().setSelected(PurchaseOrderManager.getInstance().getPurchaseOrders().get(po.get_id()));
+                                                        //refresh model's data-set
+                                                        PurchaseOrderManager.getInstance().initialize();
+                                                        if(PurchaseOrderManager.getInstance().getDataset()!=null)
+                                                            PurchaseOrderManager.getInstance().setSelected(PurchaseOrderManager.getInstance().getDataset().get(po.get_id()));
                                                         else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any purchase orders in server.");
 
                                                         //load PO viewer
@@ -170,13 +168,8 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                                         {
                                                             Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_PURCHASE_ORDER.getScreen()));
                                                         } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load purchase order viewer screen.");
-                                                    } catch (ClassNotFoundException e)
-                                                    {
-                                                        e.printStackTrace();
-                                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                                     } catch (IOException e)
                                                     {
-                                                        e.printStackTrace();
                                                         IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                                     }
                                                 }
@@ -272,7 +265,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
         new Thread(() ->
         {
             refreshModel();
-            if(PurchaseOrderManager.getInstance().getPurchaseOrders()!=null)
+            if(PurchaseOrderManager.getInstance().getDataset()!=null)
                 Platform.runLater(() -> refreshView());
         }).start();
     }

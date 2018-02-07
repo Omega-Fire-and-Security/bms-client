@@ -68,9 +68,15 @@ public class SafetyFilesController extends ScreenController implements Initializ
         CustomTableViewControls.makeEditableTableColumn(colType, TextFieldTableCell.forTableColumn(), 60, "type", "/api/safety/index");
         CustomTableViewControls.makeActionTableColumn(colAction, 270, "pdf_path", "/api/ safety/index");
 
-        ObservableList<FileMetadata> lst_safety = FXCollections.observableArrayList();
-        lst_safety.addAll(SafetyManager.getInstance().getDocuments());
-        tblSafety.setItems(lst_safety);
+        if(SafetyManager.getInstance().getDataset()!=null)
+        {
+            FileMetadata[] files_arr = new FileMetadata[SafetyManager.getInstance().getDataset().size()];
+            SafetyManager.getInstance().getDataset().values().toArray(files_arr);
+
+            ObservableList<FileMetadata> lst_safety = FXCollections.observableArrayList();
+            lst_safety.addAll(files_arr);
+            tblSafety.setItems(lst_safety);
+        }
     }
 
     @Override
@@ -86,23 +92,8 @@ public class SafetyFilesController extends ScreenController implements Initializ
     @Override
     public void initialize(URL url, ResourceBundle rb) 
     {
-        try
-        {
-            //Set default profile photo
-            BufferedImage bufferedImage;
-            bufferedImage = ImageIO.read(new File("images/profile.png"));
-            Image image = SwingFXUtils.toFXImage(bufferedImage, null);
-            this.getProfileImageView().setImage(image);
-
-            //Set current logged in employee
-            Employee e = SessionManager.getInstance().getActiveEmployee();
-            if(e!=null)
-                this.getUserNameLabel().setText(e.getFirstname() + " " + e.getLastname());
-
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-        }
+        refreshModel();
+        refreshView();
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()
@@ -114,7 +105,13 @@ public class SafetyFilesController extends ScreenController implements Initializ
     @FXML
     public void generateIndex()
     {
-        IO.viewIndexPage("Safety Documents Index", SafetyManager.getInstance().getDocuments(), "bin/safety_index.pdf");
+        if(SafetyManager.getInstance().getDataset()!=null)
+        {
+            FileMetadata[] files_arr = new FileMetadata[SafetyManager.getInstance().getDataset().size()];
+            SafetyManager.getInstance().getDataset().values().toArray(files_arr);
+
+            IO.viewIndexPage("Safety Documents Index", files_arr, "bin/safety_index.pdf");
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "no documents found in the database.");
     }
 
     @FXML
@@ -126,13 +123,25 @@ public class SafetyFilesController extends ScreenController implements Initializ
     @FXML
     public void printMarked()
     {
-        IO.printSelectedDocuments(SafetyManager.getInstance().getDocuments());
+        if(SafetyManager.getInstance().getDataset()!=null)
+        {
+            FileMetadata[] files_arr = new FileMetadata[SafetyManager.getInstance().getDataset().size()];
+            SafetyManager.getInstance().getDataset().values().toArray(files_arr);
+
+            IO.printSelectedDocuments(files_arr);
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "no safety documents were found in the database.");
     }
 
     @FXML
     public void printAll()
     {
-        IO.printAllDocuments(SafetyManager.getInstance().getDocuments());
+        if(SafetyManager.getInstance().getDataset()!=null)
+        {
+            FileMetadata[] files_arr = new FileMetadata[SafetyManager.getInstance().getDataset().size()];
+            SafetyManager.getInstance().getDataset().values().toArray(files_arr);
+
+            IO.printAllDocuments(files_arr);
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "no safety documents were found in the database.");
     }
 
     @FXML

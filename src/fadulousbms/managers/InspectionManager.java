@@ -20,6 +20,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import javax.swing.*;
 import java.io.File;
@@ -28,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/02/24.
@@ -38,17 +40,22 @@ public class InspectionManager extends BusinessObjectManager
     private FileMetadata[] documents;
     private static InspectionManager safety_manager = new InspectionManager();
 
-    public static InspectionManager getInstance()
+    private InspectionManager()
     {
-        return safety_manager;
     }
 
     @Override
     public void initialize()
     {
-        loadDataFromServer();
+        synchroniseDataset();
     }
 
+    protected static InspectionManager getInstance()
+    {
+        return safety_manager;
+    }
+
+    //TODO: fix this class
     public void loadDataFromServer()
     {
         try
@@ -79,6 +86,18 @@ public class InspectionManager extends BusinessObjectManager
         {
             IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
         }
+    }
+
+    @Override
+    Callback getSynchronisationCallback()
+    {
+        return null;
+    }
+
+    @Override
+    public HashMap<String, ? extends BusinessObject> getDataset()
+    {
+        return null;
     }
 
     public void newWindow()

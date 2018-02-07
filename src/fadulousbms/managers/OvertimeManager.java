@@ -28,15 +28,15 @@ public class OvertimeManager extends BusinessObjectManager
     public static final String ROOT_PATH = "cache/overtime/";
     public String filename = "";
     private long timestamp;
-    private Overtime selected;
 
     private OvertimeManager()
     {
     }
 
-    public HashMap<String, Overtime> getOvertimeRecords()
+    @Override
+    public void initialize()
     {
-        return this.overtime_records;
+        synchroniseDataset();
     }
 
     public static OvertimeManager getInstance()
@@ -44,109 +44,89 @@ public class OvertimeManager extends BusinessObjectManager
         return overtimeManager;
     }
 
-    public Overtime getSelected()
+    @Override
+    public HashMap<String, Overtime> getDataset()
     {
-        return selected;
-    }
-
-    public void setSelected(Overtime selected)
-    {
-        this.selected = selected;
+        return this.overtime_records;
     }
 
     @Override
-    public void initialize()
+    Callback getSynchronisationCallback()
     {
-        loadDataFromServer();
-    }
-
-    public void loadDataFromServer()
-    {
-        try
+        return new Callback()
         {
-            if (overtime_records == null)
-                reloadDataFromServer();
-            else IO.log(getClass().getName(), IO.TAG_INFO, "overtime_records object has already been set.");
-        } catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        } catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        } catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    public void reloadDataFromServer() throws ClassNotFoundException, IOException
-    {
-        try
-        {
-            SessionManager smgr = SessionManager.getInstance();
-            if (smgr.getActive() != null)
+            @Override
+            public Object call(Object param)
             {
-                if (!smgr.getActive().isExpired())
+                try
                 {
-                    gson = new GsonBuilder().create();
-                    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                    //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/overtime_timestamp", headers);
-                    Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
-                    if (cntr_timestamp != null)
+                    SessionManager smgr = SessionManager.getInstance();
+                    if (smgr.getActive() != null)
                     {
-                        timestamp = cntr_timestamp.getCount();
-                        filename = "overtime_" + timestamp + ".dat";
-                        IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
-                    }
-                    else
-                    {
-                        IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
-                        return;
-                    }
-
-                    if (!isSerialized(ROOT_PATH + filename))
-                    {
-                        String overtime_records_json = RemoteComms.sendGetRequest("/overtime_records", headers);
-                        OvertimeServerObject overtimeServerObject = gson.fromJson(overtime_records_json, OvertimeServerObject.class);
-                        if (overtimeServerObject != null)
+                        if (!smgr.getActive().isExpired())
                         {
-                            if(overtimeServerObject.get_embedded()!=null)
+                            gson = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+
+                            //Get Timestamp
+                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/overtime_timestamp", headers);
+                            Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
+                            if (cntr_timestamp != null)
                             {
-                                Overtime[] overtime_records_arr = overtimeServerObject.get_embedded()
-                                        .getOvertime_records();
+                                timestamp = cntr_timestamp.getCount();
+                                filename = "overtime_" + timestamp + ".dat";
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
+                            }
+                            else
+                            {
+                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                return null;
+                            }
 
-                                if(overtime_records_arr!=null)
+                            if (!isSerialized(ROOT_PATH + filename))
+                            {
+                                String overtime_records_json = RemoteComms.sendGetRequest("/overtime_records", headers);
+                                OvertimeServerObject overtimeServerObject = gson.fromJson(overtime_records_json, OvertimeServerObject.class);
+                                if (overtimeServerObject != null)
                                 {
-                                    overtime_records = new HashMap<>();
-                                    for (Overtime overtime : overtime_records_arr)
-                                        overtime_records.put(overtime.get_id(), overtime);
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Overtime records in the database.");
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Overtime records in the database.");
-                        } else IO.log(getClass().getName(), IO.TAG_WARN, "no Overtime records found in the database.");
+                                    if(overtimeServerObject.get_embedded()!=null)
+                                    {
+                                        Overtime[] overtime_records_arr = overtimeServerObject.get_embedded()
+                                                .getOvertime_records();
 
-                        IO.log(getClass().getName(), IO.TAG_INFO, "reloaded Overtime records collection.");
-                        this.serialize(ROOT_PATH + filename, overtime_records);
-                    } else
-                    {
-                        IO.log(this.getClass()
-                                .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
-                        overtime_records = (HashMap<String, Overtime>) this.deserialize(ROOT_PATH + filename);
-                    }
-                } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-            } else IO.logAndAlert("Session Expired", "No valid active sessions found.", IO.TAG_ERROR);
-        } catch (MalformedURLException ex)
-        {
-            IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
-        } catch (IOException ex)
-        {
-            IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
-        }
+                                        if(overtime_records_arr!=null)
+                                        {
+                                            overtime_records = new HashMap<>();
+                                            for (Overtime overtime : overtime_records_arr)
+                                                overtime_records.put(overtime.get_id(), overtime);
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Overtime records in the database.");
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Overtime records in the database.");
+                                } else IO.log(getClass().getName(), IO.TAG_WARN, "no Overtime records found in the database.");
+
+                                IO.log(getClass().getName(), IO.TAG_INFO, "reloaded Overtime records collection.");
+                                serialize(ROOT_PATH + filename, overtime_records);
+                            } else
+                            {
+                                IO.log(this.getClass()
+                                        .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
+                                overtime_records = (HashMap<String, Overtime>) deserialize(ROOT_PATH + filename);
+                            }
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Session Expired", "No valid active sessions found.", IO.TAG_ERROR);
+                } catch (MalformedURLException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (ClassNotFoundException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+                return null;
+            }
+        };
     }
 
     public void newOvertimeApplicationWindow(Employee employee, Job job, Callback callback)
@@ -192,8 +172,8 @@ public class OvertimeManager extends BusinessObjectManager
             }
         });
 
-        if (JobManager.getInstance().getJobs() != null)
-            cbx_jobs.setItems(FXCollections.observableArrayList(JobManager.getInstance().getJobs().values()));
+        if (JobManager.getInstance().getDataset() != null)
+            cbx_jobs.setItems(FXCollections.observableArrayList(JobManager.getInstance().getDataset().values()));
         else
         {
             IO.logAndAlert("Error", "No jobs were found in the database.", IO.TAG_ERROR);
@@ -312,7 +292,7 @@ public class OvertimeManager extends BusinessObjectManager
         scene.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
 
         stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
+                synchroniseDataset());
 
         stage.setScene(scene);
         stage.show();

@@ -52,7 +52,7 @@ public class InvoicesController extends ScreenController implements Initializabl
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading invoices view..");
-        if(InvoiceManager.getInstance().getInvoices()==null)
+        if(InvoiceManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No invoices were found in the database.", IO.TAG_WARN);
             return;
@@ -75,7 +75,7 @@ public class InvoicesController extends ScreenController implements Initializabl
         colAction.setMinWidth(460);
 
         ObservableList<Invoice> lst_invoices = FXCollections.observableArrayList();
-        lst_invoices.addAll(InvoiceManager.getInstance().getInvoices().values());
+        lst_invoices.addAll(InvoiceManager.getInstance().getDataset().values());
         tblInvoices.setItems(lst_invoices);
 
         final ScreenManager screenManager = ScreenManager.getInstance();
@@ -169,7 +169,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                         {
                                             InvoiceManager.getInstance().setSelected(invoice);
                                             if(InvoiceManager.getInstance().getSelected()!=null)
-                                                InvoiceManager.getInstance().requestInvoiceApproval(InvoiceManager.getInstance().getSelected(), null);
+                                                InvoiceManager.getInstance().requestInvoiceApproval((Invoice) InvoiceManager.getInstance().getSelected(), null);
                                             else IO.logAndAlert("Error", "Selected Invoice is invalid.", IO.TAG_ERROR);
                                         } catch (IOException e)
                                         {
@@ -196,7 +196,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                                 @Override
                                                 public void run()
                                                 {
-                                                    QuoteManager.getInstance().setSelectedQuote(invoice.getJob().getQuote());
+                                                    QuoteManager.getInstance().setSelected(invoice.getJob().getQuote());
                                                     try
                                                     {
                                                         if(screenManager.loadScreen(Screens.VIEW_QUOTE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
@@ -230,7 +230,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                             IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
                                             return;
                                         }
-                                        JobManager.getInstance().loadDataFromServer();
+                                        JobManager.getInstance().initialize();
 
                                         screenManager.showLoadingScreen(param ->
                                         {
@@ -340,20 +340,11 @@ public class InvoicesController extends ScreenController implements Initializabl
     @Override
     public void refreshModel()
     {
-        EmployeeManager.getInstance().loadDataFromServer();
-        ClientManager.getInstance().loadDataFromServer();
-        try
-        {
-            QuoteManager.getInstance().reloadDataFromServer();
-        } catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        JobManager.getInstance().loadDataFromServer();
-        InvoiceManager.getInstance().loadDataFromServer();
+        EmployeeManager.getInstance().initialize();
+        ClientManager.getInstance().initialize();
+        QuoteManager.getInstance().initialize();
+        JobManager.getInstance().initialize();
+        InvoiceManager.getInstance().initialize();
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

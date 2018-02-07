@@ -37,12 +37,12 @@ public class HRController extends ScreenController implements Initializable
     @Override
     public void refreshModel()
     {
-        EmployeeManager.getInstance().loadDataFromServer();
-        JobManager.getInstance().loadDataFromServer();
-        LeaveManager.getInstance().loadDataFromServer();
-        OvertimeManager.getInstance().loadDataFromServer();
-        //TODO: PolicyManager.getInstance().loadDataFromServer();
-        //TODO: PayrollManager.getInstance().loadDataFromServer();
+        EmployeeManager.getInstance().initialize();
+        JobManager.getInstance().initialize();
+        LeaveManager.getInstance().initialize();
+        OvertimeManager.getInstance().initialize();
+        //TODO: PolicyManager.getInstance().synchroniseDataset();
+        //TODO: PayrollManager.getInstance().synchroniseDataset();
     }
 
     /**

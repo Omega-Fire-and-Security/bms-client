@@ -104,7 +104,7 @@ public class Requisition extends BusinessObject
 
     public Client getClient()
     {
-        HashMap<String, Client> clients = ClientManager.getInstance().getClients();
+        HashMap<String, Client> clients = (HashMap<String, Client>) ClientManager.getInstance().getDataset();
         if(clients!=null)
             return clients.get(client_id);
         else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in database.");
@@ -113,8 +113,8 @@ public class Requisition extends BusinessObject
 
     public Employee getResponsible_person()
     {
-        EmployeeManager.getInstance().loadDataFromServer();
-        HashMap<String, Employee> employees = EmployeeManager.getInstance().getEmployees();
+        EmployeeManager.getInstance().initialize();
+        HashMap<String, Employee> employees = EmployeeManager.getInstance().getDataset();
         if(employees!=null)
             return employees.get(responsible_person_id);
         return null;

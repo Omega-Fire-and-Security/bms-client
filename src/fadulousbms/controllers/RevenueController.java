@@ -6,7 +6,6 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -136,13 +135,13 @@ public class RevenueController extends ScreenController implements Initializable
 
         tblRevenue.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 RevenueManager.getInstance().setSelected(tblRevenue.getSelectionModel().getSelectedItem()));
-        tblRevenue.setItems(FXCollections.observableArrayList(RevenueManager.getInstance().getRevenues().values()));
+        tblRevenue.setItems(FXCollections.observableArrayList(RevenueManager.getInstance().getDataset().values()));
     }
 
     @Override
     public void refreshModel()
     {
-        EmployeeManager.getInstance().loadDataFromServer();
+        EmployeeManager.getInstance().initialize();
         RevenueManager.getInstance().initialize();
     }
 

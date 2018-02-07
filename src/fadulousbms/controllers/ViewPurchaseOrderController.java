@@ -10,6 +10,7 @@ import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.*;
 import fadulousbms.model.Employee;
+import fadulousbms.model.PurchaseOrder;
 import javafx.collections.FXCollections;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import java.text.DecimalFormat;
@@ -25,16 +26,16 @@ public class ViewPurchaseOrderController extends PurchaseOrderController
     public void refreshView()
     {
         super.refreshView();
-        if(PurchaseOrderManager.getInstance().getSelected()!=null)
+        if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected())!=null)
         {
             //set selected supplier combo box value
-            if(PurchaseOrderManager.getInstance().getSelected().getSupplier()!=null)
-                cbxSuppliers.setValue(PurchaseOrderManager.getInstance().getSelected().getSupplier());
+            if(((PurchaseOrder)((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected())).getSupplier()!=null)
+                cbxSuppliers.setValue(((PurchaseOrder)((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected())).getSupplier());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid supplier.");
             cbxSuppliers.setPromptText("prompt text");
             //set selected supplier contact person combo box value
-            if(PurchaseOrderManager.getInstance().getSelected().getContact_person()!=null)
-                cbxContactPerson.setValue(PurchaseOrderManager.getInstance().getSelected().getContact_person());
+            if(((PurchaseOrder)((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected())).getContact_person()!=null)
+                cbxContactPerson.setValue(((PurchaseOrder)((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected())).getContact_person());
             else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid contact person.");
 
             //Hide [Approve] button if not authorized
@@ -48,30 +49,30 @@ public class ViewPurchaseOrderController extends PurchaseOrderController
             }
 
             //set selected PO's table items
-            if(PurchaseOrderManager.getInstance().getSelected().getItems()!=null)
+            if(((PurchaseOrder)((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected())).getItems()!=null)
                 tblPurchaseOrderItems.setItems(FXCollections
-                        .observableArrayList(PurchaseOrderManager.getInstance().getSelected().getItems()));
+                        .observableArrayList(((PurchaseOrder)((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected())).getItems()));
 
             //set VAT toggle button value
-            toggleVatExempt.setText(PurchaseOrderManager.getInstance().getSelected().getVatVal()==QuoteManager.VAT?QuoteManager.VAT+"%":"VAT exempt");
-            toggleVatExempt.setSelected(PurchaseOrderManager.getInstance().getSelected().getVatVal()==QuoteManager.VAT?false:true);
+            toggleVatExempt.setText(((PurchaseOrder)((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected())).getVatVal()==QuoteManager.VAT?QuoteManager.VAT+"%":"VAT exempt");
+            toggleVatExempt.setSelected(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getVatVal()==QuoteManager.VAT?false:true);
             //set selected PO number
-            txtNumber.setText(String.valueOf(PurchaseOrderManager.getInstance().getSelected().getObject_number()));
+            txtNumber.setText(String.valueOf(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getObject_number()));
             //set selected PO creator Employee name
-            txtCreator.setText(PurchaseOrderManager.getInstance().getSelected().getCreatorEmployee().getName());
+            txtCreator.setText(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getCreatorEmployee().getName());
 
             //load account[s] for Supplier
-            if(PurchaseOrderManager.getInstance().getSelected().getSupplier()!=null)
-                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", PurchaseOrderManager.getInstance().getSelected().getSupplier().getAccount_name()}));
+            if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getSupplier()!=null)
+                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", ((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getSupplier().getAccount_name()}));
             else IO.log(getClass().getName(), IO.TAG_ERROR, "PO Supplier is null.");
             //set selected Supplier account
-            cbxAccount.setValue(PurchaseOrderManager.getInstance().getSelected().getSupplier().getAccount_name());
+            cbxAccount.setValue(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getSupplier().getAccount_name());
 
             //render PO status
             String status;
-            if(PurchaseOrderManager.getInstance().getSelected().getStatus()==0)
+            if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getStatus()==0)
                 status="PENDING";
-            else if(PurchaseOrderManager.getInstance().getSelected().getStatus()==1)
+            else if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getStatus()==1)
                 status="APPROVED";
             else status = "ARCHIVED";
             txtStatus.setText(status);

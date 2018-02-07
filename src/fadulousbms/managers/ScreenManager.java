@@ -305,7 +305,7 @@ public class ScreenManager extends StackPane
                 //System.out.println(focused.getLoadingPane()==null);
             }*/
             if(callback!=null)
-                callback.call(null);
+                callback.call(maskerPane);
         }
     }
 

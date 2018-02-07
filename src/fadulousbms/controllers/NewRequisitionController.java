@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -58,27 +59,27 @@ public class NewRequisitionController extends ScreenController implements Initia
     @Override
     public void refreshView()
     {
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no employees were found in the database.", IO.TAG_WARN);
             //return;
         }
-        if( ClientManager.getInstance().getClients()==null)
+        if( ClientManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_WARN);
             //return;
         }
 
         Employee[] employees=null;
-        if(EmployeeManager.getInstance().getEmployees()!=null)
+        if(EmployeeManager.getInstance().getDataset()!=null)
         {
-            employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
-            EmployeeManager.getInstance().getEmployees().values().toArray(employees);
+            employees = new Employee[EmployeeManager.getInstance().getDataset().values().toArray().length];
+            EmployeeManager.getInstance().getDataset().values().toArray(employees);
         }
 
         //setup Requisition combo boxes
         cbxType.setItems(FXCollections.observableArrayList(RequisitionManager.TYPES));
-        cbxClient.setItems(FXCollections.observableArrayList(ClientManager.getInstance().getClients().values()));
+        cbxClient.setItems(FXCollections.observableArrayList((Collection<Client>) (ClientManager.getInstance().getDataset().values())));
         if(employees!=null)
             cbxResponsiblePerson.setItems(FXCollections.observableArrayList(employees));
 
@@ -86,21 +87,20 @@ public class NewRequisitionController extends ScreenController implements Initia
         String status;
         if(RequisitionManager.getInstance().getSelected()!=null)
         {
-            switch (RequisitionManager.getInstance().getSelected().getStatus())
+            switch (((Requisition)(RequisitionManager.getInstance().getSelected())).getStatus())
             {
-                case Quote.STATUS_PENDING:
+                case BusinessObject.STATUS_PENDING:
                     status = "PENDING";
                     break;
-                case Quote.STATUS_APPROVED:
+                case BusinessObject.STATUS_APPROVED:
                     status = "APPROVED";
                     break;
-                case Quote.STATUS_ARCHIVED:
+                case BusinessObject.STATUS_ARCHIVED:
                     status = "ARCHIVED";
                     break;
                 default:
                     status = "UNKNOWN";
-                    IO.logAndAlert("Error", "Unknown Requisition status: " + RequisitionManager.getInstance().getSelected()
-                            .getStatus(), IO.TAG_ERROR);
+                    IO.logAndAlert("Error", "Unknown Requisition status: " + ((Requisition)(RequisitionManager.getInstance().getSelected())).getStatus(), IO.TAG_ERROR);
                     break;
             }
             if(txtStatus!=null)
@@ -111,24 +111,9 @@ public class NewRequisitionController extends ScreenController implements Initia
     @Override
     public void refreshModel()
     {
-        try
-        {
-            EmployeeManager.getInstance().reloadDataFromServer();
-            ClientManager.getInstance().reloadDataFromServer();
-            RequisitionManager.getInstance().reloadDataFromServer();
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
+        EmployeeManager.getInstance().initialize();
+        ClientManager.getInstance().initialize();
+        RequisitionManager.getInstance().initialize();
     }
 
     /**
@@ -137,30 +122,6 @@ public class NewRequisitionController extends ScreenController implements Initia
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-    }
-
-    @FXML
-    public void requestApproval()
-    {
-        //send email requesting approval of Requisition
-        if(RequisitionManager.getInstance().getSelected()!=null)
-            RequisitionManager.getInstance().requestRequisitionApproval(RequisitionManager.getInstance().getSelected(), null);
-    }
-
-    @FXML
-    public void approveRequisition()
-    {
-        Requisition selected = RequisitionManager.getInstance().getSelected();
-        if(selected!=null)
-        {
-            if(selected.getStatus()!=Requisition.STATUS_APPROVED)
-            {
-                selected.setStatus(Requisition.STATUS_APPROVED);
-                //TODO: RequisitionManager.getInstance().updateRequisition(selected, tblQuoteItems.getItems(), tblSaleReps.getItems());
-                refreshModel();
-                refreshView();
-            } else IO.logAndAlert("Error", "Selected quote has already been approved.", IO.TAG_ERROR);
-        } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 
     @FXML
@@ -230,7 +191,7 @@ public class NewRequisitionController extends ScreenController implements Initia
     @FXML
     public void newClient()
     {
-        ClientManager.getInstance().newClientWindow("Create a new Client for this Requisition", param ->
+        ClientManager.newClientWindow("Create a new Client for this Requisition", param ->
         {
             new Thread(() ->
             {

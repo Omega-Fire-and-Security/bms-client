@@ -4,26 +4,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import jdk.nashorn.internal.scripts.JO;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -36,8 +28,6 @@ public class InvoiceManager extends BusinessObjectManager
 {
     private HashMap<String, Invoice> invoices;
     private static InvoiceManager invoice_manager = new InvoiceManager();
-    private ScreenManager screenManager = null;
-    private Invoice selected_invoice;
     private Gson gson;
     public static final String ROOT_PATH = "cache/invoices/";
     public String filename = "";
@@ -48,92 +38,92 @@ public class InvoiceManager extends BusinessObjectManager
     {
     }
 
+    @Override
+    public void initialize()
+    {
+        synchroniseDataset();
+    }
+
     public static InvoiceManager getInstance()
     {
         return invoice_manager;
     }
 
     @Override
-    public void initialize()
-    {
-        loadDataFromServer();
-    }
-
-    public void loadDataFromServer()
-    {
-        try
-        {
-            SessionManager smgr = SessionManager.getInstance();
-            if(smgr.getActive()!=null)
-            {
-                if(!smgr.getActive().isExpired())
-                {
-                    gson  = new GsonBuilder().create();
-                    ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-
-                    //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/invoices_timestamp", headers);
-                    Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
-                    if(cntr_timestamp!=null)
-                    {
-                        timestamp = cntr_timestamp.getCount();
-                        filename = "invoices_"+timestamp+".dat";
-                        IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+timestamp);
-                    }else {
-                        IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
-                        return;
-                    }
-
-                    if(!isSerialized(ROOT_PATH+filename))
-                    {
-                        String invoices_json = RemoteComms.sendGetRequest("/invoices", headers);
-                        InvoiceServerObject invoiceServerObject= gson.fromJson(invoices_json, InvoiceServerObject.class);
-                        if(invoiceServerObject!=null)
-                        {
-                            if(invoiceServerObject.get_embedded()!=null)
-                            {
-                                Invoice[] invoices_arr = invoiceServerObject.get_embedded().getInvoices();
-                                invoices = new HashMap<>();
-                                for (Invoice invoice : invoices_arr)
-                                    invoices.put(invoice.get_id(), invoice);
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Invoices in the database.");
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "InvoiceServerObject (containing Invoice objects & other metadata) is null");
-
-                        IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of invoices.");
-                        this.serialize(ROOT_PATH+filename, invoices);
-                    } else
-                    {
-                        IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object ["+ROOT_PATH+filename+"] on local disk is already up-to-date.");
-                        invoices = (HashMap<String, Invoice>) this.deserialize(ROOT_PATH+filename);
-                    }
-                } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-            } else IO.logAndAlert("No active sessions.", "Active Session is invalid", IO.TAG_ERROR);
-        } catch (MalformedURLException ex)
-        {
-            IO.log(TAG, IO.TAG_ERROR, ex.getMessage());
-        } catch (ClassNotFoundException ex)
-        {
-            IO.log(TAG, IO.TAG_ERROR, ex.getMessage());
-        } catch (IOException ex)
-        {
-            IO.log(TAG, IO.TAG_ERROR, ex.getMessage());
-        }
-    }
-
-    public HashMap<String, Invoice> getInvoices()
+    public HashMap<String, Invoice> getDataset()
     {
         return invoices;
     }
 
-    public Invoice getSelected()
+    @Override
+    Callback getSynchronisationCallback()
     {
-        return selected_invoice;
-    }
+        return new Callback()
+        {
+            @Override
+            public Object call(Object param)
+            {
+                try
+                {
+                    SessionManager smgr = SessionManager.getInstance();
+                    if(smgr.getActive()!=null)
+                    {
+                        if(!smgr.getActive().isExpired())
+                        {
+                            gson  = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-    public void setSelected(Invoice selected_invoice)
-    {
-        this.selected_invoice = selected_invoice;
+                            //Get Timestamp
+                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/invoices_timestamp", headers);
+                            Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
+                            if(cntr_timestamp!=null)
+                            {
+                                timestamp = cntr_timestamp.getCount();
+                                filename = "invoices_"+timestamp+".dat";
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+timestamp);
+                            }else {
+                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                return null;
+                            }
+
+                            if(!isSerialized(ROOT_PATH+filename))
+                            {
+                                String invoices_json = RemoteComms.sendGetRequest("/invoices", headers);
+                                InvoiceServerObject invoiceServerObject= gson.fromJson(invoices_json, InvoiceServerObject.class);
+                                if(invoiceServerObject!=null)
+                                {
+                                    if(invoiceServerObject.get_embedded()!=null)
+                                    {
+                                        Invoice[] invoices_arr = invoiceServerObject.get_embedded().getInvoices();
+                                        invoices = new HashMap<>();
+                                        for (Invoice invoice : invoices_arr)
+                                            invoices.put(invoice.get_id(), invoice);
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Invoices in the database.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "InvoiceServerObject (containing Invoice objects & other metadata) is null");
+
+                                IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of invoices.");
+                                serialize(ROOT_PATH+filename, invoices);
+                            } else
+                            {
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object ["+ROOT_PATH+filename+"] on local disk is already up-to-date.");
+                                invoices = (HashMap<String, Invoice>) deserialize(ROOT_PATH+filename);
+                            }
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("No active sessions.", "Active Session is invalid", IO.TAG_ERROR);
+                } catch (MalformedURLException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (ClassNotFoundException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+                return null;
+            }
+        };
     }
 
     public void requestInvoiceApproval(Invoice invoice, Callback callback) throws IOException
@@ -148,7 +138,7 @@ public class InvoiceManager extends BusinessObjectManager
             IO.logAndAlert("Error", "Invalid Invoice Client object.", IO.TAG_ERROR);
             return;
         }
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert("Error", "Could not find any employees in the system.", IO.TAG_ERROR);
             return;

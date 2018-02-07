@@ -63,6 +63,7 @@
                         <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="btnNext" />
                         <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#home" pickOnBounds="true" preserveRatio="true" styleClass="btnHome" />
                         <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#login" pickOnBounds="true" preserveRatio="true" styleClass="btnLogin" />
+                        <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#forceSynchronise" pickOnBounds="true" preserveRatio="true" styleClass="btnRefresh" />
                         <ImageView fitHeight="60.0" fitWidth="60.0" onMouseClicked="#showContextMenu" pickOnBounds="true" preserveRatio="true" styleClass="btnMenu" />
                   </children>
               </HBox>

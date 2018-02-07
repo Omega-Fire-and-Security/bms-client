@@ -52,6 +52,9 @@ public class AccountCreationController extends ScreenController implements Initi
     private TextField txtCellphone;
     @FXML
     private TextArea txtOther;// = new TextArea();
+    @FXML
+    private Button btnShow;
+    private String pwd;
     private String[] access_levels = {"NONE", "STANDARD", "ADMIN", "SUPER"};
 
     @Override
@@ -181,5 +184,27 @@ public class AccountCreationController extends ScreenController implements Initi
             return false;
         }
         return true;
+    }
+
+    @FXML
+    public void togglePasswordMask()
+    {
+        if(txtPassword.getText().contains("\u2022"))
+        {
+            //is masked, unmask
+            txtPassword.setText(pwd);
+            btnShow.setText("hide");
+        } else//is not masked
+        {
+            pwd = txtPassword.getText();
+            txtPassword.setText(pwd.replaceAll(".","\u2022"));
+            btnShow.setText("show");
+        }
+    }
+
+    @FXML
+    public void generatePassword()
+    {
+        txtPassword.setText(IO.generateRandomString(10));
     }
 }

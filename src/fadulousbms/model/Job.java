@@ -97,10 +97,10 @@ public class Job extends BusinessObject
     public Quote getQuote()
     {
         QuoteManager.getInstance().initialize();
-        if(QuoteManager.getInstance().getQuotes()!=null)
+        if(QuoteManager.getInstance().getDataset()!=null)
         {
             //return latest revision
-            Quote[] revisions = QuoteManager.getInstance().getQuotes().get(quote_id).getSortedSiblings("revision");
+            Quote[] revisions = QuoteManager.getInstance().getDataset().get(quote_id).getSortedSiblings("revision");
             return revisions[revisions.length-1];
         }
         else IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, "No quotes were found on the database.");

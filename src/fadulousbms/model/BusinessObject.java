@@ -74,8 +74,8 @@ public abstract class BusinessObject implements Serializable
 
     public Employee getCreatorEmployee()
     {
-        EmployeeManager.getInstance().loadDataFromServer();
-        HashMap<String, Employee> employees = EmployeeManager.getInstance().getEmployees();
+        EmployeeManager.getInstance().initialize();
+        HashMap<String, Employee> employees = EmployeeManager.getInstance().getDataset();
         if(employees!=null)
             return employees.get(getCreator());
         return null;

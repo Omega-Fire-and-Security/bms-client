@@ -44,12 +44,12 @@ public class NewExpenseController extends ScreenController implements Initializa
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading new purchase order view..");
-        if(SupplierManager.getInstance().getSuppliers()==null)
+        if(SupplierManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no suppliers found in the database.", IO.TAG_ERROR);
             return;
         }
-        Supplier[] suppliers = (Supplier[]) SupplierManager.getInstance().getSuppliers().values().toArray();
+        Supplier[] suppliers = (Supplier[]) SupplierManager.getInstance().getDataset().values().toArray();
 
         cbxSupplier.setItems(FXCollections.observableArrayList(suppliers));
     }

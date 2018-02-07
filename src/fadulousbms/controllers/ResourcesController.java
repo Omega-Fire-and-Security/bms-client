@@ -70,9 +70,9 @@ public class ResourcesController extends ScreenController implements Initializab
         CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 80, "other", "/resources");
 
         ObservableList<Resource> lst_resources = FXCollections.observableArrayList();
-        if(ResourceManager.getInstance().getResources()!=null)
+        if(ResourceManager.getInstance().getDataset()!=null)
         {
-            lst_resources.addAll(ResourceManager.getInstance().getResources().values());
+            lst_resources.addAll(ResourceManager.getInstance().getDataset().values());
             tblResources.setItems(lst_resources);
         }
 

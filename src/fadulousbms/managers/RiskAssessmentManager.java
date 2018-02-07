@@ -10,6 +10,7 @@ import fadulousbms.auxilary.Validators;
 import fadulousbms.model.BusinessObject;
 import fadulousbms.model.CustomTableViewControls;
 import fadulousbms.model.FileMetadata;
+import fadulousbms.model.Revenue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -20,6 +21,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import javax.swing.*;
 import java.io.File;
@@ -28,6 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/02/24.
@@ -38,15 +41,20 @@ public class RiskAssessmentManager extends BusinessObjectManager
     private FileMetadata[] documents;
     private static RiskAssessmentManager safety_manager = new RiskAssessmentManager();
 
-    public static RiskAssessmentManager getInstance()
+    private RiskAssessmentManager()
     {
-        return safety_manager;
     }
 
+    //TODO: fix this class
     @Override
     public void initialize()
     {
-        loadDataFromServer();
+        synchroniseDataset();
+    }
+
+    protected static RiskAssessmentManager getInstance()
+    {
+        return safety_manager;
     }
 
     public void loadDataFromServer()
@@ -79,6 +87,18 @@ public class RiskAssessmentManager extends BusinessObjectManager
         {
             IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
         }
+    }
+
+    @Override
+    public HashMap<String, FileMetadata> getDataset()
+    {
+        return null;
+    }
+
+    @Override
+    Callback getSynchronisationCallback()
+    {
+        return null;
     }
 
     public void newWindow()

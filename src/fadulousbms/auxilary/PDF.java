@@ -1917,23 +1917,23 @@ public class PDF
     public static void createGeneralJournalPdf(long start, long end) throws IOException
     {
         //Init managers and load data to memory
-        AssetManager.getInstance().loadDataFromServer();
-        ResourceManager.getInstance().loadDataFromServer();
-        ExpenseManager.getInstance().loadDataFromServer();
-        InvoiceManager.getInstance().loadDataFromServer();
+        AssetManager.getInstance().initialize();
+        ResourceManager.getInstance().initialize();
+        ExpenseManager.getInstance().initialize();
+        InvoiceManager.getInstance().initialize();
 
         ArrayList<Transaction> transactions = new ArrayList<>();
         //Load assets
-        for(Asset asset : AssetManager.getInstance().getAssets().values())
+        for(Asset asset : AssetManager.getInstance().getDataset().values())
             transactions.add(new Transaction(asset.get_id(), asset.getDate_acquired(), asset));
         //Load Resources/Stock
-        for(Resource resource : ResourceManager.getInstance().getResources().values())
+        for(Resource resource : ResourceManager.getInstance().getDataset().values())
             transactions.add(new Transaction(resource.get_id(), resource.getDate_acquired(), resource));
         //Load additional Expenses
-        for(Expense expense: ExpenseManager.getInstance().getExpenses().values())
+        for(Expense expense: ExpenseManager.getInstance().getDataset().values())
             transactions.add(new Transaction(expense.get_id(), expense.getDate_logged(), expense));
         //Load Service income (Invoices)
-        for(Invoice invoice: InvoiceManager.getInstance().getInvoices().values())
+        for(Invoice invoice: InvoiceManager.getInstance().getDataset().values())
             transactions.add(new Transaction(invoice.get_id(), invoice.getDate_logged(), invoice));
 
         Transaction[] transactions_arr = new Transaction[transactions.size()];
@@ -2231,27 +2231,27 @@ public class PDF
     public static void createGeneralLedgerPdf(long start, long end) throws IOException
     {
         //Init managers and load data to memory
-        AssetManager.getInstance().loadDataFromServer();
-        ResourceManager.getInstance().loadDataFromServer();
-        ExpenseManager.getInstance().loadDataFromServer();
-        InvoiceManager.getInstance().loadDataFromServer();
-        RevenueManager.getInstance().loadDataFromServer();
+        AssetManager.getInstance().initialize();
+        ResourceManager.getInstance().initialize();
+        ExpenseManager.getInstance().initialize();
+        InvoiceManager.getInstance().initialize();
+        RevenueManager.getInstance().initialize();
 
         ArrayList<Transaction> transactions = new ArrayList<>();
         //Load assets
-        for(Asset asset : AssetManager.getInstance().getAssets().values())
+        for(Asset asset : AssetManager.getInstance().getDataset().values())
             transactions.add(new Transaction(asset.get_id(), asset.getDate_acquired(), asset));
         //Load Resources/Stock
-        for(Resource resource : ResourceManager.getInstance().getResources().values())
+        for(Resource resource : ResourceManager.getInstance().getDataset().values())
             transactions.add(new Transaction(resource.get_id(), resource.getDate_acquired(), resource));
         //Load additional Expenses
-        for(Expense expense: ExpenseManager.getInstance().getExpenses().values())
+        for(Expense expense: ExpenseManager.getInstance().getDataset().values())
             transactions.add(new Transaction(expense.get_id(), expense.getDate_logged(), expense));
         //Load Service revenue (Invoices)
-        for(Invoice invoice: InvoiceManager.getInstance().getInvoices().values())
+        for(Invoice invoice: InvoiceManager.getInstance().getDataset().values())
             transactions.add(new Transaction(invoice.get_id(), invoice.getDate_logged(), invoice));
         //Load Additional income/revenue
-        for(Revenue revenue: RevenueManager.getInstance().getRevenues().values())
+        for(Revenue revenue: RevenueManager.getInstance().getDataset().values())
             transactions.add(new Transaction(revenue.get_id(), revenue.getDate_logged(), revenue));
 
         Transaction[] transactions_arr = new Transaction[transactions.size()];

@@ -60,7 +60,7 @@ public class EmployeesTabController extends ScreenController implements Initiali
         CustomTableViewControls.makeEditableTableColumn(colEmployeeOther, TextFieldTableCell.forTableColumn(), 120, "other", "/api/employee");
 
         ObservableList<Employee> lst_employees = FXCollections.observableArrayList();
-        lst_employees.addAll(EmployeeManager.getInstance().getEmployees().values());
+        lst_employees.addAll(EmployeeManager.getInstance().getDataset().values());
         tblEmployees.setItems(lst_employees);
 
         Callback<TableColumn<Employee, String>, TableCell<Employee, String>> cellFactory
@@ -223,18 +223,7 @@ public class EmployeesTabController extends ScreenController implements Initiali
     public void refreshModel()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading employees tab model.");
-        try
-        {
-            EmployeeManager.getInstance().reloadDataFromServer();
-        } catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+        EmployeeManager.getInstance().initialize();
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

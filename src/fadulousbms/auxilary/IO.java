@@ -93,6 +93,15 @@ public class IO<T extends BusinessObject>
         return i;
     }
 
+    public static String generateRandomString(int len)
+    {
+        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        String str="";
+        for(int i=0;i<len;i++)
+            str+=chars.charAt((int)(Math.floor(Math.random()*chars.length())));
+        return str;
+    }
+
     public void init(ScreenManager screenManager)
     {
         this.screenManager = screenManager;
@@ -179,40 +188,50 @@ public class IO<T extends BusinessObject>
         }
     }
 
-
     public static void showMessage(String title, String msg, String type)
     {
+        NotificationPane notificationPane = new NotificationPane();
         Platform.runLater(() ->
         {
             switch (type.toLowerCase())
             {
                 case TAG_INFO:
-                    /*NotificationPane notificationPane = new NotificationPane();
-                    notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
-                    notificationPane.setShowFromTop(true);
-                    notificationPane.setText(msg);
+                    //notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
+                    //notificationPane.setText(msg);
                     //notificationPane.setGraphic(new Button("a button"));
-                    notificationPane.show();*/
+                    //notificationPane.show();
                     Notifications.create()
                             .title(title)
                             .text(msg)
                             .hideAfter(Duration.seconds(15))
                             .position(Pos.BOTTOM_LEFT)
+                            .owner(ScreenManager.getInstance())
                             .showInformation();
                     break;
                 case TAG_WARN:
+                    //notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
+                    //notificationPane.setShowFromTop(true);
+                    //notificationPane.setText(msg);
+                    //notificationPane.setGraphic(new Button("a button"));
+                    //notificationPane.show();
                     Notifications.create()
                             .title(title)
                             .text(msg)
                             .hideAfter(Duration.seconds(10))
+                            .owner(ScreenManager.getInstance())
                             .showWarning();
                     break;
                 case TAG_ERROR:
+                    //notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
+                    //notificationPane.setText(msg);
+                    //notificationPane.setGraphic(new Button("a button"));
+                    //notificationPane.show();
                     Notifications.create()
                             .title(title)
                             .text(msg)
                             .hideAfter(Duration.INDEFINITE)
                             .position(Pos.CENTER)
+                            .owner(ScreenManager.getInstance())
                             .showError();
                     break;
                 default:
@@ -223,7 +242,7 @@ public class IO<T extends BusinessObject>
         });
     }
 
-    /*public static void showMessage(String title, String msg, String type)
+   /* public static void showMessage(String title, String msg, String type)
     {
         Platform.runLater(() ->
         {

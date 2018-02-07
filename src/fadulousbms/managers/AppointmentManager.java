@@ -20,6 +20,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import javax.swing.*;
 import java.io.File;
@@ -28,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/02/24.
@@ -38,15 +40,25 @@ public class AppointmentManager extends BusinessObjectManager
     private FileMetadata[] documents;
     private static AppointmentManager appointment_manager = new AppointmentManager();
 
-    public static AppointmentManager getInstance()
+    private AppointmentManager()
     {
-        return appointment_manager;
     }
 
     @Override
     public void initialize()
     {
         loadDataFromServer();
+    }
+
+    public static AppointmentManager getInstance()
+    {
+        return appointment_manager;
+    }
+
+    @Override
+    public HashMap<String, FileMetadata> getDataset()
+    {
+        return null;
     }
 
     public void loadDataFromServer()
@@ -79,6 +91,12 @@ public class AppointmentManager extends BusinessObjectManager
         {
             IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
         }
+    }
+
+    @Override
+    Callback getSynchronisationCallback()
+    {
+        return null;
     }
 
     public void newWindow()

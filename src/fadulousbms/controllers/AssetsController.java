@@ -48,7 +48,7 @@ public class AssetsController extends ScreenController implements Initializable
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading assets view..");
 
-        if(AssetManager.getInstance().getAssets()==null)
+        if(AssetManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No assets found in the database.", IO.TAG_WARN);
             return;
@@ -59,8 +59,8 @@ public class AssetsController extends ScreenController implements Initializable
             return;
         }
 
-        Asset[] assets = new Asset[AssetManager.getInstance().getAssets().size()];
-        AssetManager.getInstance().getAssets().values().toArray(assets);
+        Asset[] assets = new Asset[AssetManager.getInstance().getDataset().size()];
+        AssetManager.getInstance().getDataset().values().toArray(assets);
 
         AssetType[] asset_types = new AssetType[AssetManager.getInstance().getAsset_types().size()];
         AssetManager.getInstance().getAsset_types().values().toArray(asset_types);
@@ -86,7 +86,7 @@ public class AssetsController extends ScreenController implements Initializable
         CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/assets");
 
         ObservableList<Asset> lst_assets = FXCollections.observableArrayList();
-        lst_assets.addAll(AssetManager.getInstance().getAssets().values());
+        lst_assets.addAll(AssetManager.getInstance().getDataset().values());
         tblAssets.setItems(lst_assets);
 
         Callback<TableColumn<Asset, String>, TableCell<Asset, String>> cellFactory

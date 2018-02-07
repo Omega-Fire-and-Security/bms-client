@@ -30,7 +30,6 @@ public class AssetManager extends BusinessObjectManager
     private HashMap<String, Asset> assets;//assets that have been approved/acquired/delivered
     private HashMap<String, Asset> all_assets;
     private HashMap<String, AssetType> asset_types;
-    private Asset selected;
     private static AssetManager asset_manager = new AssetManager();
     private Gson gson;
     public static final String ROOT_PATH = "cache/assets/";
@@ -42,17 +41,34 @@ public class AssetManager extends BusinessObjectManager
     {
     }
 
-    public static AssetManager getInstance()
-    {
-        return asset_manager;
-    }
-
     @Override
     public void initialize()
     {
         loadDataFromServer();
     }
 
+    public static AssetManager getInstance()
+    {
+        return asset_manager;
+    }
+
+    @Override
+    public HashMap<String, Asset> getDataset()
+    {
+        return assets;
+    }
+
+    public HashMap<String, AssetType> getAsset_types()
+    {
+        return asset_types;
+    }
+
+    public HashMap<String, Asset> getAll_assets()
+    {
+        return all_assets;
+    }
+
+    //TODO: implement private void reloadDataFromServer()
     public void loadDataFromServer()
     {
         try
@@ -149,6 +165,12 @@ public class AssetManager extends BusinessObjectManager
         {
             IO.logAndAlert("IO Error", ex.getMessage(), IO.TAG_ERROR);
         }
+    }
+
+    @Override
+    Callback getSynchronisationCallback()
+    {
+        return null;
     }
 
     public void newAssetWindow(Callback callback)
@@ -479,211 +501,6 @@ public class AssetManager extends BusinessObjectManager
 
         stage.setScene(scene);
         stage.show();
-    }
-
-    public HashMap<String, Asset> getAssets()
-    {
-        return assets;
-    }
-
-    public HashMap<String, AssetType> getAsset_types()
-    {
-        return asset_types;
-    }
-
-    public Asset getSelected()
-    {
-        return selected;
-    }
-
-    public void setSelected(Asset selected)
-    {
-        this.selected = selected;
-    }
-
-    public HashMap<String, Asset> getAll_assets()
-    {
-        return all_assets;
-    }
-
-    public void setAll_assets(HashMap<String, Asset> all_assets)
-    {
-        this.all_assets = all_assets;
-    }
-
-    public void handleNewAsset(Stage parentStage)
-    {
-        parentStage.setAlwaysOnTop(false);
-        Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - Add New Asset");
-        stage.setMinWidth(320);
-        stage.setMinHeight(350);
-        //stage.setAlwaysOnTop(true);
-
-        VBox vbox = new VBox(10);
-
-        final TextField txt_asset_name = new TextField();
-        txt_asset_name.setMinWidth(200);
-        txt_asset_name.setMaxWidth(Double.MAX_VALUE);
-        HBox asset_name = CustomTableViewControls.getLabelledNode("Asset name", 200, txt_asset_name);
-
-        final TextField txt_asset_description = new TextField();
-        txt_asset_description.setMinWidth(200);
-        txt_asset_description.setMaxWidth(Double.MAX_VALUE);
-        HBox asset_description = CustomTableViewControls.getLabelledNode("Asset description", 200, txt_asset_description);
-
-        final ComboBox<AssetType> cbx_asset_type = new ComboBox<>();
-        cbx_asset_type.setCellFactory(new Callback<ListView<AssetType>, ListCell<AssetType>>()
-        {
-            @Override
-            public ListCell<AssetType> call(ListView<AssetType> lst_asset_types)
-            {
-                return new ListCell<AssetType>()
-                {
-                    @Override
-                    protected void updateItem(AssetType asset_type, boolean empty)
-                    {
-                        super.updateItem(asset_type, empty);
-                        if(asset_type!=null && !empty)
-                        {
-                            setText(asset_type.getType_name());
-                        }else{
-                            setText("");
-                        }
-                    }
-                };
-            }
-        });
-        cbx_asset_type.setButtonCell(new ListCell<AssetType>()
-        {
-            @Override
-            protected void updateItem(AssetType asset_type, boolean empty)
-            {
-                super.updateItem(asset_type, empty);
-                if(asset_type!=null && !empty)
-                {
-                    setText(asset_type.getType_name());
-                }else{
-                    setText("");
-                }
-            }
-        });
-        cbx_asset_type.setItems(FXCollections.observableArrayList(asset_types.values()));
-        cbx_asset_type.setMinWidth(200);
-        cbx_asset_type.setMaxWidth(Double.MAX_VALUE);
-        HBox asset_type = CustomTableViewControls.getLabelledNode("Asset type", 200, cbx_asset_type);
-
-        final TextField txt_asset_value = new TextField();
-        txt_asset_value.setMinWidth(200);
-        txt_asset_value.setMaxWidth(Double.MAX_VALUE);
-        HBox asset_value = CustomTableViewControls.getLabelledNode("Value", 200, txt_asset_value);
-
-        DatePicker dpk_date_acquired = new DatePicker();
-        dpk_date_acquired.setMinWidth(200);
-        dpk_date_acquired.setMaxWidth(Double.MAX_VALUE);
-        HBox date_acquired = CustomTableViewControls.getLabelledNode("Date acquired", 200, dpk_date_acquired);
-
-        DatePicker dpk_date_exhausted = new DatePicker();
-        dpk_date_exhausted.setMinWidth(200);
-        dpk_date_exhausted.setMaxWidth(Double.MAX_VALUE);
-        HBox date_exhausted = CustomTableViewControls.getLabelledNode("Date exhausted", 200, dpk_date_exhausted);
-
-
-        final TextField txt_other = new TextField();
-        txt_other.setMinWidth(200);
-        txt_other.setMaxWidth(Double.MAX_VALUE);
-        HBox other = CustomTableViewControls.getLabelledNode("Other", 200, txt_other);
-
-        HBox submit;
-        submit = CustomTableViewControls.getSpacedButton("Submit", event ->
-        {
-            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
-
-            if(!Validators.isValidNode(txt_asset_name, txt_asset_name.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_asset_description, txt_asset_description.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(cbx_asset_type, cbx_asset_type.getValue()==null?"":cbx_asset_type.getValue().get_id(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_asset_value, txt_asset_value.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(dpk_date_acquired, dpk_date_acquired.getValue()==null?"":dpk_date_acquired.getValue().toString(), 4, date_regex))
-                return;
-            /*if(!Validators.isValidNode(dpk_date_exhausted, dpk_date_exhausted.getValue()==null?"":dpk_date_exhausted.getValue().toString(), 4, date_regex))
-                return;
-            if(!Validators.isValidNode(txt_other, txt_other.getText(), 1, ".+"))
-                return;*/
-
-            long date_acquired_in_sec, date_exhausted_in_sec=0;
-            String str_asset_name = txt_asset_name.getText();
-            String str_asset_description = txt_asset_description.getText();
-            String str_asset_type = cbx_asset_type.getValue().get_id();
-            String str_asset_value = txt_asset_value.getText();
-            date_acquired_in_sec = dpk_date_acquired.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-            if(dpk_date_exhausted.getValue()!=null)
-                date_exhausted_in_sec = dpk_date_exhausted.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-            String str_other = txt_other.getText();
-
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("asset_name", str_asset_name));
-            params.add(new AbstractMap.SimpleEntry<>("asset_description", str_asset_description));
-            params.add(new AbstractMap.SimpleEntry<>("asset_type", str_asset_type));
-            params.add(new AbstractMap.SimpleEntry<>("asset_value", str_asset_value));
-            params.add(new AbstractMap.SimpleEntry<>("date_acquired", String.valueOf(date_acquired_in_sec)));
-            if(date_exhausted_in_sec>0)
-                params.add(new AbstractMap.SimpleEntry<>("date_exhausted", String.valueOf(date_exhausted_in_sec)));
-            params.add(new AbstractMap.SimpleEntry<>("other", str_other));
-
-            try
-            {
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                else
-                {
-                    IO.logAndAlert("No active sessions.", "Session expired", IO.TAG_ERROR);
-                    return;
-                }
-
-                HttpURLConnection connection = RemoteComms.postData("/api/asset/add", params, headers);
-                if(connection!=null)
-                {
-                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                    {
-                        IO.logAndAlert("Asset Creation Success", IO.readStream(connection.getInputStream()), IO.TAG_INFO);
-                    }else{
-                        IO.logAndAlert("Asset Creation Failure", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                    }
-                }
-            } catch (IOException e)
-            {
-                IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-            }
-        });
-
-        //Add form controls vertically on the scene
-        vbox.getChildren().add(asset_name);
-        vbox.getChildren().add(asset_description);
-        vbox.getChildren().add(asset_type);
-        vbox.getChildren().add(asset_value);
-        vbox.getChildren().add(date_acquired);
-        vbox.getChildren().add(date_exhausted);
-        vbox.getChildren().add(other);
-        vbox.getChildren().add(submit);
-
-        //Setup scene and display
-        Scene scene = new Scene(vbox);
-        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-        scene.getStylesheets().clear();
-        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-
-        stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                loadDataFromServer());
-
-        stage.setScene(scene);
-        stage.show();
-        stage.centerOnScreen();
-        stage.setResizable(true);
     }
 
     public void createNewAssetType(Callback callback)

@@ -50,18 +50,7 @@ public class ResetPwdController extends ScreenController implements Initializabl
     @Override
     public void refreshModel()
     {
-        try
-        {
-            EmployeeManager.getInstance().reloadDataFromServer();
-        } catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+        EmployeeManager.getInstance().initialize();
     }
 
     /**

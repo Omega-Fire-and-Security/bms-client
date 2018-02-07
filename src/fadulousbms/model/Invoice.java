@@ -152,10 +152,10 @@ public class Invoice extends BusinessObject implements Serializable
             IO.log(getClass().getName(), IO.TAG_ERROR, "job_id is not set.");
             return null;
         }
-        JobManager.getInstance().loadDataFromServer();
-        if(JobManager.getInstance().getJobs()!=null)
+        JobManager.getInstance().initialize();
+        if(JobManager.getInstance().getDataset()!=null)
         {
-            return JobManager.getInstance().getJobs().get(job_id);
+            return JobManager.getInstance().getDataset().get(job_id);
         } else IO.log(getClass().getName(), IO.TAG_ERROR, "No Jobs were found in the database.");
         return null;
     }

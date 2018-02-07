@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -16,7 +15,6 @@ import javafx.util.Callback;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.rmi.Remote;
 import java.util.*;
 
 /**
@@ -28,7 +26,6 @@ public class QuoteManager extends BusinessObjectManager
     private BusinessObject[] genders=null, domains=null;
     private Gson gson;
     private static QuoteManager quote_manager = new QuoteManager();
-    private Quote selected_quote;
     private long timestamp;
     public static final String ROOT_PATH = "cache/quotes/";
     public String filename = "";
@@ -39,187 +36,146 @@ public class QuoteManager extends BusinessObjectManager
     {
     }
 
+    @Override
+    public void initialize()
+    {
+        synchroniseDataset();
+    }
+
     public static QuoteManager getInstance()
     {
         return quote_manager;
     }
 
     @Override
-    public void initialize()
-    {
-        loadDataFromServer();
-    }
-
-    public HashMap<String, Quote> getQuotes()
+    public HashMap<String, Quote> getDataset()
     {
         return quotes;
     }
 
-    public void setSelectedQuote(Quote quote)
+    @Override
+    Callback getSynchronisationCallback()
     {
-        if(quote!=null)
+        return new Callback()
         {
-            this.selected_quote = quote;
-            IO.log(getClass().getName(), IO.TAG_INFO, "set selected quote to: " + selected_quote.get_id());
-            //get selected Quote's siblings ordered by revision number
-            Quote[] siblings = selected_quote.getSortedSiblings("revision");
-            if(siblings!=null)
-                this.selected_quote_sibling_cursor = siblings.length-1;//set cursor to point to latest revision
-            else IO.log(getClass().getName(), IO.TAG_WARN, "selected Quote has no siblings. Should return self as first arg, parent (if any) as 2nd arg, then other siblings.");
-        } else IO.log(getClass().getName(), IO.TAG_ERROR, "quote to be set as selected is null.");
-    }
-
-    public void setSelectedQuote(String quote_id)
-    {
-        if(quotes==null)
-        {
-            IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, "No quotes were found on the database.");
-            return;
-        }
-        if(quotes.get(quote_id)!=null)
-        {
-            setSelectedQuote(quotes.get(quote_id));
-        }
-    }
-
-    public Quote getSelectedQuote()
-    {
-        /*if(selected_quote>-1)
-            return quotes[selected_quote];
-        else return null;*/
-        return selected_quote;
-    }
-
-    public void nullifySelected()
-    {
-        this.selected_quote=null;
-    }
-
-    public void loadDataFromServer()
-    {
-        try
-        {
-            if(quotes==null)
-                reloadDataFromServer();
-            else IO.log(getClass().getName(), IO.TAG_INFO, "quotes object has already been set.");
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
-    }
-
-    public void reloadDataFromServer() throws ClassNotFoundException, IOException
-    {
-        //quotes = null;
-        SessionManager smgr = SessionManager.getInstance();
-        if(smgr.getActive()!=null)
-        {
-            if(!smgr.getActive().isExpired())
+            @Override
+            public Object call(Object param)
             {
-
-                gson  = new GsonBuilder().create();
-                ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-                //Get Timestamp
-                String quotes_timestamp_json = RemoteComms.sendGetRequest("/timestamp/quotes_timestamp", headers);
-                Counters quotes_timestamp = gson.fromJson(quotes_timestamp_json, Counters.class);
-                if(quotes_timestamp!=null)
+                try
                 {
-                    timestamp = quotes_timestamp.getCount();
-                    filename = "quotes_"+timestamp+".dat";
-                    IO.log(QuoteManager.getInstance().getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+quotes_timestamp.getCount());
-                } else {
-                    IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
-                    return;
-                }
-
-                if(!isSerialized(ROOT_PATH+filename))
-                {
-                    //Load Quotes
-                    String quotes_json = RemoteComms.sendGetRequest("/quotes", headers);
-                    QuoteServerObject quoteServerObject = gson.fromJson(quotes_json, QuoteServerObject.class);
-                    if(quoteServerObject!=null)
+                    SessionManager smgr = SessionManager.getInstance();
+                    if(smgr.getActive()!=null)
                     {
-                        if(quoteServerObject.get_embedded()!=null)
+                        if(!smgr.getActive().isExpired())
                         {
-                            Quote[] quotes_arr = quoteServerObject.get_embedded().getQuotes();
-                            quotes = new HashMap<>();
-                            for (Quote quote : quotes_arr)
-                                quotes.put(quote.get_id(), quote);
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Quotes in database.");
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "QuoteServerObject (containing Quote objects & other metadata) is null");
 
-                    Employee[] employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
-                    EmployeeManager.getInstance().getEmployees().values().toArray(employees);
-
-                    if(quotes!=null)
-                    {
-                        if (!quotes.isEmpty())
-                        {
-                            try
+                            gson  = new GsonBuilder().create();
+                            ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
+                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            //Get Timestamp
+                            String quotes_timestamp_json = RemoteComms.sendGetRequest("/timestamp/quotes_timestamp", headers);
+                            Counters quotes_timestamp = gson.fromJson(quotes_timestamp_json, Counters.class);
+                            if(quotes_timestamp!=null)
                             {
-                                for (Quote quote : quotes.values())
-                                {
-                                    //Load Quote Resources
-                                    String quote_item_ids_json = RemoteComms
-                                            .sendGetRequest("/quotes/resources/" + quote.get_id(), headers);
-                                    if (quote_item_ids_json != null)
-                                    {
-                                        if (!quote_item_ids_json.equals("[]"))
-                                        {
-                                            QuoteResourceServerObject quoteResourceServerObject = gson
-                                                    .fromJson(quote_item_ids_json, QuoteResourceServerObject.class);
-                                            if (quoteResourceServerObject != null)
-                                            {
-                                                if (quoteResourceServerObject.get_embedded() != null)
-                                                {
-                                                    QuoteItem[] quote_resources_arr = quoteResourceServerObject
-                                                            .get_embedded()
-                                                            .getQuote_resources();
-                                                    quote.setResources(quote_resources_arr);
-                                                    IO.log(getClass().getName(), IO.TAG_INFO, String
-                                                            .format("set resources for quote '%s'.", quote.get_id()));
-                                                }
-                                                else IO.log(getClass()
-                                                        .getName(), IO.TAG_ERROR, "could not find any Resources for Quote #" + quote
-                                                        .get_id());
-                                            }
-                                            else IO.log(getClass()
-                                                    .getName(), IO.TAG_ERROR, "QuoteResourceServerObject (containing QuoteItem objects & other metadata) is null");
-                                        }
-                                        else IO.log(getClass().getName(), IO.TAG_WARN, String
-                                                .format("quote '%s does not have any resources.", quote.get_id()));
-                                    }
-                                    else IO.log(getClass().getName(), IO.TAG_WARN, String
-                                            .format("quote '%s does not have any resources.", quote.get_id()));
-                                }
-                                IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of quotes.");
-                                this.serialize(ROOT_PATH + filename, quotes);
-                            }catch (ConcurrentModificationException e)
-                            {
-                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                timestamp = quotes_timestamp.getCount();
+                                filename = "quotes_"+timestamp+".dat";
+                                IO.log(QuoteManager.getInstance().getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+quotes_timestamp.getCount());
+                            } else {
+                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                return null;
                             }
-                        }
-                        else
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, "no quotes found in database.");
-                        }
-                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Quotes in database.");
-                } else {
-                    IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object ["+ROOT_PATH+filename+"] on local disk is already up-to-date.");
-                    quotes = (HashMap<String, Quote>) this.deserialize(ROOT_PATH+filename);
+
+                            if(!isSerialized(ROOT_PATH+filename))
+                            {
+                                //Load Quotes
+                                String quotes_json = RemoteComms.sendGetRequest("/quotes", headers);
+                                QuoteServerObject quoteServerObject = gson.fromJson(quotes_json, QuoteServerObject.class);
+                                if(quoteServerObject!=null)
+                                {
+                                    if(quoteServerObject.get_embedded()!=null)
+                                    {
+                                        Quote[] quotes_arr = quoteServerObject.get_embedded().getQuotes();
+                                        quotes = new HashMap<>();
+                                        for (Quote quote : quotes_arr)
+                                            quotes.put(quote.get_id(), quote);
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Quotes in database.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "QuoteServerObject (containing Quote objects & other metadata) is null");
+
+                                Employee[] employees = new Employee[EmployeeManager.getInstance().getDataset().values().toArray().length];
+                                EmployeeManager.getInstance().getDataset().values().toArray(employees);
+
+                                if(quotes!=null)
+                                {
+                                    if (!quotes.isEmpty())
+                                    {
+                                        try
+                                        {
+                                            for (Quote quote : quotes.values())
+                                            {
+                                                //Load Quote Resources
+                                                String quote_item_ids_json = RemoteComms
+                                                        .sendGetRequest("/quotes/resources/" + quote.get_id(), headers);
+                                                if (quote_item_ids_json != null)
+                                                {
+                                                    if (!quote_item_ids_json.equals("[]"))
+                                                    {
+                                                        QuoteResourceServerObject quoteResourceServerObject = gson
+                                                                .fromJson(quote_item_ids_json, QuoteResourceServerObject.class);
+                                                        if (quoteResourceServerObject != null)
+                                                        {
+                                                            if (quoteResourceServerObject.get_embedded() != null)
+                                                            {
+                                                                QuoteItem[] quote_resources_arr = quoteResourceServerObject
+                                                                        .get_embedded()
+                                                                        .getQuote_resources();
+                                                                quote.setResources(quote_resources_arr);
+                                                                IO.log(getClass().getName(), IO.TAG_INFO, String
+                                                                        .format("set resources for quote '%s'.", quote.get_id()));
+                                                            }
+                                                            else IO.log(getClass()
+                                                                    .getName(), IO.TAG_ERROR, "could not find any Resources for Quote #" + quote
+                                                                    .get_id());
+                                                        }
+                                                        else IO.log(getClass()
+                                                                .getName(), IO.TAG_ERROR, "QuoteResourceServerObject (containing QuoteItem objects & other metadata) is null");
+                                                    }
+                                                    else IO.log(getClass().getName(), IO.TAG_WARN, String
+                                                            .format("quote '%s does not have any resources.", quote.get_id()));
+                                                }
+                                                else IO.log(getClass().getName(), IO.TAG_WARN, String
+                                                        .format("quote '%s does not have any resources.", quote.get_id()));
+                                            }
+                                            IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of quotes.");
+                                            serialize(ROOT_PATH + filename, quotes);
+                                        }catch (ConcurrentModificationException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
+                                    }
+                                    else
+                                    {
+                                        IO.log(getClass().getName(), IO.TAG_ERROR, "no quotes found in database.");
+                                    }
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Quotes in database.");
+                            } else {
+                                IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object ["+ROOT_PATH+filename+"] on local disk is already up-to-date.");
+                                quotes = (HashMap<String, Quote>) deserialize(ROOT_PATH+filename);
+                            }
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Invalid Session", "No valid active sessions were found.", IO.TAG_ERROR);
+                } catch (MalformedURLException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (ClassNotFoundException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                 }
-            } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        } else IO.logAndAlert("Invalid Session", "No valid active sessions were found.", IO.TAG_ERROR);
+                return null;
+            }
+        };
     }
 
     public static double computeQuoteTotal(List<QuoteItem> quoteItems)
@@ -233,8 +189,9 @@ public class QuoteManager extends BusinessObjectManager
 
     public void generatePDF() throws IOException
     {
-        if(selected_quote!=null)
-            PDF.createQuotePdf(selected_quote);
+        if(getSelected()!=null)
+            if(getSelected() instanceof Quote)
+                PDF.createQuotePdf((Quote)getSelected());
         else IO.logAndAlert("Error", "Please choose a valid quote.", IO.TAG_ERROR);
     }
 
@@ -279,12 +236,7 @@ public class QuoteManager extends BusinessObjectManager
                 //Close connection
                 if(connection!=null)
                     connection.disconnect();
-                    /* Add Quote Representatives/Employees to Quote on database*/
-
-                //Close connection
-                if(connection!=null)
-                    connection.disconnect();
-                    /* Add Quote Resources to Quote on database */
+                /* Add Quote Resources to Quote on database */
 
                 boolean added_all_quote_items = true;
                 if(quoteItems!=null)
@@ -298,29 +250,17 @@ public class QuoteManager extends BusinessObjectManager
                 } else IO.log(getClass().getName(), IO.TAG_WARN, "Quote["+new_quote_id+"] has no items/resources.");
                 if(added_all_quote_items)
                 {
-                    try
-                    {
-                        //set selected quote
-                        QuoteManager.getInstance().reloadDataFromServer();
-                        QuoteManager.getInstance().setSelectedQuote(new_quote_id);
+                    //set selected quote
+                    QuoteManager.getInstance().forceSynchronise();
 
-                        IO.logAndAlert("New Quote Creation Success", "Successfully created a new Quote.", IO.TAG_INFO);
-                        if(callback!=null)
-                            if(new_quote_id!=null)
-                                callback.call(new_quote_id);
-                    }catch (MalformedURLException ex)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                        IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                    }catch (ClassNotFoundException e)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                        IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                    }catch (IOException ex)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                        IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                    }
+                    if(QuoteManager.getInstance().getDataset()!=null && new_quote_id!=null)
+                        QuoteManager.getInstance().setSelected(QuoteManager.getInstance().getDataset().get(new_quote_id));
+
+                    IO.logAndAlert("New Quote Creation Success", "Successfully created a new Quote.", IO.TAG_INFO);
+
+                    if(callback!=null)
+                        if(new_quote_id!=null)
+                            callback.call(new_quote_id);
                 } else IO.logAndAlert("New Quote Creation Failure", "Could not add items to quote.", IO.TAG_ERROR);
             } else
             {
@@ -416,7 +356,7 @@ public class QuoteManager extends BusinessObjectManager
                         if (updateQuoteItems(quote.get_id(), quoteItems, headers))
                         {
                             IO.logAndAlert("Quote Successfully Updated","Successfully updated quote[#" + quote.getObject_number() + "].", IO.TAG_INFO);
-                            reloadDataFromServer();
+                            forceSynchronise();
                         } else
                         {
                             IO.logAndAlert("Quote Update Failure", "Could not update all Quote Materials for Quote[#"+quote.getObject_number()+"].", IO.TAG_INFO);
@@ -432,9 +372,6 @@ public class QuoteManager extends BusinessObjectManager
                         connection.disconnect();
                 } else IO.logAndAlert("Quote Update Failure", "Could not connect to server.", IO.TAG_ERROR);
             } catch (IOException e)
-            {
-                IO.logAndAlert(QuoteManager.class.getSimpleName(), e.getMessage(), IO.TAG_ERROR);
-            } catch (ClassNotFoundException e)
             {
                 IO.logAndAlert(QuoteManager.class.getSimpleName(), e.getMessage(), IO.TAG_ERROR);
             }
@@ -511,7 +448,7 @@ public class QuoteManager extends BusinessObjectManager
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
             {
                 IO.log(getClass().getName(), IO.TAG_INFO, "successfully added a new quote_item.");
-                //loadDataFromServer();//refresh data set
+                //synchroniseDataset();//refresh data set
                 //Close connection
                 if (connection != null)
                     connection.disconnect();
@@ -589,7 +526,7 @@ public class QuoteManager extends BusinessObjectManager
             IO.logAndAlert("Error", "Invalid Quote.", IO.TAG_ERROR);
             return;
         }
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert("Error", "Could not find any employees in the system.", IO.TAG_ERROR);
             return;

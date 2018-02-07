@@ -46,13 +46,13 @@ public class ExpensesController extends ScreenController implements Initializabl
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading expenses view..");
 
-        if(SupplierManager.getInstance().getSuppliers()==null)
+        if(SupplierManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no suppliers found in the database.", IO.TAG_ERROR);
             return;
         }
-        Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getSuppliers().size()];
-        SupplierManager.getInstance().getSuppliers().values().toArray(suppliers);
+        Supplier[] suppliers = new Supplier[SupplierManager.getInstance().getDataset().size()];
+        SupplierManager.getInstance().getDataset().values().toArray(suppliers);
 
         //Set up expenses table
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
@@ -62,7 +62,7 @@ public class ExpensesController extends ScreenController implements Initializabl
 
         colSupplier.setMinWidth(120);
         colSupplier.setCellValueFactory(new PropertyValueFactory<>("supplier_id"));
-        colSupplier.setCellFactory(col -> new ComboBoxTableCell(SupplierManager.getInstance().getSuppliers(), "supplier_id", "/api/expense"));
+        colSupplier.setCellFactory(col -> new ComboBoxTableCell(SupplierManager.getInstance().getDataset(), "supplier_id", "/api/expense"));
 
         CustomTableViewControls.makeDatePickerTableColumn(colDateLogged, "date_logged", "/api/expense");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
@@ -147,7 +147,7 @@ public class ExpensesController extends ScreenController implements Initializabl
 
         tblExpenses.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 ExpenseManager.getInstance().setSelected(tblExpenses.getSelectionModel().getSelectedItem()));
-        tblExpenses.setItems(FXCollections.observableArrayList(ExpenseManager.getInstance().getExpenses().values()));
+        tblExpenses.setItems(FXCollections.observableArrayList(ExpenseManager.getInstance().getDataset().values()));
     }
 
     @Override

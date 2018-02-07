@@ -50,9 +50,9 @@ public class SessionManager
     {
         if(getActive()!=null)
         {
-            EmployeeManager.getInstance().loadDataFromServer();
-            if (EmployeeManager.getInstance().getEmployees() != null)
-                return EmployeeManager.getInstance().getEmployees().get(getActive().getUsr());
+            EmployeeManager.getInstance().initialize();
+            if (EmployeeManager.getInstance().getDataset() != null)
+                return EmployeeManager.getInstance().getDataset().get(getActive().getUsr());
         }
         return null;
     }

@@ -70,22 +70,22 @@ public abstract class QuoteController extends ScreenController implements Initia
     @Override
     public void refreshView()
     {
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no employees were found in the database.", IO.TAG_WARN);
             //return;
         }
-        if( ClientManager.getInstance().getClients()==null)
+        if( ClientManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_WARN);
             //return;
         }
 
         Employee[] employees=null;
-        if(EmployeeManager.getInstance().getEmployees()!=null)
+        if(EmployeeManager.getInstance().getDataset()!=null)
         {
-            employees = new Employee[EmployeeManager.getInstance().getEmployees().values().toArray().length];
-            EmployeeManager.getInstance().getEmployees().values().toArray(employees);
+            employees = new Employee[EmployeeManager.getInstance().getDataset().values().toArray().length];
+            EmployeeManager.getInstance().getDataset().values().toArray(employees);
         }
 
         //setup Quote default accounts
@@ -203,7 +203,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
-        cbxClients.setItems(FXCollections.observableArrayList(ClientManager.getInstance().getClients().values()));
+        cbxClients.setItems(FXCollections.observableArrayList((Collection<Client>) ClientManager.getInstance().getDataset().values()));
         cbxClients.setCellFactory(new Callback<ListView<Client>, ListCell<Client>>()
         {
             @Override
@@ -277,9 +277,9 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         //set status
         String status;
-        if(QuoteManager.getInstance().getSelectedQuote()!=null)
+        if(QuoteManager.getInstance().getSelected()!=null)
         {
-            switch (QuoteManager.getInstance().getSelectedQuote().getStatus())
+            switch (((Quote)QuoteManager.getInstance().getSelected()).getStatus())
             {
                 case Quote.STATUS_PENDING:
                     status = "PENDING";
@@ -292,8 +292,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                     break;
                 default:
                     status = "UNKNOWN";
-                    IO.logAndAlert("Error", "Unknown Quote status: " + QuoteManager.getInstance().getSelectedQuote()
-                            .getStatus(), IO.TAG_ERROR);
+                    IO.logAndAlert("Error", "Unknown Quote status: " + ((Quote)QuoteManager.getInstance().getSelected()).getStatus(), IO.TAG_ERROR);
                     break;
             }
             if(txtStatus!=null)
@@ -324,25 +323,10 @@ public abstract class QuoteController extends ScreenController implements Initia
     @Override
     public void refreshModel()
     {
-        try
-        {
-            EmployeeManager.getInstance().reloadDataFromServer();
-            ClientManager.getInstance().reloadDataFromServer();
-            ResourceManager.getInstance().reloadDataFromServer();
-            QuoteManager.getInstance().reloadDataFromServer();
-        }catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        }catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        }catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
+        EmployeeManager.getInstance().initialize();
+        ClientManager.getInstance().initialize();
+        ResourceManager.getInstance().initialize();
+        QuoteManager.getInstance().initialize();
     }
 
     /**
@@ -424,7 +408,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                         getTableView().getItems().remove(quoteItem);
                                         getTableView().refresh();
                                         IO.log(getClass().getName(), IO.TAG_INFO, "removed QuoteItem["+quoteItem.get_id()+"]");
-                                        txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().getSelectedQuote().getTotal()));
+                                        txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Quote)QuoteManager.getInstance().getSelected()).getTotal()));
                                     });
 
                                     hBox.setFillHeight(true);
@@ -764,9 +748,9 @@ public abstract class QuoteController extends ScreenController implements Initia
     {
         if(ResourceManager.getInstance()!=null)
         {
-            if(ResourceManager.getInstance().getResources()!=null)
+            if(ResourceManager.getInstance().getDataset()!=null)
             {
-                if(ResourceManager.getInstance().getResources().size()>0)
+                if(ResourceManager.getInstance().getDataset().size()>0)
                 {
                     File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
@@ -907,7 +891,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     public void approveQuote()
     {
-        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        Quote selected = (Quote) QuoteManager.getInstance().getSelected();
         if(selected!=null)
         {
             if(selected.getStatus()!=Quote.STATUS_APPROVED)
@@ -1130,7 +1114,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             return;
         }
 
-        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        Quote selected = (Quote)QuoteManager.getInstance().getSelected();
         if(selected!=null)
         {
             // create a new Quote with selected Quote as parent and +1 revision number
@@ -1173,60 +1157,44 @@ public abstract class QuoteController extends ScreenController implements Initia
                         //on successful Quote creation refresh model & UI
                         ScreenManager.getInstance().showLoadingScreen(param ->
                         {
-                            try
+                            QuoteManager.getInstance().initialize();
+
+                            //update selected Quote
+                            if(quote_id!=null)
                             {
-                                //refresh Quote Model
-                                QuoteManager.getInstance().reloadDataFromServer();
-
-                                //update selected Quote
-                                if(quote_id!=null)
+                                if (QuoteManager.getInstance().getDataset() != null)
                                 {
-                                    if (QuoteManager.getInstance().getQuotes() != null)
+                                    Quote new_selected = QuoteManager.getInstance().getDataset().get(quote_id);
+                                    if(new_selected!=null)
                                     {
-                                        Quote new_selected = QuoteManager.getInstance().getQuotes().get(quote_id);
-                                        if(new_selected!=null)
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_INFO,
-                                                    "setting selected quote to: " + quote_id + " revision: "
-                                                            +new_selected.getRevision());
-                                            QuoteManager.getInstance().setSelectedQuote(new_selected);
-                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "newly created Quote is invalid.");
-                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not update Quote, no Quotes were found in the database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not update Quote, quote_id is not set.");
+                                        IO.log(getClass().getName(), IO.TAG_INFO,
+                                                "setting selected quote to: " + quote_id + " revision: "
+                                                        +new_selected.getRevision());
+                                        QuoteManager.getInstance().setSelected(new_selected);
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "newly created Quote is invalid.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not update Quote, no Quotes were found in the database.");
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not update Quote, quote_id is not set.");
 
-                                //refresh GUI
-                                new Thread(new Runnable()
+                            //refresh GUI
+                            new Thread(new Runnable()
+                            {
+                                @Override
+                                public void run()
                                 {
-                                    @Override
-                                    public void run()
+                                    try
                                     {
-                                        try
+                                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
                                         {
-                                            if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
-                                            {
-                                                //Platform.runLater(() ->
-                                                ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen());
-                                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load view quote screen.");
-                                        } catch (IOException e)
-                                        {
-                                            e.printStackTrace();
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                        }
+                                            //Platform.runLater(() ->
+                                            ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen());
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load view quote screen.");
+                                    } catch (IOException e)
+                                    {
+                                        e.printStackTrace();
+                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                     }
-                                }).start();
-                            }catch (MalformedURLException ex)
-                            {
-                                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                                IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                            }catch (ClassNotFoundException e)
-                            {
-                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                            }catch (IOException ex)
-                            {
-                                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                                IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                            }
+                                }
+                            }).start();
                             return null;
                         });
                         txtQuoteId.setText(quote_id.toString());
@@ -1304,7 +1272,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             return;
         }
 
-        Quote selected = QuoteManager.getInstance().getSelectedQuote();
+        Quote selected = (Quote) QuoteManager.getInstance().getSelected();
         if(selected!=null)
         {
             if(selected.getStatus()==Quote.STATUS_APPROVED)
@@ -1323,29 +1291,14 @@ public abstract class QuoteController extends ScreenController implements Initia
 
             QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems());
 
-            try
+            QuoteManager.getInstance().initialize();
+            if(QuoteManager.getInstance().getDataset()!=null)
+                QuoteManager.getInstance().setSelected(QuoteManager.getInstance().getDataset().get(selected.get_id()));
+            new Thread(() ->
             {
-                QuoteManager.getInstance().reloadDataFromServer();
-                if(QuoteManager.getInstance().getQuotes()!=null)
-                    QuoteManager.getInstance().setSelectedQuote(QuoteManager.getInstance().getQuotes().get(selected.get_id()));
-                new Thread(() ->
-                {
-                    refreshModel();
-                    Platform.runLater(() -> refreshView());
-                }).start();
-            }catch (MalformedURLException ex)
-            {
-                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-            }catch (ClassNotFoundException e)
-            {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-            }catch (IOException ex)
-            {
-                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-            }
+                refreshModel();
+                Platform.runLater(() -> refreshView());
+            }).start();
         } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 
@@ -1357,7 +1310,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         {
             if(!smgr.getActive().isExpired())
             {
-                Quote selected = QuoteManager.getInstance().getSelectedQuote();
+                Quote selected = (Quote) QuoteManager.getInstance().getSelected();
                 if(selected!=null)
                 {
                     if(selected.getStatus()>Quote.STATUS_PENDING)
@@ -1372,66 +1325,49 @@ public abstract class QuoteController extends ScreenController implements Initia
                         if (new_job_id != null)
                         {
                             IO.logAndAlert("Success", "Successfully created a new job.", IO.TAG_INFO);
-                            try
+                            JobManager.getInstance().initialize();
+                            if (JobManager.getInstance().getDataset() != null)
                             {
-                                JobManager.getInstance().reloadDataFromServer();
-                                if (JobManager.getInstance().getJobs() != null)
-                                {
-                                    JobManager.getInstance()
-                                            .setSelected(JobManager.getInstance().getJobs().get(new_job_id));
+                                JobManager.getInstance().setSelected(JobManager.getInstance().getDataset().get(new_job_id));
 
-                                    ScreenManager.getInstance().showLoadingScreen(param ->
+                                ScreenManager.getInstance().showLoadingScreen(param ->
+                                {
+                                    new Thread(new Runnable()
                                     {
-                                        new Thread(new Runnable()
+                                        @Override
+                                        public void run()
                                         {
-                                            @Override
-                                            public void run()
+                                            try
                                             {
-                                                try
+                                                if (ScreenManager.getInstance()
+                                                        .loadScreen(Screens.VIEW_JOB.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/" + Screens.VIEW_JOB
+                                                                        .getScreen())))
                                                 {
-                                                    if (ScreenManager.getInstance()
-                                                            .loadScreen(Screens.VIEW_JOB.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/" + Screens.VIEW_JOB
-                                                                            .getScreen())))
-                                                    {
-                                                        Platform.runLater(() -> ScreenManager.getInstance()
-                                                                .setScreen(Screens.VIEW_JOB.getScreen()));
-                                                    }
-                                                    else IO.log(getClass()
-                                                            .getName(), IO.TAG_ERROR, "could not load job viewer screen.");
-                                                } catch (IOException e)
-                                                {
-                                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                                    Platform.runLater(() -> ScreenManager.getInstance()
+                                                            .setScreen(Screens.VIEW_JOB.getScreen()));
                                                 }
+                                                else IO.log(getClass()
+                                                        .getName(), IO.TAG_ERROR, "could not load job viewer screen.");
+                                            } catch (IOException e)
+                                            {
+                                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                             }
-                                        }).start();
-                                        return null;
-                                    });
-                                }
-                                else IO.logAndAlert("Error", "Could not find any jobs in the database.", IO.TAG_INFO);
-                            } catch (MalformedURLException ex)
-                            {
-                                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                                IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-                            } catch (ClassNotFoundException e)
-                            {
-                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-                            } catch (IOException ex)
-                            {
-                                IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-                                IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-                            }
+                                        }
+                                    }).start();
+                                    return null;
+                                });
+                            } else IO.logAndAlert("Error", "Could not find any jobs in the database.", IO.TAG_INFO);
                         } else IO.logAndAlert("Error", "Could not successfully create a new job.", IO.TAG_ERROR);
                     } else IO.logAndAlert("Error", "Quote has not been approved yet.", IO.TAG_ERROR);
-                }else IO.logAndAlert("Cannot Create Job", "Cannot create job because the selected quote is invalid.", IO.TAG_ERROR);
-            }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                } else IO.logAndAlert("Cannot Create Job", "Cannot create job because the selected quote is invalid.", IO.TAG_ERROR);
+            } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
     @FXML
     public void newClient()
     {
-        ClientManager.getInstance().newClientWindow("Create a new Client for this Quote", param ->
+        ClientManager.newClientWindow("Create a new Client for this Quote", param ->
         {
             new Thread(() ->
             {
@@ -1461,13 +1397,17 @@ public abstract class QuoteController extends ScreenController implements Initia
     {
         try
         {
-            String path = PDF.createQuotePdf(QuoteManager.getInstance().getSelectedQuote());
-            if(path!=null)
+            if(QuoteManager.getInstance().getSelected()!=null)
             {
-                PDFViewer pdfViewer = PDFViewer.getInstance();
-                pdfViewer.setVisible(true);
-                pdfViewer.doOpen(path);
-            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid quote PDF path returned.");
+                String path = PDF.createQuotePdf((Quote) QuoteManager.getInstance().getSelected());
+                if (path != null)
+                {
+                    PDFViewer pdfViewer = PDFViewer.getInstance();
+                    pdfViewer.setVisible(true);
+                    pdfViewer.doOpen(path);
+                }
+                else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid quote PDF path returned.");
+            }
         } catch (IOException ex)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
@@ -1480,8 +1420,8 @@ public abstract class QuoteController extends ScreenController implements Initia
         //send email requesting approval of Quote
         try
         {
-            if(QuoteManager.getInstance().getSelectedQuote()!=null)
-                QuoteManager.getInstance().requestQuoteApproval(QuoteManager.getInstance().getSelectedQuote(), null);
+            if(QuoteManager.getInstance().getSelected()!=null)
+                QuoteManager.getInstance().requestQuoteApproval((Quote) QuoteManager.getInstance().getSelected(), null);
             else IO.logAndAlert("Error", "Selected Quote is invalid.", IO.TAG_ERROR);
         } catch (IOException e)
         {

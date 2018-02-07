@@ -124,7 +124,7 @@ public class Leave extends BusinessObject implements Serializable
     {
         if(usr==null)
             return null;
-        HashMap<String, Employee> employees = EmployeeManager.getInstance().getEmployees();
+        HashMap<String, Employee> employees = EmployeeManager.getInstance().getDataset();
         if(employees!=null)
             return employees.get(usr);
         return null;

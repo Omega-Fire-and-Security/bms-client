@@ -44,10 +44,6 @@ public abstract class ScreenController
 
     public ScreenController()
     {
-        //loading_pane.setVisible(false);
-        //loading_bpane.setVisible(false);
-        //shpLoad.setFill(Color.RED);
-        //System.err.println(main_pane==null);
     }
 
     public abstract void refreshView();
@@ -77,6 +73,13 @@ public abstract class ScreenController
                 lblOutput.setText(msg);
             });
         }
+    }
+
+    @FXML
+    public void forceSynchronise()
+    {
+        refreshModel();
+        refreshView();
     }
 
     @FXML
@@ -136,7 +139,7 @@ public abstract class ScreenController
     @FXML
     public void newQuote()
     {
-        QuoteManager.getInstance().nullifySelected();
+        QuoteManager.getInstance().setSelected(null);
         try
         {
             if(ScreenManager.getInstance().loadScreen(Screens.NEW_QUOTE.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_QUOTE.getScreen())))

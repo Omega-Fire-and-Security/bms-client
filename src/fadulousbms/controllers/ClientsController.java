@@ -25,6 +25,7 @@ import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.ResourceBundle;
 
 /**
@@ -45,7 +46,7 @@ public class ClientsController extends ScreenController implements Initializable
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients view..");
-        if( ClientManager.getInstance().getClients()==null)
+        if( ClientManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No clients were found in the database.", IO.TAG_WARN);
             return;
@@ -68,7 +69,7 @@ public class ClientsController extends ScreenController implements Initializable
         CustomTableViewControls.makeEditableTableColumn(colClientOther, TextFieldTableCell.forTableColumn(), 50, "other", "/clients");
 
         ObservableList<Client> lst_clients = FXCollections.observableArrayList();
-        lst_clients.addAll(ClientManager.getInstance().getClients().values());
+        lst_clients.addAll((Collection<Client>)ClientManager.getInstance().getDataset().values());
         tblClients.setItems(lst_clients);
 
         final ScreenManager screenManager = ScreenManager.getInstance();

@@ -34,13 +34,13 @@ public class ClientsTabController extends ScreenController implements Initializa
     @Override
     public void refreshView()
     {
-        IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients tab view.");
+        //IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients tab view.");
     }
 
     @Override
     public void refreshModel()
     {
-        IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients tab model.");
+        //IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients tab model.");
     }
 
     /**

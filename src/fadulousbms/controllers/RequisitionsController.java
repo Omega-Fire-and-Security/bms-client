@@ -50,17 +50,17 @@ public class RequisitionsController extends OperationsController implements Init
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading requisitions view..");
 
-        if(EmployeeManager.getInstance().getEmployees()==null)
+        if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "No employees were found in the database.", IO.TAG_ERROR);
             return;
         }
-        if(RequisitionManager.getInstance().getRequisitions()==null)
+        if(RequisitionManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No requisitions were found in the database.", IO.TAG_WARN);
             return;
         }
-        if(ClientManager.getInstance().getClients()==null)
+        if(ClientManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "No clients were found in the database.", IO.TAG_WARN);
             return;
@@ -295,14 +295,14 @@ public class RequisitionsController extends OperationsController implements Init
         tblRequisitions.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 RequisitionManager.getInstance().setSelected(tblRequisitions.getSelectionModel().getSelectedItem()));
 
-        tblRequisitions.setItems(FXCollections.observableArrayList(RequisitionManager.getInstance().getRequisitions().values()));
+        tblRequisitions.setItems(FXCollections.observableArrayList(RequisitionManager.getInstance().getDataset().values()));
     }
 
     public void requestApproval()
     {
         //send email requesting approval of Requisition
         if(RequisitionManager.getInstance().getSelected()!=null)
-            RequisitionManager.getInstance().requestRequisitionApproval(RequisitionManager.getInstance().getSelected(), null);
+            RequisitionManager.getInstance().requestRequisitionApproval((Requisition) RequisitionManager.getInstance().getSelected(), null);
         else IO.logAndAlert("Error", "Selected Requisition is invalid.", IO.TAG_ERROR);
     }
 
@@ -311,9 +311,9 @@ public class RequisitionsController extends OperationsController implements Init
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading requisitions data model..");
 
-        EmployeeManager.getInstance().loadDataFromServer();
-        ClientManager.getInstance().loadDataFromServer();
-        RequisitionManager.getInstance().loadDataFromServer();
+        EmployeeManager.getInstance().initialize();
+        ClientManager.getInstance().initialize();
+        RequisitionManager.getInstance().initialize();
     }
 
     /**
