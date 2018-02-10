@@ -41,7 +41,7 @@ public class Validators
 
     public static boolean validateString(String str, int len, String regex)
     {
-        Matcher matcher = Pattern.compile(regex).matcher(str);
+        Matcher matcher = matchRegex(regex, str);
         if(str.length()<len)
             return false;
         if(regex!=null)
@@ -53,7 +53,12 @@ public class Validators
 
     public static boolean validateString(String str, String regex)
     {
-        Matcher matcher = Pattern.compile(regex).matcher(str);
-        return matcher.matches();
+        return matchRegex(regex, str).matches();
+    }
+
+    public static Matcher matchRegex(String regex, String line)
+    {
+        Pattern pattern = Pattern.compile(regex);
+        return pattern.matcher(line);
     }
 }

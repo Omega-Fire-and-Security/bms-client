@@ -206,7 +206,7 @@ public abstract class BusinessObject implements Serializable
             json_obj+=",\"date_logged\":\""+getDate_logged()+"\"";
         json_obj+=",\"other\":\""+getOther()+"\"}";
 
-        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        //IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
     }
 }

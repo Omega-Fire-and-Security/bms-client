@@ -3,6 +3,7 @@ package fadulousbms.auxilary;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.util.Callback;
+import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -18,6 +19,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.rendering.PageDrawer;
 import org.apache.pdfbox.rendering.PageDrawerParameters;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 import javax.print.*;
@@ -30,6 +32,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ghost on 2017/02/10.
@@ -63,7 +67,8 @@ public class PDF
             DocPrintJob printJob = printService.createPrintJob();
             Doc documentToBePrinted = new SimpleDoc(new ByteArrayInputStream(byteStream), docType, null);
             printJob.print(documentToBePrinted, null);
-        }else{
+        } else
+        {
             IO.logAndAlert("Print Job", "Print job cancelled.", IO.TAG_INFO);
         }
     }

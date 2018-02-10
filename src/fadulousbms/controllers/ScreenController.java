@@ -5,12 +5,10 @@
  */
 package fadulousbms.controllers;
 
-import fadulousbms.auxilary.Globals;
-import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
-import fadulousbms.auxilary.RemoteComms;
+import fadulousbms.auxilary.*;
 import fadulousbms.managers.QuoteManager;
 import fadulousbms.managers.ScreenManager;
+import fadulousbms.managers.SupplierManager;
 import fadulousbms.model.Screens;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -164,8 +162,10 @@ public abstract class ScreenController
         RadialMenuItem menuForward = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Forward", null, null, event -> showMain());
         RadialMenuItem menuHome = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Home", null, null, event -> showMain());
         RadialMenuItem menuLogin = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Login", null, null, event -> showLogin());
+        RadialMenuItem pdf_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Suppliers PDF", null, null, event -> SupplierManager
+                .parsePDF());
 
-        return new RadialMenuItem[]{menuClose, menuBack, menuForward, menuHome, menuLogin};
+        return new RadialMenuItem[]{menuClose, menuBack, menuForward, menuHome, menuLogin, pdf_parser};
     }
 
     //public abstract RadialMenuItem[] getContextMenu();

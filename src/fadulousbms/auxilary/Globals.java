@@ -9,6 +9,7 @@ public enum Globals
     APP_NAME("Enterprise Resource Engine"),
     DEBUG_WARNINGS("on"),
     DEBUG_INFO("on"),
+    DEBUG_VERBOSE("on"),
     CURRENCY_SYMBOL("R"),
     DEBUG_ERRORS("on");
 

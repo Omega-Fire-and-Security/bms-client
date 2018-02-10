@@ -1,6 +1,5 @@
 package fadulousbms.auxilary;
 
-import fadulousbms.FadulousBMS;
 import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
@@ -8,15 +7,10 @@ import fadulousbms.model.BusinessObject;
 import fadulousbms.model.FileMetadata;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.controlsfx.control.NotificationPane;
@@ -40,7 +34,7 @@ import java.util.Optional;
  */
 public class IO<T extends BusinessObject>
 {
-
+    public static final String TAG_VERBOSE = "verbose";
     public static final String TAG_INFO = "info";
     public static final String TAG_WARN = "warning";
     public static final String TAG_ERROR = "error";
@@ -123,6 +117,10 @@ public class IO<T extends BusinessObject>
         {
             case TAG_INFO:
                 if (Globals.DEBUG_INFO.getValue().toLowerCase().equals("on"))
+                    System.out.println(String.format("%s> %s: %s", src, tag, msg));
+                break;
+            case TAG_VERBOSE:
+                if (Globals.DEBUG_VERBOSE.getValue().toLowerCase().equals("on"))
                     System.out.println(String.format("%s> %s: %s", src, tag, msg));
                 break;
             case TAG_WARN:
