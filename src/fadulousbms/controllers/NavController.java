@@ -99,7 +99,7 @@ public class NavController extends ScreenController implements Initializable
                 return;
             }
             //Render current screen name
-            lblScreen.setText(ScreenManager.getInstance().peekScreenControllers().getKey());
+            lblScreen.setText(ScreenManager.getInstance().getFocused_id());
 
             //Render company name
             company_name.setText(Globals.APP_NAME.getValue());

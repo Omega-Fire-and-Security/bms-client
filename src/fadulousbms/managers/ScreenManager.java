@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Stack;
 
 import fadulousbms.auxilary.IO;
@@ -43,23 +44,18 @@ import org.controlsfx.control.MaskerPane;
 public class ScreenManager extends StackPane
 {
     private RadialMenu radialMenu;
-    private boolean show;
-    private double lastOffsetValue;
-    private double lastInitialAngleValue;
-    private double gestureAngle = 0;
     public static final double MENU_SIZE = 40.0;
-    public Double containerSize = 30.0;
     public Double initialAngle = 30.0;//-90.0
     public Double innerRadius = 100.0;
     public Double radius = 170.0;
     public Double offset = 15.0;
-    private Stack<AbstractMap.SimpleEntry<String, Node>> screens = new Stack<>();
-    private Stack<AbstractMap.SimpleEntry<String, ScreenController>> controllers = new Stack<>();
+    //private Stack<AbstractMap.SimpleEntry<String, Node>> screens = new Stack<>();
+    //private Stack<AbstractMap.SimpleEntry<String, ScreenController>> controllers = new Stack<>();
+    private HashMap<String, Node> screens = new HashMap<>();
+    private HashMap<String, ScreenController> controllers = new HashMap<>();
     private ScreenController focused;
     private String focused_id;
     private String previous_id;
-    //private Node loading_screen;
-    //private ScreenController loading_screen_ctrl;
     private Node screen = null;
     private static ScreenManager screenManager = new ScreenManager();
     private Label lblScreenName;
@@ -101,13 +97,17 @@ public class ScreenManager extends StackPane
         ScreenController screen_controller = loader.getController();
         //screen_controller.setParent(this);
 
-        controllers.push(new AbstractMap.SimpleEntry<>(id, screen_controller));
-        screens.push(new AbstractMap.SimpleEntry<>(id, screen));
-        IO.log(getClass().getName(), IO.TAG_INFO, "loaded screen: "+id);
+        if(controllers.get(id)==null)
+            controllers.putIfAbsent(id, screen_controller);
+        if(screens.get(id)==null)
+        {
+            screens.putIfAbsent(id, screen);
+            IO.log(getClass().getName(), IO.TAG_INFO, "loaded screen: " + id);
+        }
         return true;
     }
 
-    public AbstractMap.SimpleEntry<String, ScreenController> peekScreenControllers()
+    /*public AbstractMap.SimpleEntry<String, ScreenController> peekScreenControllers()
     {
         if(controllers!=null)
             return controllers.peek();
@@ -119,15 +119,16 @@ public class ScreenManager extends StackPane
         if(screens!=null)
             return screens.peek().getValue();
         else return null;
-    }
+    }*/
 
     public void setPreviousScreen() throws IOException
     {
-        if(screens.size()>1)
+        //if(screens.size()>1)
+        if(previous_id!=null)
         {
-            screens.pop().getValue();
-            setScreen(controllers.pop().getKey());
-        }
+            //screens.pop().getValue();
+            setScreen(previous_id);//controllers.pop().getKey()
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "no previous screen to go to.");
     }
 
     public void initRadialMenu(RadialMenuItem[] menuItems)//, RadialContainerMenuItem[] containerMenuItems
@@ -219,14 +220,16 @@ public class ScreenManager extends StackPane
      */
     public void setScreen(final String id)
     {
-        if(screens.peek()!=null)
-                    screen = screens.peek().getValue();
+        //if(screens.peek()!=null)
+        //  screen = screens.peek().getValue();
+        screen = screens.get(id);
         if(screen!=null)
         {
             ScreenController controller = null;
             //update UI of current view
-            if(controllers.peek()!=null)
-                    controller = controllers.peek().getValue();
+            //if(controllers.peek()!=null)
+            //        controller = controllers.peek().getValue();
+            controller=controllers.get(id);
 
             if(controller!=null)
             {
@@ -265,7 +268,8 @@ public class ScreenManager extends StackPane
                                         lblScreenName.setText(focused_id.split("\\.")[0]);
                                     getChildren().add(screen);
 
-                                    peekScreens().setOnContextMenuRequested(event ->
+                                    //peekScreens()
+                                    screen.setOnContextMenuRequested(event ->
                                     {
                                         if(radialMenu!=null)
                                             if(radialMenu.isVisible())
