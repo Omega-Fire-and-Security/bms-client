@@ -36,6 +36,19 @@ public class LeaveTabController extends ScreenController implements Initializabl
     private TableView<Leave> tblLeave;
     public static final String TAB_ID = "leaveTab";
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
+
     @Override
     public void refreshView()
     {
@@ -239,6 +252,13 @@ public class LeaveTabController extends ScreenController implements Initializabl
         LeaveManager.getInstance().initialize();
     }
 
+    @Override
+    public void forceSynchronise()
+    {
+        LeaveManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
+    }
+
     private static void viewSignedLeaveApplication(Leave leave)
     {
         if(leave==null)
@@ -355,16 +375,5 @@ public class LeaveTabController extends ScreenController implements Initializabl
         return new RadialMenuItem[]{menuLeave};
     }
 
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb)
-    {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
-    }
+
 }

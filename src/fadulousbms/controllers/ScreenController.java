@@ -6,10 +6,10 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.*;
-import fadulousbms.managers.QuoteManager;
-import fadulousbms.managers.ScreenManager;
-import fadulousbms.managers.SupplierManager;
+import fadulousbms.managers.*;
+import fadulousbms.model.Client;
 import fadulousbms.model.Screens;
+import fadulousbms.model.Supplier;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -17,6 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.awt.image.BufferedImage;
@@ -55,11 +56,14 @@ public abstract class ScreenController
             boolean ping = RemoteComms.pingServer();
             Platform.runLater(() ->
             {
-                shpServerStatus.setStroke(Color.TRANSPARENT);
-                if(ping)
-                    shpServerStatus.setFill(Color.LIME);
-                else shpServerStatus.setFill(Color.RED);
-                lblOutput.setText(msg);
+                if(shpServerStatus!=null && lblOutput!=null)
+                {
+                    shpServerStatus.setStroke(Color.TRANSPARENT);
+                    if (ping)
+                        shpServerStatus.setFill(Color.LIME);
+                    else shpServerStatus.setFill(Color.RED);
+                    lblOutput.setText(msg);
+                }
             });
         } catch (IOException e)
         {
@@ -67,17 +71,44 @@ public abstract class ScreenController
                 System.out.println(getClass().getName() + ">" + IO.TAG_ERROR + ">" + "could not refresh status bar: "+e.getMessage());
             Platform.runLater(() ->
             {
-                shpServerStatus.setFill(Color.RED);
-                lblOutput.setText(msg);
+                if(shpServerStatus!=null && lblOutput!=null)
+                {
+                    shpServerStatus.setFill(Color.RED);
+                    lblOutput.setText(msg);
+                }
             });
         }
     }
 
     @FXML
-    public void forceSynchronise()
+    public abstract void forceSynchronise();
+
+    @FXML
+    public void newClient()
     {
-        refreshModel();
-        refreshView();
+        ClientManager.newClientWindow("Create a new Client for this Job", param ->
+        {
+            new Thread(() ->
+            {
+                refreshModel();
+                Platform.runLater(() -> refreshView());
+            }).start();
+            return null;
+        });
+    }
+
+    @FXML
+    public void newEmployee()
+    {
+        EmployeeManager.getInstance().newExternalEmployeeWindow("Create a new Contact Person for this Job", param ->
+        {
+            new Thread(() ->
+            {
+                refreshModel();
+                Platform.runLater(() -> refreshView());
+            }).start();
+            return null;
+        });
     }
 
     @FXML
@@ -162,10 +193,120 @@ public abstract class ScreenController
         RadialMenuItem menuForward = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Forward", null, null, event -> showMain());
         RadialMenuItem menuHome = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Home", null, null, event -> showMain());
         RadialMenuItem menuLogin = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Login", null, null, event -> showLogin());
-        RadialMenuItem pdf_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Suppliers PDF", null, null, event -> SupplierManager
-                .parsePDF());
+        RadialMenuItem suppliers_pdf_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Sage One Suppliers PDF", null, null, event -> SupplierManager
+                .parsePDF("suppliers.pdf", new Callback()
+                {
+                    @Override
+                    public Object call(Object param)
+                    {
+                        if(SessionManager.getInstance().getActive()!=null)
+                        {
+                            if(!SessionManager.getInstance().getActive().isExpired())
+                            {
+                                //get parsed attributes
+                                if(param==null)
+                                {
+                                    IO.logAndAlert("Error", "Invalid response from PDF parser", IO.TAG_ERROR);
+                                    return null;
+                                }
+                                String[] args = (String[]) param;
+                                String balance = args[0];
+                                String org = args[1];
+                                String contact = args[2];
+                                String category = args[3];
+                                boolean active =Boolean.parseBoolean(args[4]);
+                                String tel = args[5];
 
-        return new RadialMenuItem[]{menuClose, menuBack, menuForward, menuHome, menuLogin, pdf_parser};
+                                //create Supplier
+                                Supplier supplier = new Supplier();
+                                supplier.setSupplier_name(org);//.replaceAll("[^\\p{ASCII}]", "")
+                                supplier.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                supplier.setAccount_name(supplier.getSupplier_name().toLowerCase().replaceAll("\\s", ""));
+                                if(contact!=null)
+                                    supplier.setContact_email(contact);//.replaceAll("[^\\p{ASCII}]", "")
+                                //Normalizer.normalize(contact, Normalizer.Form.NFD)
+                                supplier.setWebsite("");
+                                supplier.setDate_partnered(System.currentTimeMillis());
+                                supplier.setSpeciality(category);//.replaceAll("[^\\p{ASCII}]", "")
+                                supplier.setActive(active);
+                                supplier.setFax("");
+                                supplier.setTel(tel);//.replaceAll("[^\\p{ASCII}]", "")
+                                supplier.setPostal_address("");
+                                supplier.setPhysical_address("");
+                                supplier.setRegistration_number("");
+                                supplier.setVat_number("");
+
+                                IO.log(getClass().getName(),IO.TAG_INFO, "############new Client"+supplier.getJSONString());
+
+                                SupplierManager.getInstance().createNewSupplier(supplier, arg ->
+                                {
+                                    if(arg!=null)
+                                        IO.logAndAlert("Success", "Successfully created new Supplier: ["+param+"]{"+supplier.getSupplier_name()+"}", IO.TAG_INFO);
+                                    else IO.logAndAlert("Error", "Could not create new Supplier", IO.TAG_ERROR);
+                                    return null;
+                                });
+                            } else IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log inx.", IO.TAG_ERROR);
+                        } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
+                        return null;
+                    }
+                }));
+        RadialMenuItem clients_pdf_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Sage One Clients PDF", null, null, event -> ClientManager
+                .parsePDF("clients.pdf", new Callback()
+                {
+                    @Override
+                    public Object call(Object param)
+                    {
+                        if(SessionManager.getInstance().getActive()!=null)
+                        {
+                            if(!SessionManager.getInstance().getActive().isExpired())
+                            {
+                                if(param==null)
+                                {
+                                    IO.logAndAlert("Error", "Invalid response from PDF parser", IO.TAG_ERROR);
+                                    return null;
+                                }
+                                String[] args = (String[]) param;
+                                String balance = args[0];
+                                String org = args[1];
+                                String contact = args[2];
+                                String category = args[3];
+                                boolean active =Boolean.parseBoolean(args[4]);
+                                String tel = args[5];
+
+                                //create Client
+                                Client client = new Client();
+                                client.setClient_name(org);//.replaceAll("[^\\p{ASCII}]", "")
+                                client.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                client.setAccount_name(client.getClient_name().toLowerCase().replaceAll("\\s", ""));
+                                if(contact!=null)
+                                    client.setContact_email(contact);//.replaceAll("[^\\p{ASCII}]", "")
+                                //Normalizer.normalize(contact, Normalizer.Form.NFD)
+                                client.setWebsite("");
+                                client.setDate_partnered(System.currentTimeMillis());
+                                client.setActive(active);
+                                client.setFax("");
+                                client.setTel(tel);//.replaceAll("[^\\p{ASCII}]", "")
+                                client.setPostal_address("");
+                                client.setPhysical_address("");
+                                client.setRegistration_number("");
+                                client.setVat_number("");
+
+                                IO.log(getClass().getName(),IO.TAG_INFO, "############new Client"+client.getJSONString());
+
+                                ClientManager.createNewClient(client, arg ->
+                                {
+                                    if(arg!=null)
+                                        IO.logAndAlert("Success", "Successfully created new Client: ["+param+"]{"+client.getClient_name()+"}", IO.TAG_INFO);
+                                    else IO.logAndAlert("Error", "Could not create new Client", IO.TAG_ERROR);
+                                    return null;
+                                });
+                            } else IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log inx.", IO.TAG_ERROR);
+                        } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
+                        return null;
+                    }
+                }));
+
+        return new RadialMenuItem[]{menuClose, menuBack, menuForward, menuHome, menuLogin, suppliers_pdf_parser, clients_pdf_parser};
     }
 
     //public abstract RadialMenuItem[] getContextMenu();

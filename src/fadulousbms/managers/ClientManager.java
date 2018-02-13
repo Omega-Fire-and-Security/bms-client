@@ -48,7 +48,72 @@ public class ClientManager extends BusinessObjectManager
         return clientManager;
     }
 
+    @Override
     public HashMap<String, Client> getDataset(){return clients;}
+
+    public static String createNewClient(Client client, Callback callback)
+    {
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
+            return null;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log in.", IO.TAG_ERROR);
+            return null;
+        }
+
+        try
+        {
+            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+
+            //create new client on database
+            HttpURLConnection connection = RemoteComms.putJSON("/clients", client.getJSONString(), headers);
+            if(connection!=null)
+            {
+                if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                {
+                    String response = IO.readStream(connection.getInputStream());
+
+                    //server will return message object in format "<client_id>"
+                    String new_client_id = response.replaceAll("\"","");//strip inverted commas around client_id
+                    new_client_id = new_client_id.replaceAll("\n","");//strip new line chars
+                    new_client_id = new_client_id.replaceAll(" ","");//strip whitespace chars
+
+                    IO.log(ClientManager.class.getName(), IO.TAG_INFO, "successfully created a new client: " + new_client_id);
+
+                    SupplierManager.getInstance().synchroniseDataset();
+
+                    if(callback!=null)
+                        callback.call(new_client_id);
+
+                    if(connection!=null)
+                        connection.disconnect();
+                    return new_client_id;
+                } else
+                {
+                    //Get error message
+                    String msg = IO.readStream(connection.getErrorStream());
+                    IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
+
+                    if(callback!=null)
+                        callback.call(null);
+
+                    if(connection!=null)
+                        connection.disconnect();
+                    return null;
+                }
+
+            } else IO.logAndAlert("Client Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
+        } catch (IOException e)
+        {
+            IO.log(ClientManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+        }
+        return null;
+    }
 
     @Override
     Callback getSynchronisationCallback()
@@ -81,7 +146,7 @@ public class ClientManager extends BusinessObjectManager
                                 IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
                             } else
                             {
-                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 

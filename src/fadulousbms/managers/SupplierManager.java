@@ -286,7 +286,7 @@ public class SupplierManager extends BusinessObjectManager
                             }
                             else
                             {
-                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 
@@ -329,160 +329,6 @@ public class SupplierManager extends BusinessObjectManager
         };
     }
 
-    public static void parsePDF()
-    {
-        File file = new File("suppliers.pdf");//C:/my.pdf
-        try
-        {
-            PDDocument doc = PDDocument.load(file);
-            String doc_text = new PDFTextStripper().getText(doc);
-            if(doc_text!=null)
-            {
-                String balance_regex = "^(R\\s*(\\-|\\+)*\\s*\\d+\\,{0,1}\\d*\\.{0,1}\\d{0,2})";
-                String tel_num_regex = "(\\d{3,}\\s+\\d{3,}\\s+\\d{4,})";
-                String contact_regex = "(\\w+\\s*\\w*)";
-                String active_regex = "(Yes|No)";
-                String category_regex = "(\\w+\\s*\\w*)";
-                String name_regex = "(\\w+\\s*\\w*)";
-
-                for (String line : doc_text.split("\n"))
-                {
-                    String balance="", tel="", contact="", category="", org = "";
-                    boolean active=false;
-
-                    System.out.println("\n\n");
-                    IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "***********Parsing Line: " + line);
-                    if(line.toLowerCase().contains("yes") || line.toLowerCase().contains("no"))
-                    {
-                        Matcher matcher = Validators.matchRegex(balance_regex+tel_num_regex+contact_regex+active_regex+category_regex+name_regex, line);//check balance
-                        if(matcher.find())
-                        {
-                            IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\tmatches main regex, group count: " + (matcher.groupCount()));
-
-                            balance = matcher.group(0);
-                            tel = matcher.group(1);
-                            contact = matcher.group(2);
-                            active = matcher.group(3).toLowerCase().equals("yes");
-                            category = matcher.group(4);
-                            name_regex = matcher.group(5);
-                        } else//line does not have all the data
-                        {
-                            //filter out the missing fields
-                            IO.log(PDF.class
-                                    .getName(), IO.TAG_VERBOSE, "\tdoes not match main regex, parsing given fields..");
-
-                            int index = 0;
-                            //check balance
-                            matcher = Validators.matchRegex(balance_regex, line);
-                            if (matcher.find())
-                            {
-                                balance = matcher.group(0);
-                                index = matcher.end();//move char cursor for next search
-                            }
-
-                            //check telephone
-                            matcher = Validators.matchRegex(tel_num_regex, line);
-                            if (matcher.find(index))
-                            {
-                                tel = matcher.group(0);
-                                index = matcher.end();//move char cursor for next search
-                            }
-
-                            //the remaining fields need special parsing
-                            String new_line = line.substring(index);
-                            String[] contact_cat_org_arr = new String[0];
-                            if(line.contains("Yes"))
-                            {
-                                contact_cat_org_arr = new_line.split("Yes");
-                                active=true;
-                            }
-                            if(line.contains("Yes0"))
-                            {
-                                contact_cat_org_arr = new_line.split("Yes0");//get rid of leading zero
-                                active=true;
-                            }
-                            if(line.contains("No"))
-                            {
-                                contact_cat_org_arr = new_line.split("No");
-                                active=false;
-                            }
-                            if(line.contains("No0"))
-                            {
-                                contact_cat_org_arr = new_line.split("No0");//get rid of leading zero
-                                active=false;
-                            }
-
-                            //for (String s : new_line.split("(?=\\p{Upper})"))
-                            if(contact_cat_org_arr!=null)
-                            {
-                                if(contact_cat_org_arr.length>0)
-                                {
-                                    contact = contact_cat_org_arr[0];//.isEmpty()?contact_cat_org_arr[1]:contact_cat_org_arr[0];
-
-                                    if(contact_cat_org_arr.length>1)//if arr not empty, use elem [1] as category & org name
-                                    {
-                                        if(contact.isEmpty())
-                                            contact=contact_cat_org_arr[1];//use elem [1] as contact if elem [0] is empty
-                                        category = contact_cat_org_arr[1];
-                                        org=contact_cat_org_arr[1];
-                                    } else //if no elem [1], use same value as contact
-                                    {
-                                        category=contact_cat_org_arr[0];
-                                        org=contact_cat_org_arr[0];
-                                    }
-
-                                    /*if(contact_cat_org_arr.length>2)//if arr len>2 use elem 2 as organisation
-                                        org=contact_cat_org_arr[2];
-                                    else if(contact_cat_org_arr.length>1)//if arr len>1 use elem 1 as organisation
-                                        org=contact_cat_org_arr[1];
-                                    else org=contact_cat_org_arr[0];//else just default to using the same value as contact*/
-                                }
-                            }
-                        }
-                        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\tBalance: " + balance);
-                        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\tTel: " + tel);
-                        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\tContact: " + contact);
-                        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\tActive: " + active);
-                        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\tCategory: " + category);
-                        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\tOrganisation: " + org);
-
-                        if(SessionManager.getInstance().getActive()!=null)
-                        {
-                            if(!SessionManager.getInstance().getActive().isExpired())
-                            {
-                                //create Supplier
-                                Supplier supplier = new Supplier();
-                                supplier.setSupplier_name(org);//.replaceAll("[^\\p{ASCII}]", "")
-                                supplier.setCreator(SessionManager.getInstance().getActive().getUsr());
-                                supplier.setAccount_name(supplier.getSupplier_name().toLowerCase().replaceAll("\\s", ""));
-                                if(contact!=null)
-                                    supplier.setContact_email(contact);//.replaceAll("[^\\p{ASCII}]", "")
-                                //Normalizer.normalize(contact, Normalizer.Form.NFD)
-                                supplier.setWebsite("not available");
-                                supplier.setDate_partnered(System.currentTimeMillis());
-                                supplier.setSpeciality(category);//.replaceAll("[^\\p{ASCII}]", "")
-                                supplier.setActive(active);
-                                supplier.setFax("not available");
-                                supplier.setTel(tel);//.replaceAll("[^\\p{ASCII}]", "")
-                                supplier.setPostal_address("not available");
-                                supplier.setPhysical_address("not available");
-                                supplier.setRegistration_number("not available");
-                                supplier.setVat_number("not available");
-
-                                System.out.println("############"+supplier.getJSONString());
-
-                                SupplierManager.getInstance().createNewSupplier(supplier, null);
-                            } else IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log inx.", IO.TAG_ERROR);
-                        } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
-                    } else IO.log(PDF.class.getName(), IO.TAG_WARN, "invalid supplier, can't tell if active or not.");
-                }
-            }
-        } catch (IOException e)
-        {
-            IO.log(PDF.class.getName(), IO.TAG_ERROR, e.getMessage());
-        }
-    }
-
     public String createNewSupplier(Supplier supplier, Callback callback)
     {
         if(SessionManager.getInstance().getActive()==null)
@@ -502,7 +348,7 @@ public class SupplierManager extends BusinessObjectManager
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
-            //create new job on database
+            //create new supplier on database
             HttpURLConnection connection = RemoteComms.putJSON("/suppliers", supplier.getJSONString(), headers);
             if(connection!=null)
             {
@@ -511,7 +357,7 @@ public class SupplierManager extends BusinessObjectManager
                     String response = IO.readStream(connection.getInputStream());
 
                     //server will return message object in format "<supplier_id>"
-                    String new_supplier_id = response.replaceAll("\"","");//strip inverted commas around job_id
+                    String new_supplier_id = response.replaceAll("\"","");//strip inverted commas around supplier_id
                     new_supplier_id = new_supplier_id.replaceAll("\n","");//strip new line chars
                     new_supplier_id = new_supplier_id.replaceAll(" ","");//strip whitespace chars
 

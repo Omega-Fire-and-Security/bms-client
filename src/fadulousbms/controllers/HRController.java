@@ -5,6 +5,7 @@ import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.Employee;
 import fadulousbms.model.Screens;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -29,22 +30,6 @@ public class HRController extends ScreenController implements Initializable
     private TabPane hrTabs;
     private static Tab selected_tab;
 
-    @Override
-    public void refreshView()
-    {
-    }
-
-    @Override
-    public void refreshModel()
-    {
-        EmployeeManager.getInstance().initialize();
-        JobManager.getInstance().initialize();
-        LeaveManager.getInstance().initialize();
-        OvertimeManager.getInstance().initialize();
-        //TODO: PolicyManager.getInstance().synchroniseDataset();
-        //TODO: PayrollManager.getInstance().synchroniseDataset();
-    }
-
     /**
      * Initializes the controller class.
      */
@@ -68,6 +53,29 @@ public class HRController extends ScreenController implements Initializable
                 IO.log(getClass().getName(), IO.TAG_INFO, "selected tab: " + newValue.getText());
             }*
         });*/
+    }
+
+    @Override
+    public void refreshView()
+    {
+    }
+
+    @Override
+    public void refreshModel()
+    {
+        EmployeeManager.getInstance().initialize();
+        JobManager.getInstance().initialize();
+        LeaveManager.getInstance().initialize();
+        OvertimeManager.getInstance().initialize();
+        //TODO: PolicyManager.getInstance().synchroniseDataset();
+        //TODO: PayrollManager.getInstance().synchroniseDataset();
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
     public static void setSelectedTab(Tab tab)

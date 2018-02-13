@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Tab fx:id="suppliersTab" text="Supplier Operations" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.SupplierOperationsController">
+    <content>
+        <TabPane fx:id="suppliersTabs" id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
+            <tabs>
+                <fx:include source="SuppliersTab.fxml"/>
+                <fx:include source="MaterialsTab.fxml"/>
+                <fx:include source="PurchaseOrdersTab.fxml"/>
+            </tabs>
+        </TabPane>
+    </content>
+</Tab>

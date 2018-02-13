@@ -61,6 +61,62 @@ public class ViewJobController extends ScreenController implements Initializable
     @FXML
     private Button btnApprove;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        Callback<TableColumn<Employee, String>, TableCell<Employee, String>> actionColCellFactory
+                =
+                new Callback<TableColumn<Employee, String>, TableCell<Employee, String>>()
+                {
+                    @Override
+                    public TableCell call(final TableColumn<Employee, String> param)
+                    {
+                        final TableCell<Employee, String> cell = new TableCell<Employee, String>()
+                        {
+                            final Button btnRemove = new Button("Remove");
+
+                            @Override
+                            public void updateItem(String item, boolean empty)
+                            {
+                                super.updateItem(item, empty);
+
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnRemove.getStyleClass().add("btnBack");
+                                btnRemove.setMinWidth(100);
+                                btnRemove.setMinHeight(35);
+                                HBox.setHgrow(btnRemove, Priority.ALWAYS);
+
+                                if (empty)
+                                {
+                                    setGraphic(null);
+                                    setText(null);
+                                } else
+                                {
+                                    btnRemove.setOnAction(event ->
+                                    {
+                                        Employee employee = getTableView().getItems().get(getIndex());
+                                        getTableView().getItems().remove(employee);
+                                        getTableView().refresh();
+                                        //TODO: remove from server
+                                        System.out.println("Successfully removed sale representative: " + employee.getName());
+                                    });
+                                    setGraphic(btnRemove);
+                                    setText(null);
+                                }
+                            }
+                        };
+                        return cell;
+                    }
+                };
+
+        colEmployeeAction.setMinWidth(120);
+        colEmployeeAction.setCellFactory(actionColCellFactory);
+    }
+
     @Override
     public void refreshView()
     {
@@ -251,60 +307,11 @@ public class ViewJobController extends ScreenController implements Initializable
         JobManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
-        Callback<TableColumn<Employee, String>, TableCell<Employee, String>> actionColCellFactory
-                =
-                new Callback<TableColumn<Employee, String>, TableCell<Employee, String>>()
-                {
-                    @Override
-                    public TableCell call(final TableColumn<Employee, String> param)
-                    {
-                        final TableCell<Employee, String> cell = new TableCell<Employee, String>()
-                        {
-                            final Button btnRemove = new Button("Remove");
-
-                            @Override
-                            public void updateItem(String item, boolean empty)
-                            {
-                                super.updateItem(item, empty);
-
-                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                                btnRemove.getStyleClass().add("btnBack");
-                                btnRemove.setMinWidth(100);
-                                btnRemove.setMinHeight(35);
-                                HBox.setHgrow(btnRemove, Priority.ALWAYS);
-
-                                if (empty)
-                                {
-                                    setGraphic(null);
-                                    setText(null);
-                                } else
-                                {
-                                    btnRemove.setOnAction(event ->
-                                    {
-                                        Employee employee = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(employee);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        System.out.println("Successfully removed sale representative: " + employee.getName());
-                                    });
-                                    setGraphic(btnRemove);
-                                    setText(null);
-                                }
-                            }
-                        };
-                        return cell;
-                    }
-                };
-
-        colEmployeeAction.setMinWidth(120);
-        colEmployeeAction.setCellFactory(actionColCellFactory);
+        JobManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

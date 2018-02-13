@@ -6,6 +6,7 @@ import fadulousbms.managers.AssetManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -32,6 +33,24 @@ public class JournalController extends ScreenController implements Initializable
     BorderPane bpDatePickerContainer;
     @FXML
     VBox vBox;
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        try
+        {
+            AssetManager.getInstance().initialize();
+            defaultProfileImage = ImageIO.read(new File("images/profile.png"));
+            Image image = SwingFXUtils.toFXImage(defaultProfileImage, null);
+            this.getProfileImageView().setImage(image);
+        }catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
 
     @Override
     public void refreshView()
@@ -71,28 +90,14 @@ public class JournalController extends ScreenController implements Initializable
     {
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
-        try
-        {
-            AssetManager.getInstance().initialize();
-            defaultProfileImage = ImageIO.read(new File("images/profile.png"));
-            Image image = SwingFXUtils.toFXImage(defaultProfileImage, null);
-            this.getProfileImageView().setImage(image);
-        }catch (IOException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
-
-        /*switch (month)
-        {
-            case
-        }*/
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
+
+
 
     public static RadialMenuItem[] getDefaultContextMenu()
     {

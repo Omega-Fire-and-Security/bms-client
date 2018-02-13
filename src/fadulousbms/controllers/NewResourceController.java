@@ -38,6 +38,19 @@ public class NewResourceController extends ScreenController implements Initializ
     @FXML
     private ComboBox<ResourceType> cbxResourceType;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
+
     @Override
     public void refreshView()
     {
@@ -51,17 +64,11 @@ public class NewResourceController extends ScreenController implements Initializ
         ResourceManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+        ResourceManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

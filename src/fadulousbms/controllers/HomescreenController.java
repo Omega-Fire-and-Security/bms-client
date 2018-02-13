@@ -45,6 +45,11 @@ public class HomescreenController extends ScreenController implements Initializa
     private ColorAdjust colorAdjust = new ColorAdjust();
 
     @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
+    @Override
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading homescreen view..");
@@ -58,15 +63,12 @@ public class HomescreenController extends ScreenController implements Initializa
     /**
      * Initializes the controller class.
      */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) 
-    {
-    }
 
-    public static RadialMenuItem[] getDefaultContextMenu()
+    @Override
+    public void forceSynchronise()
     {
-        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
-        return ScreenController.getDefaultContextMenu();
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
     private Rectangle createTile()
@@ -243,5 +245,11 @@ public class HomescreenController extends ScreenController implements Initializa
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 }

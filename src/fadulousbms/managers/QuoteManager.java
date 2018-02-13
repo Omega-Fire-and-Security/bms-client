@@ -81,7 +81,7 @@ public class QuoteManager extends BusinessObjectManager
                                 filename = "quotes_"+timestamp+".dat";
                                 IO.log(QuoteManager.getInstance().getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+quotes_timestamp.getCount());
                             } else {
-                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 

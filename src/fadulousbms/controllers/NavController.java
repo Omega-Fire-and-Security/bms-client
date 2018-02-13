@@ -3,6 +3,7 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.model.Screens;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.image.ImageView;
@@ -34,6 +35,14 @@ public class NavController extends ScreenController implements Initializable
     private ImageView btnBack,btnNext,btnHome,img_logo;
     public static int FONT_SIZE_MULTIPLIER = 40;
     public static boolean first_run = true;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources)
+    {
+        if(ScreenManager.getInstance()!=null)
+            ScreenManager.getInstance().setLblScreenName(lblScreen);
+        refreshView();
+    }
 
     @Override
     public void refreshView()
@@ -120,11 +129,13 @@ public class NavController extends ScreenController implements Initializable
     }
 
     @Override
-    public void initialize(URL location, ResourceBundle resources)
+    public void forceSynchronise()
     {
-        if(ScreenManager.getInstance()!=null)
-            ScreenManager.getInstance().setLblScreenName(lblScreen);
-        refreshView();
+        if(ScreenManager.getInstance().getFocused()!=null)
+        {
+            ScreenManager.getInstance().getFocused().forceSynchronise();
+            Platform.runLater(() -> ScreenManager.getInstance().getFocused().refreshView());
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "no screen is focused, not refreshing.");
     }
 
     @FXML

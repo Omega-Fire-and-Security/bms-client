@@ -254,7 +254,7 @@ public class ScreenManager extends StackPane
                                     .getActiveEmployee() != null ? " " + SessionManager.getInstance()
                                     .getActiveEmployee() + "!" : "!"));
                             focused.refreshView();//refresh the screen every time it's loaded
-                            IO.log(getClass().getName(), IO.TAG_INFO, "set screen: " + id);
+                            IO.log(getClass().getName(), IO.TAG_INFO, "focused screen: " + id);
 
                             if(lblScreenName!=null)
                                 lblScreenName.setText(focused_id.split("\\.")[0]);
@@ -295,15 +295,15 @@ public class ScreenManager extends StackPane
         {
             //loading_screen_ctrl.refreshStatusBar("Loading data, please wait...");
             //loading_screen_ctrl.refreshView();
-            MaskerPane maskerPane= new MaskerPane();
-            maskerPane.setVisible(true);
-            getChildren().add(maskerPane);
-            //getChildren().add(loading_screen);
-            /*if(focused!=null)
-            {
-                focused.getLoadingPane().setVisible(true);
-                //System.out.println(focused.getLoadingPane()==null);
-            }*/
+            final MaskerPane maskerPane= new MaskerPane();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run()
+                {
+                    maskerPane.setVisible(true);
+                    getChildren().add(maskerPane);
+                }
+            });
             if(callback!=null)
                 callback.call(maskerPane);
         }

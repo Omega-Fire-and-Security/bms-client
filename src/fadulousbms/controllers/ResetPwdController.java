@@ -12,6 +12,7 @@ import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -39,6 +40,14 @@ public class ResetPwdController extends ScreenController implements Initializabl
     @FXML
     private TextField txtUsr,txtPwd,txtCode;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
     @Override
     public void refreshView()
     {
@@ -53,12 +62,11 @@ public class ResetPwdController extends ScreenController implements Initializabl
         EmployeeManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

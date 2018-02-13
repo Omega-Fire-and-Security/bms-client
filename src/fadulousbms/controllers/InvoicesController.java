@@ -11,28 +11,23 @@ import fadulousbms.auxilary.PDFViewer;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.ResourceBundle;
 
 /**
@@ -47,7 +42,23 @@ public class InvoicesController extends ScreenController implements Initializabl
     @FXML
     private TableColumn     colInvoiceNum,colJobNum,colClient,colTotal,colReceivable,colDateGenerated,colAccount,colStatus,
                             colCreator,colExtra,colAction;
+    @FXML
+    private Tab invoicesTab;
 
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb) 
+    {
+        OperationsController.registerTabController(invoicesTab.getId(),this);
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
     @Override
     public void refreshView()
     {
@@ -284,10 +295,14 @@ public class InvoicesController extends ScreenController implements Initializabl
                                             String path = PDF.createInvoicePdf(invoice);
                                             if(path!=null)
                                             {
-                                                PDFViewer pdfViewer = PDFViewer.getInstance();
+                                                if(Desktop.isDesktopSupported())
+                                                {
+                                                    Desktop.getDesktop().open(new File(path));
+                                                }
+                                                /*PDFViewer pdfViewer = PDFViewer.getInstance();
                                                 pdfViewer.setVisible(true);
-                                                pdfViewer.doOpen(path);
-                                            }else IO.logAndAlert("Error", "Could not get valid path of generated Invoice PDF document.", IO.TAG_ERROR);
+                                                pdfViewer.doOpen(path);*/
+                                            } else IO.logAndAlert("Error", "Could not get valid path of generated Invoice PDF document.", IO.TAG_ERROR);
                                         } catch (IOException ex)
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
@@ -324,19 +339,6 @@ public class InvoicesController extends ScreenController implements Initializabl
                 InvoiceManager.getInstance().setSelected(tblInvoices.getSelectionModel().getSelectedItem()));
     }
 
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) 
-    {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
-    }
-
     @Override
     public void refreshModel()
     {
@@ -345,6 +347,13 @@ public class InvoicesController extends ScreenController implements Initializabl
         QuoteManager.getInstance().initialize();
         JobManager.getInstance().initialize();
         InvoiceManager.getInstance().initialize();
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        InvoiceManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

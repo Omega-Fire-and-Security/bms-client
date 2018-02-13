@@ -16,6 +16,7 @@ import fadulousbms.model.CustomTableViewControls;
 import fadulousbms.model.Employee;
 import fadulousbms.model.FileMetadata;
 import fadulousbms.model.Screens;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -50,6 +51,16 @@ public class SafetyFilesController extends ScreenController implements Initializ
     private TableView tblSafety;
     @FXML
     private TableColumn colIndex,colLabel,colPath,colRequired,colOptions,colType,colSelect,colAction;
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        refreshModel();
+        refreshView();
+    }
 
     @Override
     public void refreshView()
@@ -86,14 +97,11 @@ public class SafetyFilesController extends ScreenController implements Initializ
         SafetyManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
         refreshModel();
-        refreshView();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

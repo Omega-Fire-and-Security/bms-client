@@ -80,7 +80,7 @@ public class OvertimeManager extends BusinessObjectManager
                             }
                             else
                             {
-                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 

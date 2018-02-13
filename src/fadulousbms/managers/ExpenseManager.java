@@ -73,7 +73,7 @@ public class ExpenseManager extends BusinessObjectManager
                                 IO.log(ExpenseManager.getInstance().getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + cnt_timestamp.getCount());
                             } else
                             {
-                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 

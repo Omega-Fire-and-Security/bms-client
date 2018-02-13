@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.text.*?>
@@ -8,7 +9,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.cell.*?>
 
-<StackPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.NewQuoteController">
+<StackPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.NewJobController">
     <children>
         <VBox minWidth="400.0" prefWidth="800.0">
             <children>
@@ -18,8 +19,8 @@
                             <menus>
                                 <Menu mnemonicParsing="false" text="File">
                                     <items>
-                                        <MenuItem mnemonicParsing="false" onAction="#newQuoteItem" text="New quote item" />
-                                        <MenuItem mnemonicParsing="false" onAction="#newSaleConsultant" text="New Sale Consultant" />
+                                        <MenuItem mnemonicParsing="false" onAction="#newJobItem" text="New quote item" />
+                                        <MenuItem mnemonicParsing="false" onAction="#assignEmployee" text="New Sale Consultant" />
                                         <MenuItem mnemonicParsing="false" text="Close" />
                                     </items>
                                 </Menu>
@@ -35,17 +36,17 @@
                                 </Menu>
                             </menus>
                         </MenuBar>
-                        <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#apply" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Create Quote">
+                        <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#createJob" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Create Quote">
                             <HBox.margin>
                                 <Insets left="5.0" right="5.0" />
                             </HBox.margin>
                         </Button>
-                        <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#previousScreen" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
+                        <Button fx:id="btnBack" ellipsisString="x" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#back" styleClass="btnBack" stylesheets="@../styles/home.css" text="Back" />
                     </children>
                 </HBox>
                 <BorderPane>
                     <center>
-                        <Label text="Create New Quote" BorderPane.alignment="CENTER">
+                        <Label text="Create New Job" BorderPane.alignment="CENTER">
                             <font>
                                 <Font size="25.0" />
                             </font>
@@ -71,19 +72,18 @@
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints />
                             </rowConstraints>
                             <children>
                                 <Label text="Company" GridPane.rowIndex="1" />
-                                <Label alignment="CENTER" contentDisplay="CENTER" text="Contact Person" GridPane.rowIndex="2" />
                                 <Label text="Cell Number" GridPane.rowIndex="3" />
                                 <TextField fx:id="txtCell" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                 <TextField fx:id="txtTel" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                 <TextField fx:id="txtFax" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                 <TextField fx:id="txtEmail" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                <Label alignment="CENTER" contentDisplay="CENTER" text="Contact Person" GridPane.rowIndex="2" />
                                 <Label text="Tel Number" GridPane.rowIndex="4" />
                                 <Label text="eMail Address" GridPane.rowIndex="6" />
-                                <Label text="Site name" GridPane.rowIndex="8" />
-                                <TextField fx:id="txtSite" GridPane.columnIndex="1" GridPane.rowIndex="8" />
                                 <Label text="Fax Number" GridPane.rowIndex="5" />
                                 <Label text="Client details" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                                     <font>
@@ -110,12 +110,16 @@
                                         </Button>
                                     </children>
                                 </HBox>
-                                <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (excluding VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                <TextField fx:id="txtTotal" disable="true" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                <Label text="Request/Description" GridPane.rowIndex="9" />
-                                <TextArea fx:id="txtRequest" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="9" GridPane.vgrow="ALWAYS" />
-                                <Label text="VAT [%]" GridPane.rowIndex="7" />
-                                <TextField fx:id="txtVat" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                <Label fx:id="lblVat" text="VAT [%]" GridPane.rowIndex="7" />
+                                <ToggleButton fx:id="toggleVatExempt" minWidth="150.0" mnemonicParsing="false" text="14%" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="7" />
+                                <Label text="Account" GridPane.rowIndex="8" />
+                                <ComboBox fx:id="cbxAccount" minWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                <Label text="Site name" GridPane.rowIndex="9" />
+                                <TextField fx:id="txtSite" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                                <Label text="Request/Description" GridPane.rowIndex="10" />
+                                <TextArea fx:id="txtRequest" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.vgrow="ALWAYS" />
+                                <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (excluding VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="11" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                <TextField fx:id="txtTotal" disable="true" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="11" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -140,7 +144,7 @@
                                     <children>
                                         <Label text="Quote ID" GridPane.rowIndex="1" />
                                         <Label text="Date Generated" GridPane.rowIndex="2" />
-                                        <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" text="Sale Consultants" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                                        <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" text="Job Technicians" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                                             <font>
                                                 <Font name="System Bold" size="17.0" />
                                             </font>
@@ -151,12 +155,12 @@
                                             </GridPane.margin>
                                         </TextField>
                                         <TextField fx:id="txtDateGenerated" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                        <Label text="Quote details" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                                        <Label text="Job details" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                                             <font>
                                                 <Font name="System Bold" size="17.0" />
                                             </font>
                                         </Label>
-                                        <TableView fx:id="tblSaleReps" editable="true" minHeight="100.0" tableMenuButtonVisible="true" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS">
+                                        <TableView fx:id="tblEmployees" editable="true" minHeight="100.0" tableMenuButtonVisible="true" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS">
                                             <columns>
                                                 <TableColumn fx:id="colFirstname" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="First Name">
                                                     <cellValueFactory>
@@ -196,7 +200,7 @@
                         </StackPane>
                     </items>
                 </SplitPane>
-                <TableView fx:id="tblQuoteItems" editable="true" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true">
+                <TableView fx:id="tblJobItems" editable="true" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true">
                     <columns>
                         <TableColumn fx:id="colItemNumber" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Item #">
                             <cellValueFactory>

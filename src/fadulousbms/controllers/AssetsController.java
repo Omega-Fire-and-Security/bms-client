@@ -44,6 +44,16 @@ public class AssetsController extends ScreenController implements Initializable
                         colQuantity,colDateAcquired,colDateExhausted,colOther,colAction;
 
     @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
+
+    @Override
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading assets view..");
@@ -172,13 +182,10 @@ public class AssetsController extends ScreenController implements Initializable
      */
 
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+        AssetManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

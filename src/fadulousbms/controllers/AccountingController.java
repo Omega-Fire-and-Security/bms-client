@@ -37,6 +37,14 @@ import java.util.ResourceBundle;
  */
 public class AccountingController extends ScreenController implements Initializable
 {
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
     @Override
     public void refreshView()
     {
@@ -47,19 +55,14 @@ public class AccountingController extends ScreenController implements Initializa
     {
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
-    public static RadialMenuItem[] getDefaultContextMenu()
-    {
-        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
-        return ScreenController.getDefaultContextMenu();
-    }
+
 
     @FXML
     public void purchasesClick()
@@ -448,5 +451,10 @@ public class AccountingController extends ScreenController implements Initializa
             }).start();
             return null;
         });
+    }
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 }

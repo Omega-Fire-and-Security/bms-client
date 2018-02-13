@@ -41,6 +41,19 @@ public class RevenueController extends ScreenController implements Initializable
     private TableColumn     colId,colTitle,colDescription,colValue,colDateLogged,
                             colCreator,colAccount,colOther,colAction;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
+
     @Override
     public void refreshView()
     {
@@ -145,17 +158,11 @@ public class RevenueController extends ScreenController implements Initializable
         RevenueManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

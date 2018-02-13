@@ -8,6 +8,7 @@ import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Client;
 import fadulousbms.model.Screens;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
@@ -43,6 +44,14 @@ public class NewClientController extends ScreenController implements Initializab
     @FXML
     private TextArea txtPhysical,txtPostal;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
     @Override
     public void refreshView()
     {
@@ -58,12 +67,11 @@ public class NewClientController extends ScreenController implements Initializab
     {
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
+        ClientManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

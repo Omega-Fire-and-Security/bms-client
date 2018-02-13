@@ -7,11 +7,15 @@ import fadulousbms.controllers.JobsController;
 import fadulousbms.model.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -97,7 +101,7 @@ public class JobManager extends BusinessObjectManager
                             }
                             else
                             {
-                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 
@@ -204,23 +208,28 @@ public class JobManager extends BusinessObjectManager
                     new_job_id = new_job_id.replaceAll("\n","");//strip new line chars
                     new_job_id = new_job_id.replaceAll(" ","");//strip whitespace chars
 
-                    IO.log(getClass().getName(), IO.TAG_INFO, "successfully created a new job: " + new_job_id);
-
-                    JobManager.getInstance().synchroniseDataset();
-
-                    if(callback!=null)
-                        callback.call(new_job_id);
-
                     if(connection!=null)
                         connection.disconnect();
+
+                    IO.logAndAlert("Success", "Successfully created a new job: " + new_job_id, IO.TAG_INFO);
+
+                    JobManager.getInstance().synchroniseDataset();
+                    //execute callback w/ args
+                    if(callback!=null)
+                        callback.call(new_job_id);
                     return new_job_id;
                 } else
                 {
                     //Get error message
-                    String msg = IO.readStream(connection.getErrorStream());
-                    IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
                     if(connection!=null)
+                    {
                         connection.disconnect();
+                        String msg = IO.readStream(connection.getErrorStream());
+                        IO.logAndAlert("Error " + String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
+                    }
+                    //execute callback w/o args
+                    if(callback!=null)
+                        callback.call(null);
                     return null;
                 }
             } else IO.logAndAlert("Job Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
@@ -543,9 +552,13 @@ public class JobManager extends BusinessObjectManager
 
                 if(path!=null)
                 {
-                    PDFViewer pdfViewer = PDFViewer.getInstance();
+                    if(Desktop.isDesktopSupported())
+                    {
+                        Desktop.getDesktop().open(new File(path));
+                    }
+                    /*PDFViewer pdfViewer = PDFViewer.getInstance();
                     pdfViewer.setVisible(true);
-                    pdfViewer.doOpen(path);
+                    pdfViewer.doOpen(path);*/
                 } else IO.log("JobManager", IO.TAG_ERROR, "could not get a valid path for generated Job[#"+job.getObject_number()+"] card PDF.");
             } catch (IOException e)
             {

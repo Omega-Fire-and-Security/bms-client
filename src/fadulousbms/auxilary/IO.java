@@ -111,7 +111,7 @@ public class IO<T extends BusinessObject>
                 if (src.contains("."))
                     current_screen.refreshStatusBar(src.substring(src.lastIndexOf(".") + 1) + "> " + tag + ":: " + msg.replaceAll("\n",""));
                 else current_screen.refreshStatusBar(src + "> " + tag + ":: " + msg.replaceAll("\n",""));
-            }else System.err.println(getInstance().getClass().getName() + "> error: focused screen is null.");
+            }else System.out.println(getInstance().getClass().getName() + "> warning: focused screen is null.");
         }
         switch (tag.toLowerCase())
         {
@@ -175,7 +175,6 @@ public class IO<T extends BusinessObject>
         }
 
         alert.getButtonTypes().setAll(buttons);
-
         Optional<ButtonType> result = alert.showAndWait();
         if (!result.isPresent())
         {

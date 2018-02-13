@@ -4,6 +4,7 @@ import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.Employee;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.Initializable;
 import javafx.scene.image.Image;
@@ -20,20 +21,6 @@ import java.util.ResourceBundle;
  */
 public class FacilitiesController extends ScreenController implements Initializable
 {
-    @Override
-    public void refreshView()
-    {
-        Employee e = SessionManager.getInstance().getActiveEmployee();
-        if(e!=null)
-            this.getUserNameLabel().setText(e.getFirstname() + " " + e.getLastname());
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
-    }
-
-    @Override
-    public void refreshModel()
-    {
-    }
-
     /**
      * Initializes the controller class.
      */
@@ -50,6 +37,27 @@ public class FacilitiesController extends ScreenController implements Initializa
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
+    }
+
+    @Override
+    public void refreshView()
+    {
+        Employee e = SessionManager.getInstance().getActiveEmployee();
+        if(e!=null)
+            this.getUserNameLabel().setText(e.getFirstname() + " " + e.getLastname());
+        else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
+    }
+
+    @Override
+    public void refreshModel()
+    {
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

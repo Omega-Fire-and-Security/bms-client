@@ -1,18 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
-<Tab fx:id="clientsTab" text="Client Operations" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.ClientsTabController">
+<Tab fx:id="clientsTab" text="Clients List" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.ClientsController">
     <content>
-        <TabPane fx:id="clientTabs" id="BMSTabs" stylesheets="@../styles/tabs.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" xmlns:fx="http://javafx.com/fxml">
-            <tabs>
-                <fx:include source="ClientsListTab.fxml" />
-                <fx:include source="JobsTab.fxml"/>
-                <fx:include source="QuotesTab.fxml"/>
-                <fx:include source="InvoicesTab.fxml"/>
-                <fx:include source="RequisitionsTab.fxml"/>
-            </tabs>
-        </TabPane>
+        <TableView fx:id="tblClients" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colClientId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Client ID" visible="false">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="_id" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientName" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Client Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="client_name" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientPhysicalAddress" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Physical Address">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="physical_address" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientPostalAddress" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Postal Address">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="postal_address" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientTel" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Tel" visible="true">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="tel" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientFax" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Fax">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="fax" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientEmail" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Email">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="contact_email" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientActive" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Active">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="active" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientDatePartnered" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Partnered">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="date_partnered" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientWebsite" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Website">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="website" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientRegistration" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Registration #">
+                   <cellValueFactory>
+                      <PropertyValueFactory property="website" />
+                   </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientVat" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="VAT #">
+                   <cellValueFactory>
+                      <PropertyValueFactory property="website" />
+                   </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientAccount" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Account Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="account_name" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colClientOther" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Other" visible="false">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="other" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Action" />
+            </columns>
+        </TableView>
     </content>
 </Tab>

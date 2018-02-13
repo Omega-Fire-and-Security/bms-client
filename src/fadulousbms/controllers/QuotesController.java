@@ -5,18 +5,15 @@
  */
 package fadulousbms.controllers;
 
-import com.mailjet.client.errors.MailjetException;
-import com.mailjet.client.errors.MailjetSocketTimeoutException;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
@@ -24,9 +21,9 @@ import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
+import java.awt.*;
 import java.io.*;
 import java.net.URL;
-import java.rmi.Remote;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
@@ -43,6 +40,8 @@ public class QuotesController extends OperationsController implements Initializa
     private TableColumn     colId, colClient, colSitename, colRequest, colContactPerson, colTotal,
                             colDateGenerated, colStatus, colCreator, colRevision,
                             colExtra,colAction;
+    @FXML
+    private Tab quotesTab;
     @FXML
     private TableColumn<BusinessObject, String> colVat;
 
@@ -234,13 +233,17 @@ public class QuotesController extends OperationsController implements Initializa
                                             String path = PDF.createQuotePdf(quote);
                                             if(path!=null)
                                             {
-                                                PDFViewer pdfViewer = PDFViewer.getInstance();
+                                                if(Desktop.isDesktopSupported())
+                                                {
+                                                    Desktop.getDesktop().open(new File(path));
+                                                }
+                                                /*PDFViewer pdfViewer = PDFViewer.getInstance();
                                                 pdfViewer.setVisible(true);
-                                                pdfViewer.doOpen(path);
+                                                pdfViewer.doOpen(path);*/
                                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid quote pdf path returned.");
                                         } catch (IOException ex)
                                         {
-                                            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
+                                            IO.logAndAlert(getClass().getName(), ex.getMessage(), IO.TAG_ERROR);
                                         }
                                     });
 
@@ -315,12 +318,20 @@ public class QuotesController extends OperationsController implements Initializa
         QuoteManager.getInstance().initialize();
     }
 
+    @Override
+    public void forceSynchronise()
+    {
+        QuoteManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
+    }
+
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) 
     {
+        OperationsController.registerTabController(quotesTab.getId(),this);
         new Thread(() ->
         {
             refreshModel();

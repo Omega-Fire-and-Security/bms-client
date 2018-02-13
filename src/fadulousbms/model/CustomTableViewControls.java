@@ -146,7 +146,7 @@ public class CustomTableViewControls
                     RemoteComms.updateBusinessObjectOnServer(bo, property);
                 }
             });
-        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
+        } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
 
     public static void makeEditableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, String api_call)
@@ -165,7 +165,7 @@ public class CustomTableViewControls
                     RemoteComms.updateBusinessObjectOnServer(bo, property);
                 }
             });
-        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
+        } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
 
     public static void createEditableTableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, String api_call)
@@ -181,7 +181,7 @@ public class CustomTableViewControls
                 if(bo!=null)
                     bo.parse(property, event.getNewValue());
             });
-        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
+        } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
 
     public static void makeCheckboxedTableColumn(TableColumn<BusinessObject, GridPane> col, Callback<TableColumn<BusinessObject, GridPane>, TableCell<BusinessObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
@@ -208,7 +208,7 @@ public class CustomTableViewControls
                         bo.setMarked(newValue));
                 return new SimpleObjectProperty<>(grid);
             });
-        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
+        } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
 
     public static void makeToggleButtonTypeTableColumn(TableColumn<BusinessObject, GridPane> col, Callback<TableColumn<BusinessObject, GridPane>, TableCell<BusinessObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
@@ -294,7 +294,7 @@ public class CustomTableViewControls
             });
         } else
         {
-            IO.log(TAG, IO.TAG_ERROR, "Null table column!");
+            IO.log(TAG, IO.TAG_WARN, "null table column!");
         }
     }
 
@@ -365,7 +365,7 @@ public class CustomTableViewControls
             });
         } else
         {
-            IO.log(TAG, IO.TAG_ERROR, "Null table column!");
+            IO.log(TAG, IO.TAG_WARN, "null table column!");
         }
     }
 
@@ -423,7 +423,7 @@ public class CustomTableViewControls
             });
         } else
         {
-            IO.log(TAG, IO.TAG_ERROR, "Null table column!");
+            IO.log(TAG, IO.TAG_WARN, "null table column!");
         }
     }
 
@@ -481,7 +481,7 @@ public class CustomTableViewControls
                 });
                 return new SimpleObjectProperty<>(grid);
             });
-        } else IO.log(TAG, IO.TAG_ERROR, "Null table column!");
+        } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
 
     public static void makeActionTableColumn(TableColumn<BusinessObject, HBox> col, int min_width, String property, String api_call)

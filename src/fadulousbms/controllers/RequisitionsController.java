@@ -7,17 +7,13 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.PDF;
-import fadulousbms.auxilary.PDFViewer;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
@@ -29,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -44,6 +39,8 @@ public class RequisitionsController extends OperationsController implements Init
     private TableView<Requisition>    tblRequisitions;
     @FXML
     private TableColumn     colId, colClient, colDescription, colType, colDateLogged, colResponsiblePerson, colStatus, colCreator, colAction;
+    @FXML
+    private Tab requisitionsTab;
 
     @Override
     public void refreshView()
@@ -316,12 +313,20 @@ public class RequisitionsController extends OperationsController implements Init
         RequisitionManager.getInstance().initialize();
     }
 
+    @Override
+    public void forceSynchronise()
+    {
+        RequisitionManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
+    }
+
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) 
     {
+        OperationsController.registerTabController(requisitionsTab.getId(),this);
         new Thread(() ->
         {
             refreshModel();

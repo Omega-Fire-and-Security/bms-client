@@ -8,6 +8,7 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
+import fadulousbms.managers.JobManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
@@ -19,6 +20,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -44,6 +46,14 @@ public class SettingsController extends ScreenController implements Initializabl
     @FXML
     private ImageView img_logo;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
     @Override
     public void refreshView()
     {
@@ -68,12 +78,11 @@ public class SettingsController extends ScreenController implements Initializabl
     {
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

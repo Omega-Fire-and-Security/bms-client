@@ -9,10 +9,12 @@ import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
+import fadulousbms.managers.RevenueManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Revenue;
 import fadulousbms.model.Screens;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.DatePicker;
@@ -43,6 +45,14 @@ public class NewRevenueController extends ScreenController implements Initializa
     @FXML
     private DatePicker dateLogged;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
     @Override
     public void refreshView()
     {
@@ -53,12 +63,11 @@ public class NewRevenueController extends ScreenController implements Initializa
     {
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
+        RevenueManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

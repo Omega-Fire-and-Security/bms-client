@@ -10,6 +10,7 @@ import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -27,7 +28,9 @@ public class OperationsController extends ScreenController implements Initializa
 {
     @FXML
     private TabPane BMSTabs;
+    private static HashMap<String,ScreenController> tabControllers = new HashMap<>();
     private static Tab selected_tab;
+    private static ScreenController selected_controller;
     public static final String TAG="OperationsController";
 
     /**
@@ -46,7 +49,13 @@ public class OperationsController extends ScreenController implements Initializa
         {
             //TODO: choose first sub tab of selected tab
             OperationsController.setSelectedTab(newValue);
-            IO.log(getClass().getName(), IO.TAG_INFO, "selected tab: " + newValue.getText());
+            if(newValue!=null)
+            {
+                selected_tab = newValue;
+                selected_controller = tabControllers.get(newValue.getId());
+                if(selected_controller!=null)
+                    IO.log(getClass().getName(), IO.TAG_INFO, "selected tab: " + newValue.getId());
+            }
             /*if(!newValue.getId().toLowerCase().equals("clientsTab") && !newValue.getId().toLowerCase().equals("suppliersTab"))
             {
                 OperationsController.setSelectedTab(newValue);
@@ -58,19 +67,62 @@ public class OperationsController extends ScreenController implements Initializa
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_WARN, "reloading operations view.");
         /*Employee e = SessionManager.getInstance().getActiveEmployee();
         if(e!=null)
             this.getUserNameLabel().setText(e.toString());
         else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");*/
         //System.out.println("Focused: "+ScreenManager.getInstance().getFocused_id());
+        if(selected_controller!=null)
+        {
+            Platform.runLater(() ->
+            {
+                selected_controller.refreshView();
+                selected_controller.refreshStatusBar("successfully refreshed: " + selected_tab.getText());
+            });
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "operations has no selected screen.");
     }
 
     @Override
     public void refreshModel()
     {
-        //ClientManager.getInstance().initialize();
-        //clientsController.refreshModel();
-        //clientsController.refreshView();
+        IO.log(getClass().getName(), IO.TAG_WARN, "reloading operations model.");
+        /*ClientManager.getInstance().forceSynchronise();
+        SupplierManager.getInstance().forceSynchronise();
+        ResourceManager.getInstance().forceSynchronise();
+        JobManager.getInstance().forceSynchronise();
+        PurchaseOrderManager.getInstance().forceSynchronise();
+        QuoteManager.getInstance().forceSynchronise();
+        InvoiceManager.getInstance().forceSynchronise();
+        RequisitionManager.getInstance().forceSynchronise();*/
+        if(selected_controller!=null)
+            selected_controller.refreshModel();
+        else IO.log(getClass().getName(), IO.TAG_WARN, "operations has no selected screen.");
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        if(selected_controller!=null)
+            selected_controller.forceSynchronise();
+        else IO.log(getClass().getName(), IO.TAG_WARN, "operations has no selected screen.");
+        Platform.runLater(() -> refreshView());
+    }
+
+    public static void setSelectedController(ScreenController selectedController)
+    {
+        if(selectedController!=null)
+        {
+            selected_controller = selectedController;
+            IO.log(OperationsController.class.getName(), IO.TAG_INFO, "selected controller: " + selectedController.getClass().getName());
+        }
+    }
+
+    public static void registerTabController(String controller_id, ScreenController screenController)
+    {
+        if(screenController!=null)
+            tabControllers.putIfAbsent(controller_id, screenController);
+        else IO.log(OperationsController.class.getName(),  IO.TAG_WARN, "tab controller: " + screenController + " is null.");
     }
 
     public RadialMenuItem[] getContextMenu()
@@ -114,7 +166,12 @@ public class OperationsController extends ScreenController implements Initializa
 
     public static void setSelectedTab(Tab tab)
     {
-        selected_tab=tab;
+        if(tab!=null)
+        {
+            selected_tab = tab;
+            selected_controller = tabControllers.get(tab.getId());
+            IO.log(OperationsController.class.getName(), IO.TAG_INFO, "selected tab: " + tab.getText());
+        }
     }
 
     @FXML
@@ -252,7 +309,29 @@ public class OperationsController extends ScreenController implements Initializa
     @FXML
     public void newJob()
     {
-        
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(ScreenManager.getInstance().loadScreen(Screens.NEW_JOB.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.NEW_JOB.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            ScreenManager.getInstance().setScreen(Screens.NEW_JOB.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load job creation screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            return null;
+        });
     }
 
     @FXML

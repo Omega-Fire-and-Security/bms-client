@@ -16,6 +16,7 @@ import java.net.ConnectException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -49,6 +50,15 @@ public class LoginController extends ScreenController implements Initializable
     private Button btnShow;
     private String pwd="";
     private boolean pwd_masked = true;
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        refreshView();
+    }
 
     @Override
     public void refreshView()
@@ -93,6 +103,20 @@ public class LoginController extends ScreenController implements Initializable
         });
     }
 
+
+
+    @Override
+    public void refreshModel()
+    {
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
+    }
+
     @FXML
     public void togglePasswordMask()
     {
@@ -113,26 +137,6 @@ public class LoginController extends ScreenController implements Initializable
                 btnShow.setText("show");
             }
         } else IO.log(getClass().getName(), IO.TAG_ERROR, "empty password");
-    }
-
-    @Override
-    public void refreshModel()
-    {
-    }
-
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) 
-    {
-        refreshView();
-    }
-
-    public static RadialMenuItem[] getDefaultContextMenu()
-    {
-        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
-        return ScreenController.getDefaultContextMenu();
     }
 
     @FXML
@@ -206,5 +210,11 @@ public class LoginController extends ScreenController implements Initializable
             }).start();
             return null;
         });
+    }
+
+    public static RadialMenuItem[] getDefaultContextMenu()
+    {
+        //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
+        return ScreenController.getDefaultContextMenu();
     }
 }

@@ -78,7 +78,7 @@ public class RevenueManager extends BusinessObjectManager
                                 filename = "revenues_"+timestamp+".dat";
                                 IO.log(RevenueManager.getInstance().getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + cnt_timestamp.getCount());
                             } else {
-                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 

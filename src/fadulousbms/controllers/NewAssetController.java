@@ -38,6 +38,20 @@ public class NewAssetController extends ScreenController implements Initializabl
     @FXML
     private ComboBox<AssetType> cbxAssetType;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            if(PurchaseOrderManager.getInstance().getDataset()!=null)
+                Platform.runLater(() -> refreshView());
+        }).start();
+    }
+
     @Override
     public void refreshView()
     {
@@ -56,18 +70,11 @@ public class NewAssetController extends ScreenController implements Initializabl
         AssetManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
-        new Thread(() ->
-        {
-            refreshModel();
-            if(PurchaseOrderManager.getInstance().getDataset()!=null)
-                Platform.runLater(() -> refreshView());
-        }).start();
+        AssetManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

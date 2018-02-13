@@ -83,7 +83,7 @@ public class InvoiceManager extends BusinessObjectManager
                                 filename = "invoices_"+timestamp+".dat";
                                 IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: "+timestamp);
                             }else {
-                                IO.log(this.getClass().getName(), IO.TAG_ERROR, "could not get valid timestamp");
+                                IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 

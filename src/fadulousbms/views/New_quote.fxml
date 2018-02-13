@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.text.*?>
@@ -7,7 +8,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.cell.*?>
-
 
 <StackPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.NewQuoteController">
    <children>
@@ -20,7 +20,6 @@
                       <Menu mnemonicParsing="false" text="File">
                         <items>
                           <MenuItem mnemonicParsing="false" onAction="#newQuoteItem" text="New quote item" />
-                              <MenuItem mnemonicParsing="false" onAction="#newSaleConsultant" text="New Sale Consultant" />
                               <MenuItem mnemonicParsing="false" text="Close" />
                         </items>
                       </Menu>
@@ -36,7 +35,7 @@
                       </Menu>
                     </menus>
                   </MenuBar>
-                  <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#apply" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Create Quote">
+                  <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" ellipsisString="x" layoutX="10.0" layoutY="10.0" minHeight="35.0" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#createQuote" styleClass="btnAdd" stylesheets="@../styles/home.css" text="Create Quote">
                      <HBox.margin>
                         <Insets left="5.0" right="5.0" />
                      </HBox.margin>
@@ -75,7 +74,7 @@
                     </rowConstraints>
                      <children>
                         <Label text="Company" GridPane.rowIndex="1" />
-                        <Label alignment="CENTER" contentDisplay="CENTER" text="Contact Person" GridPane.rowIndex="2" />
+                        <Label alignment="CENTER" contentDisplay="CENTER" text="Client Contact Person" GridPane.rowIndex="2" />
                         <Label text="Cell Number" GridPane.rowIndex="3" />
                         <TextField fx:id="txtCell" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                         <TextField fx:id="txtTel" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />

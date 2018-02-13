@@ -6,7 +6,6 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -41,6 +40,22 @@ public class ClientsController extends ScreenController implements Initializable
     private TableColumn     colClientId,colClientName,colClientPhysicalAddress,
                             colClientPostalAddress,colClientTel,colClientFax,colClientEmail,colClientRegistration,
                             colClientVat,colClientAccount,colClientDatePartnered,colClientWebsite,colClientActive,colClientOther,colAction;
+    @FXML
+    private Tab clientsTab;
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        OperationsController.registerTabController(clientsTab.getId(),this);
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
 
     @Override
     public void refreshView()
@@ -67,10 +82,6 @@ public class ClientsController extends ScreenController implements Initializable
         CustomTableViewControls.makeEditableTableColumn(colClientVat, TextFieldTableCell.forTableColumn(), 100, "vat_number", "/clients");
         CustomTableViewControls.makeEditableTableColumn(colClientAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/clients");
         CustomTableViewControls.makeEditableTableColumn(colClientOther, TextFieldTableCell.forTableColumn(), 50, "other", "/clients");
-
-        ObservableList<Client> lst_clients = FXCollections.observableArrayList();
-        lst_clients.addAll((Collection<Client>)ClientManager.getInstance().getDataset().values());
-        tblClients.setItems(lst_clients);
 
         final ScreenManager screenManager = ScreenManager.getInstance();
         Callback<TableColumn<Client, String>, TableCell<Client, String>> cellFactory
@@ -142,6 +153,10 @@ public class ClientsController extends ScreenController implements Initializable
         colAction.setCellValueFactory(new PropertyValueFactory<>(""));
         colAction.setCellFactory(cellFactory);
 
+        ObservableList<Client> lst_clients = FXCollections.observableArrayList();
+        lst_clients.addAll((Collection<Client>)ClientManager.getInstance().getDataset().values());
+        tblClients.setItems(lst_clients);
+
         tblClients.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 ClientManager.getInstance().setSelected(tblClients.getSelectionModel().getSelectedItem()));
     }
@@ -153,18 +168,14 @@ public class ClientsController extends ScreenController implements Initializable
         ClientManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+        ClientManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
+
+
 
     @FXML
     public void createClientClick()

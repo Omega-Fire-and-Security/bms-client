@@ -6,7 +6,6 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.model.*;
@@ -40,6 +39,8 @@ public class ResourcesController extends ScreenController implements Initializab
     @FXML
     private TableColumn colId,colName,colSerial,colType,colDescription,colValue,colAccount,colUnit,
                         colQuantity,colDateAcquired,colDateExhausted,colOther,colAction;
+    @FXML
+    private Tab stockTab;
 
     @Override
     public void refreshView()
@@ -157,12 +158,20 @@ public class ResourcesController extends ScreenController implements Initializab
         ResourceManager.getInstance().initialize();
     }
 
+    @Override
+    public void forceSynchronise()
+    {
+        ResourceManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
+    }
+
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) 
     {
+        OperationsController.registerTabController(stockTab.getId(),this);
         new Thread(() ->
         {
             refreshModel();

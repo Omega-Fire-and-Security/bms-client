@@ -41,6 +41,19 @@ public class ExpensesController extends ScreenController implements Initializabl
     private TableColumn     colId,colTitle,colDescription,colValue,colSupplier,
                             colDateLogged,colCreator,colAccount,colOther,colAction;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
+
     @Override
     public void refreshView()
     {
@@ -147,7 +160,8 @@ public class ExpensesController extends ScreenController implements Initializabl
 
         tblExpenses.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 ExpenseManager.getInstance().setSelected(tblExpenses.getSelectionModel().getSelectedItem()));
-        tblExpenses.setItems(FXCollections.observableArrayList(ExpenseManager.getInstance().getDataset().values()));
+        if(ExpenseManager.getInstance().getDataset()!=null)
+            tblExpenses.setItems(FXCollections.observableArrayList(ExpenseManager.getInstance().getDataset().values()));
     }
 
     @Override
@@ -157,17 +171,11 @@ public class ExpensesController extends ScreenController implements Initializabl
         SupplierManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+        ExpenseManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

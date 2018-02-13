@@ -10,6 +10,7 @@ import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.Employee;
 import fadulousbms.model.Screens;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.Initializable;
 import javafx.scene.image.Image;
@@ -29,6 +30,15 @@ import java.util.ResourceBundle;
  */
 public class SafetyController extends ScreenController implements Initializable
 {
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
     @Override
     public void refreshView()
     {
@@ -39,12 +49,11 @@ public class SafetyController extends ScreenController implements Initializable
     {
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

@@ -41,7 +41,7 @@ import java.util.ResourceBundle;
  *
  * @author ghost
  */
-public class PurchaseOrderController extends OperationsController implements Initializable
+public class PurchaseOrderController extends ScreenController implements Initializable
 {
     @FXML
     protected TableView<PurchaseOrderItem> tblPurchaseOrderItems;
@@ -64,6 +64,19 @@ public class PurchaseOrderController extends OperationsController implements Ini
     protected ComboBox<Supplier> cbxSuppliers;
     @FXML
     protected ComboBox<Employee> cbxContactPerson;
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
 
     @Override
     public void refreshView()
@@ -205,6 +218,25 @@ public class PurchaseOrderController extends OperationsController implements Ini
         colAction.setCellFactory(cellFactory);
     }
 
+    @Override
+    public void refreshModel()
+    {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase order data model..");
+
+        EmployeeManager.getInstance().initialize();
+        ResourceManager.getInstance().initialize();
+        SupplierManager.getInstance().initialize();
+        AssetManager.getInstance().initialize();
+        PurchaseOrderManager.getInstance().initialize();
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        PurchaseOrderManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
+    }
+
     protected void refreshTotal()
     {
         double vat = QuoteManager.VAT;
@@ -223,31 +255,6 @@ public class PurchaseOrderController extends OperationsController implements Ini
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                     new DecimalFormat("##.##").format((total + (total*(vat/100)))));
         }
-    }
-
-    @Override
-    public void refreshModel()
-    {
-        IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase order data model..");
-
-        EmployeeManager.getInstance().initialize();
-        ResourceManager.getInstance().initialize();
-        SupplierManager.getInstance().initialize();
-        PurchaseOrderManager.getInstance().initialize();
-        AssetManager.getInstance().loadDataFromServer();
-    }
-
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb)
-    {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

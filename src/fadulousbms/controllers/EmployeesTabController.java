@@ -41,6 +41,19 @@ public class EmployeesTabController extends ScreenController implements Initiali
     @FXML
     private TableView tblEmployees;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
+
     @Override
     public void refreshView()
     {
@@ -226,22 +239,18 @@ public class EmployeesTabController extends ScreenController implements Initiali
         EmployeeManager.getInstance().initialize();
     }
 
+    @Override
+    public void forceSynchronise()
+    {
+        EmployeeManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
+    }
+
     public static RadialMenuItem[] getDefaultContextMenu()
     {
         //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);
         return ScreenController.getDefaultContextMenu();
     }
 
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb)
-    {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
-    }
+
 }

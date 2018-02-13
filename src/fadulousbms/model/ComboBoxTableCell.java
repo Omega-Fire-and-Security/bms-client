@@ -28,12 +28,12 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
 
         if(business_objects==null)
         {
-            IO.log(TAG, IO.TAG_ERROR, "business objects list for the combo box cannot be null!");
+            IO.log(TAG, IO.TAG_WARN, "business objects list for the combo box cannot be null!");
             return;
         }
         if(business_objects.size()<=0)
         {
-            IO.log(TAG, IO.TAG_ERROR, "business objects list for the combo box cannot be empty!");
+            IO.log(TAG, IO.TAG_WARN, "business objects list for the combo box cannot be empty!");
             return;
         }
 
@@ -72,10 +72,10 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
                         IO.log(TAG, IO.TAG_INFO, "updated business object: " + "[" + row_item.getClass().getName() + "]'s "
                                 + update_property + " property to [" + selected_id + "].");
                     } else
-                        IO.log(TAG, IO.TAG_ERROR, "row business object is not set.");
-                } else IO.log(TAG, IO.TAG_ERROR, String.format("unknown row object type: " + getTableRow().getItem()));
-            } else IO.log(TAG, IO.TAG_ERROR, "selected row is not set.");
-        } else IO.log(TAG, IO.TAG_ERROR, "selected combo box object id is not set.");
+                        IO.log(TAG, IO.TAG_WARN, "row business object is not set.");
+                } else IO.log(TAG, IO.TAG_WARN, String.format("unknown row object type: " + getTableRow().getItem()));
+            } else IO.log(TAG, IO.TAG_WARN, "selected row is not set.");
+        } else IO.log(TAG, IO.TAG_WARN, "selected combo box object id is not set.");
     }
 
     @Override
@@ -98,8 +98,8 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
                         comboBox.setValue(selected_cbx_item);
                     setGraphic(comboBox);
                 }
-            } else IO.log(TAG, IO.TAG_ERROR, String.format("unknown row object type: " + getTableRow().getItem()));
-        } else IO.log(TAG, IO.TAG_ERROR, "selected row is null.");
+            } else IO.log(TAG, IO.TAG_WARN, String.format("unknown row object type: " + getTableRow().getItem()));
+        } else IO.log(TAG, IO.TAG_WARN, "selected row is null.");
     }
 
     @Override

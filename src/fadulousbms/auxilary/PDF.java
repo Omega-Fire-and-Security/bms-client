@@ -553,14 +553,18 @@ public class PDF
         line_pos-=LINE_HEIGHT/2;
 
         int temp_pos = line_pos;
+        int header_h = 90;
+        //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
+        PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
         //right text
         //addTextToPageStream(contents,"PURCHASE ORDER", PDType1Font.COURIER_BOLD_OBLIQUE, 17, (int)(w/2)+20, line_pos);
         //line_pos-=LINE_HEIGHT;//next line
         contents.endText();
         //System.out.println(">>>>>>"+new File("images/logo.png").getPath());
         //System.out.println(">>>>>>"+(new File(logo_path).exists()));
-        PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-        contents.drawImage(logo, (int)(w/2)+ 20, line_pos-logo_h, 150, logo_h);
+        //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
+        contents.drawImage(header, 0, 760, w, header_h);
+        //contents.drawImage(logo, (int)(w/2)+ 20, line_pos-logo_h, 150, logo_h);
         contents.beginText();
 
         //line_pos=temp_pos;//revert to original line
@@ -1481,8 +1485,16 @@ public class PDF
 
             //right content
             contents.endText();
-            PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-            contents.drawImage(logo, (int) (w / 2) + 20, line_pos - logo_h - 10, 150, logo_h);
+            int header_h = 90;
+            PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
+            //right text
+            //addTextToPageStream(contents,"PURCHASE ORDER", PDType1Font.COURIER_BOLD_OBLIQUE, 17, (int)(w/2)+20, line_pos);
+            //line_pos-=LINE_HEIGHT;//next line
+            //System.out.println(">>>>>>"+new File("images/logo.png").getPath());
+            //System.out.println(">>>>>>"+(new File(logo_path).exists()));
+            //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
+            contents.drawImage(header, 0, 760, w, header_h);
+            //contents.drawImage(logo, (int) (w / 2) + 20, line_pos - logo_h - 10, 150, logo_h);
 
             line_pos -= LINE_HEIGHT * 5;
             temp_pos = line_pos;
@@ -1919,6 +1931,205 @@ public class PDF
         return path;
     }
 
+    public static String createJobCardPdf(Job job) throws IOException
+    {
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert(TAG, "Active session object is null.", IO.TAG_ERROR);
+            return null;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert(TAG, "Active session has expired.", IO.TAG_ERROR);
+            return null;
+        }
+        if(job==null)
+        {
+            IO.log(TAG, IO.TAG_ERROR, "Job object passed is null.");
+            return null;
+        }
+        if(job.getQuote()==null)
+        {
+            IO.log(TAG, IO.TAG_ERROR, "Job's Quote object is null.");
+            return null;
+        }
+        if(job.getQuote().getClient()==null)
+        {
+            IO.log(TAG, IO.TAG_ERROR, "Job Quote's Client object is null.");
+            return null;
+        }
+        if(job.getAssigned_employees()==null)
+        {
+            IO.logAndAlert("Error", "Job[#"+job.getObject_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
+            return null;
+        }
+        if(job.getAssigned_employees().length<=0)
+        {
+            IO.logAndAlert("Error", "Job[#"+job.getObject_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
+            return null;
+        }
+
+        //ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        //headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+        //Client client;
+        //String client_json = null;//RemoteComms.sendGetRequest("/api/client/" + job.getClient_id(), headers);
+        //client = new GsonBuilder().create().fromJson(client_json, Client.class);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+        // Create a new document with an empty page.
+        PDDocument document = new PDDocument();
+        //PDPage page = new PDPage(PDRectangle.A4);
+        //document.addPage(page);
+
+        // Adobe Acrobat uses Helvetica as a default font and
+        // stores that under the name '/Helv' in the resources dictionary
+        PDFont font = PDType1Font.HELVETICA;
+        PDResources resources = new PDResources();
+        resources.put(COSName.getPDFName("Helv"), font);
+
+        int header_h = 90;
+
+        PDPageContentStream contents = null;// = new PDPageContentStream(document, page);
+
+        if(job.getAssigned_employees()!=null)
+        {
+            PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
+
+            for (Employee employee : job.getAssigned_employees())
+            {
+                //contents.close();
+                final PDPage new_page = new PDPage(PDRectangle.A4);
+                //Add page to document
+                document.addPage(new_page);
+                contents = new PDPageContentStream(document, new_page);
+                contents.setFont(font, 14);
+
+                //line_pos = (int)h-logo_h-20;
+                IO.log("Job PDF Exporter", IO.TAG_INFO, "added new page.");
+                int logo_h = 60;
+                float w = new_page.getBBox().getWidth();
+                float h = new_page.getBBox().getHeight();
+                int line_pos = (int) h - logo_h - 20;
+                final int VERT_LINE_START = line_pos;
+                //float center_horz = (w/2)-20;
+                int digit_font_size = 9;
+
+                PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
+                contents.drawImage(header, 0, 760, w, header_h);
+                //contents.drawImage(logo, (int) (w / 2) - 80, 770, 160, logo_h);
+
+                /**Draw lines**/
+                createLinesAndBordersOnPage(contents, (int)w, line_pos, (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT);
+                createBordersOnPage(contents, (int)w, line_pos, line_pos);
+
+                /** begin text from the top**/
+                contents.beginText();
+                contents.setFont(font, 12);
+                line_pos -= LINE_HEIGHT/2;
+                String str_job_card = job.getQuote().getClient().getClient_name() + ": "
+                        + job.getQuote().getSitename() + " JOB CARD";
+                addTextToPageStream(contents, str_job_card, PDType1Font.HELVETICA_BOLD, 14, (int) (w / 2)-100, line_pos);
+                line_pos -= LINE_HEIGHT * 2;//next line
+
+                addTextToPageStream(contents, "JOB NUMBER: " + job.getObject_number(), 12, 20, line_pos);
+                addTextToPageStream(contents, "CUSTOMER: " + job.getQuote().getClient().getClient_name(), 14, (int)(w/2)+30, line_pos);
+                line_pos -= LINE_HEIGHT;//next line
+                addTextToPageStream(contents, "SITENAME: " + job.getQuote().getSitename(), 12, 20, line_pos);
+                addTextToPageStream(contents, "STATUS: " + (job.isJob_completed()?"completed":"pending"), 12, (int)(w/2)+30, line_pos);
+                line_pos -= LINE_HEIGHT;//next line
+                addTextToPageStream(contents, "CONTACT: " + job.getQuote().getContact_person(), 12, 20, line_pos);
+                addTextToPageStream(contents, "CELL: " + job.getQuote().getContact_person().getCell(), 12, (int)(w/2)+30, line_pos);
+                addTextToPageStream(contents, "TEL: " + job.getQuote().getContact_person().getTel(), 12, (int)(w/2)+150, line_pos);
+                line_pos -= LINE_HEIGHT;//next line
+
+                //addTextToPageStream(contents, "Date Logged: " + LocalDate.parse(formatter.format(new Date(job.getDate_logged()*1000))), 12, 10, line_pos);
+                //addTextToPageStream(contents, "Planned Start Date: " + LocalDate.parse(formatter.format(new Date(job.getPlanned_start_date()*1000))), 12, (int)(w/2)+30, line_pos);
+                //line_pos -= LINE_HEIGHT;//next line
+                //addTextToPageStream(contents, "Date Assigned: " + LocalDate.parse(formatter.format(new Date(job.getDate_assigned()*1000))), 12, 10, line_pos);
+                addTextToPageStream(contents, "DATE STARTED: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()))):"N/A"), 12, 20, line_pos);
+                addTextToPageStream(contents, "DATE COMPLETED: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()))):"N/A"), 12, (int)(w/2)+30, line_pos);
+                line_pos -= LINE_HEIGHT;//next line
+                addTextToPageStream(contents, "ASSIGNED EMPLOYEE: " + employee, 12, 20, line_pos);
+                addTextToPageStream(contents, "TEL: " + employee.getTel(), 12, (int)(w/2)+30, line_pos);
+                addTextToPageStream(contents, "CELL: " + employee.getCell(), 12, (int)(w/2)+150, line_pos);
+                line_pos -= LINE_HEIGHT;//next line
+                addTextToPageStream(contents, "REQUEST: " + job.getQuote().getRequest(), 12, 20, line_pos);
+                line_pos -= LINE_HEIGHT;//next line
+                contents.endText();
+
+                //vertical lines
+                contents.setStrokingColor(Color.BLACK);
+                //vertical line going through center of page
+                contents.moveTo((w / 2), VERT_LINE_START-LINE_HEIGHT);
+                contents.lineTo((w / 2), line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
+                contents.stroke();
+                //
+                contents.moveTo((w / 2), line_pos+LINE_HEIGHT/2);
+                contents.lineTo((w / 2), LINE_END);
+                contents.stroke();
+                //#1
+                contents.moveTo(95, line_pos+LINE_HEIGHT/2);
+                contents.lineTo(95, LINE_END);
+                contents.stroke();
+                //#2
+                contents.moveTo(195, line_pos+LINE_HEIGHT/2);
+                contents.lineTo(195, LINE_END);
+                contents.stroke();
+                //draw horizontal line
+                createBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, line_pos+LINE_HEIGHT/2);
+
+                contents.beginText();
+                addTextToPageStream(contents, "DATE " , PDType1Font.HELVETICA_BOLD, 12, 20, line_pos);
+                addTextToPageStream(contents, "TIME IN ", PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);
+                addTextToPageStream(contents, "TIME OUT ", PDType1Font.HELVETICA_BOLD, 12, 220, line_pos);
+                addTextToPageStream(contents, "DESCRIPTION OF WORK DONE ", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
+
+                line_pos = LINE_END - LINE_HEIGHT/2;//(int) h - logo_h - LINE_HEIGHT - (LINE_HEIGHT*30) - LINE_HEIGHT/2;
+
+                addTextToPageStream(contents, "Materials Used" , 14, 100, line_pos);
+                addTextToPageStream(contents, "Model/Serial" , 14, (int)(w/2)+50, line_pos);
+                addTextToPageStream(contents, "Quantity" , 14, (int) w-100, line_pos);
+                final int BORDER_START = line_pos;
+                line_pos -= LINE_HEIGHT;//next line
+                for(QuoteItem item : job.getQuote().getResources())
+                {
+                    addTextToPageStream(contents, item.getResource().getResource_name() , 14, 20, line_pos);
+                    addTextToPageStream(contents, item.getResource().getResource_serial() , 14, (int)(w/2)+20, line_pos);
+                    addTextToPageStream(contents, item.getQuantity() , 14, (int) w-80, line_pos);
+                    line_pos -= LINE_HEIGHT;//next line
+                }
+                contents.endText();
+                createBordersOnPage(contents, (int)w, BORDER_START+LINE_HEIGHT/2, BORDER_START+LINE_HEIGHT/2);
+                createBordersOnPage(contents, (int)w, BORDER_START+LINE_HEIGHT/2, line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
+
+                contents.close();
+            }
+        }else
+        {
+            IO.logAndAlert(TAG, "job " + job.get_id() + " has no assigned employees.", IO.TAG_ERROR);
+            return null;
+        }
+
+        //create PDF output directory
+        if(new File("out/pdf/").mkdirs())
+            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
+
+        //TODO: fix this hack
+        String path = "out/pdf/job_card_" + job.get_id() + ".pdf";
+        int i=1;
+        while(new File(path).exists())
+        {
+            path = "out/pdf/job_card_" + job.get_id() + "." + i + ".pdf";
+            i++;
+        }
+
+        if(contents!=null)
+            contents.close();
+        document.save(path);
+        document.close();
+        return path;
+    }
+
     public static void createGeneralJournalPdf(long start, long end) throws IOException
     {
         //Init managers and load data to memory
@@ -1928,18 +2139,38 @@ public class PDF
         InvoiceManager.getInstance().initialize();
 
         ArrayList<Transaction> transactions = new ArrayList<>();
+
         //Load assets
-        for(Asset asset : AssetManager.getInstance().getDataset().values())
-            transactions.add(new Transaction(asset.get_id(), asset.getDate_acquired(), asset));
+        if(AssetManager.getInstance().getDataset()!=null)
+            for(Asset asset : AssetManager.getInstance().getDataset().values())
+                transactions.add(new Transaction(asset.get_id(), asset.getDate_acquired(), asset));
+
         //Load Resources/Stock
-        for(Resource resource : ResourceManager.getInstance().getDataset().values())
-            transactions.add(new Transaction(resource.get_id(), resource.getDate_acquired(), resource));
+        if(ResourceManager.getInstance().getDataset()!=null)
+            for(Resource resource : ResourceManager.getInstance().getDataset().values())
+                transactions.add(new Transaction(resource.get_id(), resource.getDate_acquired(), resource));
+
         //Load additional Expenses
-        for(Expense expense: ExpenseManager.getInstance().getDataset().values())
-            transactions.add(new Transaction(expense.get_id(), expense.getDate_logged(), expense));
+        if(ExpenseManager.getInstance().getDataset()!=null)
+            for(Expense expense: ExpenseManager.getInstance().getDataset().values())
+                transactions.add(new Transaction(expense.get_id(), expense.getDate_logged(), expense));
+
         //Load Service income (Invoices)
-        for(Invoice invoice: InvoiceManager.getInstance().getDataset().values())
-            transactions.add(new Transaction(invoice.get_id(), invoice.getDate_logged(), invoice));
+        if(InvoiceManager.getInstance().getDataset()!=null)
+            for(Invoice invoice: InvoiceManager.getInstance().getDataset().values())
+                transactions.add(new Transaction(invoice.get_id(), invoice.getDate_logged(), invoice));
+
+        if(transactions==null)
+        {
+            IO.logAndAlert("Error", "No transactions could be found.", IO.TAG_ERROR);
+            return;
+        }
+
+        if(transactions.size()<=0)
+        {
+            IO.logAndAlert("Error", "No transactions could be found.", IO.TAG_ERROR);
+            return;
+        }
 
         Transaction[] transactions_arr = new Transaction[transactions.size()];
         transactions.toArray(transactions_arr);
@@ -2609,201 +2840,6 @@ public class PDF
         PDFViewer pdfViewer = PDFViewer.getInstance();
         pdfViewer.setVisible(true);
         pdfViewer.doOpen(path);
-    }
-
-    public static String createJobCardPdf(Job job) throws IOException
-    {
-        if(SessionManager.getInstance().getActive()==null)
-        {
-            IO.logAndAlert(TAG, "Active session object is null.", IO.TAG_ERROR);
-            return null;
-        }
-        if(SessionManager.getInstance().getActive().isExpired())
-        {
-            IO.logAndAlert(TAG, "Active session has expired.", IO.TAG_ERROR);
-            return null;
-        }
-        if(job==null)
-        {
-            IO.log(TAG, IO.TAG_ERROR, "Job object passed is null.");
-            return null;
-        }
-        if(job.getQuote()==null)
-        {
-            IO.log(TAG, IO.TAG_ERROR, "Job's Quote object is null.");
-            return null;
-        }
-        if(job.getQuote().getClient()==null)
-        {
-            IO.log(TAG, IO.TAG_ERROR, "Job Quote's Client object is null.");
-            return null;
-        }
-        if(job.getAssigned_employees()==null)
-        {
-            IO.logAndAlert("Error", "Job[#"+job.getObject_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
-            return null;
-        }
-        if(job.getAssigned_employees().length<=0)
-        {
-            IO.logAndAlert("Error", "Job[#"+job.getObject_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
-            return null;
-        }
-
-        //ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        //headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-        //Client client;
-        //String client_json = null;//RemoteComms.sendGetRequest("/api/client/" + job.getClient_id(), headers);
-        //client = new GsonBuilder().create().fromJson(client_json, Client.class);
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-
-        // Create a new document with an empty page.
-        PDDocument document = new PDDocument();
-        //PDPage page = new PDPage(PDRectangle.A4);
-        //document.addPage(page);
-
-        // Adobe Acrobat uses Helvetica as a default font and
-        // stores that under the name '/Helv' in the resources dictionary
-        PDFont font = PDType1Font.HELVETICA;
-        PDResources resources = new PDResources();
-        resources.put(COSName.getPDFName("Helv"), font);
-
-        PDPageContentStream contents = null;// = new PDPageContentStream(document, page);
-
-        if(job.getAssigned_employees()!=null)
-        {
-            PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-
-            for (Employee employee : job.getAssigned_employees())
-            {
-                //contents.close();
-                final PDPage new_page = new PDPage(PDRectangle.A4);
-                //Add page to document
-                document.addPage(new_page);
-                contents = new PDPageContentStream(document, new_page);
-                contents.setFont(font, 14);
-
-                //line_pos = (int)h-logo_h-20;
-                IO.log("Job PDF Exporter", IO.TAG_INFO, "added new page.");
-                int logo_h = 60;
-                float w = new_page.getBBox().getWidth();
-                float h = new_page.getBBox().getHeight();
-                int line_pos = (int) h - logo_h - 20;
-                final int VERT_LINE_START = line_pos;
-                //float center_horz = (w/2)-20;
-                int digit_font_size = 9;
-
-                contents.drawImage(logo, (int) (w / 2) - 80, 770, 160, logo_h);
-
-                /**Draw lines**/
-                createLinesAndBordersOnPage(contents, (int)w, line_pos, (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT);
-                createBordersOnPage(contents, (int)w, line_pos, line_pos);
-
-                /** begin text from the top**/
-                contents.beginText();
-                contents.setFont(font, 12);
-                line_pos -= LINE_HEIGHT/2;
-                String str_job_card = job.getQuote().getClient().getClient_name() + ": "
-                                        + job.getQuote().getSitename() + " JOB CARD";
-                addTextToPageStream(contents, str_job_card, PDType1Font.HELVETICA_BOLD, 14, (int) (w / 2)-100, line_pos);
-                line_pos -= LINE_HEIGHT * 2;//next line
-
-                addTextToPageStream(contents, "JOB NUMBER: " + job.getObject_number(), 12, 20, line_pos);
-                addTextToPageStream(contents, "CUSTOMER: " + job.getQuote().getClient().getClient_name(), 14, (int)(w/2)+30, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "SITENAME: " + job.getQuote().getSitename(), 12, 20, line_pos);
-                addTextToPageStream(contents, "STATUS: " + (job.isJob_completed()?"completed":"pending"), 12, (int)(w/2)+30, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "CONTACT: " + job.getQuote().getContact_person(), 12, 20, line_pos);
-                addTextToPageStream(contents, "CELL: " + job.getQuote().getContact_person().getCell(), 12, (int)(w/2)+30, line_pos);
-                addTextToPageStream(contents, "TEL: " + job.getQuote().getContact_person().getTel(), 12, (int)(w/2)+150, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-
-                //addTextToPageStream(contents, "Date Logged: " + LocalDate.parse(formatter.format(new Date(job.getDate_logged()*1000))), 12, 10, line_pos);
-                //addTextToPageStream(contents, "Planned Start Date: " + LocalDate.parse(formatter.format(new Date(job.getPlanned_start_date()*1000))), 12, (int)(w/2)+30, line_pos);
-                //line_pos -= LINE_HEIGHT;//next line
-                //addTextToPageStream(contents, "Date Assigned: " + LocalDate.parse(formatter.format(new Date(job.getDate_assigned()*1000))), 12, 10, line_pos);
-                addTextToPageStream(contents, "DATE STARTED: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()))):"N/A"), 12, 20, line_pos);
-                addTextToPageStream(contents, "DATE COMPLETED: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()))):"N/A"), 12, (int)(w/2)+30, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "ASSIGNED EMPLOYEE: " + employee, 12, 20, line_pos);
-                addTextToPageStream(contents, "TEL: " + employee.getTel(), 12, (int)(w/2)+30, line_pos);
-                addTextToPageStream(contents, "CELL: " + employee.getCell(), 12, (int)(w/2)+150, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "REQUEST: " + job.getQuote().getRequest(), 12, 20, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                contents.endText();
-
-                //vertical lines
-                contents.setStrokingColor(Color.BLACK);
-                //vertical line going through center of page
-                contents.moveTo((w / 2), VERT_LINE_START-LINE_HEIGHT);
-                contents.lineTo((w / 2), line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
-                contents.stroke();
-                //
-                contents.moveTo((w / 2), line_pos+LINE_HEIGHT/2);
-                contents.lineTo((w / 2), LINE_END);
-                contents.stroke();
-                //#1
-                contents.moveTo(95, line_pos+LINE_HEIGHT/2);
-                contents.lineTo(95, LINE_END);
-                contents.stroke();
-                //#2
-                contents.moveTo(195, line_pos+LINE_HEIGHT/2);
-                contents.lineTo(195, LINE_END);
-                contents.stroke();
-                //draw horizontal line
-                createBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, line_pos+LINE_HEIGHT/2);
-
-                contents.beginText();
-                addTextToPageStream(contents, "DATE " , PDType1Font.HELVETICA_BOLD, 12, 20, line_pos);
-                addTextToPageStream(contents, "TIME IN ", PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);
-                addTextToPageStream(contents, "TIME OUT ", PDType1Font.HELVETICA_BOLD, 12, 220, line_pos);
-                addTextToPageStream(contents, "DESCRIPTION OF WORK DONE ", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
-
-                line_pos = LINE_END - LINE_HEIGHT/2;//(int) h - logo_h - LINE_HEIGHT - (LINE_HEIGHT*30) - LINE_HEIGHT/2;
-
-                addTextToPageStream(contents, "Materials Used" , 14, 100, line_pos);
-                addTextToPageStream(contents, "Model/Serial" , 14, (int)(w/2)+50, line_pos);
-                addTextToPageStream(contents, "Quantity" , 14, (int) w-100, line_pos);
-                final int BORDER_START = line_pos;
-                line_pos -= LINE_HEIGHT;//next line
-                for(QuoteItem item : job.getQuote().getResources())
-                {
-                    addTextToPageStream(contents, item.getResource().getResource_name() , 14, 20, line_pos);
-                    addTextToPageStream(contents, item.getResource().getResource_serial() , 14, (int)(w/2)+20, line_pos);
-                    addTextToPageStream(contents, item.getQuantity() , 14, (int) w-80, line_pos);
-                    line_pos -= LINE_HEIGHT;//next line
-                }
-                contents.endText();
-                createBordersOnPage(contents, (int)w, BORDER_START+LINE_HEIGHT/2, BORDER_START+LINE_HEIGHT/2);
-                createBordersOnPage(contents, (int)w, BORDER_START+LINE_HEIGHT/2, line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
-
-                contents.close();
-            }
-        }else
-        {
-            IO.logAndAlert(TAG, "job " + job.get_id() + " has no assigned employees.", IO.TAG_ERROR);
-            return null;
-        }
-
-        //create PDF output directory
-        if(new File("out/pdf/").mkdirs())
-            IO.log(PDF.class.getName(), "successfully created PDF output directory [out/pdf/]", IO.TAG_INFO);
-        
-        //TODO: fix this hack
-        String path = "out/pdf/job_card_" + job.get_id() + ".pdf";
-        int i=1;
-        while(new File(path).exists())
-        {
-            path = "out/pdf/job_card_" + job.get_id() + "." + i + ".pdf";
-            i++;
-        }
-
-        if(contents!=null)
-            contents.close();
-        document.save(path);
-        document.close();
-        return path;
     }
 
     public static void addTextToPageStream(PDPageContentStream contents, String text, int font_size, int x, int y) throws IOException

@@ -37,6 +37,19 @@ public class OvertimeTabController extends ScreenController implements Initializ
     private TableView<Overtime> tblOvertime;
     public static final String TAB_ID = "overtimeTab";
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
+
     @Override
     public void refreshView()
     {
@@ -147,8 +160,15 @@ public class OvertimeTabController extends ScreenController implements Initializ
     public void refreshModel()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading overtime tab model.");
-        OvertimeManager.getInstance().initialize();
         JobManager.getInstance().initialize();
+        OvertimeManager.getInstance().initialize();
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        OvertimeManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getContextMenu()
@@ -189,16 +209,5 @@ public class OvertimeTabController extends ScreenController implements Initializ
         return new RadialMenuItem[]{menuOvertime};
     }
 
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb)
-    {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
-    }
+
 }

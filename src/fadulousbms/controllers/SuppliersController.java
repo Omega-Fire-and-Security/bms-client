@@ -6,7 +6,6 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SupplierManager;
 import fadulousbms.model.*;
@@ -41,6 +40,22 @@ public class SuppliersController extends ScreenController implements Initializab
     private TableColumn     colSupplierId,colSupplierName,colSupplierPhysicalAddress,colSupplierSpeciality,
                             colSupplierPostalAddress,colSupplierTel,colSupplierFax,colSupplierEmail,colSupplierActive,
                             colSupplierDatePartnered,colSupplierWebsite,colSupplierRegistration,colSupplierVat,colSupplierAccount,colSupplierOther,colAction;
+    @FXML
+    private Tab suppliersTab;
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        OperationsController.registerTabController(suppliersTab.getId(),this);
+        new Thread(() ->
+        {
+            refreshModel();
+            Platform.runLater(() -> refreshView());
+        }).start();
+    }
 
     @Override
     public void refreshView()
@@ -70,10 +85,6 @@ public class SuppliersController extends ScreenController implements Initializab
         CustomTableViewControls.makeEditableTableColumn(colSupplierVat, TextFieldTableCell.forTableColumn(), 100, "vat_number", "/suppliers");
         CustomTableViewControls.makeEditableTableColumn(colSupplierAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/suppliers");
         CustomTableViewControls.makeEditableTableColumn(colSupplierOther, TextFieldTableCell.forTableColumn(), 80, "other", "/suppliers");
-
-        ObservableList<Supplier> lst_suppliers = FXCollections.observableArrayList();
-        lst_suppliers.addAll(suppliers);
-        tblSuppliers.setItems(lst_suppliers);
 
         final ScreenManager screenManager = ScreenManager.getInstance();
         Callback<TableColumn<Supplier, String>, TableCell<Supplier, String>> cellFactory
@@ -145,6 +156,10 @@ public class SuppliersController extends ScreenController implements Initializab
         colAction.setCellValueFactory(new PropertyValueFactory<>(""));
         colAction.setCellFactory(cellFactory);
 
+        ObservableList<Supplier> lst_suppliers = FXCollections.observableArrayList();
+        lst_suppliers.addAll(suppliers);
+        tblSuppliers.setItems(lst_suppliers);
+
         tblSuppliers.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 SupplierManager.getInstance().setSelected(tblSuppliers.getSelectionModel().getSelectedItem()));
     }
@@ -156,18 +171,14 @@ public class SuppliersController extends ScreenController implements Initializab
         SupplierManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
-        new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+        SupplierManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
+
+
 
     public static RadialMenuItem[] getDefaultContextMenu()
     {

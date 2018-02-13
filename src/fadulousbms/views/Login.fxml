@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -37,11 +38,7 @@
                                     </font></Label>
                                 <HBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                     <children>
-                                        <TextField fx:id="txtPwd" minWidth="230.0" HBox.hgrow="ALWAYS">
-                                            <HBox.margin>
-                                                <Insets bottom="2.5" left="2.5" right="2.5" top="2.5" />
-                                            </HBox.margin>
-                                        </TextField>
+                              <PasswordField fx:id="txtPwd" HBox.hgrow="ALWAYS" />
                                         <Button fx:id="btnShow" minWidth="60.0" mnemonicParsing="false" onAction="#togglePasswordMask" text="show" wrapText="true">
                                             <HBox.margin>
                                                 <Insets bottom="2.5" left="2.5" right="2.5" top="2.5" />

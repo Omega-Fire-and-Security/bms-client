@@ -27,21 +27,11 @@ public class LoadingController extends ScreenController implements Initializable
     @FXML
     private Label lblLoading;
 
-    @Override
-    public void refreshView()
-    {
-    }
-
-    @Override
-    public void refreshModel()
-    {
-    }
-
     /**
      * Initializes the controller class.
      */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void initialize(URL url, ResourceBundle rb)
     {
         //Loading Animation
         Thread t = new Thread(() ->
@@ -65,6 +55,25 @@ public class LoadingController extends ScreenController implements Initializable
         });
         t.start();
     }
+
+    @Override
+    public void refreshView()
+    {
+    }
+
+    @Override
+    public void refreshModel()
+    {
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
+    }
+
+
 
     public static RadialMenuItem[] getDefaultContextMenu()
     {

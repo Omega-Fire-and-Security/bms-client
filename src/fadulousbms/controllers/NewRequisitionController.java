@@ -56,6 +56,14 @@ public class NewRequisitionController extends ScreenController implements Initia
     @FXML
     protected TextArea txtDescription;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
     @Override
     public void refreshView()
     {
@@ -116,12 +124,11 @@ public class NewRequisitionController extends ScreenController implements Initia
         RequisitionManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
+        RequisitionManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     @FXML

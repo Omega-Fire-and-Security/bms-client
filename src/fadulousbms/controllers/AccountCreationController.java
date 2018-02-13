@@ -6,9 +6,11 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.*;
+import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
@@ -57,6 +59,14 @@ public class AccountCreationController extends ScreenController implements Initi
     private String pwd;
     private String[] access_levels = {"NONE", "STANDARD", "ADMIN", "SUPER"};
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
+
     @Override
     public void refreshView()
     {
@@ -68,12 +78,11 @@ public class AccountCreationController extends ScreenController implements Initi
     {
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void forceSynchronise()
     {
+        EmployeeManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()
@@ -163,7 +172,8 @@ public class AccountCreationController extends ScreenController implements Initi
                 HttpURLConnection connection = RemoteComms.putJSON("/employees", employee.getJSONString(), headers);
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                 {
-                    IO.logAndAlert("Account Creation Success", IO.readStream(connection.getInputStream()), IO.TAG_INFO);
+                    IO.log(getClass().getName(), IO.TAG_INFO, IO.readStream(connection.getInputStream()));
+                    IO.logAndAlert("Account Creation Success", "Successfully created account ["+txtUsername.getText()+"].", IO.TAG_INFO);
                 } else
                     IO.logAndAlert("Account Creation Failure", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
 

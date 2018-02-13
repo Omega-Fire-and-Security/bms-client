@@ -17,7 +17,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -44,6 +43,8 @@ public class JobsController extends ScreenController implements Initializable
     private TableColumn colJobNum, colClient, colSitename, colRequest, colTotal,
             colContactPerson, colDateGenerated, colPlannedStartDate,
             colDateAssigned, colDateStarted, colDateEnded, colCreator, colExtra, colStatus, colAction;
+    @FXML
+    private Tab jobsTab;
     public static final String TAB_ID = "jobsTab";
 
     @Override
@@ -316,13 +317,21 @@ public class JobsController extends ScreenController implements Initializable
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading jobs data model..");
 
-        //synchronise dependencies
-        ResourceManager.getInstance().forceSynchronise();
-        SupplierManager.getInstance().forceSynchronise();
-        ClientManager.getInstance().forceSynchronise();
-        QuoteManager.getInstance().forceSynchronise();
+        //initialize dependencies
+        ResourceManager.getInstance().initialize();
+        SupplierManager.getInstance().initialize();
+        ClientManager.getInstance().initialize();
+        QuoteManager.getInstance().initialize();
+        JobManager.getInstance().initialize();
         //synchronise model data set
+        JobManager.getInstance().initialize();
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
         JobManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     /**
@@ -331,6 +340,7 @@ public class JobsController extends ScreenController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb) 
     {
+        OperationsController.registerTabController(jobsTab.getId(),this);
         new Thread(() ->
         {
             ResourceManager.getInstance().initialize();

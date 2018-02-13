@@ -5,6 +5,7 @@ import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -34,6 +35,13 @@ public class NewSupplierController extends ScreenController implements Initializ
     @FXML
     private TextArea txtPhysical,txtPostal;
 
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+    }
     @Override
     public void refreshView()
     {
@@ -47,14 +55,14 @@ public class NewSupplierController extends ScreenController implements Initializ
     @Override
     public void refreshModel()
     {
+        SupplierManager.getInstance().initialize();
     }
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void forceSynchronise()
     {
+        SupplierManager.getInstance().forceSynchronise();
+        Platform.runLater(() -> refreshView());
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

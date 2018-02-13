@@ -3,6 +3,7 @@ package fadulousbms.controllers;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.JobManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
@@ -37,6 +38,13 @@ public class PurchasesController extends ScreenController implements Initializab
     @Override
     public void refreshModel()
     {
+    }
+
+    @Override
+    public void forceSynchronise()
+    {
+        refreshModel();
+        Platform.runLater(() -> refreshView());
     }
 
     /**

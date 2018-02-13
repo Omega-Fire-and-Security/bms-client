@@ -71,7 +71,7 @@ public class Transaction extends BusinessObject
     @Override
     public Object get(String var)
     {
-        switch (var)
+        switch (var.toLowerCase())
         {
             case "date":
                 getDate();
