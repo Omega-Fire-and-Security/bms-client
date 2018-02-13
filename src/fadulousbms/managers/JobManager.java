@@ -143,19 +143,19 @@ public class JobManager extends BusinessObjectManager
                                                         if (EmployeeManager.getInstance().getDataset() != null)
                                                             employees_arr[i++] = EmployeeManager.getInstance().getDataset().get(jobEmployee.getUsr());
                                                         else IO.log(getClass()
-                                                                .getName(), IO.TAG_ERROR, "no Employees found in database.");
+                                                                .getName(), IO.TAG_WARN, "no Employees found in database.");
                                                     // Set Employee objects on to Job object.
                                                     job.setAssigned_employees(employees_arr);
                                                 } else IO.log(getClass()
-                                                        .getName(), IO.TAG_ERROR, "could not load assigned Employees for job #" + job
+                                                        .getName(), IO.TAG_WARN, "could not load assigned Employees for job #" + job
                                                         .get_id());
 
                                             } else IO.log(getClass()
-                                                    .getName(), IO.TAG_ERROR, "could not load assigned Employees for job #"
+                                                    .getName(), IO.TAG_WARN, "could not load assigned Employees for job #"
                                                     + job.get_id()+". Could not find any JobEmployee documents in collection.");
-                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid JobEmployeeServerObject for Job#"+job.get_id());
+                                        } else IO.log(getClass().getName(), IO.TAG_WARN, "invalid JobEmployeeServerObject for Job#"+job.get_id());
                                     }
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
+                                } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Jobs in the database.");
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of jobs.");
                                 serialize(ROOT_PATH + filename, jobs);
                             } else
@@ -244,7 +244,7 @@ public class JobManager extends BusinessObjectManager
      * Assign Employees to a Job.
      * @param job_id Object identifier of Job to be assigned Employees.
      * @param usr username of Employee to be assigned to Job.
-     * @return boolean value determining if assingnment was un/successful.
+     * @return boolean value determining if assignment was un/successful.
      */
     public static boolean createJobRepresentative(String job_id, String usr)
     {

@@ -55,14 +55,14 @@ public class QuotesController extends OperationsController implements Initializa
             IO.logAndAlert(getClass().getSimpleName(), "No employees were found in the database.", IO.TAG_ERROR);
             return;
         }
-        if(QuoteManager.getInstance().getDataset()==null)
-        {
-            IO.logAndAlert(getClass().getSimpleName(), "No quotes were found in the database.", IO.TAG_WARN);
-            return;
-        }
         if(ClientManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No clients were found in the database.", IO.TAG_WARN);
+            return;
+        }
+        if(QuoteManager.getInstance().getDataset()==null)
+        {
+            IO.logAndAlert(getClass().getSimpleName(), "No quotes were found in the database.", IO.TAG_WARN);
             return;
         }
 

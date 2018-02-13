@@ -414,15 +414,17 @@ public class ViewJobController extends ScreenController implements Initializable
                 Job selected = ((Job)JobManager.getInstance().getSelected());
                 if(selected!=null)
                 {
-                    //update Job object on server (only the date_assigned attribute is modified so far)
-                    if(selected.getStatus()!=Job.STATUS_APPROVED)//only update Job if it has not been approved yet.
+                    //update Job object on server (only the date_assigned attribute is set and has not been approved already.)
+                    if(selected.getStatus()!=Job.STATUS_APPROVED)
                     {
-                        //set date assigned to current UNIX date
+                        //set date assigned to current UNIX epoch date
                         if (selected.getDate_assigned() <= 0)
                             selected.setDate_assigned(System.currentTimeMillis());
+
                         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                         headers.add(new AbstractMap.SimpleEntry("Cookie", smgr.getActive().getSession_id()));
                         headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
+
                         try
                         {
                             HttpURLConnection connection = RemoteComms.postJSON(selected.apiEndpoint(), selected.getJSONString(), headers);
@@ -439,26 +441,21 @@ public class ViewJobController extends ScreenController implements Initializable
                                                             .get_id(), employee.getUsr());
                                     if (created_all)
                                     {
-                                        IO.logAndAlert("Success", "Successfully updated job[#" + String
-                                                .valueOf(JobManager.getInstance().getSelected().getObject_number())
+                                        IO.logAndAlert("Success", "Successfully updated job[#"
+                                                +String.valueOf(JobManager.getInstance().getSelected().getObject_number())
                                                 + "] representatives.", IO.TAG_INFO);
 
-                                        JobManager.getInstance().initialize();
-                                        //JobManager.getInstance().setSelected(JobManager.getInstance().getJobs().get(new_job_id));
-
-                                        JobManager.getInstance().setSelected(JobManager.getInstance().getDataset()
-                                                .get(JobManager.getInstance().getSelected().get_id()));
+                                        //force refresh Job data-set
+                                        JobManager.getInstance().forceSynchronise();
 
                                         if (JobManager.getInstance().getDataset() != null)
                                         {
+                                            //update selected Job
+                                            JobManager.getInstance().setSelected(JobManager.getInstance().getDataset()
+                                                    .get(JobManager.getInstance().getSelected().get_id()));
+
                                             ScreenManager.getInstance().showLoadingScreen(param ->
                                             {
-                                            /*new Thread(() ->
-                                            {
-                                                refreshModel();
-                                                Platform.runLater(() -> refreshView());
-                                            }).start();*/
-
                                                 new Thread(new Runnable()
                                                 {
                                                     @Override
@@ -485,23 +482,20 @@ public class ViewJobController extends ScreenController implements Initializable
 
                                                 return null;
                                             });
-                                        }
-                                        else
+                                        } else
                                             IO.logAndAlert("Error", "Could not find any jobs in the database.", IO.TAG_INFO);
 
-                                    }
-                                    else IO.logAndAlert("Error", "Could NOT update job[#"
+                                    } else IO.logAndAlert("Error", "Could NOT update job[#"
                                             + String.valueOf(JobManager.getInstance().getSelected().getObject_number())
                                             + "] representatives.", IO.TAG_ERROR);
-                                }
-                                else IO.logAndAlert("Error: " + connection
+                                } else IO.logAndAlert("Error: " + connection
                                         .getResponseCode(), "Could not update Job object: " + IO
                                         .readStream(connection.getErrorStream()), IO.TAG_ERROR);
+
                                 //terminate connection
                                 if (connection != null)
                                     connection.disconnect();
-                            }
-                            else IO.logAndAlert("Error", "Connection to server was lost.", IO.TAG_ERROR);
+                            } else IO.logAndAlert("Error", "Connection to server was lost.", IO.TAG_ERROR);
                         } catch (MalformedURLException ex)
                         {
                             IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());

@@ -87,14 +87,14 @@ public class OperationsController extends ScreenController implements Initializa
     public void refreshModel()
     {
         IO.log(getClass().getName(), IO.TAG_WARN, "reloading operations model.");
-        /*ClientManager.getInstance().forceSynchronise();
-        SupplierManager.getInstance().forceSynchronise();
-        ResourceManager.getInstance().forceSynchronise();
-        JobManager.getInstance().forceSynchronise();
-        PurchaseOrderManager.getInstance().forceSynchronise();
-        QuoteManager.getInstance().forceSynchronise();
-        InvoiceManager.getInstance().forceSynchronise();
-        RequisitionManager.getInstance().forceSynchronise();*/
+        ClientManager.getInstance().initialize();
+        SupplierManager.getInstance().initialize();
+        ResourceManager.getInstance().initialize();
+        JobManager.getInstance().initialize();
+        PurchaseOrderManager.getInstance().initialize();
+        QuoteManager.getInstance().initialize();
+        InvoiceManager.getInstance().initialize();
+        RequisitionManager.getInstance().initialize();
         if(selected_controller!=null)
             selected_controller.refreshModel();
         else IO.log(getClass().getName(), IO.TAG_WARN, "operations has no selected screen.");

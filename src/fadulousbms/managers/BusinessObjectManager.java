@@ -49,51 +49,26 @@ public abstract class BusinessObjectManager
 
     public void forceSynchronise()
     {
-        try
-        {
-            if(getRefresh_lock()<=0)//if there's no other thread synchronising the data-set, synchronise the data-set
-                reloadDataFromServer(getSynchronisationCallback());
-            else IO.log(getClass().getName(), IO.TAG_WARN, "can't synchronize model's data-set, thread started at ["+getRefresh_lock()+"] is still busy.");
-        } catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        } catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        } catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
+        if(getRefresh_lock()<=0)//if there's no other thread synchronising the data-set, synchronise the data-set
+            reloadDataFromServer(getSynchronisationCallback());
+        else IO.log(getClass().getName(), IO.TAG_WARN, "can't synchronize "+getClass().getSimpleName()+" model's data-set, thread started at ["+getRefresh_lock()+"] is still busy.");
     }
 
     protected void synchroniseDataset()
     {
-        try
-        {
-            if(getDataset()==null)//TODO: improve data set timestamp checks before synchronization
-                if(getRefresh_lock()<=0)//if there's no other thread synchronising the data-set, synchronise the data-set
-                    reloadDataFromServer(getSynchronisationCallback());
-                else IO.log(getClass().getName(), IO.TAG_WARN, "can't synchronize model's data-set, thread started at ["+getRefresh_lock()+"] is still busy.");
-            else IO.log(getClass().getName(), IO.TAG_WARN, "model's data-set has already been set, not synchronizing.");
-        } catch (MalformedURLException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("URL Error", ex.getMessage(), IO.TAG_ERROR);
-        } catch (ClassNotFoundException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            IO.showMessage("ClassNotFoundException", e.getMessage(), IO.TAG_ERROR);
-        } catch (IOException ex)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, ex.getMessage());
-            IO.showMessage("I/O Error", ex.getMessage(), IO.TAG_ERROR);
-        }
+        boolean dataset_empty;
+        if(getDataset()==null)
+            dataset_empty=true;
+        else dataset_empty=getDataset().isEmpty();
+
+        if(dataset_empty)//TODO: improve data set timestamp checks before synchronization
+            if(getRefresh_lock()<=0)//if there's no other thread synchronising the data-set, synchronise the data-set
+                reloadDataFromServer(getSynchronisationCallback());
+            else IO.log(getClass().getName(), IO.TAG_WARN, "can't synchronize "+getClass().getSimpleName()+" model's data-set, thread started at ["+getRefresh_lock()+"] is still busy.");
+        else IO.log(getClass().getName(), IO.TAG_WARN, getClass().getSimpleName()+" model's data-set has already been set, not synchronizing.");
     }
 
-    private void reloadDataFromServer(Callback callback) throws ClassNotFoundException, IOException
+    private void reloadDataFromServer(Callback callback)
     {
         //set model refresh lock
         setRefresh_lock(System.currentTimeMillis());

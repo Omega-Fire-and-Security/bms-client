@@ -1337,8 +1337,10 @@ public abstract class QuoteController extends ScreenController implements Initia
                         String new_job_id = JobManager.getInstance().createNewJob(job, null);
                         if (new_job_id != null)
                         {
-                            IO.logAndAlert("Success", "Successfully created a new job.", IO.TAG_INFO);
-                            JobManager.getInstance().initialize();
+                            //IO.logAndAlert("Success", "Successfully created a new job.", IO.TAG_INFO);
+                            //force refresh Job data-set
+                            JobManager.getInstance().forceSynchronise();
+
                             if (JobManager.getInstance().getDataset() != null)
                             {
                                 JobManager.getInstance().setSelected(JobManager.getInstance().getDataset().get(new_job_id));

@@ -76,10 +76,10 @@
                             <children>
                                 <Label text="Company" GridPane.rowIndex="1" />
                                 <Label text="Cell Number" GridPane.rowIndex="3" />
-                                <TextField fx:id="txtCell" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                <TextField fx:id="txtTel" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                <TextField fx:id="txtFax" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                <TextField fx:id="txtEmail" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                <TextField fx:id="txtCell" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                <TextField fx:id="txtTel" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                <TextField fx:id="txtFax" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                <TextField fx:id="txtEmail" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                 <Label alignment="CENTER" contentDisplay="CENTER" text="Contact Person" GridPane.rowIndex="2" />
                                 <Label text="Tel Number" GridPane.rowIndex="4" />
                                 <Label text="eMail Address" GridPane.rowIndex="6" />
