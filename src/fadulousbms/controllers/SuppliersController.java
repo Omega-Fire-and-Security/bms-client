@@ -51,16 +51,18 @@ public class SuppliersController extends ScreenController implements Initializab
     {
         OperationsController.registerTabController(suppliersTab.getId(),this);
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
     public void refreshView()
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading suppliers view..");
+
         if(SupplierManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getSimpleName(), "No suppliers found in the database.", IO.TAG_WARN);
@@ -165,10 +167,15 @@ public class SuppliersController extends ScreenController implements Initializab
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading suppliers data model..");
+
         SupplierManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -177,8 +184,6 @@ public class SuppliersController extends ScreenController implements Initializab
         SupplierManager.getInstance().forceSynchronise();
         Platform.runLater(() -> refreshView());
     }
-
-
 
     public static RadialMenuItem[] getDefaultContextMenu()
     {

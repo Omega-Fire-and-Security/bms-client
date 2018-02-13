@@ -449,12 +449,18 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading quotes data model.");
+
         EmployeeManager.getInstance().initialize();
         ClientManager.getInstance().initialize();
         ResourceManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -855,15 +861,16 @@ public abstract class QuoteController extends ScreenController implements Initia
                         {
                             //refresh model & view when material has been created.
                             new Thread(() ->
-                            {
-                                refreshModel();
-                                Platform.runLater(() ->
-                                {
-                                    refreshView();
-                                    //show material addition window again after material has been created.
-                                    newQuoteItem();
-                                });
-                            }).start();
+                                    refreshModel(param1 ->
+                                    {
+                                        Platform.runLater(() ->
+                                        {
+                                            refreshView();
+                                            //show material addition window again after material has been created.
+                                            newQuoteItem();
+                                        });
+                                        return null;
+                                    })).start();
                             return null;
                         });
                     });
@@ -919,8 +926,11 @@ public abstract class QuoteController extends ScreenController implements Initia
                         The version on updateQuote() that takes an array of QuoteItems doesn't check whether the Quote has been approved or not
                      */
                     QuoteManager.getInstance().updateQuote(selected, quote_items_arr);
-                    refreshModel();
-                    refreshView();
+                    refreshModel(param ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    });
                 } else IO.logAndAlert("Error", "Quote has no materials", IO.TAG_ERROR);
             } else IO.logAndAlert("Error", "Selected quote has already been approved.", IO.TAG_ERROR);
         } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
@@ -1309,8 +1319,15 @@ public abstract class QuoteController extends ScreenController implements Initia
                 QuoteManager.getInstance().setSelected(QuoteManager.getInstance().getDataset().get(selected.get_id()));
             new Thread(() ->
             {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
+                refreshModel(new Callback()
+                {
+                    @Override
+                    public Object call(Object param)
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    }
+                });
             }).start();
         } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }

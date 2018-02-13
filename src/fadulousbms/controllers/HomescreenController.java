@@ -28,6 +28,7 @@ import javafx.scene.control.Button;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
@@ -40,8 +41,6 @@ import javax.swing.*;
  */
 public class HomescreenController extends ScreenController implements Initializable
 {
-    @FXML
-    private Button btnCreateAccount;
     private ColorAdjust colorAdjust = new ColorAdjust();
 
     @Override
@@ -56,9 +55,12 @@ public class HomescreenController extends ScreenController implements Initializa
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading homescreen data model..");
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
     /**
      * Initializes the controller class.
@@ -67,8 +69,12 @@ public class HomescreenController extends ScreenController implements Initializa
     @Override
     public void forceSynchronise()
     {
-        refreshModel();
-        Platform.runLater(() -> refreshView());
+        refreshModel(param ->
+        {
+            Platform.runLater(() -> refreshView());
+            return null;
+        });
+
     }
 
     private Rectangle createTile()

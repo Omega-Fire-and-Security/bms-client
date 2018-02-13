@@ -18,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.stage.Window;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.imageio.ImageIO;
@@ -124,8 +125,11 @@ public class NavController extends ScreenController implements Initializable
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

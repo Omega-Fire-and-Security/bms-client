@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.util.Callback;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -38,10 +39,11 @@ public class ClientOperationsController extends ScreenController implements Init
 
 
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -51,9 +53,12 @@ public class ClientOperationsController extends ScreenController implements Init
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients tab model.");
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

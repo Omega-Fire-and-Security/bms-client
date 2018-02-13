@@ -1,13 +1,13 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.Employee;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.Initializable;
 import javafx.scene.image.Image;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.imageio.ImageIO;
@@ -49,15 +49,22 @@ public class FacilitiesController extends ScreenController implements Initializa
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
     public void forceSynchronise()
     {
-        refreshModel();
-        Platform.runLater(() -> refreshView());
+        refreshModel(param ->
+        {
+            Platform.runLater(() -> refreshView());
+            return null;
+        });
+
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

@@ -51,10 +51,11 @@ public class ClientsController extends ScreenController implements Initializable
     {
         OperationsController.registerTabController(clientsTab.getId(),this);
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -162,10 +163,13 @@ public class ClientsController extends ScreenController implements Initializable
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients data model..");
         ClientManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

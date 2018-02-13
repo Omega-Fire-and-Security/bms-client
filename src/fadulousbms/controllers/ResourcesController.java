@@ -152,10 +152,15 @@ public class ResourcesController extends ScreenController implements Initializab
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading resources data model..");
+
         ResourceManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -173,10 +178,11 @@ public class ResourcesController extends ScreenController implements Initializab
     {
         OperationsController.registerTabController(stockTab.getId(),this);
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

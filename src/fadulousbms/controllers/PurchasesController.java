@@ -1,9 +1,8 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.JobManager;
+import fadulousbms.managers.PurchaseOrderManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
@@ -13,7 +12,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.image.Image;
-import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+import javafx.util.Callback;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -29,6 +28,8 @@ public class PurchasesController extends ScreenController implements Initializab
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase orders view..");
+
         Employee e = SessionManager.getInstance().getActiveEmployee();
         if(e!=null)
             this.getUserNameLabel().setText(e.getFirstname() + " " + e.getLastname());
@@ -36,14 +37,19 @@ public class PurchasesController extends ScreenController implements Initializab
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase order data model..");
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
     public void forceSynchronise()
     {
-        refreshModel();
+        PurchaseOrderManager.getInstance().forceSynchronise();
         Platform.runLater(() -> refreshView());
     }
 

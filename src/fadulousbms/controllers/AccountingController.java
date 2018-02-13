@@ -23,6 +23,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import javax.imageio.ImageIO;
@@ -51,18 +52,22 @@ public class AccountingController extends ScreenController implements Initializa
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
     public void forceSynchronise()
     {
-        refreshModel();
-        Platform.runLater(() -> refreshView());
+        refreshModel(param ->
+        {
+            Platform.runLater(() -> refreshView());
+            return null;
+        });
     }
-
-
 
     @FXML
     public void purchasesClick()
@@ -431,10 +436,11 @@ public class AccountingController extends ScreenController implements Initializa
         ResourceManager.getInstance().newResourceWindow(param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param1 ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }
@@ -446,8 +452,12 @@ public class AccountingController extends ScreenController implements Initializa
         {
             new Thread(() ->
             {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
+                refreshModel(param1 ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                });
+
             }).start();
             return null;
         });

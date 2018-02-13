@@ -47,7 +47,7 @@ public abstract class ScreenController
 
     public abstract void refreshView();
 
-    public abstract void refreshModel();
+    public abstract void refreshModel(Callback callback);
 
     public void refreshStatusBar(String msg)
     {
@@ -89,10 +89,7 @@ public abstract class ScreenController
         ClientManager.newClientWindow("Create a new Client for this Job", param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(c->{Platform.runLater(() -> refreshView());return null;})).start();
             return null;
         });
     }
@@ -103,10 +100,7 @@ public abstract class ScreenController
         EmployeeManager.getInstance().newExternalEmployeeWindow("Create a new Contact Person for this Job", param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(cb->{Platform.runLater(() -> refreshView());return null;})).start();
             return null;
         });
     }

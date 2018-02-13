@@ -176,13 +176,13 @@ public class ViewQuoteController extends QuoteController
             if(selected.getParent_id()!=null)
             {
                 QuoteManager.getInstance().selected_quote_sibling_cursor=0;
-                //QuoteManager.getInstance().setSelectedQuote(selected.getParent_id());
                 //refresh GUI
                 new Thread(() ->
-                {
-                    refreshModel();
-                    Platform.runLater(() -> refreshView());
-                }).start();
+                        refreshModel(param ->
+                        {
+                            Platform.runLater(() -> refreshView());
+                            return null;
+                        })).start();
             } else IO.logAndAlert("View Quote Error", "Selected quote has no base quote.", IO.TAG_ERROR);
         else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
@@ -203,10 +203,11 @@ public class ViewQuoteController extends QuoteController
                 //QuoteManager.getInstance().setSelectedQuote(siblings[QuoteManager.getInstance().selected_quote_sibling_cursor]);
                 //refresh GUI
                 new Thread(() ->
-                {
-                    refreshModel();
-                    Platform.runLater(() -> refreshView());
-                }).start();
+                        refreshModel(param ->
+                        {
+                            Platform.runLater(() -> refreshView());
+                            return null;
+                        })).start();
             } else IO.logAndAlert("View Quote Error", "Selected quote has no siblings. Should return self as first arg of array.", IO.TAG_ERROR);
         } else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
@@ -227,10 +228,11 @@ public class ViewQuoteController extends QuoteController
                 //QuoteManager.getInstance().setSelectedQuote(siblings[QuoteManager.getInstance().selected_quote_sibling_cursor]);//set selected to be
                 //refresh GUI
                 new Thread(() ->
-                {
-                    refreshModel();
-                    Platform.runLater(() -> refreshView());
-                }).start();
+                        refreshModel(param ->
+                        {
+                            Platform.runLater(() -> refreshView());
+                            return null;
+                        })).start();
             } else IO.logAndAlert("View Quote Error", "Selected quote has no siblings. Should return self as first arg of siblings array.", IO.TAG_ERROR);
         } else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }

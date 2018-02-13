@@ -19,6 +19,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.File;
@@ -56,11 +57,17 @@ public class NewRevenueController extends ScreenController implements Initializa
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading revenue creation view.");
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading revenue data model.");
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

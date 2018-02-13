@@ -12,6 +12,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.net.URL;
@@ -62,15 +63,22 @@ public class LoadingController extends ScreenController implements Initializable
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
     public void forceSynchronise()
     {
-        refreshModel();
-        Platform.runLater(() -> refreshView());
+        refreshModel(param ->
+        {
+            Platform.runLater(() -> refreshView());
+            return null;
+        });
+
     }
 
 

@@ -242,39 +242,47 @@ public class ScreenManager extends StackPane
                 focused_id = id;
                 focused = controller;
                 //screen.setOpacity(1);
-                focused.refreshModel();
-                Platform.runLater(new Runnable()
+                focused.refreshModel(new Callback()
                 {
                     @Override
-                    public void run()
+                    public Object call(Object param)
                     {
-                        if(getChildren().setAll(new Node[]{}))//remove all screens
+                        //update GUI of newly focused screen
+                        Platform.runLater(new Runnable()
                         {
-                            focused.refreshStatusBar("Welcome back" + (SessionManager.getInstance()
-                                    .getActiveEmployee() != null ? " " + SessionManager.getInstance()
-                                    .getActiveEmployee() + "!" : "!"));
-                            focused.refreshView();//refresh the screen every time it's loaded
-                            IO.log(getClass().getName(), IO.TAG_INFO, "focused screen: " + id);
-
-                            if(lblScreenName!=null)
-                                lblScreenName.setText(focused_id.split("\\.")[0]);
-                            getChildren().add(screen);
-
-                            peekScreens().setOnContextMenuRequested(event ->
+                            @Override
+                            public void run()
                             {
-                                if(radialMenu!=null)
-                                    if(radialMenu.isVisible())
-                                        hideContextMenu();
-                                    else showContextMenu();
-                                else showContextMenu();
-                            });
+                                if(getChildren().setAll(new Node[]{}))//remove all screens
+                                {
+                                    focused.refreshStatusBar("Welcome back" + (SessionManager.getInstance()
+                                            .getActiveEmployee() != null ? " " + SessionManager.getInstance()
+                                            .getActiveEmployee() + "!" : "!"));
+                                    focused.refreshView();//refresh the screen every time it's loaded
+                                    IO.log(getClass().getName(), IO.TAG_INFO, "focused screen: " + id);
 
-                            //initRadialMenu(focused.getDefaultContextMenu());
-                            //getChildren().add(radialMenu);
-                        }else
-                        {
-                            IO.logAndAlert(getClass().getName(), "Could not remove StackPane children.", IO.TAG_ERROR);
-                        }
+                                    if(lblScreenName!=null)
+                                        lblScreenName.setText(focused_id.split("\\.")[0]);
+                                    getChildren().add(screen);
+
+                                    peekScreens().setOnContextMenuRequested(event ->
+                                    {
+                                        if(radialMenu!=null)
+                                            if(radialMenu.isVisible())
+                                                hideContextMenu();
+                                            else showContextMenu();
+                                        else showContextMenu();
+                                    });
+
+                                    //initRadialMenu(focused.getDefaultContextMenu());
+                                    //getChildren().add(radialMenu);
+                                }else
+                                {
+                                    IO.logAndAlert(getClass().getName(), "Could not remove StackPane children.", IO.TAG_ERROR);
+                                }
+                            }
+                        });
+                        return null;
                     }
                 });
             }

@@ -120,6 +120,8 @@ public class ViewJobController extends ScreenController implements Initializable
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading job viewer..");
+
         tblEmployees.getItems().clear();
 
         //Hide [Approve] button if not authorized
@@ -300,11 +302,17 @@ public class ViewJobController extends ScreenController implements Initializable
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading jobs data model..");
+
         QuoteManager.getInstance().initialize();
         ResourceManager.getInstance().initialize();
         JobManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -566,10 +574,11 @@ public class ViewJobController extends ScreenController implements Initializable
         {
             //Refresh UI
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }

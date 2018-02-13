@@ -55,11 +55,12 @@ public class PurchaseOrdersController extends ScreenController implements Initia
     {
         OperationsController.registerTabController(purchaseOrdersTab.getId(),this);
         new Thread(() ->
-        {
-            refreshModel();
-            if(PurchaseOrderManager.getInstance().getDataset()!=null)
-                Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    if(PurchaseOrderManager.getInstance().getDataset()!=null)
+                        Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -278,9 +279,15 @@ public class PurchaseOrdersController extends ScreenController implements Initia
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase order data model..");
+
         PurchaseOrderManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

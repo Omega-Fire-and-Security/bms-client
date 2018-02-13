@@ -308,7 +308,7 @@ public class QuotesController extends OperationsController implements Initializa
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading quotes data model..");
 
@@ -316,6 +316,10 @@ public class QuotesController extends OperationsController implements Initializa
         ClientManager.getInstance().initialize();
         ResourceManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -333,10 +337,7 @@ public class QuotesController extends OperationsController implements Initializa
     {
         OperationsController.registerTabController(quotesTab.getId(),this);
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(cb->{Platform.runLater(() -> refreshView());return null;})).start();
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

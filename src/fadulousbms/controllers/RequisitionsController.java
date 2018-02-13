@@ -304,13 +304,17 @@ public class RequisitionsController extends OperationsController implements Init
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading requisitions data model..");
 
         EmployeeManager.getInstance().initialize();
         ClientManager.getInstance().initialize();
         RequisitionManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -328,10 +332,11 @@ public class RequisitionsController extends OperationsController implements Init
     {
         OperationsController.registerTabController(requisitionsTab.getId(),this);
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     public static RadialMenuItem[] getDefaultContextMenu()

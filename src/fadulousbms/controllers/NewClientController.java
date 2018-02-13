@@ -15,6 +15,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.File;
@@ -55,6 +56,8 @@ public class NewClientController extends ScreenController implements Initializab
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading client creation view.");
+
         txtName.textProperty().addListener((observable, oldValue, newValue) ->
         {
             String account_name = newValue.replaceAll(" ","-");
@@ -63,8 +66,13 @@ public class NewClientController extends ScreenController implements Initializab
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading clients data-set.");
+        ClientManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

@@ -27,6 +27,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.textfield.CustomPasswordField;
@@ -103,18 +104,23 @@ public class LoginController extends ScreenController implements Initializable
         });
     }
 
-
-
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
     public void forceSynchronise()
     {
-        refreshModel();
-        Platform.runLater(() -> refreshView());
+        refreshModel(param ->
+        {
+            Platform.runLater(() -> refreshView());
+            return null;
+        });
+
     }
 
     @FXML

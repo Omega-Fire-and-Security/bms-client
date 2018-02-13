@@ -16,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.File;
@@ -52,7 +53,8 @@ public class NewExpenseController extends ScreenController implements Initializa
     @Override
     public void refreshView()
     {
-        IO.log(getClass().getName(), IO.TAG_INFO, "reloading new purchase order view..");
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading expense creation view.");
+
         if(SupplierManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no suppliers found in the database.", IO.TAG_ERROR);
@@ -64,9 +66,14 @@ public class NewExpenseController extends ScreenController implements Initializa
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading expenses data-set.");
+
         SupplierManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

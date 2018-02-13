@@ -48,10 +48,11 @@ public class RevenueController extends ScreenController implements Initializable
     public void initialize(URL url, ResourceBundle rb)
     {
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -152,16 +153,22 @@ public class RevenueController extends ScreenController implements Initializable
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading revenue data model..");
+
         EmployeeManager.getInstance().initialize();
         RevenueManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
     public void forceSynchronise()
     {
-        refreshModel();
+        RevenueManager.getInstance().forceSynchronise();
         Platform.runLater(() -> refreshView());
     }
 

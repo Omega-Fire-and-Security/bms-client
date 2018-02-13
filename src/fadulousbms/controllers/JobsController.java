@@ -251,10 +251,7 @@ public class JobsController extends ScreenController implements Initializable
                                             {
                                                 //Refresh UI
                                                 new Thread(() ->
-                                                {
-                                                    refreshModel();
-                                                    Platform.runLater(() -> refreshView());
-                                                }).start();
+                                                        refreshModel(cb->{Platform.runLater(() -> refreshView());return null;})).start();
                                                 return null;
                                             }));
 
@@ -313,7 +310,7 @@ public class JobsController extends ScreenController implements Initializable
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading jobs data model..");
 
@@ -325,6 +322,10 @@ public class JobsController extends ScreenController implements Initializable
         JobManager.getInstance().initialize();
         //synchronise model data set
         JobManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -343,13 +344,12 @@ public class JobsController extends ScreenController implements Initializable
         OperationsController.registerTabController(jobsTab.getId(),this);
         new Thread(() ->
         {
-            ResourceManager.getInstance().initialize();
+            /*ResourceManager.getInstance().initialize();
             SupplierManager.getInstance().initialize();
             ClientManager.getInstance().initialize();
             QuoteManager.getInstance().initialize();
-            JobManager.getInstance().initialize();
-
-            Platform.runLater(() -> refreshView());
+            JobManager.getInstance().initialize();*/
+            refreshModel(cb->{Platform.runLater(() -> refreshView());return null;});
         }).start();
     }
 

@@ -67,6 +67,8 @@ public class NewRequisitionController extends ScreenController implements Initia
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_WARN, "reloading requisitions view.");
+
         if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no employees were found in the database.", IO.TAG_WARN);
@@ -117,11 +119,16 @@ public class NewRequisitionController extends ScreenController implements Initia
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading requisitions data model.");
+
         EmployeeManager.getInstance().initialize();
         ClientManager.getInstance().initialize();
         RequisitionManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -201,10 +208,11 @@ public class NewRequisitionController extends ScreenController implements Initia
         ClientManager.newClientWindow("Create a new Client for this Requisition", param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param1 ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }

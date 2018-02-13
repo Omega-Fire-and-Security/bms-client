@@ -48,10 +48,11 @@ public class ExpensesController extends ScreenController implements Initializabl
     public void initialize(URL url, ResourceBundle rb)
     {
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -165,10 +166,14 @@ public class ExpensesController extends ScreenController implements Initializabl
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
-        ExpenseManager.getInstance().initialize();
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading expenses model's data-set.");
         SupplierManager.getInstance().initialize();
+        ExpenseManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

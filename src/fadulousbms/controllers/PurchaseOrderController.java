@@ -72,10 +72,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
     public void initialize(URL url, ResourceBundle rb)
     {
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -219,7 +220,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading purchase order data model..");
 
@@ -228,6 +229,10 @@ public class PurchaseOrderController extends ScreenController implements Initial
         SupplierManager.getInstance().initialize();
         AssetManager.getInstance().initialize();
         PurchaseOrderManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -344,10 +349,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
                             //itemsModified = true;
 
                             new Thread(() ->
-                            {
-                                refreshModel();
-                                Platform.runLater(() -> refreshView());
-                            }).start();
+                                    refreshModel(param ->
+                                    {
+                                        Platform.runLater(() -> refreshView());
+                                        return null;
+                                    })).start();
 
                         }
                         else IO.logAndAlert("Purchase Order Item Addition", "Invalid item selected.", IO.TAG_ERROR);
@@ -359,10 +365,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
                         ResourceManager.getInstance().newResourceWindow(param ->
                         {
                             new Thread(() ->
-                            {
-                                refreshModel();
-                                Platform.runLater(() -> refreshView());
-                            }).start();
+                                    refreshModel(param1 ->
+                                    {
+                                        Platform.runLater(() -> refreshView());
+                                        return null;
+                                    })).start();
                             return null;
                         });
                     });
@@ -707,10 +714,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
 
                     IO.logAndAlert("Success", "Successfully approved purchase order.", IO.TAG_INFO);
                     new Thread(() ->
-                    {
-                        refreshModel();
-                        Platform.runLater(() -> refreshView());
-                    }).start();
+                            refreshModel(param ->
+                            {
+                                Platform.runLater(() -> refreshView());
+                                return null;
+                            })).start();
                 }else{
                     IO.logAndAlert("Error", "Could NOT update associated items", IO.TAG_ERROR);
                 }
@@ -801,10 +809,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
                             //itemsModified = true;
 
                             new Thread(() ->
-                            {
-                                refreshModel();
-                                Platform.runLater(() -> refreshView());
-                            }).start();
+                                    refreshModel(param ->
+                                    {
+                                        Platform.runLater(() -> refreshView());
+                                        return null;
+                                    })).start();
 
                         }
                         else IO.logAndAlert("Purchase Order Item Addition", "Invalid item selected.", IO.TAG_ERROR);
@@ -816,10 +825,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
                         ResourceManager.getInstance().newResourceWindow(param ->
                         {
                             new Thread(() ->
-                            {
-                                refreshModel();
-                                Platform.runLater(() -> refreshView());
-                            }).start();
+                                    refreshModel(param1 ->
+                                    {
+                                        Platform.runLater(() -> refreshView());
+                                        return null;
+                                    })).start();
                             return null;
                         });
                     });
@@ -910,10 +920,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
                             //itemsModified = true;
 
                             new Thread(() ->
-                            {
-                                refreshModel();
-                                Platform.runLater(() -> refreshView());
-                            }).start();
+                                    refreshModel(param ->
+                                    {
+                                        Platform.runLater(() -> refreshView());
+                                        return null;
+                                    })).start();
                         }
                         else IO.logAndAlert("Purchase Order Item Addition", "Invalid item selected.", IO.TAG_ERROR);
                     });
@@ -924,10 +935,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
                         AssetManager.getInstance().newAssetWindow(param ->
                         {
                             new Thread(() ->
-                            {
-                                refreshModel();
-                                Platform.runLater(() -> refreshView());
-                            }).start();
+                                    refreshModel(param1 ->
+                                    {
+                                        Platform.runLater(() -> refreshView());
+                                        return null;
+                                    })).start();
                             return null;
                         });
                     });
@@ -1164,10 +1176,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
         SupplierManager.getInstance().newSupplierWindow(param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param1 ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }
@@ -1178,10 +1191,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
         EmployeeManager.getInstance().newExternalEmployeeWindow("Create a Contact Person for this Purchase Order", param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param1 ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }
@@ -1192,10 +1206,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
         ResourceManager.getInstance().newResourceWindow(param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param1 ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }
@@ -1206,10 +1221,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
         AssetManager.getInstance().newAssetWindow(param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param1 ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }

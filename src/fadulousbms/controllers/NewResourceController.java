@@ -12,6 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.File;
@@ -45,23 +46,31 @@ public class NewResourceController extends ScreenController implements Initializ
     public void initialize(URL url, ResourceBundle rb)
     {
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading resource creation view.");
+
         if(ResourceManager.getInstance().getResource_types()!=null)
             cbxResourceType.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getResource_types().values()));
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading resources data model.");
+
         ResourceManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -206,10 +215,11 @@ public class NewResourceController extends ScreenController implements Initializ
         ResourceManager.getInstance().newResourceTypeWindow(param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param1 ->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }

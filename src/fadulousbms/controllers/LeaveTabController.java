@@ -43,10 +43,11 @@ public class LeaveTabController extends ScreenController implements Initializabl
     public void initialize(URL url, ResourceBundle rb)
     {
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -174,10 +175,11 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                             LeaveManager.approveLeave(leave, param ->
                                             {
                                                 new Thread(() ->
-                                                {
-                                                    refreshModel();
-                                                    Platform.runLater(() -> refreshView());
-                                                }).start();
+                                                        refreshModel(param1 ->
+                                                        {
+                                                            Platform.runLater(() -> refreshView());
+                                                            return null;
+                                                        })).start();
                                                 return null;
                                             }));
 
@@ -246,10 +248,13 @@ public class LeaveTabController extends ScreenController implements Initializabl
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading leave tab model.");
         LeaveManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

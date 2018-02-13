@@ -16,6 +16,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialContainerMenuItem;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
@@ -67,7 +68,7 @@ public class OperationsController extends ScreenController implements Initializa
     @Override
     public void refreshView()
     {
-        IO.log(getClass().getName(), IO.TAG_WARN, "reloading operations view.");
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading operations view.");
         /*Employee e = SessionManager.getInstance().getActiveEmployee();
         if(e!=null)
             this.getUserNameLabel().setText(e.toString());
@@ -84,9 +85,10 @@ public class OperationsController extends ScreenController implements Initializa
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
-        IO.log(getClass().getName(), IO.TAG_WARN, "reloading operations model.");
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading operations model.");
+
         ClientManager.getInstance().initialize();
         SupplierManager.getInstance().initialize();
         ResourceManager.getInstance().initialize();
@@ -96,8 +98,12 @@ public class OperationsController extends ScreenController implements Initializa
         InvoiceManager.getInstance().initialize();
         RequisitionManager.getInstance().initialize();
         if(selected_controller!=null)
-            selected_controller.refreshModel();
+            selected_controller.refreshModel(callback);
         else IO.log(getClass().getName(), IO.TAG_WARN, "operations has no selected screen.");
+
+        //execute callback
+        //if(callback!=null)
+        //    callback.call(null);
     }
 
     @Override

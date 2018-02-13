@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.io.File;
@@ -45,16 +46,19 @@ public class NewAssetController extends ScreenController implements Initializabl
     public void initialize(URL url, ResourceBundle rb)
     {
         new Thread(() ->
-        {
-            refreshModel();
-            if(PurchaseOrderManager.getInstance().getDataset()!=null)
-                Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    if(AssetManager.getInstance().getDataset()!=null)
+                        Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading asset creation view.");
+
         if(AssetManager.getInstance().getAsset_types()==null)
         {
             IO.logAndAlert(getClass().getName(), "no asset types found in database.", IO.TAG_ERROR);
@@ -65,9 +69,14 @@ public class NewAssetController extends ScreenController implements Initializabl
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading asset model's data-set.");
+
         AssetManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -216,11 +225,12 @@ public class NewAssetController extends ScreenController implements Initializabl
         AssetManager.getInstance().createNewAssetType(param ->
         {
             new Thread(() ->
-            {
-                refreshModel();
-                if(PurchaseOrderManager.getInstance().getDataset()!=null)
-                    Platform.runLater(() -> refreshView());
-            }).start();
+                    refreshModel(param1 ->
+                    {
+                        if(AssetManager.getInstance().getDataset()!=null)
+                            Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
             return null;
         });
     }

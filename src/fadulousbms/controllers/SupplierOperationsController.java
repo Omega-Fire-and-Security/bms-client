@@ -1,14 +1,12 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
-import fadulousbms.managers.JobManager;
-import fadulousbms.managers.ScreenManager;
-import fadulousbms.model.Supplier;
+import fadulousbms.managers.SupplierManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TabPane;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
 import java.net.URL;
@@ -21,8 +19,6 @@ public class SupplierOperationsController extends ScreenController implements In
 {
     @FXML
     private TabPane suppliersTabs;
-
-
 
     /**
      * Initializes the controller class.
@@ -38,10 +34,11 @@ public class SupplierOperationsController extends ScreenController implements In
         });
         
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -51,9 +48,15 @@ public class SupplierOperationsController extends ScreenController implements In
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading supplier ops tab model.");
+
+        SupplierManager.getInstance().forceSynchronise();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

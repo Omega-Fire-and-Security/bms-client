@@ -44,10 +44,11 @@ public class OvertimeTabController extends ScreenController implements Initializ
     public void initialize(URL url, ResourceBundle rb)
     {
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -122,10 +123,11 @@ public class OvertimeTabController extends ScreenController implements Initializ
                                             OvertimeManager.approveOvertime(overtime, param ->
                                             {
                                                 new Thread(() ->
-                                                {
-                                                    refreshModel();
-                                                    Platform.runLater(() -> refreshView());
-                                                }).start();
+                                                        refreshModel(param1 ->
+                                                        {
+                                                            Platform.runLater(() -> refreshView());
+                                                            return null;
+                                                        })).start();
                                                 return null;
                                             }));
 
@@ -157,11 +159,16 @@ public class OvertimeTabController extends ScreenController implements Initializ
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
-        IO.log(getClass().getName(), IO.TAG_INFO, "reloading overtime tab model.");
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading overtime model data-set.");
+
         JobManager.getInstance().initialize();
         OvertimeManager.getInstance().initialize();
+
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

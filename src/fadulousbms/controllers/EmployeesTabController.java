@@ -48,10 +48,11 @@ public class EmployeesTabController extends ScreenController implements Initiali
     public void initialize(URL url, ResourceBundle rb)
     {
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
 
     @Override
@@ -233,10 +234,13 @@ public class EmployeesTabController extends ScreenController implements Initiali
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
-        IO.log(getClass().getName(), IO.TAG_INFO, "reloading employees tab model.");
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading employees data model.");
         EmployeeManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

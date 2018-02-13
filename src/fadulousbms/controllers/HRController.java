@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
+import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialContainerMenuItem;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
@@ -61,7 +62,7 @@ public class HRController extends ScreenController implements Initializable
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         EmployeeManager.getInstance().initialize();
         JobManager.getInstance().initialize();
@@ -69,13 +70,20 @@ public class HRController extends ScreenController implements Initializable
         OvertimeManager.getInstance().initialize();
         //TODO: PolicyManager.getInstance().synchroniseDataset();
         //TODO: PayrollManager.getInstance().synchroniseDataset();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
     public void forceSynchronise()
     {
-        refreshModel();
-        Platform.runLater(() -> refreshView());
+        refreshModel(param ->
+        {
+            Platform.runLater(() -> refreshView());
+            return null;
+        });
+
     }
 
     public static void setSelectedTab(Tab tab)

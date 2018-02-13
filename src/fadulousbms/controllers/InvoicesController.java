@@ -54,10 +54,11 @@ public class InvoicesController extends ScreenController implements Initializabl
     {
         OperationsController.registerTabController(invoicesTab.getId(),this);
         new Thread(() ->
-        {
-            refreshModel();
-            Platform.runLater(() -> refreshView());
-        }).start();
+                refreshModel(param ->
+                {
+                    Platform.runLater(() -> refreshView());
+                    return null;
+                })).start();
     }
     @Override
     public void refreshView()
@@ -340,13 +341,16 @@ public class InvoicesController extends ScreenController implements Initializabl
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
         EmployeeManager.getInstance().initialize();
         ClientManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
         JobManager.getInstance().initialize();
         InvoiceManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override

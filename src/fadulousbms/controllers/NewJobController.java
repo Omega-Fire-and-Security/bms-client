@@ -208,6 +208,8 @@ public class NewJobController extends ScreenController implements Initializable
     @Override
     public void refreshView()
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading job creation view.");
+
         if(EmployeeManager.getInstance().getDataset()==null)
         {
             IO.logAndAlert(getClass().getName(), "no employees were found in the database.", IO.TAG_WARN);
@@ -459,13 +461,18 @@ public class NewJobController extends ScreenController implements Initializable
     }
 
     @Override
-    public void refreshModel()
+    public void refreshModel(Callback callback)
     {
+        IO.log(getClass().getName(), IO.TAG_INFO, "reloading job model data-set.");
+
         EmployeeManager.getInstance().initialize();
         ClientManager.getInstance().initialize();
         ResourceManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
         JobManager.getInstance().initialize();
+        //execute callback
+        if(callback!=null)
+            callback.call(null);
     }
 
     @Override
@@ -841,15 +848,16 @@ public class NewJobController extends ScreenController implements Initializable
                         {
                             //refresh model & view when material has been created.
                             new Thread(() ->
-                            {
-                                refreshModel();
-                                Platform.runLater(() ->
-                                {
-                                    refreshView();
-                                    //show material addition window again after material has been created.
-                                    newJobItem();
-                                });
-                            }).start();
+                                    refreshModel(param1 ->
+                                    {
+                                        Platform.runLater(() ->
+                                        {
+                                            refreshView();
+                                            //show material addition window again after material has been created.
+                                            newJobItem();
+                                        });
+                                        return null;
+                                    })).start();
                             return null;
                         });
                     });
