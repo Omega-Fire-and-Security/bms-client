@@ -11,23 +11,32 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.hssf.eventusermodel.HSSFEventFactory;
+import org.apache.poi.hssf.eventusermodel.HSSFListener;
+import org.apache.poi.hssf.eventusermodel.HSSFRequest;
+import org.apache.poi.hssf.record.*;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 
 /**
  * Created by ghost on 2017/01/11.
  */
-public abstract class BusinessObjectManager
+public abstract class BusinessObjectManager implements HSSFListener
 {
     private BusinessObject selected;
     private long refresh_lock = 0;
+    private SSTRecord sstrec;
+    private static boolean found_match = false;
+    private static Employee current_consultant = new Employee();
 
     public abstract void initialize();
 
@@ -434,5 +443,293 @@ public abstract class BusinessObjectManager
         {
             IO.log(PDF.class.getName(), IO.TAG_ERROR, e.getMessage());
         }
+    }
+
+    public static void parseXLSX(String path)
+    {
+        //client info
+        //String company, contact_person,tel,cell_num="",fax,email;
+        HashMap<String, String> quote_info = new HashMap<>();
+        HashMap<String, Employee> sale_consultants = new HashMap<>();
+
+        try
+        {
+            //String contact_person_regex = "(\\.*contact(\\s+|\\t+)person\\s*\\:\\.*)(\\.*)";
+            HashMap<String, String> regular_expressions = new HashMap<>();
+
+            regular_expressions.put("Contact Person", "((Contact(\\s+|\\t+)Person)\\s*\\:\\s*([a-zA-Z0-9\\s]*))");//
+            regular_expressions.put("Company", "(Company\\s*\\:\\s*([a-zA-Z0-9\\s]+))");
+            regular_expressions.put("Sales Consultant", "((Sales(\\s+|\\t+)Consultant)\\s*\\:\\s*([a-zA-Z0-9\\s]*))");//+
+            regular_expressions.put("Sale Consultant", "(([a-zA-Z0-9\\s]+)\\s*\\:\\s*([0-9\\s]{10,}))");
+            regular_expressions.put("Cell", "((Cell|CeII|cell|ceII)\\s*\\:\\s*([0-9\\s]*))");//{10,}
+            regular_expressions.put("Email", "((email|Email|e-mail|eMail|e-Mail)\\s*\\:\\s*(\\.*))");//[a-zA-Z0-9@.-/]*
+            /*regular_expressions.putIfAbsent("contact_person", "((Contact(\\s+|\\t+)Person)\\s*\\:\\s*([a-zA-Z0-9\\s]+))");
+            regular_expressions.putIfAbsent("contact_person", "((Contact(\\s+|\\t+)Person)\\s*\\:\\s*([a-zA-Z0-9\\s]+))");
+            regular_expressions.putIfAbsent("contact_person", "((Contact(\\s+|\\t+)Person)\\s*\\:\\s*([a-zA-Z0-9\\s]+))");
+            regular_expressions.putIfAbsent("contact_person", "((Contact(\\s+|\\t+)Person)\\s*\\:\\s*([a-zA-Z0-9\\s]+))");
+            regular_expressions.putIfAbsent("contact_person", "((Contact(\\s+|\\t+)Person)\\s*\\:\\s*([a-zA-Z0-9\\s]+))");*/
+
+            FileInputStream excelFile = new FileInputStream(new File(path));
+            Workbook workbook = new XSSFWorkbook(excelFile);
+            Sheet datatypeSheet = workbook.getSheetAt(0);
+            Iterator<Row> iterator = datatypeSheet.iterator();
+
+            while (iterator.hasNext())
+            {
+                Row currentRow = iterator.next();
+                Iterator<Cell> cellIterator = currentRow.iterator();
+
+                //int cell=0;
+                while (cellIterator.hasNext())
+                {
+                    Cell currentCell = cellIterator.next();
+                    if (currentCell.getCellTypeEnum() == CellType.STRING)
+                    {
+                        IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "processing line: [" + currentCell.getStringCellValue()+"].");
+                        //final Employee curr_consultant = current_consultant;
+                        found_match = false;
+                        regular_expressions.forEach((key, regex) ->
+                        {
+                            Matcher matcher = Validators.matchRegex(regex, currentCell.getStringCellValue());
+                            found_match=matcher.find();
+                            if (found_match)
+                            {
+                                System.out.println("Found " + key + ": " + matcher.group(1).split("\\:")[1].trim());
+
+                                //parse cell numbers
+                                if(key.toLowerCase().equals("cell")||key.toLowerCase().equals("ceII"))
+                                {
+                                    //check if company cell or sale consultant cell
+                                    if(quote_info.get("Cell")==null)
+                                        quote_info.put("Cell", matcher.group(1).split("\\:")[1].trim());
+                                    else //company cell has been set, append to sale reps
+                                    {
+                                        //if(curr_consultant.getCell()==null)//if current consultant's cell if not set, set it
+                                        current_consultant.setCell(matcher.group(1).split("\\:")[1].trim());
+                                    }
+                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
+                                }
+                                //parse email addresses
+                                if(key.toLowerCase().equals("email")||key.toLowerCase().equals("e-mail"))
+                                {
+                                    //check if company eMail or sale consultant eMail
+                                    /*if(quote_info.get("eMail")==null)
+                                        quote_info.put("eMail", matcher.group(1).split("\\:")[1].trim());
+                                    else //company cell has been set, append to sale reps
+                                    {
+                                        //if(curr_consultant.getCell()==null)//if current consultant's cell if not set, set it
+                                        curr_consultant.setEmail(matcher.group(1).split("\\:")[1].trim());
+                                    }*/
+                                    if(currentCell.getColumnIndex()==0)
+                                        quote_info.put("eMail", matcher.group(1).split("\\:")[1].trim());
+                                    else current_consultant.setEmail(matcher.group(1).split("\\:")[1].trim());
+
+                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
+                                }
+                                //parse consultant names
+                                if(key.toLowerCase().equals("sales consultant"))
+                                {
+                                    String full_name = matcher.group(1).split("\\:")[1].trim();
+                                    if(full_name.contains(" "))
+                                    {
+                                        current_consultant.setFirstname(full_name.split(" ")[0]);
+                                        current_consultant.setLastname(full_name.split(" ")[1]);
+                                    } else
+                                    {
+                                        current_consultant.setFirstname(full_name);
+                                        current_consultant.setLastname("");
+                                    }
+                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
+                                }
+                            }
+                        });
+                        if(!found_match)//check if line matches additional consultant name regex
+                        {
+                            //parse additional consultant name & cell
+                            if(currentCell.getColumnIndex()>0)//fields on the far left are client info
+                            {
+                                Matcher matcher = Validators.matchRegex(regular_expressions.get("Sale Consultant"), currentCell.getStringCellValue());
+                                if(matcher.find())
+                                {
+                                    String[] consult_info = matcher.group(1).split("\\:");
+                                    if(consult_info!=null) {
+                                        if (consult_info.length > 1) {
+                                            if (!consult_info[0].trim().isEmpty() && !consult_info[1].trim().isEmpty()) {
+                                                IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "found additional sale consultant: [" + matcher.group(1) + "].");
+
+                                                String full_name = matcher.group(1).split("\\:")[0].trim();
+                                                String cell = matcher.group(1).split("\\:")[1].trim();
+                                                current_consultant.setCell(cell);
+                                                if (full_name.contains(" ")) {
+                                                    current_consultant.setFirstname(full_name.split(" ")[0]);
+                                                    current_consultant.setLastname(full_name.split(" ")[1]);
+                                                } else {
+                                                    current_consultant.setFirstname(full_name);
+                                                    current_consultant.setLastname("");
+                                                }
+                                            }
+                                        }
+                                        IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString() + "].");
+                                    }
+                                }
+                            }
+                        } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "no usable fields were found on line: " +currentCell.getStringCellValue());
+                    } else if (currentCell.getCellTypeEnum() == CellType.NUMERIC)
+                    {
+                        IO.logAndAlert("Error", "Unexpected data-type found [Numeric]: " + currentCell.getNumericCellValue(), IO.TAG_WARN);
+                        //TODO: handle this better
+                    }
+                    //is the current sale consultant complete? i.e. cell, email & name have been set
+                    if(current_consultant.getCell()!=null && current_consultant.getEmail() !=null && current_consultant.getName()!=null)
+                    if(!current_consultant.getCell().isEmpty() && !current_consultant.getEmail().isEmpty() && !current_consultant.getName().isEmpty())
+                    {
+                        //got all the data for the current consultant
+                        sale_consultants.putIfAbsent(current_consultant.getName(), current_consultant);
+
+                        IO.log(BusinessObjectManager.class.getName(), IO.TAG_INFO, "committed current sale consultant: [" + current_consultant.getJSONString()+"] to map.");
+
+                        current_consultant = new Employee();
+                    } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "current sale consultant: [" + current_consultant.getJSONString()+"] is not yet complete.");
+
+                }
+                System.out.println();//print new line
+            }
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+            IO.logAndAlert("Error", e.getMessage(), IO.TAG_WARN);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            IO.logAndAlert("Error", e.getMessage(), IO.TAG_WARN);
+        }
+    }
+
+    public void writeXLSX(String path)
+    {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Datatypes in Java");
+        Object[][] datatypes = {
+                {"Datatype", "Type", "Size(in bytes)"},
+                {"int", "Primitive", 2},
+                {"float", "Primitive", 4},
+                {"double", "Primitive", 8},
+                {"char", "Primitive", 1},
+                {"String", "Non-Primitive", "No fixed size"}
+        };
+
+        int rowNum = 0;
+        System.out.println("Creating excel");
+
+        for (Object[] datatype : datatypes) {
+            Row row = sheet.createRow(rowNum++);
+            int colNum = 0;
+            for (Object field : datatype) {
+                Cell cell = row.createCell(colNum++);
+                if (field instanceof String) {
+                    cell.setCellValue((String) field);
+                } else if (field instanceof Integer) {
+                    cell.setCellValue((Integer) field);
+                }
+            }
+        }
+
+        try
+        {
+            FileOutputStream outputStream = new FileOutputStream(path);
+            workbook.write(outputStream);
+            workbook.close();
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        System.out.println("Done");
+    }
+    /**
+     * This method listens for incoming records and handles them as required.
+     * @param record    The record that was found while reading.
+     */
+    public void processRecord(Record record)
+    {
+        switch (record.getSid())
+        {
+            // the BOFRecord can represent either the beginning of a sheet or the workbook
+            case BOFRecord.sid:
+                BOFRecord bof = (BOFRecord) record;
+                if (bof.getType() == bof.TYPE_WORKBOOK)
+                {
+                    System.out.println("Encountered workbook");
+                    // assigned to the class level member
+                } else if (bof.getType() == bof.TYPE_WORKSHEET)
+                {
+                    System.out.println("Encountered sheet reference");
+                }
+                break;
+            case BoundSheetRecord.sid:
+                BoundSheetRecord bsr = (BoundSheetRecord) record;
+                System.out.println("New sheet named: " + bsr.getSheetname());
+                break;
+            case RowRecord.sid:
+                RowRecord rowrec = (RowRecord) record;
+                System.out.println("Row found, first column at "
+                        + rowrec.getFirstCol() + " last column at " + rowrec.getLastCol());
+                break;
+            case NumberRecord.sid:
+                NumberRecord numrec = (NumberRecord) record;
+                System.out.println("Cell found with value " + numrec.getValue()
+                        + " at row " + numrec.getRow() + " and column " + numrec.getColumn());
+                break;
+            // SSTRecords store a array of unique strings used in Excel.
+            case SSTRecord.sid:
+                sstrec = (SSTRecord) record;
+                for (int k = 0; k < sstrec.getNumUniqueStrings(); k++)
+                {
+                    System.out.println("String table value " + k + " = " + sstrec.getString(k));
+                }
+                break;
+            case LabelSSTRecord.sid:
+                LabelSSTRecord lrec = (LabelSSTRecord) record;
+                System.out.println("String cell found with value "
+                        + sstrec.getString(lrec.getSSTIndex()));
+                break;
+        }
+    }
+
+    /**
+     * Read an excel file and spit out what we find.
+     *
+     * @param file_path  the file path of the file to be read.
+     * @throws IOException  When there is an error processing the file.
+     */
+    public void readExcelSpreadsheet(String file_path) throws IOException
+    {
+        File file = new File(file_path);
+        if(file.exists())
+        {
+            // create a new file input stream with the input file specified
+            FileInputStream fin = new FileInputStream(file);
+
+            // create a new org.apache.poi.poifs.filesystem.Filesystem
+            POIFSFileSystem poifs = new POIFSFileSystem(fin);
+            // get the Workbook (excel part) stream in a InputStream
+            InputStream din = poifs.createDocumentInputStream("Workbook");
+            // construct out HSSFRequest object
+            HSSFRequest req = new HSSFRequest();
+            // lazy listen for ALL records with the listener shown above
+            req.addListenerForAllRecords(this);
+            // create our event factory
+            HSSFEventFactory factory = new HSSFEventFactory();
+            // process our events based on the document input stream
+            factory.processEvents(req, din);
+            // once all the events are processed close our file input stream
+            fin.close();
+            // and our document input stream (don't want to leak these!)
+            din.close();
+            System.out.println("done.");
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "file ["+file_path+"] does not exist.");
     }
 }

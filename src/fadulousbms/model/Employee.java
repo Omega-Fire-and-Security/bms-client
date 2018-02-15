@@ -292,7 +292,7 @@ public class Employee extends BusinessObject implements Serializable
                 +",\"tel\":\""+getTel()+"\""
                 +",\"access_level\":\""+getAccessLevel()+"\"}";
 
-        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        //IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
     }
 

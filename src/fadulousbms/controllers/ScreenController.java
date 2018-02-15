@@ -19,9 +19,26 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
+import org.apache.poi.poifs.filesystem.OfficeXmlFileException;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.model.SharedStringsTable;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
 
 /**
  *
@@ -187,6 +204,21 @@ public abstract class ScreenController
         RadialMenuItem menuForward = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Forward", null, null, event -> showMain());
         RadialMenuItem menuHome = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Home", null, null, event -> showMain());
         RadialMenuItem menuLogin = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Login", null, null, event -> showLogin());
+        /*RadialMenuItem menuExcel = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Read Excel File", null, null, event -> {
+            try
+            {
+                EmployeeManager.getInstance().parseXLSX("quote_01.xlsx");
+                //processAllSheets("quote_01.xlsx");
+            } catch (OfficeXmlFileException e)
+            {
+                //load file using XSSF
+
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+                IO.log(ScreenController.class.getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        });*/
         RadialMenuItem suppliers_pdf_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Sage One Suppliers PDF", null, null, event -> SupplierManager
                 .parsePDF("suppliers.pdf", new Callback()
                 {
@@ -301,6 +333,89 @@ public abstract class ScreenController
                 }));
 
         return new RadialMenuItem[]{menuClose, menuBack, menuForward, menuHome, menuLogin, suppliers_pdf_parser, clients_pdf_parser};
+    }
+
+    public static void readXLSXFile() throws IOException
+    {
+        InputStream ExcelFileToRead = new FileInputStream("C:/Test.xlsx");
+        XSSFWorkbook wb = new XSSFWorkbook(ExcelFileToRead);
+
+        XSSFWorkbook test = new XSSFWorkbook();
+
+        XSSFSheet sheet = wb.getSheetAt(0);
+        XSSFRow row;
+        XSSFCell cell;
+
+        Iterator rows = sheet.rowIterator();
+
+        while (rows.hasNext())
+        {
+            row=(XSSFRow) rows.next();
+            Iterator cells = row.cellIterator();
+            while (cells.hasNext())
+            {
+                cell=(XSSFCell) cells.next();
+                if (cell.getCellType() == XSSFCell.CELL_TYPE_STRING)
+                {
+                    System.out.print(cell.getStringCellValue()+" ");
+                }
+                else if(cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
+                {
+                    System.out.print(cell.getNumericCellValue()+" ");
+                }
+                else
+                {
+                    //U Can Handel Boolean, Formula, Errors
+                }
+            }
+            System.out.println();
+        }
+    }
+
+    public static void processOneSheet(String filename) throws Exception
+    {
+        OPCPackage pkg = OPCPackage.open(filename);
+        XSSFReader r = new XSSFReader( pkg );
+        SharedStringsTable sst = r.getSharedStringsTable();
+
+        XMLReader parser = fetchSheetParser(sst);
+
+        // To look up the Sheet Name / Sheet Order / rID,
+        //  you need to process the core Workbook stream.
+        // Normally it's of the form rId# or rSheet#
+        InputStream sheet2 = r.getSheet("rId2");
+        InputSource sheetSource = new InputSource(sheet2);
+        parser.parse(sheetSource);
+        sheet2.close();
+    }
+
+    public static void processAllSheets(String filename) throws Exception
+    {
+        try (OPCPackage pkg = OPCPackage.open(filename, PackageAccess.READ))
+        {
+            XSSFReader r = new XSSFReader(pkg);
+            SharedStringsTable sst = r.getSharedStringsTable();
+
+            XMLReader parser = fetchSheetParser(sst);
+
+            Iterator<InputStream> sheets = r.getSheetsData();
+            while (sheets.hasNext()) {
+                System.out.println("Processing new sheet:\n");
+                try (InputStream sheet = sheets.next()) {
+                    InputSource sheetSource = new InputSource(sheet);
+                    parser.parse(sheetSource);
+                }
+                System.out.println("");
+            }
+        }
+    }
+
+    public static XMLReader fetchSheetParser(SharedStringsTable sst) throws SAXException
+    {
+        XMLReader parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
+        ContentHandler handler = new SheetHandler(sst);
+        parser.setContentHandler(handler);
+        return parser;
     }
 
     //public abstract RadialMenuItem[] getContextMenu();
