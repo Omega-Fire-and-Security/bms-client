@@ -307,7 +307,7 @@ public class QuoteManager extends BusinessObjectManager
         } else IO.logAndAlert("New Quote Creation Failure", "Could not connect to server.", IO.TAG_WARN);
     }
 
-    public void updateQuote(Quote quote, ObservableList<QuoteItem> quoteItems, ObservableList<QuoteService> quoteServices, Callback callback)
+    public void updateQuote(Quote quote, ObservableList<QuoteItem> quoteItems, ObservableList<QuoteService> quoteServices, boolean check_status, Callback callback)
     {
         if(quote==null)
         {
@@ -324,7 +324,7 @@ public class QuoteManager extends BusinessObjectManager
             IO.logAndAlert("Error: Invalid Quote", "Quote has no items", IO.TAG_ERROR);
             return;
         }
-        if(quote.getStatus()==Quote.STATUS_APPROVED)
+        if(check_status && quote.getStatus()==Quote.STATUS_APPROVED)
         {
             IO.logAndAlert("Error", "Selected quote has already been approved. \nCreate a new Revision if you would like to make changes to this quote.", IO.TAG_ERROR);
             return;
@@ -342,10 +342,10 @@ public class QuoteManager extends BusinessObjectManager
             quoteServices.toArray(services);
         }
 
-        updateQuote(quote, items, services, callback);
+        updateQuote(quote, items, services, check_status, callback);
     }
 
-    public void updateQuote(Quote quote, QuoteItem[] quoteItems, QuoteService[] quoteServices, Callback callback)
+    public void updateQuote(Quote quote, QuoteItem[] quoteItems, QuoteService[] quoteServices, boolean check_status, Callback callback)
     {
         if (SessionManager.getInstance().getActive() == null)
         {
@@ -367,7 +367,7 @@ public class QuoteManager extends BusinessObjectManager
             IO.logAndAlert("Invalid Quote", "Quote has no items", IO.TAG_ERROR);
             return;
         }
-        if(quote.getStatus()==Quote.STATUS_APPROVED)
+        if(check_status && quote.getStatus()==Quote.STATUS_APPROVED)
         {
             IO.logAndAlert("Error", "Selected quote has already been approved. \nCreate a new Revision if you would like to make changes to this quote.", IO.TAG_ERROR);
             return;

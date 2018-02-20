@@ -87,6 +87,10 @@ public class ServiceItem extends BusinessObject implements Serializable
         this.quantity = quantity;
     }
 
+    public double getTotal()
+    {
+        return getItem_rate()*getQuantity();
+    }
     //Properties
 
     public StringProperty service_idProperty(){return new SimpleStringProperty(service_id);}

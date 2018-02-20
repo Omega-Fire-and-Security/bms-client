@@ -41,8 +41,8 @@ public class DatePickerCell extends TableCell<BusinessObject, Long>
             {
                 if (!isEmpty())
                 {
-                    commitEdit(datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
                     updateItem(datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond(), isEmpty());
+                    commitEdit(datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
                 }
             }
         });

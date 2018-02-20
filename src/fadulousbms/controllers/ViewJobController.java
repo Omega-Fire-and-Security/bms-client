@@ -176,7 +176,11 @@ public class ViewJobController extends ScreenController implements Initializable
 
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-            //datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()
+            //clear date fields
+            dateAssigned.setValue(LocalDate.parse(formatter.format(new Date(0))));
+            dateStarted.setValue(LocalDate.parse(formatter.format(new Date(0))));
+            dateCompleted.setValue(LocalDate.parse(formatter.format(new Date(0))));
+            //set date fields
             if(selected.getDate_assigned()>0)
                 dateAssigned.setValue(LocalDate.parse(formatter.format(new Date(selected.getDate_assigned()))));
             if(selected.getDate_started()>0)
@@ -192,10 +196,10 @@ public class ViewJobController extends ScreenController implements Initializable
                     {
                         if(!SessionManager.getInstance().getActive().isExpired())
                         {
-                            selected.setDate_assigned(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+                            selected.setDate_assigned(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);//epoch milliseconds
+
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry("Cookie", SessionManager.getInstance().getActive()
-                                    .getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
                             try
                             {
@@ -228,7 +232,8 @@ public class ViewJobController extends ScreenController implements Initializable
                     {
                         if(!SessionManager.getInstance().getActive().isExpired())
                         {
-                            selected.setDate_started(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+                            selected.setDate_started(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);
+
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                             headers.add(new AbstractMap.SimpleEntry("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
@@ -260,7 +265,8 @@ public class ViewJobController extends ScreenController implements Initializable
                     {
                         if(!SessionManager.getInstance().getActive().isExpired())
                         {
-                            selected.setDate_completed(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+                            selected.setDate_completed(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);
+
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                             headers.add(new AbstractMap.SimpleEntry("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
@@ -376,7 +382,7 @@ public class ViewJobController extends ScreenController implements Initializable
                 vBox.setFillWidth(true);
 
                 Stage stage = new Stage();
-                stage.setTitle("Add Job Representative");
+                stage.setTitle("Add Job Technician");
                 stage.setScene(new Scene(vBox));
                 stage.setAlwaysOnTop(true);
                 stage.show();
@@ -385,16 +391,20 @@ public class ViewJobController extends ScreenController implements Initializable
                 {
                     if(employeeComboBox.getValue()!=null)
                     {
+                        if(JobManager.getInstance().getSelected()!=null)
+                        {
+                            ((Job)JobManager.getInstance().getSelected()).setDate_assigned(System.currentTimeMillis());
+                        } else IO.log(getClass().getName(), IO.TAG_WARN, "selected job is invalid.");
                         tblEmployees.getItems().add(employeeComboBox.getValue());
                         itemsModified=true;
-                    } else IO.logAndAlert("Add Job Representative", "Invalid employee selected.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Add Job Technician", "Invalid employee selected.", IO.TAG_ERROR);
                 });
 
                 btnCancel.setOnAction(event ->
                     stage.close());
                 return;
             } else IO.logAndAlert("New Job Representative", "No employees were found in the database, please add an employee first and try again.",IO.TAG_ERROR);
-        }else IO.logAndAlert("New Job Representative", "No employees were found in the database, please add an employee first and try again.",IO.TAG_ERROR);
+        } else IO.logAndAlert("New Job Representative", "No employees were found in the database, please add an employee first and try again.",IO.TAG_ERROR);
     }
 
     @FXML
@@ -419,6 +429,11 @@ public class ViewJobController extends ScreenController implements Initializable
         {
             if(!smgr.getActive().isExpired())
             {
+                if(JobManager.getInstance().getSelected()==null)
+                {
+                    IO.log(getClass().getName(), IO.TAG_WARN, "selected job is invalid.");
+                    return;
+                }
                 Job selected = ((Job)JobManager.getInstance().getSelected());
                 if(selected!=null)
                 {
@@ -426,8 +441,8 @@ public class ViewJobController extends ScreenController implements Initializable
                     if(selected.getStatus()!=Job.STATUS_APPROVED)
                     {
                         //set date assigned to current UNIX epoch date
-                        if (selected.getDate_assigned() <= 0)
-                            selected.setDate_assigned(System.currentTimeMillis());
+                        //if (selected.getDate_assigned() <= 0)
+                        //    selected.setDate_assigned(System.currentTimeMillis());
 
                         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                         headers.add(new AbstractMap.SimpleEntry("Cookie", smgr.getActive().getSession_id()));

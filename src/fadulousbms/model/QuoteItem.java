@@ -23,9 +23,8 @@ public class QuoteItem extends BusinessObject implements Serializable
     private String additional_costs;
     private String quote_id;
     private String resource_id;
+    private String category;
     public static final String TAG = "QuoteItem";
-
-    private StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
 
     public String getItem_number()
     {
@@ -42,8 +41,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.item_number = item_number;
     }
 
-    private StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
-
     public String getQuote_id()
     {
         return quote_id;
@@ -54,7 +51,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.quote_id = quote_id;
     }
 
-    private StringProperty resource_idProperty(){return new SimpleStringProperty(resource_id);}
 
     public String getResource_id()
     {
@@ -66,8 +62,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.resource_id = resource_id;
     }
 
-    private StringProperty equipment_nameProperty(){return new SimpleStringProperty(getEquipment_name());}
-
     public String getEquipment_name()
     {
         Resource resource = getResource();
@@ -76,8 +70,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         return "N/A";
     }
 
-    private StringProperty equipment_descriptionProperty(){return new SimpleStringProperty(getEquipment_description());}
-
     public String getEquipment_description()
     {
         Resource resource = getResource();
@@ -85,8 +77,6 @@ public class QuoteItem extends BusinessObject implements Serializable
             return resource.getResource_description();
         return "N/A";
     }
-
-    private StringProperty additional_costsProperty(){return new SimpleStringProperty(additional_costs);}
 
     public String getAdditional_costs()
     {
@@ -98,8 +88,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.additional_costs = additional_costs;
     }
 
-    private StringProperty unitProperty(){return new SimpleStringProperty(getUnit());}
-
     public String getUnit()
     {
         Resource resource = getResource();
@@ -107,8 +95,6 @@ public class QuoteItem extends BusinessObject implements Serializable
             return resource.getUnit();
         return "N/A";
     }
-
-    private StringProperty quantityProperty(){return new SimpleStringProperty(String.valueOf(quantity));}
 
     public String getQuantity()
     {
@@ -125,8 +111,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.quantity = quantity;
     }
 
-    private StringProperty unit_costProperty() {return new SimpleStringProperty(String.valueOf(unit_cost));}
-
     public String getUnit_cost()
     {
         return String.valueOf(getUnitCost());
@@ -142,8 +126,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.unit_cost = unit_cost;
     }
 
-    private StringProperty valueProperty(){return new SimpleStringProperty(String.valueOf(getCurrentValue()));}
-
     public String getCurrentValue()
     {
         return String.valueOf(getCurrentUnitCost());
@@ -157,8 +139,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         return 0;
     }
 
-    private StringProperty markupProperty(){return new SimpleStringProperty(String.valueOf(markup));}
-
     public String getMarkup(){return String.valueOf(this.markup);}
 
     public double getMarkupValue(){return this.markup;}
@@ -171,11 +151,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         if(resources!=null)
             return resources.get(getResource_id());
         return null;
-    }
-
-    public StringProperty rateProperty()
-    {
-        return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + getRate());
     }
 
     public double getRate()
@@ -227,14 +202,41 @@ public class QuoteItem extends BusinessObject implements Serializable
         return total;
     }
 
-    public StringProperty totalProperty()
+    public String getCategory()
     {
-        return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + getTotal());
+        return category;
+    }
+
+    public void setCategory(String category)
+    {
+        this.category = category;
     }
 
     public double getTotal()
     {
         return getRate()*getQuantityValue();
+    }
+
+    //Properties
+    public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
+    public StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
+    public StringProperty resource_idProperty(){return new SimpleStringProperty(resource_id);}
+    public StringProperty equipment_nameProperty(){return new SimpleStringProperty(getEquipment_name());}
+    public StringProperty equipment_descriptionProperty(){return new SimpleStringProperty(getEquipment_description());}
+    public StringProperty additional_costsProperty(){return new SimpleStringProperty(additional_costs);}
+    public StringProperty unitProperty(){return new SimpleStringProperty(getUnit());}
+    public StringProperty quantityProperty(){return new SimpleStringProperty(String.valueOf(quantity));}
+    public StringProperty unit_costProperty() {return new SimpleStringProperty(String.valueOf(unit_cost));}
+    public StringProperty valueProperty(){return new SimpleStringProperty(String.valueOf(getCurrentValue()));}
+    public StringProperty rateProperty()
+    {
+        return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + getRate());
+    }
+    public StringProperty markupProperty(){return new SimpleStringProperty(String.valueOf(markup));}
+    public StringProperty categoryProperty(){return new SimpleStringProperty(String.valueOf(getCategory()));}
+    public StringProperty totalProperty()
+    {
+        return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + getTotal());
     }
 
     @Override
@@ -265,6 +267,9 @@ public class QuoteItem extends BusinessObject implements Serializable
                     break;
                 case "markup":
                     setMarkup(Double.parseDouble((String) val));
+                    break;
+                case "category":
+                    setCategory((String) val);
                     break;
                 default:
                     IO.log(getClass().getName(), IO.TAG_ERROR, "Unknown "+getClass().getName()+" attribute '" + var + "'.");
@@ -303,6 +308,8 @@ public class QuoteItem extends BusinessObject implements Serializable
                 return getCurrentValue();
             case "markup":
                 return getMarkupValue();
+            case "category":
+                return getCategory();
         }
         return super.get(var);
     }
@@ -318,6 +325,8 @@ public class QuoteItem extends BusinessObject implements Serializable
                 +",\"quantity\":\""+quantity+"\""
                 +",\"unit_cost\":\""+unit_cost+"\""
                 +",\"markup\":\""+markup+"\"";
+        if(getCategory()!=null)
+                json_obj+=",\"category\":\""+category+"\"";
         if(getAdditional_costs()!=null)
                 json_obj+=",\"additional_costs\":\""+additional_costs+"\"";
         json_obj+="}";

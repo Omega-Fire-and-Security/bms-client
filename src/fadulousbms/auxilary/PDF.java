@@ -1107,8 +1107,8 @@ public class PDF
 
         //set the cursor to the line after the sale/client rep info
         line_pos = line_pos<temp_pos?line_pos:temp_pos;
-        addTextToPageStream(contents,"Request: " + quote.getRequest(),PDType1Font.COURIER, 13,20, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
+        //addTextToPageStream(contents,"Request: " + quote.getRequest(),PDType1Font.COURIER, 13,20, line_pos);
+        //line_pos-=LINE_HEIGHT;//next line
 
         contents.endText();
 
@@ -1141,7 +1141,7 @@ public class PDF
         contents.stroke();
 
         contents.beginText();
-        addTextToPageStream(contents,"Site Location: " + quote.getSitename(),PDType1Font.COURIER, 13,20, line_pos);
+        addTextToPageStream(contents,"Site: " + quote.getSitename(),PDType1Font.COURIER, 13,20, line_pos);
         //addTextToPageStream(contents,"Total Incl. VAT: "+String.valueOf(DecimalFormat.getCurrencyInstance().format(quote.getTotal()+quote.getTotal()*(Quote.VAT/100))), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int)((w/2)+15), line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
@@ -1152,49 +1152,242 @@ public class PDF
         contents.stroke();
         contents.beginText();
 
-        //Column headings
+        //begin rendering column headings
         int col_pos = 10;
-        addTextToPageStream(contents,"Item No.", PDType1Font.COURIER_BOLD,14,15, line_pos);
+        addTextToPageStream(contents,"Item", PDType1Font.COURIER_BOLD,14,15, line_pos);
         col_pos += 80;
         addTextToPageStream(contents,"Equipment description", PDType1Font.COURIER_BOLD,14,col_pos+20, line_pos);
         col_pos = (int)(w/2);
-        String[] cols = {"Unit", "Qty", "Rate", "Labour", "Total"};
-        for(int i=0;i<5;i++)//7 cols in total
-            addTextToPageStream(contents,cols[i], PDType1Font.COURIER_BOLD, 12,col_pos+(55*i)+10, line_pos);
+        //define additional column headings
+        String[] cols = {"Unit", "Quantity", "Rate", "Total"};
+        //render additional column headings
+        for(int i=0;i<cols.length;i++)//6 cols in total
+            addTextToPageStream(contents,cols[i], PDType1Font.COURIER_BOLD, 12,col_pos+(70*i)+10, line_pos);
         line_pos-=LINE_HEIGHT;//next line
+
+        //render quote request
+        line_pos-=LINE_HEIGHT;//next line
+        addTextToPageStream(contents, quote.getRequest(), PDType1Font.COURIER_BOLD,14,105, line_pos);
+        line_pos -= LINE_HEIGHT;//next line
 
         //Actual quote information
         col_pos = 10;
         double sub_total = 0;
+        int item_index = 0;
         if(quote.getResources()!=null)
         {
+            //group quote materials by category
+            HashMap<String, ArrayList<QuoteItem>> quoteItemsCategoriesMap = new HashMap<>();
             for(QuoteItem item: quote.getResources())
             {
-                //quote content column dividers
-                contents.endText();
-                //#1
-                contents.moveTo(80, (col_divider_start+(int)Math.ceil(LINE_HEIGHT/2)));
-                contents.lineTo(80, line_pos-LINE_HEIGHT/2);
-                contents.stroke();
-                //vertical line going through center of page
-                contents.setStrokingColor(Color.BLACK);
-                contents.moveTo((w/2), (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-                contents.lineTo((w/2),line_pos-LINE_HEIGHT/2);
-                contents.stroke();
-                //#3+
-                for(int i=1;i<5;i++)//7 cols in total
+                if(quoteItemsCategoriesMap.get(item.getCategory())==null)//if material category is first of its type (i.e. has no bucket of materials)
+                    quoteItemsCategoriesMap.put(item.getCategory(), new ArrayList<>());//instantiate the category's bucket
+                ArrayList cat_list = quoteItemsCategoriesMap.get(item.getCategory());//get current material's respective category's bucket of materials
+                cat_list.add(item);//add current material to respective category's bucket of materials.
+            }
+            if(quoteItemsCategoriesMap.isEmpty())
+            {
+                IO.log(PDF.class.getName(), IO.TAG_ERROR, "quote ["+quote.get_id()+"] has no resources.");
+                return null;
+            }
+            //for each category, list that category's QuoteItems (materials/resources)
+            for(ArrayList<QuoteItem> items: quoteItemsCategoriesMap.values())//go through all categories
+            {
+                if(items==null)
+                    continue;
+                if(items.isEmpty())
+                    continue;
+
+                item_index++;//increment major index
+
+                //render category name
+                line_pos -= LINE_HEIGHT;//next line
+                addTextToPageStream(contents, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 14, 30, line_pos);
+                addTextToPageStream(contents,items.get(0).getCategory(), PDType1Font.COURIER_BOLD,14,90, line_pos);
+                line_pos -= LINE_HEIGHT;//next line
+
+                int item_index_minor =0;//reset minor index
+                for (QuoteItem item : items)
                 {
-                    contents.moveTo((w/2)+55*i, (col_divider_start+(int)Math.ceil(LINE_HEIGHT/2)));
-                    contents.lineTo((w/2)+55*i,line_pos-LINE_HEIGHT/2);
+                    item_index_minor++;
+                    /**draw quote materials' column dividers for current line**/
+                    contents.endText();
+                    //Col #1
+                    contents.moveTo(80, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
+                    contents.lineTo(80, line_pos - LINE_HEIGHT / 2);
+                    contents.stroke();
+                    //Col #2: vertical line going through center of page
+                    contents.setStrokingColor(Color.BLACK);
+                    contents.moveTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
+                    contents.lineTo((w / 2), line_pos - LINE_HEIGHT / 2);
+                    contents.stroke();
+                    //Col #3+
+                    for (int i = 1; i < cols.length; i++)//6 cols in total
+                    {
+                        contents.moveTo((w / 2) + 70 * i, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
+                        contents.lineTo((w / 2) + 70 * i, line_pos - LINE_HEIGHT / 2);
+                        contents.stroke();
+                    }
+                    contents.beginText();
+                    /**end draw columns, begin rendering text**/
+
+                    /**begin rendering actual quote material information**/
+                    //first column, Item number
+                    col_pos = 0;
+                    addTextToPageStream(contents, String.valueOf(item_index)+"."+String.valueOf(item_index_minor), 12, col_pos + 30, line_pos);//item.getItem_number()
+                    col_pos += 80;//next column
+
+                    //Description col
+                    addTextToPageStream(contents, item.getResource().getResource_name(), 12, col_pos + 5, line_pos);
+                    col_pos = (int) w / 2;//next column - starts at middle of page
+
+                    //Unit col
+                    addTextToPageStream(contents, item.getUnit(), 12, col_pos + 5, line_pos);
+                    col_pos += 70;//next column
+
+                    //Quantity col
+                    addTextToPageStream(contents, item.getQuantity(), digit_font_size, col_pos + 5, line_pos);
+                    col_pos += 70;//next column
+
+                    //Rate col
+                    addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getRate())), digit_font_size, col_pos + 5, line_pos);
+                    col_pos += 70;//next column
+                    //Labour col
+                    //addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getLabourCost())), digit_font_size,col_pos+5, line_pos);
+                    //col_pos += 55;//next column
+
+                    //Total col
+                    sub_total += item.getTotal();
+                    addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getTotal())), digit_font_size, col_pos + 5, line_pos);
+
+                    //if the page can't hold another 4 lines[current item, blank, sub-total, vat] add a new page
+                    if (line_pos - LINE_HEIGHT < h - header_h - (ROW_COUNT * LINE_HEIGHT))
+                    {
+                        addTextToPageStream(contents, "Page " + quote_page_count, PDType1Font.COURIER, 14, (int) (w / 2) - 20, 30);
+                        //add new page
+                        page = new PDPage(PDRectangle.A4);
+                        document.addPage(page);
+                        //TODO: setup page, i.e. draw lines and stuff
+                        contents.close();
+                        contents = new PDPageContentStream(document, page);
+                        contents.beginText();
+                        line_pos = (int) h - header_h;
+                        col_divider_start = line_pos + LINE_HEIGHT;
+                        createLinesAndBordersOnPage(contents, (int) w, line_pos + LINE_HEIGHT / 2, bottom_line);
+                        quote_page_count++;
+                    }
+                    line_pos -= LINE_HEIGHT;//next line
+                }
+            }
+            IO.log(TAG, IO.TAG_VERBOSE, "successfully processed quote resources.");
+        } else IO.log(TAG, IO.TAG_INFO, "quote has no resources.");
+        col_pos = 0;
+
+
+        /** Render quote services **/
+        for (QuoteService service : quote.getServices())
+        {
+            item_index++;//increment major index
+            //render service items
+            /**draw quote services' column dividers for current line**/
+            contents.endText();
+            //Col #1
+            contents.moveTo(80, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents.lineTo(80, line_pos - LINE_HEIGHT / 2);
+            contents.stroke();
+            //Col #2: vertical line going through center of page
+            contents.setStrokingColor(Color.BLACK);
+            contents.moveTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents.lineTo((w / 2), line_pos - LINE_HEIGHT / 2);
+            contents.stroke();
+            //Col #3+
+            for (int i = 1; i < cols.length; i++)//6 cols in total
+            {
+                contents.moveTo((w / 2) + 70 * i, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
+                contents.lineTo((w / 2) + 70 * i, line_pos - LINE_HEIGHT / 2);
+                contents.stroke();
+            }
+            contents.beginText();
+            /**end draw columns, begin rendering text**/
+
+            //render service title
+            line_pos -= LINE_HEIGHT;//next line
+            //render service index
+            addTextToPageStream(contents, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 14, 30, line_pos);
+            addTextToPageStream(contents, service.getService().getService_title(), 12, 90, line_pos);
+            line_pos -= LINE_HEIGHT;//next line
+
+            if(service.getService()==null)
+            {
+                IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service ["+service.get_id()+"]'s service object for quote ["+quote.get_id()+"] is invalid.");
+                continue;
+            }
+            if(service.getService().getServiceItemsMap()==null)
+            {
+                IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service ["+service.get_id()+"] for quote ["+quote.get_id()+"] services are invalid.");
+                continue;
+            }
+            if(service.getService().getServiceItemsMap().isEmpty())
+            {
+                IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service ["+service.get_id()+"] for quote ["+quote.get_id()+"] has no services.");
+                continue;
+            }
+
+            int item_index_minor=0;//reset minor index
+            for (ServiceItem service_item : service.getService().getServiceItemsMap().values())
+            {
+                item_index_minor+=1;//increment minor item index
+                //render service items
+                /**draw quote services' column dividers for current line**/
+                contents.endText();
+                //Col #1
+                contents.moveTo(80, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
+                contents.lineTo(80, line_pos - LINE_HEIGHT / 2);
+                contents.stroke();
+                //Col #2: vertical line going through center of page
+                contents.setStrokingColor(Color.BLACK);
+                contents.moveTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
+                contents.lineTo((w / 2), line_pos - LINE_HEIGHT / 2);
+                contents.stroke();
+                //Col #3+
+                for (int i = 1; i < cols.length; i++)//6 cols in total
+                {
+                    contents.moveTo((w / 2) + 70 * i, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
+                    contents.lineTo((w / 2) + 70 * i, line_pos - LINE_HEIGHT / 2);
                     contents.stroke();
                 }
                 contents.beginText();
-                //end draw columns
+                /**end draw columns, begin rendering text**/
+
+                /**begin rendering actual quote service information**/
+                //first column, Item number
+                col_pos = 0;
+                addTextToPageStream(contents, String.valueOf(item_index)+"."+String.valueOf(item_index_minor), 12, col_pos + 30, line_pos);//item.getItem_number()
+                col_pos += 80;//next column
+
+                //Description col
+                addTextToPageStream(contents, service_item.getItem_name(), 12, col_pos + 5, line_pos);
+                col_pos = (int) w / 2;//next column - starts at middle of page
+
+                //Unit col
+                addTextToPageStream(contents, service_item.getUnit(), 12, col_pos + 5, line_pos);
+                col_pos += 70;//next column
+
+                //Quantity col
+                addTextToPageStream(contents, String.valueOf(service_item.getQuantity()), digit_font_size, col_pos + 5, line_pos);
+                col_pos += 70;//next column
+
+                //Rate col
+                addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getItem_rate())), digit_font_size, col_pos + 5, line_pos);
+                col_pos += 70;//next column
+
+                //Total col
+                sub_total += service_item.getTotal();
+                addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getTotal())), digit_font_size, col_pos + 5, line_pos);
 
                 //if the page can't hold another 4 lines[current item, blank, sub-total, vat] add a new page
-                if(line_pos-LINE_HEIGHT<h-header_h-(ROW_COUNT*LINE_HEIGHT))
-                {
-                    addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER, 14,(int)(w/2)-20, 30);
+                if (line_pos - LINE_HEIGHT < h - header_h - (ROW_COUNT * LINE_HEIGHT)) {
+                    addTextToPageStream(contents, "Page " + quote_page_count, PDType1Font.COURIER, 14, (int) (w / 2) - 20, 30);
                     //add new page
                     page = new PDPage(PDRectangle.A4);
                     document.addPage(page);
@@ -1202,40 +1395,15 @@ public class PDF
                     contents.close();
                     contents = new PDPageContentStream(document, page);
                     contents.beginText();
-                    line_pos = (int)h-header_h;
-                    col_divider_start = line_pos+LINE_HEIGHT;
-                    createLinesAndBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, bottom_line);
+                    line_pos = (int) h - header_h;
+                    col_divider_start = line_pos + LINE_HEIGHT;
+                    createLinesAndBordersOnPage(contents, (int) w, line_pos + LINE_HEIGHT / 2, bottom_line);
                     quote_page_count++;
                 }
-
-                col_pos =0;//first column
-                //Item col
-                addTextToPageStream(contents, item.getItem_number(), 12,col_pos+30, line_pos);
-                col_pos += 80;//next column
-                //Description col
-                addTextToPageStream(contents, item.getResource().getResource_name(), 12,col_pos+5, line_pos);
-                col_pos = (int)w/2;//next column - starts at middle of page
-                //Unit col
-                addTextToPageStream(contents,item.getUnit(), 12,col_pos+5, line_pos);
-                col_pos+=55;//next column
-                //Quantity col
-                addTextToPageStream(contents,item.getQuantity(), digit_font_size,col_pos+5, line_pos);
-                col_pos+=55;//next column
-                //Rate col
-                addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getRate())), digit_font_size,col_pos+5, line_pos);
-                col_pos+=55;//next column
-                //Labour col
-                //addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getLabourCost())), digit_font_size,col_pos+5, line_pos);
-                col_pos+=55;//next column
-                //Total col
-                sub_total+=item.getTotal();
-                addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getTotal())), digit_font_size,col_pos+5, line_pos);
-
                 line_pos -= LINE_HEIGHT;//next line
             }
-            IO.log(TAG, IO.TAG_INFO, "successfully created quote PDF.");
-        }else IO.log(TAG, IO.TAG_INFO, "quote has no resources.");
-        col_pos = 0;
+        }
+        col_pos=0;
 
         //solid horizontal line
         int col_divider_end= line_pos;
@@ -1284,22 +1452,11 @@ public class PDF
         contents.stroke();
 
         //int col_divider_end = line_pos;
-        line_pos -= LINE_HEIGHT*3;//next 3rd line
-        /*solid horizontal lines after quote_items
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-        contents.lineTo(w-10, col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-        contents.stroke();
-        contents.moveTo(10, col_divider_end+LINE_HEIGHT/2);
-        contents.lineTo(w-10, col_divider_end+LINE_HEIGHT/2);
-        contents.stroke();
-        contents.moveTo(10, col_divider_end-LINE_HEIGHT+LINE_HEIGHT/2);
-        contents.lineTo(w-10, col_divider_end-LINE_HEIGHT+LINE_HEIGHT/2);
-        contents.stroke();*/
+        line_pos -= LINE_HEIGHT*2;//next 2nd line
 
         //quote content column dividers
         //#1
-        contents.moveTo(80, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+        /*contents.moveTo(80, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
         contents.lineTo(80, col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
         contents.stroke();
         //vertical line going through center of page again
@@ -1314,15 +1471,15 @@ public class PDF
             contents.moveTo((w/2)+55*i, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
             contents.lineTo((w/2)+55*i,col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
             contents.stroke();
-        }
+        }*/
 
         contents.beginText();
 
         if(quote.getOther()!=null)
-            addTextToPageStream(contents, "P.S. "+quote.getOther(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
+            addTextToPageStream(contents, "Notes: "+quote.getOther(), PDType1Font.TIMES_ITALIC, 14,105, line_pos);
 
         line_pos -= LINE_HEIGHT;//next line
-        //if the page can't hold another 9 lines add a new page
+        //if the page can't hold another 9 lines (for the terms and conditions and stuff) add a new page
         if(line_pos-(LINE_HEIGHT*4)<h-header_h-(ROW_COUNT*LINE_HEIGHT))
         {
             addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);

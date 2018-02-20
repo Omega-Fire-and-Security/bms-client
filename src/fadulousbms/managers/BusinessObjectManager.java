@@ -77,7 +77,7 @@ public abstract class BusinessObjectManager implements HSSFListener
         else IO.log(getClass().getName(), IO.TAG_WARN, getClass().getSimpleName()+" model's data-set has already been set, not synchronizing.");
     }
 
-    private void reloadDataFromServer(Callback callback)
+    protected void reloadDataFromServer(Callback callback)
     {
         //set model refresh lock
         setRefresh_lock(System.currentTimeMillis());

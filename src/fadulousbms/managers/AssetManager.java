@@ -14,9 +14,12 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -96,7 +99,7 @@ public class AssetManager extends BusinessObjectManager
                         return;
                     }
 
-                    if(!isSerialized(ROOT_PATH+filename))
+                    if(!isSerialized(ROOT_PATH+filename) || !isSerialized(ROOT_PATH+"asset_types.dat"))
                     {
                         String assets_json = RemoteComms.sendGetRequest("/assets", headers);
                         AssetServerObject assetServerObject= gson.fromJson(assets_json, AssetServerObject.class);
@@ -129,7 +132,16 @@ public class AssetManager extends BusinessObjectManager
                         IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of assets.");
 
                         this.serialize(ROOT_PATH+filename, all_assets);
-                        this.serialize(ROOT_PATH+"asset_types.dat", asset_types);
+                        //delete asset_types.dat if it exists
+                        try {
+                            Files.delete(new File(ROOT_PATH + "asset_types.dat").toPath());
+                        } catch (NoSuchFileException e) {
+                            IO.log(getClass().getName(), IO.TAG_WARN, e.getMessage());
+                        } catch (FileNotFoundException e) {
+                            IO.log(getClass().getName(), IO.TAG_WARN, e.getMessage());
+                        } finally {
+                            this.serialize(ROOT_PATH+"asset_types.dat", asset_types);
+                        }
                     }else
                     {
                         IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object ["+ROOT_PATH+filename+"] on local disk is already up-to-date.");

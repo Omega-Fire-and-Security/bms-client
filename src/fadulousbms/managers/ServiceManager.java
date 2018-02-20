@@ -16,9 +16,11 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,7 +103,7 @@ public class ServiceManager extends BusinessObjectManager
                                 return null;
                             }
 
-                            if (!isSerialized(ROOT_PATH + filename))
+                            if (!isSerialized(ROOT_PATH + filename) || !isSerialized(ROOT_PATH + "service_items.dat"))
                             {
                                 //load services
                                 String resources_json = RemoteComms.sendGetRequest("/services", headers);
@@ -145,8 +147,16 @@ public class ServiceManager extends BusinessObjectManager
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of services.");
 
                                 serialize(ROOT_PATH + filename, services);
-                                Files.delete(new File(ROOT_PATH + "service_items.dat").toPath());
-                                serialize(ROOT_PATH + "service_items.dat", service_items);
+                                //delete service_items.dat if it exists
+                                try {
+                                    Files.delete(new File(ROOT_PATH + "service_items.dat").toPath());
+                                } catch (NoSuchFileException e) {
+                                    IO.log(getClass().getName(), IO.TAG_WARN, e.getMessage());
+                                } catch (FileNotFoundException e) {
+                                    IO.log(getClass().getName(), IO.TAG_WARN, e.getMessage());
+                                } finally {
+                                    serialize(ROOT_PATH + "service_items.dat", service_items);
+                                }
                             } else
                             {
                                 IO.log(this.getClass()

@@ -14,10 +14,12 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,7 +109,8 @@ public class ResourceManager extends BusinessObjectManager
                                 return null;
                             }
 
-                            if (!isSerialized(ROOT_PATH + filename))
+                            //load resources and resource types if they are not on local disk
+                            if (!isSerialized(ROOT_PATH + filename) || !isSerialized(ROOT_PATH + "resource_types.dat"))
                             {
                                 String resources_json = RemoteComms.sendGetRequest("/resources", headers);
                                 ResourceServerObject resources_server_object = gson.fromJson(resources_json, ResourceServerObject.class);
@@ -152,8 +155,16 @@ public class ResourceManager extends BusinessObjectManager
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of materials.");
 
                                 serialize(ROOT_PATH + filename, all_resources);
-                                Files.delete(new File(ROOT_PATH + "resource_types.dat").toPath());
-                                serialize(ROOT_PATH + "resource_types.dat", resource_types);
+                                //delete resource_types.dat if it exists
+                                try {
+                                    Files.delete(new File(ROOT_PATH + "resource_types.dat").toPath());
+                                } catch (NoSuchFileException e) {
+                                    IO.log(getClass().getName(), IO.TAG_WARN, e.getMessage());
+                                } catch (FileNotFoundException e) {
+                                    IO.log(getClass().getName(), IO.TAG_WARN, e.getMessage());
+                                } finally {
+                                    serialize(ROOT_PATH + "resource_types.dat", resource_types);
+                                }
                             } else
                             {
                                 IO.log(this.getClass()
@@ -183,6 +194,25 @@ public class ResourceManager extends BusinessObjectManager
                 return null;
             }
         };
+    }
+
+    @Override
+    protected void synchroniseDataset()
+    {
+        /**
+         * Overridden because this manager needs to check if a second internal data-set[resource_types] has been set or not.
+         * The super version of this method only checks the primary data-set.
+         */
+        boolean dataset_empty;
+        if(getDataset()==null || getResource_types()==null)
+            dataset_empty=true;
+        else dataset_empty=getDataset().isEmpty();
+
+        if(dataset_empty)//TODO: improve data set timestamp checks before synchronization
+            if(getRefresh_lock()<=0)//if there's no other thread synchronising the data-set, synchronise the data-set
+                reloadDataFromServer(getSynchronisationCallback());
+            else IO.log(getClass().getName(), IO.TAG_WARN, "can't synchronize "+getClass().getSimpleName()+" model's data-set, thread started at ["+getRefresh_lock()+"] is still busy.");
+        else IO.log(getClass().getName(), IO.TAG_WARN, getClass().getSimpleName()+" model's data-set has already been set, not synchronizing.");
     }
 
     public void newResourceWindow(Callback callback)

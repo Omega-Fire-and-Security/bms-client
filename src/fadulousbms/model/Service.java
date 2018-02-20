@@ -6,6 +6,7 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.managers.ServiceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -45,6 +46,13 @@ public class Service extends BusinessObject implements Serializable
 
     public HashMap<String, ServiceItem> getServiceItemsMap()
     {
+        HashMap<String, ServiceItem> serviceItems = new HashMap<>();
+        if(ServiceManager.getInstance().getService_items()!=null)
+        {
+            for(ServiceItem serviceItem: ServiceManager.getInstance().getService_items().values())
+                if(serviceItem.getService_id().equals(get_id()))
+                    serviceItems.put(serviceItem.get_id(), serviceItem);
+        }
         return serviceItems;
     }
 

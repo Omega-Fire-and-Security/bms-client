@@ -281,7 +281,7 @@
                                                 <PropertyValueFactory property="item_number" />
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn fx:id="colEquipmentName" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="200.0" text="Brand Name">
+                                        <TableColumn fx:id="colEquipmentName" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="200.0" text="Equipment Name">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="equipment_name" />
                                             </cellValueFactory>
@@ -294,6 +294,11 @@
                                                 <TextFieldTableCellOld fx:factory="forTableColumn" />
                                             </cellFactory>-->
                                         </TableColumn>
+                              <TableColumn fx:id="colCategory" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Category">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="equipment_description" />
+                                 </cellValueFactory>
+                              </TableColumn>
                                         <TableColumn fx:id="colUnit" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Unit">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="unit" />

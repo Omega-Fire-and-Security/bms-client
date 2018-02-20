@@ -62,7 +62,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     protected TableView<QuoteService> tblQuoteServices;
     //Quote items table columns
     @FXML
-    protected TableColumn colMarkup,colQuantity, colItemNumber, colEquipmentName, colDescription, colUnit, colValue, colRate, colTotal, colAction, colServiceAction;
+    protected TableColumn colMarkup,colQuantity, colItemNumber, colEquipmentName, colDescription, colCategory, colUnit, colValue, colRate, colTotal, colAction, colServiceAction;
     @FXML
     protected ComboBox<Client> cbxClients;
     @FXML
@@ -412,6 +412,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                         return cell;
                     }
                 };
+        colServiceAction.setMinWidth(400);
         colServiceAction.setCellFactory(servicesActionColCellFactory);
     }
 
@@ -438,6 +439,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         //setup Quote default accounts
         cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
+        //set clients list to clients combo box
         cbxClients.valueProperty().addListener((observable, oldValue, newValue) ->
         {
             if(newValue!=null)
@@ -461,6 +463,44 @@ public abstract class QuoteController extends ScreenController implements Initia
         tblQuoteItems.getItems().clear();
 
         //Setup Quote Items table
+        colCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
+        colCategory.setCellFactory(param -> new TableCell()
+        {
+            final TextField txt = new TextField("");
+
+            @Override
+            protected void updateItem(Object item, boolean empty)
+            {
+                super.updateItem(item, empty);
+                if (getIndex() >= 0 && getIndex() < tblQuoteItems.getItems().size())
+                {
+                    QuoteItem quoteItem = tblQuoteItems.getItems().get(getIndex());
+                    //update QuoteItem object on TextField commit
+                    txt.setOnKeyPressed(event ->
+                    {
+                        //when the user presses the enter key, update the QuoteItem category
+                        if(event.getCode()== KeyCode.ENTER)
+                        {
+                            //get selected QuoteItem
+                            QuoteItem quote_item = (QuoteItem) getTableView().getItems().get(getIndex());
+                            //apply new category
+                            quote_item.setCategory(txt.getText());
+                            //refresh the table
+                            tblQuoteItems.refresh();
+                            IO.log(getClass().getName(), IO.TAG_INFO,"Successfully updated [category] property for quote item #" + quote_item.getItem_number());
+                        }
+                    });
+
+                    if (!empty)
+                    {
+                        txt.setText(quoteItem.getCategory());
+                        setGraphic(txt);
+                    } else setGraphic(null);
+                    getTableView().refresh();
+                }
+            }
+        });
+
         colMarkup.setCellValueFactory(new PropertyValueFactory<>("markup"));
         colMarkup.setCellFactory(param -> new TableCell()
         {
@@ -663,7 +703,6 @@ public abstract class QuoteController extends ScreenController implements Initia
         ResourceManager.getInstance().initialize();
         ServiceManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
-        ServiceManager.getInstance().initialize();
 
         //execute callback
         if(callback!=null)
@@ -1253,7 +1292,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                 ObservableList<QuoteItem> quoteItems = tblQuoteItems.getItems();
                 if(!quoteItems.isEmpty())
                 {
-                    QuoteManager.getInstance().updateQuote(selected, quoteItems, tblQuoteServices.getItems(), param ->
+                    QuoteManager.getInstance().updateQuote(selected, quoteItems, tblQuoteServices.getItems(), false, param ->
                     {
                         refreshModel(arg ->
                         {
@@ -1262,9 +1301,9 @@ public abstract class QuoteController extends ScreenController implements Initia
                         });
                         return null;
                     });
-                } else IO.logAndAlert("Error", "Quote has no materials", IO.TAG_ERROR);
-            } else IO.logAndAlert("Error", "Selected quote has already been approved.", IO.TAG_ERROR);
-        } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
+                } else IO.logAndAlert("Error", "Quote has no materials", IO.TAG_WARN);
+            } else IO.logAndAlert("Error", "Selected quote has already been approved.", IO.TAG_WARN);
+        } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_WARN);
     }
 
     @FXML
@@ -1643,7 +1682,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             selected.setRequest(txtRequest.getText());
             selected.setAccount_name(cbxAccount.getValue());
 
-            QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems(), tblQuoteServices.getItems(), (Callback) param -> {
+            QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems(), tblQuoteServices.getItems(), true, param -> {
                 QuoteManager.getInstance().initialize();
                 if(QuoteManager.getInstance().getDataset()!=null)
                     QuoteManager.getInstance().setSelected(QuoteManager.getInstance().getDataset().get(selected.get_id()));
