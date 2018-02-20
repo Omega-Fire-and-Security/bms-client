@@ -492,6 +492,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
             if (SessionManager.getInstance().getActive() != null)
                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
                         .getSession_id()));
@@ -502,7 +503,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
             }
 
             //update purchase order on database
-            HttpURLConnection connection = RemoteComms.postData("/api/purchaseorder/update/" + purchaseOrder.get_id(), purchaseOrder.asUTFEncodedString(), headers);
+            HttpURLConnection connection = RemoteComms.patchJSON(purchaseOrder.apiEndpoint(), purchaseOrder.getJSONString(), headers);
             if(connection != null)
             {
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
@@ -536,9 +537,9 @@ public class PurchaseOrderController extends ScreenController implements Initial
                             {
                                 //update po item
                                 if(purchaseOrderItem.getItem() instanceof Resource)
-                                    connection = RemoteComms.postData("/api/purchaseorder/item/update/" + purchaseOrderItem.get_id(), purchaseOrderItem.asUTFEncodedString(), headers);
+                                    connection = RemoteComms.postJSON(purchaseOrder.apiEndpoint(), purchaseOrderItem.getJSONString(), headers);
                                 else if(purchaseOrderItem.getItem() instanceof Asset)
-                                    connection = RemoteComms.postData("/api/purchaseorder/asset/update/" + purchaseOrderItem.get_id(), purchaseOrderItem.asUTFEncodedString(), headers);
+                                    connection = RemoteComms.postJSON(purchaseOrder.apiEndpoint(), purchaseOrderItem.getJSONString(), headers);
                                 else IO.log(getClass().getName(), IO.TAG_ERROR, "unknown purchase order item type.");
 
                                 if (connection != null)
@@ -563,11 +564,11 @@ public class PurchaseOrderController extends ScreenController implements Initial
                         //purchaseOrderItem.setPurchase_order_id(response);//response = entire po object
 
                         if(purchaseOrderItem.getItem() instanceof Resource)
-                            connection = RemoteComms.postData("/api/purchaseorder/item/add", purchaseOrderItem
-                                    .asUTFEncodedString(), headers);
+                            connection = RemoteComms.postJSON(purchaseOrder.apiEndpoint(), purchaseOrderItem
+                                    .getJSONString(), headers);
                         else if(purchaseOrderItem.getItem() instanceof Asset)
-                            connection = RemoteComms.postData("/api/purchaseorder/asset/add", purchaseOrderItem
-                                    .asUTFEncodedString(), headers);
+                            connection = RemoteComms.postJSON(purchaseOrder.apiEndpoint(), purchaseOrderItem
+                                    .getJSONString(), headers);
                         else IO.log(getClass().getName(), IO.TAG_ERROR, "unknown purchase order item type.");
 
                         if (connection != null)
@@ -655,6 +656,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
         }
 
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
         headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
         if(PurchaseOrderManager.getInstance().getSelected()!=null)
@@ -695,7 +697,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
                     try
                     {
                         //update date_acquired & quantity
-                        connection = RemoteComms.postData(obj.apiEndpoint() +"/increment_quantity/"+obj.get_id(), obj.asUTFEncodedString(), headers);
+                        connection = RemoteComms.postJSON(obj.apiEndpoint() +"/increment_quantity/"+obj.get_id(), obj.getJSONString(), headers);
                         if(connection!=null)
                         {
                             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)

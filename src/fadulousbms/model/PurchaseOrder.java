@@ -209,40 +209,6 @@ public class PurchaseOrder extends BusinessObject
     }
 
     @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append("&" + URLEncoder.encode("supplier_id","UTF-8") + "="
-                    + URLEncoder.encode(supplier_id, "UTF-8"));
-            result.append("&" + URLEncoder.encode("contact_person_id","UTF-8") + "="
-                    + URLEncoder.encode(contact_person_id, "UTF-8"));
-            result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(vat), "UTF-8"));
-            result.append("&" + URLEncoder.encode("status","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(status), "UTF-8"));
-            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
-                    + URLEncoder.encode(account_name, "UTF-8"));
-            if(getDate_logged()>0)
-                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
-            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
-                    + URLEncoder.encode(getCreator(), "UTF-8"));
-            if(getOther()!=null)
-                if(!getOther().isEmpty())
-                    result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                            + URLEncoder.encode(getOther(), "UTF-8"));
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
     public String getJSONString()
     {
         String super_json = super.getJSONString();

@@ -205,40 +205,6 @@ public class Overtime extends BusinessObject implements Serializable
         return super.get(var);
     }
 
-    @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("usr","UTF-8") + "="
-                    + URLEncoder.encode(usr, "UTF-8"));
-            result.append("&" + URLEncoder.encode("job_id","UTF-8") + "="
-                    + URLEncoder.encode(job_id, "UTF-8"));
-            if(getStatus()>0)
-                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getStatus()), "UTF-8"));
-            if(getDate()>0)
-                result.append("&" + URLEncoder.encode("date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate()), "UTF-8"));
-            if(getTime_in()>0)
-                result.append("&" + URLEncoder.encode("time_in","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getTime_in()), "UTF-8"));
-            if(getTime_out()>0)
-                result.append("&" + URLEncoder.encode("time_out","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getTime_out()), "UTF-8"));
-            if(getDate_logged()>0)
-                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
     /**
      * @return JSON representation of Leave object.
      */

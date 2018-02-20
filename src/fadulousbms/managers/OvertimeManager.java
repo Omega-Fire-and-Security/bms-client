@@ -227,22 +227,32 @@ public class OvertimeManager extends BusinessObjectManager
             if (!Validators.isValidNode(txt_checkout, txt_checkout.getText(), 1, ".+"))
                 return;
 
-            long date_in_sec = dpk_overtime_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-            String str_other = txt_other.getText();
-
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("usr", SessionManager.getInstance().getActiveEmployee().getUsr()));
-            params.add(new AbstractMap.SimpleEntry<>("job_id", cbx_jobs.getValue().get_id()));
-            params.add(new AbstractMap.SimpleEntry<>("date", String.valueOf(date_in_sec)));
-            params.add(new AbstractMap.SimpleEntry<>("time_in", txt_checkin.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("time_out", txt_checkout.getText()));
-            if (str_other != null)
-                if (!str_other.isEmpty())
-                    params.add(new AbstractMap.SimpleEntry<>("other", str_other));
-
             try
             {
+                long date_in_sec = dpk_overtime_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
+                String str_other = txt_other.getText();
+
+                Overtime overtime = new Overtime();
+                overtime.setUsr(SessionManager.getInstance().getActiveEmployee().getUsr());
+                overtime.setJob_id(cbx_jobs.getValue().get_id());
+                overtime.setDate(date_in_sec);
+                overtime.setTime_in(Long.parseLong(txt_checkin.getText()));
+                overtime.setTime_out(Long.parseLong(txt_checkout.getText()));
+                if (str_other != null)
+                    if (!str_other.isEmpty())
+                        overtime.setOther(str_other);
+                /*ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
+                params.add(new AbstractMap.SimpleEntry<>("usr", SessionManager.getInstance().getActiveEmployee().getUsr()));
+                params.add(new AbstractMap.SimpleEntry<>("job_id", cbx_jobs.getValue().get_id()));
+                params.add(new AbstractMap.SimpleEntry<>("date", String.valueOf(date_in_sec)));
+                params.add(new AbstractMap.SimpleEntry<>("time_in", txt_checkin.getText()));
+                params.add(new AbstractMap.SimpleEntry<>("time_out", txt_checkout.getText()));
+                if (str_other != null)
+                    if (!str_other.isEmpty())
+                        params.add(new AbstractMap.SimpleEntry<>("other", str_other));*/
+
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
                 if (SessionManager.getInstance().getActive() != null)
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
                             .getSession_id()));
@@ -252,7 +262,7 @@ public class OvertimeManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/overtime_record/add", params, headers);
+                HttpURLConnection connection = RemoteComms.postJSON(overtime.apiEndpoint(), overtime.getJSONString(), headers);
                 if (connection != null)
                 {
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
@@ -268,6 +278,9 @@ public class OvertimeManager extends BusinessObjectManager
                     }
                     connection.disconnect();
                 }
+            } catch (NumberFormatException e)
+            {
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
             } catch (IOException e)
             {
                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
@@ -317,12 +330,13 @@ public class OvertimeManager extends BusinessObjectManager
             if (!SessionManager.getInstance().getActive().isExpired())
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
                 overtime.setStatus(Overtime.STATUS_APPROVED);
                 try
                 {
-                    HttpURLConnection connection = RemoteComms.postData( "/api/overtime_record/update/"+overtime.get_id(), overtime.asUTFEncodedString(), headers);
+                    HttpURLConnection connection = RemoteComms.postJSON( overtime.apiEndpoint(), overtime.getJSONString(), headers);
                     if(connection!=null)
                     {
                         if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

@@ -5,13 +5,19 @@
  */
 package fadulousbms.controllers;
 
+import fadulousbms.FadulousBMS;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -23,11 +29,14 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+import org.controlsfx.control.PopOver;
 
 import java.awt.*;
 import java.io.File;
@@ -49,13 +58,19 @@ public abstract class QuoteController extends ScreenController implements Initia
 
     @FXML
     protected TableView<QuoteItem> tblQuoteItems;
+    @FXML
+    protected TableView<QuoteService> tblQuoteServices;
     //Quote items table columns
     @FXML
-    protected TableColumn colMarkup,colQuantity, colItemNumber, colEquipmentName, colDescription, colUnit, colValue, colRate, colTotal, colAction;
+    protected TableColumn colMarkup,colQuantity, colItemNumber, colEquipmentName, colDescription, colUnit, colValue, colRate, colTotal, colAction, colServiceAction;
     @FXML
     protected ComboBox<Client> cbxClients;
     @FXML
     protected ComboBox<Employee> cbxContactPerson;
+    @FXML
+    protected ComboBox<Service> cbxServices;
+    @FXML
+    protected ComboBox<Resource> cbxMaterials;
     @FXML
     protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtRevision,txtExtra;
     //@FXML
@@ -67,7 +82,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     protected Label lblVat;
     @FXML
-    protected Button btnApprove;
+    protected Button btnApprove, btnNewService;
     @FXML
     protected TextArea txtRequest;
     protected HashMap<String, TableColumn> colsMap = new HashMap<>();
@@ -79,8 +94,8 @@ public abstract class QuoteController extends ScreenController implements Initia
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        colAction.setCellFactory(new ButtonTableCellFactory<>());
-        colAction.setCellValueFactory(new PropertyValueFactory<>(""));
+        //colAction.setCellFactory(new ButtonTableCellFactory<>());
+        //colAction.setCellValueFactory(new PropertyValueFactory<>(""));
 
         Callback<TableColumn<QuoteItem, String>, TableCell<QuoteItem, String>> cellFactory
                 =
@@ -169,15 +184,18 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         colAction.setCellFactory(cellFactory);
 
-        Callback<TableColumn<Employee, String>, TableCell<Employee, String>> actionColCellFactory
+        Callback<TableColumn<QuoteService, String>, TableCell<QuoteService, String>> servicesActionColCellFactory
                 =
-                new Callback<TableColumn<Employee, String>, TableCell<Employee, String>>()
+                new Callback<TableColumn<QuoteService, String>, TableCell<QuoteService, String>>()
                 {
                     @Override
-                    public TableCell call(final TableColumn<Employee, String> param)
+                    public TableCell call(final TableColumn<QuoteService, String> param)
                     {
-                        final TableCell<Employee, String> cell = new TableCell<Employee, String>()
+                        final TableCell<QuoteService, String> cell = new TableCell<QuoteService, String>()
                         {
+                            final Button btnNew = new Button("New Service Item");
+                            final Button btnAdd = new Button("Add Service Item");
+                            final Button btnShow = new Button("Show Service Items");
                             final Button btnRemove = new Button("Remove");
 
                             @Override
@@ -186,11 +204,31 @@ public abstract class QuoteController extends ScreenController implements Initia
                                 super.updateItem(item, empty);
                                 File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
+                                btnNew.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnNew.getStyleClass().add("btnAdd");
+                                btnNew.setMinWidth(150);
+                                btnNew.setMinHeight(35);
+                                HBox.setHgrow(btnNew, Priority.ALWAYS);
+
+                                btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnAdd.getStyleClass().add("btnAdd");
+                                btnAdd.setMinWidth(150);
+                                btnAdd.setMinHeight(35);
+                                HBox.setHgrow(btnAdd, Priority.ALWAYS);
+
+                                btnShow.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnShow.getStyleClass().add("btnDefault");
+                                btnShow.setMinWidth(150);
+                                btnShow.setMinHeight(35);
+                                HBox.setHgrow(btnShow, Priority.ALWAYS);
+
                                 btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnRemove.getStyleClass().add("btnBack");
-                                btnRemove.setMinWidth(100);
+                                btnRemove.setMinWidth(150);
                                 btnRemove.setMinHeight(35);
                                 HBox.setHgrow(btnRemove, Priority.ALWAYS);
+
+                                HBox hBox = new HBox(btnNew, btnAdd, btnShow, btnRemove);
 
                                 if (empty)
                                 {
@@ -198,15 +236,175 @@ public abstract class QuoteController extends ScreenController implements Initia
                                     setText(null);
                                 } else
                                 {
+                                    btnNew.setOnAction(new EventHandler<ActionEvent>()
+                                    {
+                                        @Override
+                                        public void handle(ActionEvent event)
+                                        {
+                                            QuoteService quoteService = getTableView().getItems().get(getIndex());
+                                            if (quoteService != null)
+                                            {
+                                                ServiceManager.getInstance().setSelected(quoteService.getService());
+                                            } else return;
+
+                                            FXMLLoader loader = new FXMLLoader();
+                                            loader.setLocation(FadulousBMS.class.getResource("views/NewServiceItem.fxml"));
+                                            try
+                                            {
+                                                VBox page = loader.load();
+                                                if(page!=null)
+                                                {
+                                                    PopOver popover = new PopOver(page);
+                                                    popover.setTitle("Create Service Item");
+                                                    popover.show(btnNew);
+
+                                                    popover.focusedProperty().addListener(new ChangeListener<Boolean>()
+                                                    {
+                                                        @Override
+                                                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+                                                        {
+                                                            IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading services combo box");
+                                                            //reload services, to load the newly added service
+                                                            ServiceManager.getInstance().forceSynchronise();
+
+                                                            Platform.runLater(() ->
+                                                            {
+                                                                //refresh services combobox
+                                                                if(ServiceManager.getInstance().getDataset()!=null)
+                                                                    cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
+                                                            });
+                                                        }
+                                                    });
+                                                }else IO.logAndAlert("Error", "Could not load service creation screen.", IO.TAG_ERROR);
+                                            } catch (IOException e)
+                                            {
+                                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                            }
+                                        }
+                                    });
+
+                                    btnAdd.setOnAction(event ->
+                                    {
+                                        QuoteService quoteService = getTableView().getItems().get(getIndex());
+                                        if(quoteService!=null) {
+                                            Service service = quoteService.getService();
+                                            if (service != null)
+                                            {
+                                                ServiceManager.getInstance().setSelected(service);
+
+                                                VBox page = new VBox();
+                                                ComboBox<ServiceItem> cbx_service_items = new ComboBox<>();
+                                                if (ServiceManager.getInstance().getService_items() != null)
+                                                    cbx_service_items.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getService_items().values()));
+                                                else {
+                                                    IO.logAndAlert("Error", "No service items in the database.", IO.TAG_WARN);
+                                                    //return;
+                                                }
+
+                                                if (page != null) {
+                                                    Button btnAddService = new Button("Add");
+                                                    page.getChildren().addAll(new HBox(new Label("Service: "), cbx_service_items), btnAddService);
+
+                                                    PopOver popover = new PopOver(page);
+                                                    popover.setTitle("Add Service Item");
+                                                    popover.show(btnAdd);
+
+                                                    btnAddService.setOnMouseClicked(evt ->
+                                                    {
+                                                        if (cbx_service_items.getValue() != null)
+                                                            service.getServiceItemsMap().put(cbx_service_items.getValue().get_id(), cbx_service_items.getValue());
+                                                        else
+                                                            IO.logAndAlert("Error", "Please select a valid service item to add.", IO.TAG_WARN);
+                                                    });
+
+                                                    popover.focusedProperty().addListener(new ChangeListener<Boolean>() {
+                                                        @Override
+                                                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                                                            IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading services combo box");
+                                                            //reload services, to load the newly added service
+                                                            ServiceManager.getInstance().forceSynchronise();
+
+                                                            Platform.runLater(() ->
+                                                            {
+                                                                //refresh services combobox
+                                                                if (ServiceManager.getInstance().getDataset() != null)
+                                                                    cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
+                                                            });
+                                                        }
+                                                    });
+                                                } else
+                                                    IO.logAndAlert("Error", "Could not load service creation screen.", IO.TAG_ERROR);
+                                            } else IO.logAndAlert("Error", "Invalid service selected", IO.TAG_WARN);
+                                        } else IO.logAndAlert("Error", "Invalid service selected", IO.TAG_WARN);
+                                    });
+
+                                    btnShow.setOnAction(event ->
+                                    {
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                        {
+                                            QuoteService quoteService = getTableView().getItems().get(getIndex());
+                                            Service service = quoteService.getService();
+                                            if (service != null)
+                                            {
+                                                ServiceManager.getInstance().setSelected(service);
+
+                                                TableView<ServiceItem> tblServiceItems = new TableView<>();
+                                                TableColumn colName = new TableColumn("Item Name");
+                                                colName.setCellValueFactory(new PropertyValueFactory<>("item_name"));
+                                                colName.setMinWidth(100);
+
+                                                TableColumn colDescription = new TableColumn("Item Description");
+                                                colDescription.setCellValueFactory(new PropertyValueFactory<>("item_description"));
+                                                colDescription.setMinWidth(100);
+
+                                                TableColumn colRate = new TableColumn("Item Rate");
+                                                colRate.setCellValueFactory(new PropertyValueFactory<>("item_rate"));
+                                                colRate.setMinWidth(80);
+
+                                                TableColumn colUnit = new TableColumn("Unit");
+                                                colUnit.setCellValueFactory(new PropertyValueFactory<>("unit"));
+                                                colUnit.setMinWidth(70);
+
+                                                TableColumn colQuantity = new TableColumn("Quantity");
+                                                colQuantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+                                                colQuantity.setMinWidth(70);
+
+                                                tblServiceItems.getColumns().add(colName);
+                                                tblServiceItems.getColumns().add(colDescription);
+                                                tblServiceItems.getColumns().add(colRate);
+                                                tblServiceItems.getColumns().add(colUnit);
+                                                tblServiceItems.getColumns().add(colQuantity);
+
+                                                if (ServiceManager.getInstance().getService_items() != null)
+                                                {
+                                                    tblServiceItems.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getService_items().values()));
+
+                                                    PopOver popover = new PopOver(tblServiceItems);
+                                                    popover.setMinWidth(500);
+                                                    popover.setTitle("Add Service Item");
+                                                    popover.show(btnShow);
+
+                                                } else
+                                                    IO.logAndAlert("Error", "Could not find any service items.", IO.TAG_ERROR);
+                                            }else
+                                                IO.logAndAlert("Error", "Selected service is invalid.", IO.TAG_ERROR);
+                                        }
+                                    });
+
                                     btnRemove.setOnAction(event ->
                                     {
-                                        Employee employee = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(employee);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        System.out.println("Successfully removed sale representative: " + employee.getName());
+                                        QuoteService qservice = getTableView().getItems().get(getIndex());
+                                        if(qservice!=null)
+                                        {
+                                            getTableView().getItems().remove(qservice);
+                                            getTableView().refresh();
+                                            //TODO: remove from server
+                                            System.out.println("Successfully removed service: " + qservice.getService().getService_title());
+                                        } else
+                                            IO.logAndAlert("Error", "Selected service is invalid.", IO.TAG_ERROR);
                                     });
-                                    setGraphic(btnRemove);
+
+                                    setGraphic(hBox);
                                     setText(null);
                                 }
                             }
@@ -214,7 +412,9 @@ public abstract class QuoteController extends ScreenController implements Initia
                         return cell;
                     }
                 };
+        colServiceAction.setCellFactory(servicesActionColCellFactory);
     }
+
     @Override
     public void refreshView()
     {
@@ -351,6 +551,11 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
+        if(ServiceManager.getInstance().getDataset()!=null)
+            cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
+        if(ResourceManager.getInstance().getDataset()!=null)
+            cbxMaterials.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getDataset().values()));
+
         cbxClients.setItems(FXCollections.observableArrayList((Collection<Client>) ClientManager.getInstance().getDataset().values()));
         cbxClients.setCellFactory(new Callback<ListView<Client>, ListCell<Client>>()
         {
@@ -456,7 +661,9 @@ public abstract class QuoteController extends ScreenController implements Initia
         EmployeeManager.getInstance().initialize();
         ClientManager.getInstance().initialize();
         ResourceManager.getInstance().initialize();
+        ServiceManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
+        ServiceManager.getInstance().initialize();
 
         //execute callback
         if(callback!=null)
@@ -885,6 +1092,132 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @FXML
+    public void addService()
+    {
+        if(cbxServices.getValue()!=null)
+        {
+            QuoteService quoteService = new QuoteService();
+            quoteService.setService_id(cbxServices.getValue().get_id());
+            //Quote_id will be set on creation
+            tblQuoteServices.getItems().add(quoteService);
+            tblQuoteServices.refresh();
+
+            itemsModified = true;
+
+            //TODO: compute total with service costs
+            // txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems())));
+
+        } else IO.logAndAlert("Error", "Invalid service.", IO.TAG_ERROR);
+    }
+
+    @FXML
+    public void newService()
+    {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(FadulousBMS.class.getResource("views/NewService.fxml"));
+        try
+        {
+            VBox page = loader.load();
+            if(page!=null)
+            {
+                PopOver popover = new PopOver(page);
+                popover.setTitle("Add Service");
+                popover.show(btnNewService);
+
+                popover.focusedProperty().addListener(new ChangeListener<Boolean>()
+                {
+                    @Override
+                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading services combo box");
+                        //reload services, to load the newly added service
+                        ServiceManager.getInstance().forceSynchronise();
+
+                        Platform.runLater(() ->
+                        {
+                            //refresh services combobox
+                            if(ServiceManager.getInstance().getDataset()!=null)
+                                cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
+                        });
+                    }
+                });
+            }else IO.logAndAlert("Error", "Could not load service creation screen.", IO.TAG_ERROR);
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    @FXML
+    public void addMaterial()
+    {
+        if(cbxMaterials.getValue()!=null)
+        {
+            QuoteItem quoteItem = new QuoteItem();
+
+            quoteItem.setItem_number(tblQuoteItems.getItems().size());
+            quoteItem.setQuantity(1);
+            quoteItem.setUnit_cost(cbxMaterials.getValue().getResource_value());
+            quoteItem.setMarkup(0);
+            quoteItem.setResource_id(cbxMaterials.getValue().get_id());
+            //quoteItem.setEquipment_description(resourceComboBox.getValue().getResource_description());
+            //quoteItem.setUnit(resourceComboBox.getValue().getUnit());
+            //quoteItem.setRate(resourceComboBox.getValue().getResource_value());
+            //quoteItem.setValue(resourceComboBox.getValue().getResource_value());
+            //quoteItem.setResource(resourceComboBox.getValue());
+            //quoteItem.setEquipment_name(resourceComboBox.getValue().getResource_name());
+
+            tblQuoteItems.getItems().add(quoteItem);
+            tblQuoteItems.refresh();
+
+            itemsModified = true;
+
+            //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
+            //        String.valueOf(QuoteManager.computeQuoteTotal(QuoteManager.getInstance().getSelectedQuote())));
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems())));
+
+        } else IO.logAndAlert("Error", "Invalid resource.", IO.TAG_ERROR);
+    }
+
+    @FXML
+    public void newMaterial()
+    {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(FadulousBMS.class.getResource("views/"+Screens.NEW_RESOURCE.getScreen()));
+        try
+        {
+            VBox page = loader.load();
+            if(page!=null)
+            {
+                PopOver popover = new PopOver(page);
+                popover.setTitle("Add Material");
+                popover.show(btnNewService);
+
+                popover.focusedProperty().addListener(new ChangeListener<Boolean>()
+                {
+                    @Override
+                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading materials combo box");
+                        //reload services, to load the newly added service
+                        ResourceManager.getInstance().forceSynchronise();
+
+                        Platform.runLater(() ->
+                        {
+                            //refresh services combobox
+                            if(ServiceManager.getInstance().getDataset()!=null)
+                                cbxMaterials.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getDataset().values()));
+                        });
+                    }
+                });
+            }else IO.logAndAlert("Error", "Could not load material creation screen.", IO.TAG_ERROR);
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    @FXML
     public void newRevision()
     {
         SessionManager smgr = SessionManager.getInstance();
@@ -920,15 +1253,13 @@ public abstract class QuoteController extends ScreenController implements Initia
                 ObservableList<QuoteItem> quoteItems = tblQuoteItems.getItems();
                 if(!quoteItems.isEmpty())
                 {
-                    QuoteItem[] quote_items_arr = new QuoteItem[quoteItems.size()];
-                    quoteItems.toArray(quote_items_arr);
-                    /*
-                        The version on updateQuote() that takes an array of QuoteItems doesn't check whether the Quote has been approved or not
-                     */
-                    QuoteManager.getInstance().updateQuote(selected, quote_items_arr);
-                    refreshModel(param ->
+                    QuoteManager.getInstance().updateQuote(selected, quoteItems, tblQuoteServices.getItems(), param ->
                     {
-                        Platform.runLater(() -> refreshView());
+                        refreshModel(arg ->
+                        {
+                            Platform.runLater(() -> refreshView());
+                            return null;
+                        });
                         return null;
                     });
                 } else IO.logAndAlert("Error", "Quote has no materials", IO.TAG_ERROR);
@@ -1035,7 +1366,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         try
         {
-            QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), new Callback()
+            QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblQuoteServices.getItems(), new Callback()
             {
                 @Override
                 public Object call(Object quote_id)
@@ -1172,7 +1503,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             try
             {
                 //Create new Quote with new _id & +1 revision number, with parent Quote pointing to current selected Quote
-                QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), new Callback()
+                QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblQuoteServices.getItems(), new Callback()
                 {
                     @Override
                     public Object call(Object quote_id)
@@ -1312,23 +1643,18 @@ public abstract class QuoteController extends ScreenController implements Initia
             selected.setRequest(txtRequest.getText());
             selected.setAccount_name(cbxAccount.getValue());
 
-            QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems());
-
-            QuoteManager.getInstance().initialize();
-            if(QuoteManager.getInstance().getDataset()!=null)
-                QuoteManager.getInstance().setSelected(QuoteManager.getInstance().getDataset().get(selected.get_id()));
-            new Thread(() ->
-            {
-                refreshModel(new Callback()
-                {
-                    @Override
-                    public Object call(Object param)
-                    {
-                        Platform.runLater(() -> refreshView());
-                        return null;
-                    }
-                });
-            }).start();
+            QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems(), tblQuoteServices.getItems(), (Callback) param -> {
+                QuoteManager.getInstance().initialize();
+                if(QuoteManager.getInstance().getDataset()!=null)
+                    QuoteManager.getInstance().setSelected(QuoteManager.getInstance().getDataset().get(selected.get_id()));
+                new Thread(() ->
+                        refreshModel(param1 ->
+                        {
+                            Platform.runLater(() -> refreshView());
+                            return null;
+                        })).start();
+                return null;
+            });
         } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 

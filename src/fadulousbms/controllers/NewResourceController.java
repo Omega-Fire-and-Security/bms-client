@@ -155,7 +155,13 @@ public class NewResourceController extends ScreenController implements Initializ
         resource.setResource_name(txtName.getText());
         resource.setResource_description(txtDescription.getText());
         resource.setResource_serial(txtSerial.getText());
-        resource.setResource_value(Double.valueOf(txtValue.getText()));
+        try {
+            resource.setResource_value(Double.valueOf(txtValue.getText()));
+        } catch (NumberFormatException e)
+        {
+            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+            return;
+        }
         resource.setResource_type(cbxResourceType.getSelectionModel().getSelectedItem().get_id());
         resource.setUnit(txtUnit.getText());
         resource.setQuantity(Long.valueOf(txtQuantity.getText()));

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
@@ -57,15 +58,15 @@
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
-                        <Label text="Brand Name" GridPane.rowIndex="1" />
+                        <Label text="Resource Name*" GridPane.rowIndex="1" />
                         <TextField fx:id="txtName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label text="Resource Description" GridPane.rowIndex="2" />
+                        <Label text="Resource Description [optional]" GridPane.rowIndex="2" />
                         <TextField fx:id="txtDescription" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                        <Label alignment="CENTER" contentDisplay="CENTER" text="Resource Serial Number" GridPane.rowIndex="3" />
+                        <Label alignment="CENTER" contentDisplay="CENTER" text="Resource Serial Number [optional]" GridPane.rowIndex="3" />
                         <TextField fx:id="txtSerial" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <Label text="Resource Value" GridPane.rowIndex="4" />
+                        <Label text="Resource Value*" GridPane.rowIndex="4" />
                         <TextField fx:id="txtValue" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                        <Label text="Resource Type" GridPane.rowIndex="5" />
+                        <Label text="Resource Type*" GridPane.rowIndex="5" />
                         <HBox GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES">
                             <children>
                                 <ComboBox fx:id="cbxResourceType" minHeight="35.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
@@ -76,13 +77,13 @@
                                 </Button>
                             </children>
                         </HBox>
-                        <Label text="Date Acquired" GridPane.rowIndex="6" />
+                        <Label text="Date Acquired*" GridPane.rowIndex="6" />
                         <DatePicker fx:id="dateAcquired" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                        <Label text="Date Exhausted" GridPane.rowIndex="7" />
+                        <Label text="Date Exhausted [optional]" GridPane.rowIndex="7" />
                         <DatePicker fx:id="dateExhausted" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                        <Label text="Resource Quantity" GridPane.rowIndex="8" />
+                        <Label text="Resource Quantity*" GridPane.rowIndex="8" />
                         <TextField fx:id="txtQuantity" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                        <Label text="Resource Unit" GridPane.rowIndex="9" />
+                        <Label text="Resource Unit*" GridPane.rowIndex="9" />
                         <TextField fx:id="txtUnit" GridPane.columnIndex="1" GridPane.rowIndex="9" />
                         <Label text="Create New Resource" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                             <font>

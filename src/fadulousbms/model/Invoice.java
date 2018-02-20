@@ -241,35 +241,6 @@ public class Invoice extends BusinessObject implements Serializable
     }
 
     @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            /*result.append(URLEncoder.encode("quote_id","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(quote_id), "UTF-8"));*/
-            result.append(URLEncoder.encode("job_id","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(job_id), "UTF-8"));
-            if(getDate_logged()>0)
-                result.append("&" + URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
-            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(getCreator()), "UTF-8"));
-            result.append("&" + URLEncoder.encode("receivable","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(receivable), "UTF-8"));
-            if(getOther()!=null)
-                result.append(URLEncoder.encode("other","UTF-8") + "="
-                        + URLEncoder.encode(getOther(), "UTF-8") + "&");
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
     public String getJSONString()
     {
         String super_json = super.getJSONString();

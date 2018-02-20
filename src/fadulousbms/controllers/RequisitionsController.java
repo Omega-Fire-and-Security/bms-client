@@ -217,7 +217,7 @@ public class RequisitionsController extends OperationsController implements Init
                                         quote_reps.add(SessionManager.getInstance().getActiveEmployee());
                                         try
                                         {
-                                            QuoteManager.getInstance().createQuote(quote, null, new Callback()
+                                            QuoteManager.getInstance().createQuote(quote, null, null, new Callback()
                                             {
                                                 @Override
                                                 public Object call(Object param)

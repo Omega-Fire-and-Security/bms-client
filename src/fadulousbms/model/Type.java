@@ -78,29 +78,6 @@ public class Type extends BusinessObject implements Serializable
     }
 
     @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("type_name","UTF-8") + "="
-                    + URLEncoder.encode(type_name, "UTF-8"));
-            result.append("&" + URLEncoder.encode("type_description","UTF-8") + "="
-                    + URLEncoder.encode(type_description, "UTF-8"));
-            if(getOther()!=null)
-                result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                        + URLEncoder.encode(getOther(), "UTF-8"));
-
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
-        }
-        return null;
-    }
-
-    @Override
     public String getJSONString()
     {
         String super_json = super.getJSONString();

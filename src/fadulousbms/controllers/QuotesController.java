@@ -217,6 +217,7 @@ public class QuotesController extends OperationsController implements Initializa
                                                         else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load quotes viewer screen.");
                                                     } catch (IOException e)
                                                     {
+                                                        e.printStackTrace();
                                                         IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                                     }
                                                 }
@@ -315,6 +316,7 @@ public class QuotesController extends OperationsController implements Initializa
         EmployeeManager.getInstance().initialize();
         ClientManager.getInstance().initialize();
         ResourceManager.getInstance().initialize();
+        ServiceManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
 
         //execute callback

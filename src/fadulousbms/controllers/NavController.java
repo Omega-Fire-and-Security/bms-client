@@ -116,11 +116,15 @@ public class NavController extends ScreenController implements Initializable
             app_window.widthProperty().addListener((observable, oldValue, newValue) ->
                     company_name.setFont(Font.font(newValue.intValue() / FONT_SIZE_MULTIPLIER)));
 
-            //trigger resize handler to resize font every time the nav is reloaded, yes it is hacky but works ;)
-            app_window.setWidth(
-                    app_window.getWidth() + 1 >= GraphicsEnvironment.getLocalGraphicsEnvironment()
-                            .getDefaultScreenDevice().getDisplayMode().getWidth() - 60 ?
-                            app_window.getWidth() - 1 : app_window.getWidth() + 1);
+            Platform.runLater(() ->
+            {
+                //trigger resize handler to resize font every time the nav is reloaded, yes it is hacky but works ;)
+                app_window.setWidth(
+                        app_window.getWidth() + 1 >= GraphicsEnvironment.getLocalGraphicsEnvironment()
+                                .getDefaultScreenDevice().getDisplayMode().getWidth() - 60 ?
+                                app_window.getWidth() - 1 : app_window.getWidth() + 1);
+            });
+
         }
     }
 

@@ -433,7 +433,7 @@ public class AccountingController extends ScreenController implements Initializa
     @FXML
     public void newResource()
     {
-        ResourceManager.getInstance().newResourceWindow(param ->
+        ResourceManager.getInstance().newResourceWindow( param ->
         {
             new Thread(() ->
                     refreshModel(param1 ->

@@ -206,46 +206,6 @@ public class Resource extends BusinessObject implements Serializable
     }
 
     @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("resource_name","UTF-8") + "="
-                    + URLEncoder.encode(resource_name, "UTF-8"));
-            result.append("&" + URLEncoder.encode("resource_type","UTF-8") + "="
-                    + URLEncoder.encode(resource_type, "UTF-8"));
-            result.append("&" + URLEncoder.encode("resource_description","UTF-8") + "="
-                    + URLEncoder.encode(resource_description, "UTF-8"));
-            result.append("&" + URLEncoder.encode("resource_serial","UTF-8") + "="
-                    + URLEncoder.encode(resource_serial, "UTF-8"));
-            result.append("&" + URLEncoder.encode("resource_value","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(resource_value), "UTF-8"));
-            if(date_acquired>0)
-                result.append("&" + URLEncoder.encode("date_acquired","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_acquired), "UTF-8"));
-            if(date_exhausted>0)
-                result.append("&" + URLEncoder.encode("date_exhausted","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_exhausted), "UTF-8"));
-            result.append("&" + URLEncoder.encode("unit","UTF-8") + "="
-                    + URLEncoder.encode(unit, "UTF-8"));
-            result.append("&" + URLEncoder.encode("quantity","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(quantity), "UTF-8"));
-            if(getOther()!=null)
-                if(!getOther().isEmpty())
-                    result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                            + URLEncoder.encode(getOther(), "UTF-8"));
-
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
     public String getJSONString()
     {
         String super_json = super.getJSONString();

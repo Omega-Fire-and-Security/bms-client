@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
 import javafx.collections.FXCollections;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,6 +152,7 @@ public class ResourceManager extends BusinessObjectManager
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of materials.");
 
                                 serialize(ROOT_PATH + filename, all_resources);
+                                Files.delete(new File(ROOT_PATH + "resource_types.dat").toPath());
                                 serialize(ROOT_PATH + "resource_types.dat", resource_types);
                             } else
                             {
@@ -242,7 +245,8 @@ public class ResourceManager extends BusinessObjectManager
                 if(resource_type!=null && !empty)
                 {
                     setText(resource_type.getType_name());
-                }else{
+                } else
+                {
                     setText("");
                 }
             }
@@ -421,6 +425,11 @@ public class ResourceManager extends BusinessObjectManager
 
         stage.setScene(scene);
         stage.show();
+    }
+
+    public  void resourceCreationWindow(Node parent_node, Callback callback)
+    {
+        IO.showPopOver("New Resource", Screens.NEW_RESOURCE.getScreen(), parent_node);
     }
 
     public void newResourceTypeWindow(Callback callback)

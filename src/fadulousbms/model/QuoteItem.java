@@ -308,40 +308,6 @@ public class QuoteItem extends BusinessObject implements Serializable
     }
 
     @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("quote_id","UTF-8") + "="
-                    + URLEncoder.encode(quote_id, "UTF-8") + "&");
-            result.append(URLEncoder.encode("resource_id","UTF-8") + "="
-                    + URLEncoder.encode(resource_id, "UTF-8") + "&");
-            result.append(URLEncoder.encode("item_number","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(item_number), "UTF-8") + "&");
-            if(additional_costs!=null)
-                result.append(URLEncoder.encode("additional_costs","UTF-8") + "="
-                        + URLEncoder.encode(additional_costs, "UTF-8") + "&");
-            result.append(URLEncoder.encode("quantity","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(quantity), "UTF-8") + "&");
-            result.append(URLEncoder.encode("unit_cost","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(unit_cost), "UTF-8") + "&");
-            result.append(URLEncoder.encode("markup","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(markup), "UTF-8"));
-            if(getOther()!=null)
-                if(!getOther().isEmpty())
-                    result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                            + URLEncoder.encode(getOther(), "UTF-8"));
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
     public String getJSONString()
     {
         String super_json = super.getJSONString();

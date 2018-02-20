@@ -59,7 +59,7 @@ public class ResourcesController extends ScreenController implements Initializab
 
         colType.setMinWidth(120);
         colType.setCellValueFactory(new PropertyValueFactory<>("resource_type"));
-        colType.setCellFactory(col -> new ComboBoxTableCell(ResourceManager.getInstance().getResource_types(), "resource_type", "/resources"));
+        colType.setCellFactory(col -> new ComboBoxTableCell(ResourceManager.getInstance().getResource_types(), "resource_type", "type_name"));
 
         CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "resource_description", "/resources");
         CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 80, "resource_value", "/resources");

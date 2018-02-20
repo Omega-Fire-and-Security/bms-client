@@ -127,9 +127,15 @@ public class ViewQuoteController extends QuoteController
                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
             }
 
+            //set quote items
             if (selected.getResources() != null)
                 tblQuoteItems.setItems(FXCollections.observableArrayList(selected.getResources()));
             else IO.log(getClass().getName(), IO.TAG_WARN, "quote [" + selected.get_id() + "] has no resources.");
+
+            //set quote services
+            if (selected.getServices() != null)
+                tblQuoteServices.setItems(FXCollections.observableArrayList(selected.getServices()));
+            else IO.log(getClass().getName(), IO.TAG_WARN, "quote [" + selected.get_id() + "] has no services.");
 
             /** Store additional cost cols in a HashMap -  used a map
              * To ensure that only a single instance of all additional

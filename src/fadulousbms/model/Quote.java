@@ -5,6 +5,7 @@ import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ClientManager;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.QuoteManager;
+import fadulousbms.managers.ServiceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -29,6 +30,7 @@ public class Quote extends BusinessObject
     private int status;
     private String parent_id;
     private QuoteItem[] resources;
+    private QuoteService[] services;
     private int rev_cursor = -1;
     public static final String TAG = "Quote";
 
@@ -162,6 +164,16 @@ public class Quote extends BusinessObject
             }
         }
         return total * (getVat()/100) + total;
+    }
+
+    public QuoteService[] getServices()
+    {
+        return services;
+    }
+
+    public void setServices(QuoteService[] services)
+    {
+        this.services=services;
     }
 
     public QuoteItem[] getResources()
@@ -423,50 +435,6 @@ public class Quote extends BusinessObject
                 return getRevision();
         }
         return super.get(var);
-    }
-
-    @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("client_id","UTF-8") + "="
-                    + URLEncoder.encode(client_id, "UTF-8") + "&");
-            result.append(URLEncoder.encode("contact_person_id","UTF-8") + "="
-                    + URLEncoder.encode(contact_person_id, "UTF-8") + "&");
-            if(getDate_logged()>0)
-                result.append(URLEncoder.encode("date_logged","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate_logged()), "UTF-8"));
-            result.append("&" + URLEncoder.encode("sitename","UTF-8") + "="
-                    + URLEncoder.encode(sitename, "UTF-8"));
-            result.append("&" + URLEncoder.encode("request","UTF-8") + "="
-                    + URLEncoder.encode(request, "UTF-8"));
-            if(status>0)
-                result.append("&" + URLEncoder.encode("status","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(status), "UTF-8"));
-            result.append("&" + URLEncoder.encode("vat","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(vat), "UTF-8"));
-            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
-                    + URLEncoder.encode(account_name, "UTF-8"));
-            result.append("&" + URLEncoder.encode("creator","UTF-8") + "="
-                    + URLEncoder.encode(getCreator(), "UTF-8"));
-            if(parent_id !=null)
-                result.append("&" + URLEncoder.encode("parent_id","UTF-8") + "="
-                        + URLEncoder.encode(parent_id, "UTF-8"));
-            result.append("&" + URLEncoder.encode("revision","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(revision), "UTF-8"));
-            if(getOther()!=null)
-                if(!getOther().isEmpty())
-                    result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                            + URLEncoder.encode(getOther(), "UTF-8"));
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(TAG, IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
     }
 
     @Override

@@ -203,45 +203,6 @@ public class Asset extends BusinessObject
     }
 
     @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append("&" + URLEncoder.encode("asset_name","UTF-8") + "="
-                    + URLEncoder.encode(asset_name, "UTF-8"));
-            result.append("&" + URLEncoder.encode("asset_type","UTF-8") + "="
-                    + URLEncoder.encode(asset_type, "UTF-8"));
-            result.append("&" + URLEncoder.encode("asset_description","UTF-8") + "="
-                    + URLEncoder.encode(asset_description, "UTF-8"));
-            result.append("&" + URLEncoder.encode("asset_serial","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(asset_serial), "UTF-8"));
-            result.append("&" + URLEncoder.encode("asset_value","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(asset_value), "UTF-8"));
-            if(date_acquired>0)
-                result.append("&" + URLEncoder.encode("date_acquired","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_acquired), "UTF-8"));
-            if(date_exhausted>0)
-                result.append("&" +  URLEncoder.encode("date_exhausted","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_exhausted), "UTF-8"));
-            result.append("&" + URLEncoder.encode("quantity","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(quantity), "UTF-8"));
-            result.append("&" + URLEncoder.encode("unit","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(unit), "UTF-8"));
-            if(getOther()!=null)
-                result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                        + URLEncoder.encode(getOther(), "UTF-8"));
-
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
-        }
-        return null;
-    }
-
-    @Override
     public String apiEndpoint()
     {
         return "/assets";

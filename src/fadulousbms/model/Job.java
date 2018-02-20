@@ -317,52 +317,6 @@ public class Job extends BusinessObject
     }
 
     /**
-     * @return UTF-8 String representation of Job object.
-     */
-    @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            /*result.append(URLEncoder.encode("job_number","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(job_number), "UTF-8"));*/
-            result.append(URLEncoder.encode("quote_id","UTF-8") + "="
-                    + URLEncoder.encode(quote_id, "UTF-8"));
-            result.append("&" + URLEncoder.encode("status","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(status), "UTF-8"));
-            if(date_assigned>0)
-                result.append("&" + URLEncoder.encode("date_assigned","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_assigned), "UTF-8"));
-            if(planned_start_date>0)
-                result.append("&" + URLEncoder.encode("planned_start_date","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(planned_start_date), "UTF-8"));
-            if(date_started>0)
-                result.append("&" + URLEncoder.encode("date_started","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_started), "UTF-8"));
-            if(date_completed>0)
-                result.append("&" + URLEncoder.encode("date_completed","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(date_completed), "UTF-8"));
-            if(invoice_id!=null)
-                result.append("&" + URLEncoder.encode("invoice_id","UTF-8") + "="
-                        + URLEncoder.encode(invoice_id, "UTF-8"));
-            /*if(assigned_employees!=null)
-                result.append("&" + URLEncoder.encode("assigned_employees","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(assigned_employees.length), "UTF-8"));
-            if(safety_catalogue!=null)
-                result.append("&" + URLEncoder.encode("safety_catalogue","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(safety_catalogue.length), "UTF-8"));*/
-
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    /**
      * @return JSON representation of Job object.
      */
     @Override

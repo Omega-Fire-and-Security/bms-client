@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="50.0" minWidth="50.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.ServiceController">
+   <children>
+      <HBox>
+         <children>
+            <Label minWidth="190.0" text="Service Name*" />
+            <TextField fx:id="txtServiceName" HBox.hgrow="ALWAYS" />
+         </children>
+         <VBox.margin>
+            <Insets bottom="5.0" top="10.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox layoutX="10.0" layoutY="10.0">
+         <children>
+            <Label minWidth="190.0" text="Service Description [optional]" />
+            <TextArea fx:id="txtServiceDescription"/>
+         </children>
+         <VBox.margin>
+            <Insets top="5.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Button alignment="CENTER" contentDisplay="CENTER" minHeight="50.0" minWidth="100.0" mnemonicParsing="false" onMouseClicked="#createService" styleClass="btnAdd" stylesheets="@../../../styles/home.css" text="Submit" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

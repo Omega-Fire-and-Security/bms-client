@@ -273,52 +273,6 @@ public class Client extends BusinessObject implements Serializable
     }
 
     @Override
-    public String asUTFEncodedString()
-    {
-        //Return encoded URL parameters in UTF-8 charset
-        StringBuilder result = new StringBuilder();
-        try
-        {
-            result.append(URLEncoder.encode("client_name","UTF-8") + "="
-                    + URLEncoder.encode(getClient_name(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("physical_address","UTF-8") + "="
-                    + URLEncoder.encode(getPhysical_address(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("postal_address","UTF-8") + "="
-                    + URLEncoder.encode(getPostal_address(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("tel","UTF-8") + "="
-                    + URLEncoder.encode(getTel(), "UTF-8"));
-            if(getFax()!=null)
-                result.append("&" + URLEncoder.encode("fax","UTF-8") + "="
-                        + URLEncoder.encode(getFax(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("contact_email","UTF-8") + "="
-                    + URLEncoder.encode(getContact_email(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("registration_number","UTF-8") + "="
-                    + URLEncoder.encode(getRegistration_number(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("vat_number","UTF-8") + "="
-                    + URLEncoder.encode(getVat_number(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("account_name","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(getAccount_name()), "UTF-8"));
-            if(getDate_partnered()>0)
-                result.append("&" + URLEncoder.encode("date_partnered","UTF-8") + "="
-                        + URLEncoder.encode(String.valueOf(getDate_partnered()), "UTF-8"));
-            if(getWebsite()!=null)
-                result.append("&" + URLEncoder.encode("website","UTF-8") + "="
-                        + URLEncoder.encode(getWebsite(), "UTF-8"));
-            result.append("&" + URLEncoder.encode("active","UTF-8") + "="
-                    + URLEncoder.encode(String.valueOf(isActive()), "UTF-8"));
-            if(getOther()!=null)
-                result.append("&" + URLEncoder.encode("other","UTF-8") + "="
-                        + URLEncoder.encode(getOther(), "UTF-8"));
-
-            return result.toString();
-        } catch (UnsupportedEncodingException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
     public String getJSONString()
     {
         String super_json = super.getJSONString();

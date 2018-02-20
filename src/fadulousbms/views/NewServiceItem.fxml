@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="50.0" minWidth="50.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.ServiceController">
+   <children>
+      <HBox>
+         <children>
+            <Label minWidth="180.0" text="Item Name*" />
+            <TextField fx:id="txtName" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <HBox layoutX="10.0" layoutY="10.0">
+         <children>
+            <Label minWidth="180.0" text="Item Description [optional]" />
+            <TextArea fx:id="txtDescription" HBox.hgrow="ALWAYS" />
+         </children>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox layoutX="10.0" layoutY="10.0">
+         <children>
+            <Label minWidth="180.0" text="Item Rate*" />
+            <TextField fx:id="txtRate" HBox.hgrow="ALWAYS" />
+         </children>
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox layoutX="10.0" layoutY="201.0">
+         <children>
+            <Label minWidth="180.0" text="Item Quantity*" />
+            <TextField fx:id="txtQuantity" HBox.hgrow="ALWAYS" />
+         </children>
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox layoutX="10.0" layoutY="228.0">
+         <children>
+            <Label minWidth="180.0" text="Item Unit*" />
+            <TextField fx:id="txtUnit" HBox.hgrow="ALWAYS" />
+         </children>
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox alignment="CENTER" layoutX="10.0" layoutY="295.0" VBox.vgrow="ALWAYS">
+         <children>
+            <Button minHeight="50.0" minWidth="120.0" mnemonicParsing="false" onMouseClicked="#createServiceItem" styleClass="btnAdd" stylesheets="@../../../styles/home.css" text="Create &amp; Add" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

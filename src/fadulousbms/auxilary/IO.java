@@ -1,12 +1,16 @@
 package fadulousbms.auxilary;
 
+import fadulousbms.FadulousBMS;
 import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.BusinessObject;
 import fadulousbms.model.FileMetadata;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.input.KeyCode;
@@ -15,6 +19,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.control.Notifications;
+import org.controlsfx.control.PopOver;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -280,6 +285,29 @@ public class IO<T extends BusinessObject>
             }*
         });
     }*/
+
+    public static void showPopOver(String title, String path, Node parent_node)
+    {
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(FadulousBMS.class.getResource("views/"+path));
+            Parent screen = loader.load();
+            if(screen!=null)
+            {
+                PopOver popOver = new PopOver();
+                popOver.setTitle(title);
+                popOver.setAnimated(true);
+
+                if (parent_node != null)
+                    popOver.show(parent_node);
+                else IO.logAndAlert("Error", "Parent node is null", IO.TAG_ERROR);
+            } else IO.logAndAlert("Error", "Screen ["+path+"] is null", IO.TAG_ERROR);
+        } catch (IOException e)
+        {
+            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+        }
+    }
+
 
     public static void logAndAlert(String title, String msg, String type)
     {

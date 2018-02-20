@@ -969,7 +969,7 @@ public class NewJobController extends ScreenController implements Initializable
         try
         {
             //create Job
-            QuoteManager.getInstance().createQuote(quote, tblJobItems.getItems(), new Callback()
+            QuoteManager.getInstance().createQuote(quote, tblJobItems.getItems(), null, new Callback()
             {
                 @Override
                 public Object call(Object quote_id)

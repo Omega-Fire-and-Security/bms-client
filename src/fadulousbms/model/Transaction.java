@@ -88,16 +88,6 @@ public class Transaction extends BusinessObject
     }
 
     /**
-     * Not a server side model so no need for UTF encoded string.
-     * @return null.
-     */
-    @Override
-    public String asUTFEncodedString()
-    {
-        return null;
-    }
-
-    /**
      * Not a server side model so no need for API endpoint value.
      * @return null.
      */

@@ -194,8 +194,6 @@ public abstract class BusinessObject implements Serializable
 
     public abstract String apiEndpoint();
 
-    public abstract String asUTFEncodedString();
-
     public String getJSONString()
     {
         String json_obj = "{"+(get_id()!=null?"\"_id\":\""+get_id()+"\",":"")
