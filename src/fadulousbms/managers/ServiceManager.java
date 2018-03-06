@@ -290,8 +290,8 @@ public class ServiceManager extends BusinessObjectManager
 
                 ServiceManager.getInstance().forceSynchronise();
 
-                if(ServiceManager.getInstance().getService_items()!=null && new_service_item_id!=null)
-                    ServiceManager.getInstance().setSelected(ServiceManager.getInstance().getService_items().get(new_service_item_id));
+                //if(ServiceManager.getInstance().getService_items()!=null && new_service_item_id!=null)
+                //    ServiceManager.getInstance().setSelected(ServiceManager.getInstance().getService_items().get(new_service_item_id));
 
                 IO.logAndAlert("Service Item Creation Success", "Successfully created a new service item: " + serviceItem.getItem_name(), IO.TAG_INFO);
                 //execute callback w/ args

@@ -152,9 +152,9 @@ public class NewResourceController extends ScreenController implements Initializ
 
         //prepare supplier parameters
         Resource resource = new Resource();
-        resource.setResource_name(txtName.getText());
+        resource.setBrand_name(txtName.getText());
         resource.setResource_description(txtDescription.getText());
-        resource.setResource_serial(txtSerial.getText());
+        resource.setResource_code(txtSerial.getText());
         try {
             resource.setResource_value(Double.valueOf(txtValue.getText()));
         } catch (NumberFormatException e)
@@ -198,7 +198,7 @@ public class NewResourceController extends ScreenController implements Initializ
                     }
                     ResourceManager.getInstance().setSelected(resource);
                     IO.log(getClass().getName(), IO.TAG_INFO, "Successfully created a new Resource ["+resource_id+"]");
-                    IO.logAndAlert("New Resource Creation Success", "Successfully created a new Resource ["+resource.getResource_name()+"]", IO.TAG_INFO);
+                    IO.logAndAlert("New Resource Creation Success", "Successfully created a new Resource ["+resource.getResource_description()+"]", IO.TAG_INFO);
                     itemsModified = false;
                 }else
                 {

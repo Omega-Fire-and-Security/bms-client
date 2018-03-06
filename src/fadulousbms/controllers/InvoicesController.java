@@ -299,7 +299,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                                 if(Desktop.isDesktopSupported())
                                                 {
                                                     Desktop.getDesktop().open(new File(path));
-                                                }
+                                                } else IO.logAndAlert("Error", "This environment not supported.", IO.TAG_ERROR);
                                                 /*PDFViewer pdfViewer = PDFViewer.getInstance();
                                                 pdfViewer.setVisible(true);
                                                 pdfViewer.doOpen(path);*/

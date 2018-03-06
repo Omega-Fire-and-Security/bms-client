@@ -5,6 +5,7 @@
  */
 package fadulousbms.model;
 
+import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ServiceManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -56,10 +57,21 @@ public class Service extends BusinessObject implements Serializable
         return serviceItems;
     }
 
+    public double getTotal()
+    {
+        HashMap<String, ServiceItem> serviceItems = getServiceItemsMap();
+        double total = 0.0;
+        if(serviceItems!=null)
+            for(ServiceItem serviceItem: serviceItems.values())
+                total+=serviceItem.getTotal();
+        return total;
+    }
+
     //Properties
 
     public StringProperty service_titleProperty(){return new SimpleStringProperty(service_title);}
     public StringProperty service_descriptionProperty(){return new SimpleStringProperty(service_description);}
+    public StringProperty totalProperty(){return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + getTotal());}
 
     @Override
     public void parse(String var, Object val)

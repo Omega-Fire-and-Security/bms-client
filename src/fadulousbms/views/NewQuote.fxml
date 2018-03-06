@@ -71,6 +71,7 @@
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints />
                             </rowConstraints>
                             <children>
@@ -117,8 +118,9 @@
                                 <TextField fx:id="txtSite" GridPane.columnIndex="1" GridPane.rowIndex="9" />
                                 <Label text="Request/Description" GridPane.rowIndex="10" />
                                 <TextArea fx:id="txtRequest" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.vgrow="ALWAYS" />
-                                <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (excluding VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="11" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                <TextField fx:id="txtTotal" disable="true" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="11" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                <TextField fx:id="txtTotal" disable="true" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="12" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                        <Label text="Notes" GridPane.rowIndex="11" />
+                        <TextArea fx:id="txtNotes" layoutX="180.0" layoutY="420.0" GridPane.columnIndex="1" GridPane.rowIndex="11" />
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -177,9 +179,25 @@
                 </SplitPane>
                 <BorderPane>
                     <left>
+                        <Label text="Materials" BorderPane.alignment="CENTER">
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                  </Label>
+                    </left>
+                    <right>
+                        <Label text="Services" BorderPane.alignment="CENTER">
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                  </Label>
+                    </right>
+                </BorderPane>
+                <BorderPane>
+                    <left>
                         <HBox BorderPane.alignment="CENTER">
                             <children>
-                                <ComboBox fx:id="cbxMaterials" minWidth="150.0">
+                                <ComboBox fx:id="cbxMaterials" minWidth="150.0" prefWidth="200.0" HBox.hgrow="SOMETIMES">
                                     <HBox.margin>
                                         <Insets right="20.0" top="6.0" />
                                     </HBox.margin>
@@ -190,6 +208,11 @@
                                         <Insets left="10.0" />
                                     </HBox.margin>
                                 </Button>
+                        <Button fx:id="btnClearMaterials" layoutX="350.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#clearMaterials" styleClass="btnBack" stylesheets="@../styles/home.css" text="Clear Materials">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Button>
                             </children>
                      <BorderPane.margin>
                         <Insets top="10.0" />
@@ -199,7 +222,7 @@
                     <right>
                         <HBox BorderPane.alignment="CENTER">
                             <children>
-                                <ComboBox fx:id="cbxServices" minWidth="150.0">
+                                <ComboBox fx:id="cbxServices" minWidth="150.0" prefWidth="200.0" HBox.hgrow="SOMETIMES">
                                     <HBox.margin>
                                         <Insets right="20.0" top="6.0" />
                                     </HBox.margin>
@@ -214,25 +237,16 @@
                                         <Insets left="10.0" />
                                     </HBox.margin>
                                 </Button>
+                        <Button fx:id="btnClearServices" layoutX="360.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#clearServices" styleClass="btnBack" stylesheets="@../styles/home.css" text="Clear Services">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Button>
                             </children>
                      <BorderPane.margin>
                         <Insets top="10.0" />
                      </BorderPane.margin>
                         </HBox>
-                    </right>
-                </BorderPane>
-                <BorderPane>
-                    <left>
-                        <Label text="Materials" BorderPane.alignment="CENTER">
-                            <font>
-                                <Font size="20.0" />
-                            </font></Label>
-                    </left>
-                    <right>
-                        <Label text="Services" BorderPane.alignment="CENTER">
-                            <font>
-                                <Font size="20.0" />
-                            </font></Label>
                     </right>
                 </BorderPane>
                 <SplitPane dividerPositions="0.78" prefHeight="160.0" prefWidth="200.0">
@@ -241,7 +255,7 @@
                             <children>
                                 <ScrollPane hbarPolicy="ALWAYS" minWidth="400.0" prefViewportHeight="400.0" prefViewportWidth="1012.0" vbarPolicy="ALWAYS">
                                     <content>
-                                        <TableView fx:id="tblQuoteItems" editable="true" minHeight="100.0" minWidth="1200.0" prefHeight="150.0" tableMenuButtonVisible="true">
+                                        <TableView fx:id="tblQuoteItems" editable="true" minHeight="200.0" minWidth="1200.0" prefHeight="200.0" tableMenuButtonVisible="true">
                                             <columns>
                                                 <TableColumn fx:id="colItemNumber" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Item #">
                                                     <cellValueFactory>
@@ -253,7 +267,7 @@
                                                         <PropertyValueFactory property="equipment_name" />
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Equipment Description">
+                                                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Equipment Description" visible="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="equipment_description" />
                                                     </cellValueFactory>
@@ -261,11 +275,11 @@
                                                         <TextFieldTableCellOld fx:factory="forTableColumn" />
                                                     </cellFactory>-->
                                                 </TableColumn>
-                                    <TableColumn fx:id="colCategory" maxWidth="1.7976931348623157E308" minWidth="140.0" prefWidth="-1.0" text="Category">
-                                       <cellValueFactory>
-                                          <PropertyValueFactory property="equipment_description" />
-                                       </cellValueFactory>
-                                    </TableColumn>
+                                                <TableColumn fx:id="colCategory" maxWidth="1.7976931348623157E308" minWidth="140.0" prefWidth="-1.0" text="Category">
+                                                   <cellValueFactory>
+                                                      <PropertyValueFactory property="category" />
+                                                   </cellValueFactory>
+                                                </TableColumn>
                                                 <TableColumn fx:id="colUnit" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Unit">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="unit" />
@@ -282,14 +296,14 @@
                                                         <TextFieldTableCellOld fx:factory="forTableColumn" />
                                                     </cellFactory>-->
                                                 </TableColumn>
-                                                <!--<TableColumn fx:id="colUnitCost" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Unit Cost">
+                                                <TableColumn fx:id="colUnitCost" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Unit Cost">
                                                     <cellValueFactory>
-                                                        <PropertyValueFactory property="labour" />
+                                                        <PropertyValueFactory property="unit_cost" />
                                                     </cellValueFactory>
                                                     <cellFactory>
                                                         <TextFieldTableCell fx:factory="forTableColumn" />
                                                     </cellFactory>
-                                                </TableColumn>-->
+                                                </TableColumn>
                                                 <TableColumn fx:id="colQuantity" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Quantity">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="quantity" />
@@ -298,7 +312,7 @@
                                                         <TextFieldTableCell fx:factory="forTableColumn" />
                                                     </cellFactory>
                                                 </TableColumn>
-                                                <TableColumn fx:id="colMarkup" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Markup" visible="false">
+                                                <TableColumn fx:id="colMarkup" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Markup">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="markup" />
                                                     </cellValueFactory>
@@ -328,13 +342,18 @@
                         </AnchorPane>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                             <children>
-                                <ScrollPane hbarPolicy="ALWAYS" layoutX="-9.0" minWidth="600.0" prefViewportHeight="400.0" prefViewportWidth="248.0" vbarPolicy="ALWAYS">
+                                <ScrollPane hbarPolicy="ALWAYS" layoutX="-9.0" minWidth="1000.0" prefViewportHeight="400.0" prefViewportWidth="248.0" vbarPolicy="ALWAYS">
                                     <content>
-                                        <TableView fx:id="tblQuoteServices" layoutX="-9.0" minHeight="100.0" minWidth="900.0" prefHeight="150.0" tableMenuButtonVisible="true">
+                                        <TableView fx:id="tblQuoteServices" layoutX="-9.0" minHeight="200.0" minWidth="1100.0" prefHeight="200.0" tableMenuButtonVisible="true">
                                             <columns>
                                                 <TableColumn fx:id="colServiceTitle" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Service Title">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="service_title" />
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn fx:id="colServiceTotal" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Total">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="total" />
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn fx:id="colServiceDescription" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Service Description" visible="false">

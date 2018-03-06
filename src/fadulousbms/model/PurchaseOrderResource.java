@@ -20,7 +20,7 @@ public class PurchaseOrderResource extends PurchaseOrderItem
     public String getItem_name()
     {
         if(getItem()!=null)
-            return getItem().getResource_name();
+            return getItem().getBrand_name();
         return "N/A";
     }
 
@@ -51,9 +51,9 @@ public class PurchaseOrderResource extends PurchaseOrderItem
         //    return (Resource) super.getItem();
 
         ResourceManager.getInstance().initialize();
-        if (ResourceManager.getInstance().getAll_resources() != null)
+        if (ResourceManager.getInstance().getDataset() != null)
         {
-            Resource resource = ResourceManager.getInstance().getAll_resources().get(getItem_id());
+            Resource resource = ResourceManager.getInstance().getDataset().get(getItem_id());
             if (resource != null)
             {
                 return resource;

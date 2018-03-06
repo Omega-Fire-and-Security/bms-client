@@ -7,9 +7,7 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
-import fadulousbms.model.Client;
-import fadulousbms.model.Screens;
-import fadulousbms.model.Supplier;
+import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -220,7 +218,7 @@ public abstract class ScreenController
             }
         });*/
         RadialMenuItem suppliers_pdf_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Sage One Suppliers PDF", null, null, event -> SupplierManager
-                .parsePDF("suppliers.pdf", new Callback()
+                .parseClientSupplierPDF("parser/suppliers.pdf", new Callback()
                 {
                     @Override
                     public Object call(Object param)
@@ -277,7 +275,7 @@ public abstract class ScreenController
                     }
                 }));
         RadialMenuItem clients_pdf_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Sage One Clients PDF", null, null, event -> ClientManager
-                .parsePDF("clients.pdf", new Callback()
+                .parseClientSupplierPDF("parser/clients.pdf", new Callback()
                 {
                     @Override
                     public Object call(Object param)
@@ -332,90 +330,217 @@ public abstract class ScreenController
                     }
                 }));
 
-        return new RadialMenuItem[]{menuClose, menuBack, menuForward, menuHome, menuLogin, suppliers_pdf_parser, clients_pdf_parser};
-    }
-
-    public static void readXLSXFile() throws IOException
-    {
-        InputStream ExcelFileToRead = new FileInputStream("C:/Test.xlsx");
-        XSSFWorkbook wb = new XSSFWorkbook(ExcelFileToRead);
-
-        XSSFWorkbook test = new XSSFWorkbook();
-
-        XSSFSheet sheet = wb.getSheetAt(0);
-        XSSFRow row;
-        XSSFCell cell;
-
-        Iterator rows = sheet.rowIterator();
-
-        while (rows.hasNext())
-        {
-            row=(XSSFRow) rows.next();
-            Iterator cells = row.cellIterator();
-            while (cells.hasNext())
-            {
-                cell=(XSSFCell) cells.next();
-                if (cell.getCellType() == XSSFCell.CELL_TYPE_STRING)
+        RadialMenuItem regal_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Regal Price-list PDF", null, null, event -> BusinessObjectManager
+                .parseRegalPDF("parser/regal_pricelist_01-02-2018.pdf", new Callback()
                 {
-                    System.out.print(cell.getStringCellValue()+" ");
-                }
-                else if(cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
+                    @Override
+                    public Object call(Object param)
+                    {
+                        if(SessionManager.getInstance().getActive()!=null)
+                        {
+                            if(!SessionManager.getInstance().getActive().isExpired())
+                            {
+                                if(param==null)
+                                {
+                                    IO.logAndAlert("Error", "Invalid response from PDF parser", IO.TAG_ERROR);
+                                    return null;
+                                }
+                                Resource resource = (Resource) param;
+                                //create new resource type
+                                ResourceType resourceType = new ResourceType(resource.getResource_type(), resource.getResource_type());
+                                resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                try
+                                {
+                                    ResourceManager.getInstance().createResourceType(resourceType, res_type_id ->
+                                    {
+                                        if(res_type_id !=null)
+                                        {
+                                            if (res_type_id instanceof String)
+                                            {
+                                                String type_id = (String) res_type_id;
+                                                //set real resource type ID
+                                                resource.setResource_type(type_id.replaceAll("\"", "").trim());
+                                                //set supplier_id to regal's ID
+                                                resource.setSupplier_id("regal");
+                                                //set resource creator
+                                                resource.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                                //set date acquired
+                                                resource.setDate_acquired(System.currentTimeMillis());
+                                                //set quantity
+                                                resource.setQuantity(1);
+                                                //set unit
+                                                resource.setUnit("ea");
+
+                                                //create resource
+                                                try
+                                                {
+                                                    ResourceManager.getInstance().createResource(resource, res_id ->
+                                                    {
+                                                        if (res_id != null)
+                                                            IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);
+                                                        else
+                                                            IO.logAndAlert("Error", "Could not create a new material", IO.TAG_ERROR);
+                                                        return null;
+                                                    });
+                                                } catch (IOException e)
+                                                {
+                                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                                }
+                                            } else IO.log(getClass().getName(), IO.TAG_WARN, "invalid resource_type_id returned by server.");
+                                        }
+                                        return null;
+                                    });
+                                } catch (IOException e)
+                                {
+                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                }
+                            } else IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log inx.", IO.TAG_ERROR);
+                        } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
+                        return null;
+                    }
+                }));
+
+        RadialMenuItem reditron_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Reditron Price-list PDF", null, null, event -> BusinessObjectManager
+                .parseReditronPDF("parser/reditron_June2017Pricelist.pdf", new Callback()
                 {
-                    System.out.print(cell.getNumericCellValue()+" ");
-                }
-                else
+                    @Override
+                    public Object call(Object param)
+                    {
+                        if(SessionManager.getInstance().getActive()!=null)
+                        {
+                            if(!SessionManager.getInstance().getActive().isExpired())
+                            {
+                                if(param==null)
+                                {
+                                    IO.logAndAlert("Error", "Invalid response from PDF parser", IO.TAG_ERROR);
+                                    return null;
+                                }
+                                Resource resource = (Resource) param;
+                                //create new resource type
+                                ResourceType resourceType = new ResourceType(resource.getResource_type(), resource.getResource_type());
+                                resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                try
+                                {
+                                    ResourceManager.getInstance().createResourceType(resourceType, res_type_id ->
+                                    {
+                                        if(res_type_id !=null)
+                                        {
+                                            if (res_type_id instanceof String)
+                                            {
+                                                String type_id = (String) res_type_id;
+                                                //set real resource type ID
+                                                resource.setResource_type(type_id.replaceAll("\"", "").trim());
+                                                //set supplier_id to regal's ID
+                                                resource.setSupplier_id("reditron");
+                                                //set resource creator
+                                                resource.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                                //set date acquired
+                                                resource.setDate_acquired(System.currentTimeMillis());
+                                                //set quantity
+                                                resource.setQuantity(1);
+                                                //set unit
+                                                resource.setUnit("ea");
+
+                                                //create resource
+                                                try
+                                                {
+                                                    ResourceManager.getInstance().createResource(resource, res_id ->
+                                                    {
+                                                        if (res_id != null)
+                                                            IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);
+                                                        else
+                                                            IO.logAndAlert("Error", "Could not create a new material", IO.TAG_ERROR);
+                                                        return null;
+                                                    });
+                                                } catch (IOException e)
+                                                {
+                                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                                }
+                                            } else IO.log(getClass().getName(), IO.TAG_WARN, "invalid resource_type_id returned by server.");
+                                        }
+                                        return null;
+                                    });
+                                } catch (IOException e)
+                                {
+                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                }
+                            } else IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log inx.", IO.TAG_ERROR);
+                        } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
+                        return null;
+                    }
+                }));
+
+        RadialMenuItem adi_hikvision_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse ADI HikVision Price-list XLSX", null, null, event -> BusinessObjectManager
+                .parseADIHikVisionPricelistXLSX("parser/ADI Hikvision  Peripheral Jan 2018 v25.xlsx", new Callback()
                 {
-                    //U Can Handel Boolean, Formula, Errors
-                }
-            }
-            System.out.println();
-        }
-    }
+                    @Override
+                    public Object call(Object param)
+                    {
+                        if(SessionManager.getInstance().getActive()!=null)
+                        {
+                            if(!SessionManager.getInstance().getActive().isExpired())
+                            {
+                                if(param==null)
+                                {
+                                    IO.logAndAlert("Error", "Invalid response from PDF parser", IO.TAG_ERROR);
+                                    return null;
+                                }
+                                Resource resource = (Resource) param;
+                                //create new resource type
+                                ResourceType resourceType = new ResourceType(resource.getResource_type(), resource.getResource_type());
+                                resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                try
+                                {
+                                    ResourceManager.getInstance().createResourceType(resourceType, res_type_id ->
+                                    {
+                                        if(res_type_id !=null)
+                                        {
+                                            if (res_type_id instanceof String)
+                                            {
+                                                String type_id = (String) res_type_id;
+                                                //set real resource type ID
+                                                resource.setResource_type(type_id.replaceAll("\"", "").trim());
+                                                //set supplier_id to regal's ID
+                                                resource.setSupplier_id("adi");
+                                                //set resource creator
+                                                resource.setCreator(SessionManager.getInstance().getActive().getUsr());
+                                                //set date acquired
+                                                resource.setDate_acquired(System.currentTimeMillis());
+                                                //set quantity
+                                                resource.setQuantity(1);
+                                                //set unit
+                                                resource.setUnit("ea");
 
-    public static void processOneSheet(String filename) throws Exception
-    {
-        OPCPackage pkg = OPCPackage.open(filename);
-        XSSFReader r = new XSSFReader( pkg );
-        SharedStringsTable sst = r.getSharedStringsTable();
+                                                //create resource
+                                                try
+                                                {
+                                                    ResourceManager.getInstance().createResource(resource, res_id ->
+                                                    {
+                                                        if (res_id != null)
+                                                            IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);
+                                                        else
+                                                            IO.logAndAlert("Error", "Could not create a new material", IO.TAG_ERROR);
+                                                        return null;
+                                                    });
+                                                } catch (IOException e)
+                                                {
+                                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                                }
+                                            } else IO.log(getClass().getName(), IO.TAG_WARN, "invalid resource_type_id returned by server.");
+                                        }
+                                        return null;
+                                    });
+                                } catch (IOException e)
+                                {
+                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                }
+                            } else IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log inx.", IO.TAG_ERROR);
+                        } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
+                        return null;
+                    }
+                }));
 
-        XMLReader parser = fetchSheetParser(sst);
-
-        // To look up the Sheet Name / Sheet Order / rID,
-        //  you need to process the core Workbook stream.
-        // Normally it's of the form rId# or rSheet#
-        InputStream sheet2 = r.getSheet("rId2");
-        InputSource sheetSource = new InputSource(sheet2);
-        parser.parse(sheetSource);
-        sheet2.close();
-    }
-
-    public static void processAllSheets(String filename) throws Exception
-    {
-        try (OPCPackage pkg = OPCPackage.open(filename, PackageAccess.READ))
-        {
-            XSSFReader r = new XSSFReader(pkg);
-            SharedStringsTable sst = r.getSharedStringsTable();
-
-            XMLReader parser = fetchSheetParser(sst);
-
-            Iterator<InputStream> sheets = r.getSheetsData();
-            while (sheets.hasNext()) {
-                System.out.println("Processing new sheet:\n");
-                try (InputStream sheet = sheets.next()) {
-                    InputSource sheetSource = new InputSource(sheet);
-                    parser.parse(sheetSource);
-                }
-                System.out.println("");
-            }
-        }
-    }
-
-    public static XMLReader fetchSheetParser(SharedStringsTable sst) throws SAXException
-    {
-        XMLReader parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
-        ContentHandler handler = new SheetHandler(sst);
-        parser.setContentHandler(handler);
-        return parser;
+        return new RadialMenuItem[]{menuClose, menuBack, menuForward, menuHome, menuLogin, suppliers_pdf_parser, clients_pdf_parser, regal_pricelist_parser, reditron_pricelist_parser, adi_hikvision_pricelist_parser};
     }
 
     //public abstract RadialMenuItem[] getContextMenu();

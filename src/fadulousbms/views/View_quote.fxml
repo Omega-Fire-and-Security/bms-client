@@ -75,315 +75,343 @@
                 </Label>
             </center>
         </BorderPane>
-        <SplitPane dividerPositions="0.5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
-            <items>
-                <GridPane hgap="10.0" vgap="10.0">
-                    <columnConstraints>
-                        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
-                        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                    </rowConstraints>
-                    <children>
-                        <Label text="Company" GridPane.rowIndex="1" />
-                        <Label alignment="CENTER" contentDisplay="CENTER" text="Client Contact Person" GridPane.rowIndex="2" />
-                        <Label text="Cell Number" GridPane.rowIndex="3" />
-                        <TextField fx:id="txtCell" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                        <TextField fx:id="txtTel" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                        <TextField fx:id="txtFax" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                        <TextField fx:id="txtEmail" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                        <Label text="Tel Number" GridPane.rowIndex="4" />
-                        <Label text="eMail Address" GridPane.rowIndex="6" />
-                        <Label text="Site name" GridPane.rowIndex="9" />
-                        <TextField fx:id="txtSite" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-                        <Label text="Fax Number" GridPane.rowIndex="5" />
-                        <Label text="Client details" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
-                            <font>
-                                <Font name="System Bold" size="17.0" />
-                            </font>
-                        </Label>
-                        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
-                            <children>
-                                <ComboBox fx:id="cbxClients" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select client" HBox.hgrow="ALWAYS" />
-                                <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newClient" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
-                                    <HBox.margin>
-                                        <Insets left="10.0" />
-                                    </HBox.margin>
-                                </Button>
-                            </children>
-                        </HBox>
-                        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
-                            <children>
-                                <ComboBox fx:id="cbxContactPerson" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select contact" HBox.hgrow="ALWAYS" />
-                                <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newEmployee" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
-                                    <HBox.margin>
-                                        <Insets left="10.0" />
-                                    </HBox.margin>
-                                </Button>
-                            </children>
-                        </HBox>
-                        <Label text="Request/Description" GridPane.rowIndex="10" />
-                        <TextArea fx:id="txtRequest" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.vgrow="ALWAYS" />
-                        <Label fx:id="lblVat" text="VAT [%]" GridPane.rowIndex="7" />
-                        <Label text="Status" GridPane.rowIndex="11" />
-                        <TextField fx:id="txtStatus" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="11" />
-                        <ToggleButton fx:id="toggleVatExempt" minWidth="150.0" mnemonicParsing="false" text="14%" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="7" />
-                        <Label text="Account" GridPane.rowIndex="8" />
-                        <ComboBox fx:id="cbxAccount" minWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                        <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (including VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="12" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                        <TextField fx:id="txtTotal" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="12" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                    </children>
-                    <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                    </padding>
-                </GridPane>
-                <GridPane alignment="CENTER" hgap="10.0" vgap="10.0">
-                    <columnConstraints>
-                        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-                        <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-                    </columnConstraints>
-                    <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
-                    </rowConstraints>
-                    <children>
-                        <Label text="Quote ID" GridPane.rowIndex="1" />
-                        <Label text="Date Generated" GridPane.rowIndex="2" />
-                        <TextField fx:id="txtQuoteId" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
-                            <GridPane.margin>
-                                <Insets />
-                            </GridPane.margin>
-                        </TextField>
-                        <TextField fx:id="txtDateGenerated" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                        <Label text="Quote details" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
-                            <font>
-                                <Font name="System Bold" size="17.0" />
-                            </font>
-                        </Label>
-                        <Label text="Revision" GridPane.rowIndex="3" />
-                        <TextField fx:id="txtRevision" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                  <VBox GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="CENTER">
+      <SplitPane dividerPositions="0.71" orientation="VERTICAL" VBox.vgrow="ALWAYS">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0">
+               <children>
+                    <SplitPane dividerPositions="0.6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <items>
+                            <GridPane hgap="10.0" vgap="10.0">
+                                <columnConstraints>
+                                    <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
+                                    <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="150.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                <children>
+                                    <Label text="Company" GridPane.rowIndex="1" />
+                                    <Label alignment="CENTER" contentDisplay="CENTER" text="Client Contact Person" GridPane.rowIndex="2" />
+                                    <Label text="Cell Number" GridPane.rowIndex="3" />
+                                    <TextField fx:id="txtCell" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <TextField fx:id="txtTel" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <TextField fx:id="txtFax" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <TextField fx:id="txtEmail" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <Label text="Tel Number" GridPane.rowIndex="4" />
+                                    <Label text="eMail Address" GridPane.rowIndex="6" />
+                                    <Label text="Site name" GridPane.rowIndex="9" />
+                                    <TextField fx:id="txtSite" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                                    <Label text="Fax Number" GridPane.rowIndex="5" />
+                                    <Label text="Client details" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                                        <font>
+                                            <Font name="System Bold" size="17.0" />
+                                        </font>
+                                    </Label>
+                                    <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                                        <children>
+                                            <ComboBox fx:id="cbxClients" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select client" HBox.hgrow="ALWAYS" />
+                                            <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newClient" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                                                <HBox.margin>
+                                                    <Insets left="10.0" />
+                                                </HBox.margin>
+                                            </Button>
+                                        </children>
+                                    </HBox>
+                                    <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                                        <children>
+                                            <ComboBox fx:id="cbxContactPerson" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select contact" HBox.hgrow="ALWAYS" />
+                                            <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newEmployee" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                                                <HBox.margin>
+                                                    <Insets left="10.0" />
+                                                </HBox.margin>
+                                            </Button>
+                                        </children>
+                                    </HBox>
+                                    <Label text="Request/Description" GridPane.rowIndex="10" />
+                                    <TextArea fx:id="txtRequest" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.vgrow="ALWAYS" />
+                                    <Label fx:id="lblVat" text="VAT [%]" GridPane.rowIndex="7" />
+                                    <Label text="Status" GridPane.rowIndex="12" />
+                                    <TextField fx:id="txtStatus" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                                    <ToggleButton fx:id="toggleVatExempt" minWidth="150.0" mnemonicParsing="false" text="14%" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="7" />
+                                    <Label text="Account" GridPane.rowIndex="8" />
+                                    <ComboBox fx:id="cbxAccount" minWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                    <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (excluding VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <TextField fx:id="txtTotal" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                              <Label text="Notes" GridPane.rowIndex="11" />
+                              <TextArea fx:id="txtNotes" layoutX="180.0" layoutY="420.0" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                                </children>
+                                <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                </padding>
+                            </GridPane>
+                            <GridPane alignment="CENTER" hgap="10.0" vgap="10.0">
+                                <columnConstraints>
+                                    <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
+                                    <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                </rowConstraints>
+                                <children>
+                                    <Label text="Quote ID" GridPane.rowIndex="1" />
+                                    <Label text="Date Generated" GridPane.rowIndex="2" />
+                                    <TextField fx:id="txtQuoteId" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                                        <GridPane.margin>
+                                            <Insets />
+                                        </GridPane.margin>
+                                    </TextField>
+                                    <TextField fx:id="txtDateGenerated" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <Label text="Quote details" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                                        <font>
+                                            <Font name="System Bold" size="17.0" />
+                                        </font>
+                                    </Label>
+                                    <Label text="Revision" GridPane.rowIndex="3" />
+                                    <TextField fx:id="txtRevision" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <VBox GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="CENTER">
+                                 <children>
+                                          <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" />
+                                            <Button minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#viewBase" styleClass="btnDefault" stylesheets="@../styles/home.css" text="View Base" />
+                                            <Button fx:id="viewLatest" minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#prevRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Previous Revision">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                            </Button>
+                                            <Button minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#nextRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Next Revision">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                 </children>
+                                 <GridPane.margin>
+                                    <Insets top="100.0" />
+                                 </GridPane.margin>
+                              </VBox>
+                                </children>
+                                <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                </padding>
+                            </GridPane>
+                        </items>
+                    </SplitPane>
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0">
+               <children>
+                  <VBox maxHeight="1.7976931348623157E308" minHeight="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                              <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" />
-                                <Button minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#viewBase" styleClass="btnDefault" stylesheets="@../styles/home.css" text="View Base" />
-                                <Button fx:id="viewLatest" minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#prevRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Previous Revision">
-                           <VBox.margin>
-                              <Insets top="10.0" />
-                           </VBox.margin>
-                                </Button>
-                                <Button minHeight="50.0" minWidth="150.0" mnemonicParsing="false" onMouseClicked="#nextRev" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Next Revision">
-                           <VBox.margin>
-                              <Insets top="10.0" />
-                           </VBox.margin>
-                        </Button>
+                          <BorderPane VBox.vgrow="ALWAYS">
+                              <left>
+                                  <Label text="Materials" BorderPane.alignment="CENTER">
+                                      <font>
+                                          <Font size="20.0" />
+                                      </font>
+                              </Label>
+                              </left>
+                              <right>
+                                  <Label text="Services" BorderPane.alignment="CENTER">
+                                      <font>
+                                          <Font size="20.0" />
+                                      </font>
+                              </Label>
+                              </right>
+                          </BorderPane>
+                          <BorderPane VBox.vgrow="ALWAYS">
+                              <left>
+                                  <HBox BorderPane.alignment="CENTER">
+                                      <children>
+                                          <ComboBox fx:id="cbxMaterials" minWidth="150.0" prefWidth="200.0" HBox.hgrow="NEVER">
+                                              <HBox.margin>
+                                                  <Insets right="20.0" top="6.0" />
+                                              </HBox.margin>
+                                          </ComboBox>
+                                          <Button minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#addMaterial" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Add Material" />
+                                          <Button layoutX="180.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#newMaterial" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New Material">
+                                              <HBox.margin>
+                                                  <Insets left="10.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                          <Button fx:id="btnClearMaterials" layoutX="350.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#clearMaterials" styleClass="btnBack" stylesheets="@../styles/home.css" text="Clear Materials">
+                                              <HBox.margin>
+                                                  <Insets left="10.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                      </children>
+                                      <BorderPane.margin>
+                                          <Insets top="10.0" />
+                                      </BorderPane.margin>
+                                  </HBox>
+                              </left>
+                              <right>
+                                  <HBox BorderPane.alignment="CENTER">
+                                      <children>
+                                          <ComboBox fx:id="cbxServices" minWidth="150.0" prefWidth="200.0" HBox.hgrow="NEVER">
+                                              <HBox.margin>
+                                                  <Insets right="20.0" top="6.0" />
+                                              </HBox.margin>
+                                          </ComboBox>
+                                          <Button minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#addService" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Add Service">
+                                              <HBox.margin>
+                                                  <Insets left="10.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                          <Button fx:id="btnNewService" layoutX="190.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#newService" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New Service">
+                                              <HBox.margin>
+                                                  <Insets left="10.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                          <Button fx:id="btnClearServices" layoutX="360.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#clearServices" styleClass="btnBack" stylesheets="@../styles/home.css" text="Clear Services">
+                                              <HBox.margin>
+                                                  <Insets left="10.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                      </children>
+                                      <BorderPane.margin>
+                                          <Insets top="10.0" />
+                                      </BorderPane.margin>
+                                  </HBox>
+                              </right>
+                          </BorderPane>
+                          <SplitPane dividerPositions="0.6" VBox.vgrow="ALWAYS">
+                              <items>
+                                  <AnchorPane minHeight="200.0" minWidth="200.0">
+                                      <children>
+                                            <TableView fx:id="tblQuoteItems" editable="true" minHeight="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <columns>
+                                                    <TableColumn fx:id="colItemNumber" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Item #">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="item_number" />
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colEquipmentName" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="200.0" text="Equipment Name">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="equipment_name" />
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Equipment Description" visible="false">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="equipment_description" />
+                                                        </cellValueFactory>
+                                                        <!--<cellFactory>
+                                                            <TextFieldTableCellOld fx:factory="forTableColumn" />
+                                                              </cellFactory>-->
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colCategory" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Category">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="category" />
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colUnit" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Unit">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="unit" />
+                                                        </cellValueFactory>
+                                                        <!--<cellFactory>
+                                                            <TextFieldTableCellOld fx:factory="forTableColumn" />
+                                                              </cellFactory>-->
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colValue" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Current Unit Cost" visible="false">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="value" />
+                                                        </cellValueFactory>
+                                                        <!--<cellFactory>
+                                                            <TextFieldTableCellOld fx:factory="forTableColumn" />
+                                                              </cellFactory>-->
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colUnitCost" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Unit Cost">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="unit_cost" />
+                                                        </cellValueFactory>
+                                                        <cellFactory>
+                                                            <TextFieldTableCell fx:factory="forTableColumn" />
+                                                        </cellFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colQuantity" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Quantity">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="quantity" />
+                                                        </cellValueFactory>
+                                                        <cellFactory>
+                                                            <TextFieldTableCell fx:factory="forTableColumn" />
+                                                        </cellFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colMarkup" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Markup">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="markup" />
+                                                        </cellValueFactory>
+                                                        <cellFactory>
+                                                            <TextFieldTableCell fx:factory="forTableColumn" />
+                                                        </cellFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colRate" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Rate">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="rate" />
+                                                        </cellValueFactory>
+                                                        <!--<cellFactory>
+                                                            <TextFieldTableCellOld fx:factory="forTableColumn" />
+                                                              </cellFactory>-->
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Total">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="total" />
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="280.0" prefWidth="-1.0" text="Action" />
+                                                </columns>
+                                            </TableView>
+                                      </children>
+                                  </AnchorPane>
+                                  <AnchorPane minHeight="200.0" minWidth="200.0">
+                                      <children>
+                                            <TableView fx:id="tblQuoteServices" minHeight="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <columns>
+                                                    <TableColumn fx:id="colServiceTitle" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Service Title">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="service_title" />
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colServiceTotal" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Total">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="total" />
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colServiceDescription" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Service Description" visible="false">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="service_description" />
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                    <TableColumn fx:id="colServiceAction" maxWidth="1.7976931348623157E308" minWidth="400.0" prefWidth="-1.0" text="Action" />
+                                                </columns>
+                                            </TableView>
+                                      </children>
+                                  </AnchorPane>
+                              </items>
+                          </SplitPane>
                      </children>
-                     <GridPane.margin>
-                        <Insets top="100.0" />
-                     </GridPane.margin>
                   </VBox>
-                    </children>
-                    <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                    </padding>
-                </GridPane>
-            </items>
-        </SplitPane>
-        <BorderPane>
-            <left>
-                <HBox BorderPane.alignment="CENTER">
-                    <children>
-                        <ComboBox fx:id="cbxMaterials" minWidth="150.0">
-                            <HBox.margin>
-                                <Insets right="20.0" top="6.0" />
-                            </HBox.margin>
-                        </ComboBox>
-                        <Button minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#addMaterial" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Add Material" />
-                        <Button layoutX="180.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#newMaterial" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New Material">
-                            <HBox.margin>
-                                <Insets left="10.0" />
-                            </HBox.margin>
-                        </Button>
-                    </children>
-               <BorderPane.margin>
-                  <Insets top="10.0" />
-               </BorderPane.margin>
-                </HBox>
-            </left>
-            <right>
-                <HBox BorderPane.alignment="CENTER">
-                    <children>
-                        <ComboBox fx:id="cbxServices" minWidth="150.0">
-                            <HBox.margin>
-                                <Insets right="20.0" top="6.0" />
-                            </HBox.margin>
-                        </ComboBox>
-                        <Button minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#addService" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Add Service">
-                            <HBox.margin>
-                                <Insets left="10.0" />
-                            </HBox.margin>
-                        </Button>
-                        <Button fx:id="btnNewService" layoutX="190.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#newService" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New Service">
-                            <HBox.margin>
-                                <Insets left="10.0" />
-                            </HBox.margin>
-                        </Button>
-                    </children>
-               <BorderPane.margin>
-                  <Insets top="10.0" />
-               </BorderPane.margin>
-                </HBox>
-            </right>
-        </BorderPane>
-        <BorderPane>
-            <left>
-                <Label text="Materials" BorderPane.alignment="CENTER">
-                    <font>
-                        <Font size="20.0" />
-                    </font></Label>
-            </left>
-            <right>
-                <Label text="Services" BorderPane.alignment="CENTER">
-                    <font>
-                        <Font size="20.0" />
-                    </font></Label>
-            </right>
-        </BorderPane>
-        <SplitPane dividerPositions="0.78" prefHeight="160.0" prefWidth="200.0">
-            <items>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                    <children>
-                        <ScrollPane hbarPolicy="ALWAYS" minWidth="400.0" prefViewportHeight="400.0" prefViewportWidth="1012.0" vbarPolicy="ALWAYS">
-                            <content>
-                                <TableView fx:id="tblQuoteItems" editable="true" minHeight="100.0" minWidth="1200.0" prefHeight="150.0" tableMenuButtonVisible="true">
-                                    <columns>
-                                        <TableColumn fx:id="colItemNumber" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Item #">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="item_number" />
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="colEquipmentName" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="200.0" text="Equipment Name">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="equipment_name" />
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Equipment Description">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="equipment_description" />
-                                            </cellValueFactory>
-                                            <!--<cellFactory>
-                                                <TextFieldTableCellOld fx:factory="forTableColumn" />
-                                            </cellFactory>-->
-                                        </TableColumn>
-                              <TableColumn fx:id="colCategory" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Category">
-                                 <cellValueFactory>
-                                    <PropertyValueFactory property="equipment_description" />
-                                 </cellValueFactory>
-                              </TableColumn>
-                                        <TableColumn fx:id="colUnit" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="-1.0" text="Unit">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="unit" />
-                                            </cellValueFactory>
-                                            <!--<cellFactory>
-                                                <TextFieldTableCellOld fx:factory="forTableColumn" />
-                                            </cellFactory>-->
-                                        </TableColumn>
-                                        <TableColumn fx:id="colValue" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Current Unit Cost" visible="false">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="value" />
-                                            </cellValueFactory>
-                                            <!--<cellFactory>
-                                                <TextFieldTableCellOld fx:factory="forTableColumn" />
-                                            </cellFactory>-->
-                                        </TableColumn>
-                                        <!--<TableColumn fx:id="colUnitCost" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Unit Cost">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="labour" />
-                                            </cellValueFactory>
-                                            <cellFactory>
-                                                <TextFieldTableCell fx:factory="forTableColumn" />
-                                            </cellFactory>
-                                        </TableColumn>-->
-                                        <TableColumn fx:id="colQuantity" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Quantity">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="quantity" />
-                                            </cellValueFactory>
-                                            <cellFactory>
-                                                <TextFieldTableCell fx:factory="forTableColumn" />
-                                            </cellFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="colMarkup" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Markup" visible="false">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="markup" />
-                                            </cellValueFactory>
-                                            <cellFactory>
-                                                <TextFieldTableCell fx:factory="forTableColumn" />
-                                            </cellFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="colRate" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Rate">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="rate" />
-                                            </cellValueFactory>
-                                            <!--<cellFactory>
-                                                <TextFieldTableCellOld fx:factory="forTableColumn" />
-                                            </cellFactory>-->
-                                        </TableColumn>
-                                        <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Total">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="total" />
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="280.0" prefWidth="-1.0" text="Action" />
-                                    </columns>
-                                </TableView>
-                            </content>
-                        </ScrollPane>
-                    </children>
-                </AnchorPane>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                    <children>
-                        <ScrollPane hbarPolicy="ALWAYS" layoutX="-9.0" minWidth="600.0" prefViewportHeight="400.0" prefViewportWidth="248.0" vbarPolicy="ALWAYS">
-                            <content>
-                                <TableView fx:id="tblQuoteServices" layoutX="-9.0" minHeight="100.0" minWidth="900.0" prefHeight="150.0" tableMenuButtonVisible="true">
-                                    <columns>
-                                        <TableColumn fx:id="colServiceTitle" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Service Title">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="service_title" />
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="colServiceDescription" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Service Description" visible="false">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="service_description" />
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="colServiceAction" maxWidth="1.7976931348623157E308" minWidth="400.0" prefWidth="-1.0" text="Action" />
-                                    </columns>
-                                </TableView>
-                            </content>
-                        </ScrollPane>
-                    </children>
-                </AnchorPane>
-            </items>
-        </SplitPane>
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
         <HBox>
             <children>
                 <Label text="Server Status:" />

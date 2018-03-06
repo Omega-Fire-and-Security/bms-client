@@ -12,6 +12,7 @@ import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -156,11 +157,20 @@ public class Quote extends BusinessObject
     {
         //Compute total including VAT
         double total=0;
+        //account for materials
         if(this.getResources()!=null)
         {
             for (QuoteItem item : this.getResources())
             {
                 total += item.getTotal();
+            }
+        }
+        //account for services
+        if(this.getServices()!=null)
+        {
+            for (QuoteService quoteService : this.getServices())
+            {
+                total += quoteService.getTotal();
             }
         }
         return total * (getVat()/100) + total;
@@ -247,6 +257,7 @@ public class Quote extends BusinessObject
     public Quote[] getSortedSiblings(String comparator)
     {
         HashMap<Double, Quote> siblings = getSiblingsMap();
+        System.out.println("##############quote["+get_id()+"] sibling count: " + siblings.size());
         Quote[] siblings_arr = new Quote[siblings.size()];
         siblings.values().toArray(siblings_arr);
         if(siblings_arr!=null)
@@ -311,11 +322,11 @@ public class Quote extends BusinessObject
             else// if(this.getObject_number()<10)
                 obj_num="000"+getObject_number();
 
-            String quote_number = this.getContact_person().getFirstname() + "-"
-                    + this.getContact_person().getInitials() + obj_num
+            String quote_number = this.getCreatorEmployee().getFirstname() + "-"
+                    + this.getCreatorEmployee().getInitials() + obj_num
                     + " REV" + String.valueOf(this.getRevision()).substring(0,3);
             return new SimpleStringProperty(quote_number);
-        } else return new SimpleStringProperty(this.getContact_person_id());
+        } else return new SimpleStringProperty("#"+String.valueOf(this.getObject_number()));
     }
 
     public SimpleStringProperty contact_personProperty()

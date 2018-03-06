@@ -148,12 +148,12 @@ public class FadulousBMS extends Application
             stage.setTitle(Globals.APP_NAME.getValue());
             stage.setScene(scene);
 
-            stage.setMinHeight(600);
-            stage.setHeight(700);
-            stage.setMinWidth(600);
+            stage.setMinHeight(700);
+            stage.setHeight(800);
+            stage.setMinWidth(900);
 
             if(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth()>=1200)
-                stage.setWidth(1000);
+                stage.setWidth(1200);
             stage.show();
         }else
         {

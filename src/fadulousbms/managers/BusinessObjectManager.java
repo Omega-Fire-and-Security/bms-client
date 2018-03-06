@@ -298,14 +298,340 @@ public abstract class BusinessObjectManager implements HSSFListener
         stage.setResizable(true);
     }
 
-    public static void parsePDF(String path, Callback callback)
+    public static void parseADIHikVisionPricelistXLSX(String path, Callback callback)
+    {
+        try
+        {
+            String adi_part_num_regex = "[A-Z]{1}\\d{4}";
+
+            FileInputStream excelFile = new FileInputStream(new File(path));
+            Workbook workbook = new XSSFWorkbook(excelFile);
+            Sheet datatypeSheet = workbook.getSheetAt(0);
+            Iterator<Row> iterator = datatypeSheet.iterator();
+
+            String adi_part_num="", vendor_part_num="", type="", description="", category="";
+            double net=0.0;
+            while (iterator.hasNext())
+            {
+                Row currentRow = iterator.next();
+                Iterator<Cell> cellIterator = currentRow.iterator();
+
+                //int cell=0;
+                while (cellIterator.hasNext())
+                {
+                    Cell currentCell = cellIterator.next();
+                    if (currentCell.getCellTypeEnum() == CellType.STRING)
+                    {
+                        Matcher matcher = Validators.matchRegex(adi_part_num_regex, currentCell.getStringCellValue());
+                        if (matcher.find())
+                        {
+                            //System.out.print("\t**[" + currentCell.getStringCellValue() + "].");
+                            adi_part_num = currentCell.getStringCellValue();//get ADI's part-number
+
+                            currentCell = cellIterator.next();//go to next cell
+                            vendor_part_num = currentCell.getStringCellValue();//get vendor's part-number
+
+                            currentCell = cellIterator.next();//go to next cell
+                            type = currentCell.getStringCellValue();//get resource type {Core, Hub, Special, Obsolete}
+
+                            currentCell = cellIterator.next();//go to next cell
+                            currentCell = cellIterator.next();//go to next cell again because previous cell is image of resource, which we don't need for now
+                            description = currentCell.getStringCellValue();//get resource description
+
+                            currentCell = cellIterator.next();//go to next cell
+                            net = currentCell.getNumericCellValue();//get net cost
+
+                            switch (type)
+                            {
+                                case "C":
+                                    type="Core (NORMALLY IN STOCK @ BRANCH LEVEL)";
+                                    break;
+                                case "H":
+                                    type="Hub (NORMALLY STOCK HOLDING IN MAIN WAREHOUSE)";
+                                    break;
+                                case "S":
+                                    type="Special (ORDER ON ORDER, + 8 WEEK LEAD TIME)";
+                                    break;
+                                case "X":
+                                case "U":
+                                    type="OBSOLETE, AVAILABLE WHILE STOCKS LASTS";
+                                    break;
+                                default:
+                                    System.err.println("unknown ADI resource type: " + type);
+                                        break;
+                            }
+
+                            IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource with attributes:"
+                                    +"\n\tADI part-number: " + adi_part_num
+                                    +"\n\tVendor part-number: " + vendor_part_num
+                                    +"\n\tType: " + type
+                                    +"\n\tCategory: " + category
+                                    +"\n\tDescription: " + description
+                                    +"\n\tNet Price: " + net+"\n\n");
+
+                            Resource resource = new Resource();
+                            resource.setResource_code(adi_part_num.trim());
+                            resource.setResource_description(description.trim());
+                            resource.setOther(type.trim());
+                            resource.setResource_type(category.trim());
+                            resource.setPart_number(vendor_part_num.trim());
+                            resource.setResource_value(net);
+
+                            String response = IO.showConfirm("Continue?", "Create new material ["+currentCell.getRowIndex()+" of "+datatypeSheet.getLastRowNum()+"]: ["+ resource.getJSONString()+"]?", IO.YES, IO.NO, IO.CANCEL);
+                            //String response = IO.YES;
+                            if(response.equals(IO.YES))
+                            {
+                                //execute callback, passing resource as arg
+                                if(callback!=null)
+                                    callback.call(resource);
+                            } else if(response.equals(IO.NO))
+                                continue;
+                            else if(response.equals(IO.CANCEL))return;
+
+                        } else {
+                            System.out.print("\t@[" + currentCell.getStringCellValue() + "].");
+                            //any other text will be used as category
+                            category = currentCell.getStringCellValue();
+                        }
+                    } else if (currentCell.getCellTypeEnum() == CellType.NUMERIC)
+                    {
+                        //ignore all other numerical fields i.e. RRP and the last column
+                        System.out.print("\t#[" + currentCell.getNumericCellValue() + "].");
+                    }
+                }
+                System.out.println();//print new line
+            }
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+            IO.logAndAlert("Error", e.getMessage(), IO.TAG_WARN);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            IO.logAndAlert("Error", e.getMessage(), IO.TAG_WARN);
+        }
+    }
+
+    public static void parseReditronPDF(String path, Callback callback)
     {
         if(path==null)
         {
             IO.logAndAlert("Error", "Invalid PDF path.", IO.TAG_ERROR);
             return;
         }
-        File file = new File(path);//C:/my.pdf
+        File file = new File(path);
+        try
+        {
+            PDDocument doc = PDDocument.load(file);
+            String doc_text = new PDFTextStripper().getText(doc);
+            if(doc_text!=null)
+            {
+                String resource_price_regex = "((\\d+,\\d{3}|\\d+)\\.\\d{2}(\\s|$))";
+                String resource_type_regex = "^([A-Z]{2,}\\s+.*\\s*[A-Z]{2,})";
+
+                //doc_text = doc_text.replaceAll("  ", "\n");
+                String[] lines = doc_text.split("\n");
+                if(lines==null)
+                {
+                    IO.logAndAlert("Error","No lines were found.\n*Must be new-line char delimited.", IO.TAG_ERROR);
+                    return;
+                }
+                String resource_category="", other="";
+                for (int i=0;i<lines.length;i++)
+                {
+                    String line=lines[i];
+
+                    if(line!=null)
+                    {
+                        if(!line.isEmpty())
+                        {
+                            IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "***********Parsing Line: " + line);
+
+                            /*if(line.equals("Our Code Item Description Prices Excl VAT") || lines.equals("Trade Price List"))//if is new page
+                            {
+                                //reset current category and other info
+                                resource_category="";
+                                other="";
+                            }*/
+
+                            Matcher matcher = Validators.matchRegex(resource_price_regex, line.trim());
+                            if (matcher.find())
+                            {
+                                if(line.split(" ").length>1)
+                                {
+                                    String res_code = line.split(" ")[0];
+                                    String res_part_num = line.split(" ")[1];
+                                    String price = matcher.group(0);
+                                    String description = line.substring(res_code.length() + res_part_num.length(), line.indexOf(price));
+
+                                    IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "found resource with attributes:"
+                                            + "\n\tCode: " + res_code
+                                            + "\n\tPart Number: " + res_part_num
+                                            + "\n\tPrice: " + price
+                                            + "\n\tCategory: " + resource_category
+                                            + "\n\tDescription: " + description
+                                            + "\n\tOther: " + other);
+
+                                    Resource resource = new Resource();
+                                    resource.setResource_code(res_code.trim());
+                                    resource.setResource_description(description.replaceAll("\"", "'").trim());
+                                    resource.setOther(other.replaceAll("\"", "'").trim());
+                                    resource.setResource_type(resource_category.replaceAll("\"", "'").trim());
+                                    resource.setPart_number(res_part_num.trim());
+
+                                    try
+                                    {
+                                        price = price.replaceAll(" ", "");//strip spaces
+                                        price = price.replaceAll(",", "");//strip commas
+                                        resource.setResource_value(Double.parseDouble(price.trim()));//try to convert to double
+                                    } catch (NumberFormatException e)
+                                    {
+                                        IO.log(BusinessObjectManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+                                    }
+
+                                    //String response = IO.showConfirm("Continue?", "Create new material ["+(i+1)+" of "+lines.length+"]: ["+ resource.getJSONString()+"]?", IO.YES, IO.NO, IO.CANCEL);
+                                    String response = IO.YES;
+                                    if(response.equals(IO.YES))
+                                    {
+                                        //execute callback, passing resource as arg
+                                        if(callback!=null)
+                                            callback.call(resource);
+                                    } else if(response.equals(IO.NO))
+                                        continue;
+                                    else if(response.equals(IO.CANCEL))return;
+                                    other = "";
+                                } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_ERROR, "WTF is this ["+line+"] mate?");
+
+                            } else //check if is category
+                            {
+                                if(line.split(" ").length<=2)//if has less than 3 spaces then is category
+                                {
+                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource category: " + line);
+                                    resource_category = line;
+                                    other = "";
+                                } else other+=" "+line;//else just store the line in the "other" field
+                            }
+                        } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "empty line detected");
+                    } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "invalid line detected");
+                }
+            }
+            doc.close();
+        } catch (IOException e)
+        {
+            IO.log(PDF.class.getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    public static void parseRegalPDF(String path, Callback callback)
+    {
+        if(path==null)
+        {
+            IO.logAndAlert("Error", "Invalid PDF path.", IO.TAG_ERROR);
+            return;
+        }
+        File file = new File(path);
+        try
+        {
+            PDDocument doc = PDDocument.load(file);
+            String doc_text = new PDFTextStripper().getText(doc);
+            if(doc_text!=null)
+            {
+                String resource_price_regex = "((\\d+\\s{1}\\d{3}|\\d+)\\.\\d{2}(\\s|$))";
+                String resource_type_regex = "^([A-Z]{2,}\\s+.*\\s*[A-Z]{2,})";
+
+                doc_text = doc_text.replaceAll("  ", "\n");
+                String[] lines = doc_text.split("\n");
+                if(lines==null)
+                {
+                    IO.logAndAlert("Error","No lines were found.\n*Must be new-line char delimited.", IO.TAG_ERROR);
+                    return;
+                }
+                String resource_category="", other="";
+                for (int i=0;i<lines.length;i++)
+                {
+                    String line=lines[i];
+
+                    if(line!=null)
+                    {
+                        if(!line.isEmpty())
+                        {
+                            IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "***********Parsing Line: " + line);
+
+                            if(line.equals("Our Code Item Description Prices Excl VAT") || lines.equals("Trade Price List"))//if is new page
+                            {
+                                //reset current category and other info
+                                resource_category="";
+                                other="";
+                            }
+
+                            Matcher matcher = Validators.matchRegex(resource_price_regex, line.trim());
+                            if (matcher.find())
+                            {
+                                String res_code = line.split(" ")[0];
+                                String price = matcher.group(0);
+                                String description = line.substring(res_code.length(), line.indexOf(price));
+
+                                IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "found resource with:"
+                                        +"\n\tCode: "+ res_code
+                                        + "\n\tPrice: "+ price
+                                        + "\n\tCategory: "+ resource_category
+                                        + "\n\tDescription: "+ description
+                                        + "\n\tOther: "+ other);
+
+                                Resource resource = new Resource();
+                                resource.setResource_code(res_code.trim());
+                                resource.setResource_description(description.replaceAll("\"", "'").trim());
+                                resource.setOther(other.replaceAll("\"", "'").trim());
+                                resource.setResource_type(resource_category.replaceAll("\"", "'").trim());
+
+                                try {
+                                    resource.setResource_value(Double.parseDouble(price.replaceAll(" ", "")));
+                                }catch (NumberFormatException e)
+                                {
+                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+                                }
+
+                                other = "";
+                                String response = IO.showConfirm("Continue?", "Create new material ["+(i+1)+" of "+lines.length+"]: ["+ resource.getJSONString()+"]?", IO.YES, IO.NO, IO.CANCEL);
+                                if(response.equals(IO.YES))
+                                {
+                                    //execute callback, passing resource as arg
+                                    if(callback!=null)
+                                        callback.call(resource);
+                                } else if(response.equals(IO.NO))
+                                    continue;
+                                else if(response.equals(IO.CANCEL))return;
+
+                            } else //check if is category
+                            {
+                                matcher = Validators.matchRegex(resource_type_regex, line.trim());
+                                if(matcher.find())
+                                {
+                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource category: " + matcher.group());
+                                    resource_category = line;
+                                    other = "";
+                                } else if(!line.equals("Our Code Item Description Prices Excl VAT") && !lines.equals("Trade Price List"))
+                                    other+=" "+line;//else just store the line in the other field
+                            }
+                        } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "empty line detected");
+                    } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "invalid line detected");
+                }
+            }
+            doc.close();
+        } catch (IOException e)
+        {
+            IO.log(PDF.class.getName(), IO.TAG_ERROR, e.getMessage());
+        }
+    }
+
+    public static void parseClientSupplierPDF(String path, Callback callback)
+    {
+        if(path==null)
+        {
+            IO.logAndAlert("Error", "Invalid PDF path.", IO.TAG_ERROR);
+            return;
+        }
+        File file = new File(path);
         try
         {
             PDDocument doc = PDDocument.load(file);

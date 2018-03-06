@@ -30,7 +30,7 @@ import java.util.HashMap;
 public class ResourceManager extends BusinessObjectManager
 {
     private HashMap<String, Resource> resources;//resources that have been approved/acquired/delivered
-    private HashMap<String, Resource> all_resources;
+    private HashMap<String, Resource> acquired_resources;
     private HashMap<String, ResourceType> resource_types;
     private Gson gson;
     private static ResourceManager resource_manager = new ResourceManager();
@@ -64,9 +64,9 @@ public class ResourceManager extends BusinessObjectManager
         return resources;
     }
 
-    public HashMap<String, Resource> getAll_resources()
+    public HashMap<String, Resource> getApproved_resources()
     {
-        return all_resources;
+        return acquired_resources;
     }
 
     public HashMap<String, ResourceType> getResource_types()
@@ -122,14 +122,14 @@ public class ResourceManager extends BusinessObjectManager
                                         Resource[] resources_arr = resources_server_object.get_embedded().getResources();
 
                                         resources = new HashMap();
-                                        all_resources = new HashMap();
+                                        acquired_resources = new HashMap();
                                         if (resources_arr != null)
                                         {
                                             for (Resource res : resources_arr)
                                             {
-                                                all_resources.put(res.get_id(), res);
+                                                resources.put(res.get_id(), res);
                                                 if (res.getDate_acquired() > 0)
-                                                    resources.put(res.get_id(), res);
+                                                    acquired_resources.put(res.get_id(), res);
                                                 else IO.log(getClass().getName(), IO.TAG_WARN, "material [" + res + "] has not been approved yet. [date_acquired not set]");
                                             }
                                         } else IO.log(getClass().getName(), IO.TAG_WARN, "no resources found in database.");
@@ -154,7 +154,7 @@ public class ResourceManager extends BusinessObjectManager
 
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of materials.");
 
-                                serialize(ROOT_PATH + filename, all_resources);
+                                serialize(ROOT_PATH + filename, resources);
                                 //delete resource_types.dat if it exists
                                 try {
                                     Files.delete(new File(ROOT_PATH + "resource_types.dat").toPath());
@@ -169,15 +169,15 @@ public class ResourceManager extends BusinessObjectManager
                             {
                                 IO.log(this.getClass()
                                         .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
-                                all_resources = (HashMap<String, Resource>) deserialize(ROOT_PATH + filename);
+                                resources = (HashMap<String, Resource>) deserialize(ROOT_PATH + filename);
                                 resource_types = (HashMap<String, ResourceType>) deserialize(ROOT_PATH + "resource_types.dat");
 
-                                resources = new HashMap<>();
-                                if (all_resources != null)
+                                acquired_resources = new HashMap<>();
+                                if (resources != null)
                                 {
-                                    for (Resource resource : all_resources.values())
+                                    for (Resource resource : resources.values())
                                         if(resource.getDate_acquired() > 0)
-                                            resources.put(resource.get_id(), resource);
+                                            acquired_resources.put(resource.get_id(), resource);
                                 } else IO.log(getClass().getName(), IO.TAG_ERROR, "serialized materials are null.");
                             }
                         } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
@@ -520,34 +520,8 @@ public class ResourceManager extends BusinessObjectManager
 
             try
             {
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-                if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                else
-                {
-                    IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);
-                    return;
-                }
-
-                HttpURLConnection connection = RemoteComms.putJSON("/resources/types", resourceType.getJSONString(), headers);
-                if(connection!=null)
-                {
-                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                    {
-                        IO.logAndAlert("Success", "Successfully added new material type!", IO.TAG_INFO);
-                        //refresh model & view when material type has been created.
-                        forceSynchronise();
-
-                        if(callback!=null)
-                            callback.call(null);
-                        stage.close();
-                    } else
-                    {
-                        IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                    }
-                    connection.disconnect();
-                }
+                createResourceType(resourceType, callback);
+                //stage.close();
             } catch (IOException e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
@@ -571,6 +545,78 @@ public class ResourceManager extends BusinessObjectManager
 
         stage.setScene(scene);
         stage.show();
+    }
+
+    public void createResource(Resource resource, Callback callback) throws IOException
+    {
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+        if(SessionManager.getInstance().getActive()!=null)
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+        else
+        {
+            IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+
+        HttpURLConnection connection = RemoteComms.putJSON("/resources", resource.getJSONString(), headers);
+        if(connection!=null)
+        {
+            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+            {
+                IO.log("Success", IO.TAG_INFO, "Successfully created new material: "+resource.getResource_description()+"!");
+                //refresh model & view when material has been created.
+                forceSynchronise();
+
+                //execute callback w/ args
+                if(callback!=null)
+                    callback.call(IO.readStream(connection.getInputStream()));
+                return;
+            } else
+            {
+                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+            }
+            connection.disconnect();
+        }
+        //execute callback w/o args
+        if(callback!=null)
+            callback.call(null);
+    }
+
+    public void createResourceType(ResourceType resourceType, Callback callback) throws IOException
+    {
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+        if(SessionManager.getInstance().getActive()!=null)
+            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+        else
+        {
+            IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+
+        HttpURLConnection connection = RemoteComms.putJSON("/resources/types", resourceType.getJSONString(), headers);
+        if(connection!=null)
+        {
+            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+            {
+                IO.logAndAlert("Success", "Successfully added new material type!", IO.TAG_INFO);
+                //refresh model & view when material type has been created.
+                forceSynchronise();
+
+                //execute callback w/ args
+                if(callback!=null)
+                    callback.call(IO.readStream(connection.getInputStream()));
+                return;
+            } else
+            {
+                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+            }
+            connection.disconnect();
+        }
+        //execute callback w/o args
+        if(callback!=null)
+            callback.call(null);
     }
 
     class ResourceServerObject extends ServerObject

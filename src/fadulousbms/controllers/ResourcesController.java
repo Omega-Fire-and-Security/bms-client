@@ -54,8 +54,8 @@ public class ResourcesController extends ScreenController implements Initializab
 
         colId.setMinWidth(80);
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colName, TextFieldTableCell.forTableColumn(), 80, "resource_name", "/resources");
-        CustomTableViewControls.makeEditableTableColumn(colSerial, TextFieldTableCell.forTableColumn(), 80, "resource_serial", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colName, TextFieldTableCell.forTableColumn(), 80, "brand_name", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colSerial, TextFieldTableCell.forTableColumn(), 80, "resource_code", "/resources");
 
         colType.setMinWidth(120);
         colType.setCellValueFactory(new PropertyValueFactory<>("resource_type"));

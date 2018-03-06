@@ -205,11 +205,17 @@ public class EmployeeManager extends BusinessObjectManager
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                 {
                     IO.logAndAlert("Account Creation Success", "Successfully created new user ["+employee.getName()+"]!", IO.TAG_INFO);
+
+                    EmployeeManager.getInstance().forceSynchronise();
+
+                    //execute callback w/ args
                     if(callback!=null)
-                        callback.call(null);
+                        callback.call(IO.readStream(connection.getInputStream()));
                 } else
                     IO.logAndAlert("Account Creation Failure", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-
+                //execute callback w/o args
+                if(callback!=null)
+                    callback.call(null);
                 connection.disconnect();
             } catch (IOException e)
             {

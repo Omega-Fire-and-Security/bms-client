@@ -6,7 +6,7 @@
     <content>
         <TableView fx:id="tblResources" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Client ID" visible="false">
+                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Material ID" visible="false">
                     <cellValueFactory>
                         <PropertyValueFactory property="_id" />
                     </cellValueFactory>
@@ -16,7 +16,7 @@
                         <PropertyValueFactory property="resource_name" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colSerial" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Serial Number">
+                <TableColumn fx:id="colSerial" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Serial Number" visible="false">
                     <cellValueFactory>
                         <PropertyValueFactory property="resource_serial" />
                     </cellValueFactory>
@@ -26,7 +26,7 @@
                         <PropertyValueFactory property="resource_type" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description">
+                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description" visible="false">
                     <cellValueFactory>
                         <PropertyValueFactory property="resource_description" />
                     </cellValueFactory>
@@ -51,7 +51,7 @@
                         <PropertyValueFactory property="date_acquired" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colDateExhausted" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Exhausted">
+                <TableColumn fx:id="colDateExhausted" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Date Exhausted" visible="false">
                     <cellValueFactory>
                         <PropertyValueFactory property="date_exhausted" />
                     </cellValueFactory>

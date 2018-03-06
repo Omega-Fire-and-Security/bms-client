@@ -215,7 +215,13 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                             viewSignedLeaveApplication(leave));
 
                                     btnRequestApproval.setOnAction(event ->
-                                            LeaveManager.getInstance().requestApproval(leave, null));
+                                    {
+                                        try {
+                                            LeaveManager.getInstance().requestApproval(leave, null);
+                                        } catch (IOException e) {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                        }
+                                    });
 
                                     btnEmailSigned.setOnAction(event ->
                                             LeaveManager.getInstance().emailSigned(leave, null));

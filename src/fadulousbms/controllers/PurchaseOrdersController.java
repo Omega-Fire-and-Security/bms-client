@@ -219,7 +219,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                                         {
                                                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                                         }
-                                                    }
+                                                    } else IO.logAndAlert("Error", "This environment not supported.", IO.TAG_ERROR);
                                                     /*PDFViewer pdfViewer = PDFViewer.getInstance();
                                                     pdfViewer.setVisible(true);
                                                     pdfViewer.doOpen(path);*/
@@ -296,8 +296,6 @@ public class PurchaseOrdersController extends ScreenController implements Initia
         PurchaseOrderManager.getInstance().forceSynchronise();
         Platform.runLater(() -> refreshView());
     }
-
-
 
     public static RadialMenuItem[] getDefaultContextMenu()
     {

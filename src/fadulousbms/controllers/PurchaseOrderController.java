@@ -280,7 +280,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
                     File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
                     ComboBox<Resource> resourceComboBox = new ComboBox<>();
                     resourceComboBox.setMinWidth(120);
-                    resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getAll_resources().values()));
+                    resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getDataset().values()));
                     HBox.setHgrow(resourceComboBox, Priority.ALWAYS);
 
                     Button btnAdd = new Button("Add");
@@ -736,15 +736,15 @@ public class PurchaseOrderController extends ScreenController implements Initial
     {
         if (ResourceManager.getInstance() != null)
         {
-            if (ResourceManager.getInstance().getAll_resources() != null)
+            if (ResourceManager.getInstance().getDataset() != null)
             {
-                if (ResourceManager.getInstance().getAll_resources().size() > 0)
+                if (ResourceManager.getInstance().getDataset().size() > 0)
                 {
                     File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
                     ComboBox<Resource> resourceComboBox = new ComboBox<>();
                     resourceComboBox.setMinWidth(120);
-                    resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getAll_resources().values()));
+                    resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getDataset().values()));
                     HBox.setHgrow(resourceComboBox, Priority.ALWAYS);
 
                     Button btnAdd = new Button("Add");

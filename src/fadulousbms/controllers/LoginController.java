@@ -65,8 +65,8 @@ public class LoginController extends ScreenController implements Initializable
     public void refreshView()
     {
         //TODO: remove this
-        txtUsr.setText("");
-        txtPwd.setText("");
+        txtUsr.setText("ghost");
+        txtPwd.setText("Reventone42");
 
         txtPwd.setOnKeyReleased(event ->
         {

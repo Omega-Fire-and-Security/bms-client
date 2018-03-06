@@ -62,7 +62,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     protected TableView<QuoteService> tblQuoteServices;
     //Quote items table columns
     @FXML
-    protected TableColumn colMarkup,colQuantity, colItemNumber, colEquipmentName, colDescription, colCategory, colUnit, colValue, colRate, colTotal, colAction, colServiceAction;
+    protected TableColumn colMarkup,colQuantity, colItemNumber, colEquipmentName, colDescription, colCategory, colUnit, colUnitCost, colValue, colRate, colTotal, colAction, colServiceAction;
     @FXML
     protected ComboBox<Client> cbxClients;
     @FXML
@@ -72,9 +72,9 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     protected ComboBox<Resource> cbxMaterials;
     @FXML
-    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtRevision,txtExtra;
-    //@FXML
-    //protected Slider vatSlider;
+    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtRevision;
+    @FXML
+    protected TextArea txtRequest, txtNotes;
     @FXML
     protected ToggleButton toggleVatExempt;
     @FXML
@@ -83,8 +83,6 @@ public abstract class QuoteController extends ScreenController implements Initia
     protected Label lblVat;
     @FXML
     protected Button btnApprove, btnNewService;
-    @FXML
-    protected TextArea txtRequest;
     protected HashMap<String, TableColumn> colsMap = new HashMap<>();
     private ObservableList<TableColumn<QuoteItem, ?>> default_cols;
 
@@ -228,7 +226,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                 btnRemove.setMinHeight(35);
                                 HBox.setHgrow(btnRemove, Priority.ALWAYS);
 
-                                HBox hBox = new HBox(btnNew, btnAdd, btnShow, btnRemove);
+                                HBox hBox = new HBox(btnAdd, btnNew, btnShow, btnRemove);
 
                                 if (empty)
                                 {
@@ -286,7 +284,8 @@ public abstract class QuoteController extends ScreenController implements Initia
                                     btnAdd.setOnAction(event ->
                                     {
                                         QuoteService quoteService = getTableView().getItems().get(getIndex());
-                                        if(quoteService!=null) {
+                                        if(quoteService!=null)
+                                        {
                                             Service service = quoteService.getService();
                                             if (service != null)
                                             {
@@ -296,44 +295,52 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                 ComboBox<ServiceItem> cbx_service_items = new ComboBox<>();
                                                 if (ServiceManager.getInstance().getService_items() != null)
                                                     cbx_service_items.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getService_items().values()));
-                                                else {
+                                                else
+                                                {
                                                     IO.logAndAlert("Error", "No service items in the database.", IO.TAG_WARN);
                                                     //return;
                                                 }
 
-                                                if (page != null) {
-                                                    Button btnAddService = new Button("Add");
-                                                    page.getChildren().addAll(new HBox(new Label("Service: "), cbx_service_items), btnAddService);
+                                                Button btnAddService = new Button("Add");
+                                                page.getChildren().addAll(new HBox(new Label("Service: "), cbx_service_items), btnAddService);
 
-                                                    PopOver popover = new PopOver(page);
-                                                    popover.setTitle("Add Service Item");
-                                                    popover.show(btnAdd);
+                                                PopOver popover = new PopOver(page);
+                                                popover.setTitle("Add Service Item");
+                                                popover.show(btnAdd);
 
-                                                    btnAddService.setOnMouseClicked(evt ->
+                                                btnAddService.setOnMouseClicked(evt ->
+                                                {
+                                                    if (cbx_service_items.getValue() != null)
                                                     {
-                                                        if (cbx_service_items.getValue() != null)
-                                                            service.getServiceItemsMap().put(cbx_service_items.getValue().get_id(), cbx_service_items.getValue());
-                                                        else
-                                                            IO.logAndAlert("Error", "Please select a valid service item to add.", IO.TAG_WARN);
-                                                    });
-
-                                                    popover.focusedProperty().addListener(new ChangeListener<Boolean>() {
-                                                        @Override
-                                                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                                                            IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading services combo box");
-                                                            //reload services, to load the newly added service
-                                                            ServiceManager.getInstance().forceSynchronise();
-
-                                                            Platform.runLater(() ->
-                                                            {
-                                                                //refresh services combobox
-                                                                if (ServiceManager.getInstance().getDataset() != null)
-                                                                    cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
-                                                            });
+                                                        //clone/duplicate the ServiceItem on database
+                                                        ServiceItem serviceItem = cbx_service_items.getValue();
+                                                        //update service_id to match current service
+                                                        serviceItem.setService_id(service.get_id());
+                                                        //create ServiceItem on database
+                                                        try {
+                                                            ServiceManager.getInstance().createServiceItem(serviceItem, null);
+                                                        } catch (IOException e) {
+                                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                                                         }
-                                                    });
-                                                } else
-                                                    IO.logAndAlert("Error", "Could not load service creation screen.", IO.TAG_ERROR);
+                                                    } else
+                                                        IO.logAndAlert("Error", "Please select a valid service item to add.", IO.TAG_WARN);
+                                                });
+
+                                                popover.focusedProperty().addListener(new ChangeListener<Boolean>() {
+                                                    @Override
+                                                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                                                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading services combo box");
+                                                        //reload services, to load the newly added service
+                                                        ServiceManager.getInstance().forceSynchronise();
+
+                                                        Platform.runLater(() ->
+                                                        {
+                                                            //refresh services combobox
+                                                            if (ServiceManager.getInstance().getDataset() != null)
+                                                                cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
+                                                        });
+                                                    }
+                                                });
                                             } else IO.logAndAlert("Error", "Invalid service selected", IO.TAG_WARN);
                                         } else IO.logAndAlert("Error", "Invalid service selected", IO.TAG_WARN);
                                     });
@@ -349,13 +356,15 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                 ServiceManager.getInstance().setSelected(service);
 
                                                 TableView<ServiceItem> tblServiceItems = new TableView<>();
+                                                tblServiceItems.setTableMenuButtonVisible(true);
                                                 TableColumn colName = new TableColumn("Item Name");
                                                 colName.setCellValueFactory(new PropertyValueFactory<>("item_name"));
-                                                colName.setMinWidth(100);
+                                                colName.setMinWidth(150);
 
                                                 TableColumn colDescription = new TableColumn("Item Description");
                                                 colDescription.setCellValueFactory(new PropertyValueFactory<>("item_description"));
                                                 colDescription.setMinWidth(100);
+                                                colDescription.setVisible(false);
 
                                                 TableColumn colRate = new TableColumn("Item Rate");
                                                 colRate.setCellValueFactory(new PropertyValueFactory<>("item_rate"));
@@ -375,13 +384,13 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                 tblServiceItems.getColumns().add(colUnit);
                                                 tblServiceItems.getColumns().add(colQuantity);
 
-                                                if (ServiceManager.getInstance().getService_items() != null)
+                                                if (service.getServiceItemsMap() != null)
                                                 {
-                                                    tblServiceItems.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getService_items().values()));
+                                                    tblServiceItems.setItems(FXCollections.observableArrayList(service.getServiceItemsMap().values()));
 
-                                                    PopOver popover = new PopOver(tblServiceItems);
+                                                    PopOver popover = new PopOver(new VBox(new Label("List of Service Items"), tblServiceItems));
                                                     popover.setMinWidth(500);
-                                                    popover.setTitle("Add Service Item");
+                                                    popover.setTitle("Service Items");
                                                     popover.show(btnShow);
 
                                                 } else
@@ -433,7 +442,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         Employee[] employees=null;
         if(EmployeeManager.getInstance().getDataset()!=null)
         {
-            employees = new Employee[EmployeeManager.getInstance().getDataset().values().toArray().length];
+            employees = new Employee[EmployeeManager.getInstance().getDataset().size()];
             EmployeeManager.getInstance().getDataset().values().toArray(employees);
         }
 
@@ -461,6 +470,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         });
 
         tblQuoteItems.getItems().clear();
+        tblQuoteServices.getItems().clear();
 
         //Setup Quote Items table
         colCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
@@ -472,28 +482,73 @@ public abstract class QuoteController extends ScreenController implements Initia
             protected void updateItem(Object item, boolean empty)
             {
                 super.updateItem(item, empty);
+                if(tblQuoteItems.getItems()!=null)
+                {
+                    if (getIndex() >= 0 && getIndex() < tblQuoteItems.getItems().size()) {
+                        QuoteItem quoteItem = tblQuoteItems.getItems().get(getIndex());
+                        //update QuoteItem object on TextField commit
+                        txt.setOnKeyPressed(event ->
+                        {
+                            //when the user presses the enter key, update the QuoteItem category
+                            if (event.getCode() == KeyCode.ENTER) {
+                                //get selected QuoteItem
+                                QuoteItem quote_item = (QuoteItem) getTableView().getItems().get(getIndex());
+                                //apply new category
+                                quote_item.setCategory(txt.getText());
+                                //refresh the table
+                                tblQuoteItems.refresh();
+                                IO.log(getClass().getName(), IO.TAG_INFO, "Successfully updated [category] property for quote item #" + quote_item.getItem_number());
+                            }
+                        });
+
+                        if (!empty) {
+                            txt.setText(quoteItem.getCategory());
+                            setGraphic(txt);
+                        } else setGraphic(null);
+                        getTableView().refresh();
+                    }
+                }
+            }
+        });
+
+        colUnitCost.setCellValueFactory(new PropertyValueFactory<>("unit_cost"));
+        colUnitCost.setCellFactory(param -> new TableCell()
+        {
+            final TextField txt = new TextField("0.0");
+
+            @Override
+            protected void updateItem(Object item, boolean empty)
+            {
+                super.updateItem(item, empty);
                 if (getIndex() >= 0 && getIndex() < tblQuoteItems.getItems().size())
                 {
                     QuoteItem quoteItem = tblQuoteItems.getItems().get(getIndex());
                     //update QuoteItem object on TextField commit
                     txt.setOnKeyPressed(event ->
                     {
-                        //when the user presses the enter key, update the QuoteItem category
                         if(event.getCode()== KeyCode.ENTER)
                         {
-                            //get selected QuoteItem
                             QuoteItem quote_item = (QuoteItem) getTableView().getItems().get(getIndex());
-                            //apply new category
-                            quote_item.setCategory(txt.getText());
-                            //refresh the table
-                            tblQuoteItems.refresh();
-                            IO.log(getClass().getName(), IO.TAG_INFO,"Successfully updated [category] property for quote item #" + quote_item.getItem_number());
+                            try
+                            {
+                                quote_item.setUnit_cost(Double.valueOf(txt.getText()));
+                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems(), tblQuoteServices.getItems())));
+                                tblQuoteItems.refresh();
+                                //RemoteComms.updateBusinessObjectOnServer(quote_item, "/api/quote/resource", "markup");
+                                //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
+                                //tblJobItems.refresh();
+                            }catch (NumberFormatException e)
+                            {
+                                IO.logAndAlert("Error","Please enter a valid markup percentage.", IO.TAG_ERROR);
+                                return;
+                            }
+                            IO.log(getClass().getName(), IO.TAG_INFO,"Successfully updated [markup percentage] property for quote item #" + quote_item.getItem_number());
                         }
                     });
 
                     if (!empty)
                     {
-                        txt.setText(quoteItem.getCategory());
+                        txt.setText(String.valueOf(quoteItem.getUnit_Cost()));
                         setGraphic(txt);
                     } else setGraphic(null);
                     getTableView().refresh();
@@ -522,7 +577,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                             try
                             {
                                 quote_item.setMarkup(Double.valueOf(txt.getText()));
-                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems())));
+                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems(), tblQuoteServices.getItems())));
                                 tblQuoteItems.refresh();
                                 //RemoteComms.updateBusinessObjectOnServer(quote_item, "/api/quote/resource", "markup");
                                 //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
@@ -724,13 +779,13 @@ public abstract class QuoteController extends ScreenController implements Initia
         lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vat)+"%]");
         if(tblQuoteItems.getItems()!=null)
         {
-            double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems());
+            double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                     new DecimalFormat("##.##").format((total + (total*(vat)))));
         }
         if(tblQuoteItems.getItems()!=null)
         {
-            double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems());
+            double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                     new DecimalFormat("##.##").format((total + (total*(vat/100)))));
         }
@@ -813,7 +868,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                 {
                                     callback.call(null);
                                     tblQuoteItems.refresh();
-                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(tblQuoteItems.getItems())));
+                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems())));
                                 }
                             });
                             txtMarkup.setOnKeyPressed(event ->
@@ -822,7 +877,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                 {
                                     callback.call(null);
                                     tblQuoteItems.refresh();
-                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(tblQuoteItems.getItems())));
+                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems())));
                                 }
                             });
 
@@ -986,7 +1041,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             tblQuoteItems.getColumns().add(col);
             tblQuoteItems.refresh();
 
-            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(tblQuoteItems.getItems())));
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems())));
         });
 
         HBox row1 = new HBox(lblName, txtName);
@@ -1020,7 +1075,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
                     ComboBox<Resource> resourceComboBox = new ComboBox<>();
                     resourceComboBox.setMinWidth(240);
-                    resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getAll_resources().values()));
+                    resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getDataset().values()));
                     HBox.setHgrow(resourceComboBox, Priority.ALWAYS);
 
                     Button btnAdd = new Button("Add");
@@ -1094,7 +1149,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
                             //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                             //        String.valueOf(QuoteManager.computeQuoteTotal(QuoteManager.getInstance().getSelectedQuote())));
-                            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems())));
+                            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems())));
 
                         } else IO.logAndAlert("New Quote Resource", "Invalid resource selected.", IO.TAG_ERROR);
                     });
@@ -1213,7 +1268,7 @@ public abstract class QuoteController extends ScreenController implements Initia
 
             //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
             //        String.valueOf(QuoteManager.computeQuoteTotal(QuoteManager.getInstance().getSelectedQuote())));
-            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems())));
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems())));
 
         } else IO.logAndAlert("Error", "Invalid resource.", IO.TAG_ERROR);
     }
@@ -1290,7 +1345,8 @@ public abstract class QuoteController extends ScreenController implements Initia
                 selected.setStatus(Quote.STATUS_APPROVED);
 
                 ObservableList<QuoteItem> quoteItems = tblQuoteItems.getItems();
-                if(!quoteItems.isEmpty())
+                ObservableList<QuoteService> quoteServices = tblQuoteServices.getItems();
+                if(!quoteItems.isEmpty() || !quoteServices.isEmpty())
                 {
                     QuoteManager.getInstance().updateQuote(selected, quoteItems, tblQuoteServices.getItems(), false, param ->
                     {
@@ -1371,16 +1427,12 @@ public abstract class QuoteController extends ScreenController implements Initia
             return;
         }
 
-        List<QuoteItem> quoteItems = tblQuoteItems.getItems();
+        ObservableList<QuoteItem> quoteItems = tblQuoteItems.getItems();
+        ObservableList<QuoteService> quoteServices = tblQuoteServices.getItems();
 
-        if(quoteItems==null)
+        if((quoteItems!=null?quoteItems.size()<=0:true) && (quoteServices!=null?quoteServices.size()<=0:true))
         {
-            IO.logAndAlert("Invalid Quote", "Quote items list is null.", IO.TAG_ERROR);
-            return;
-        }
-        if(quoteItems.size()<=0)
-        {
-            IO.logAndAlert("Invalid Quote", "Quote has no materials", IO.TAG_ERROR);
+            IO.logAndAlert("Invalid Quote", "Quote items and services list is empty", IO.TAG_ERROR);
             return;
         }
 
@@ -1399,17 +1451,31 @@ public abstract class QuoteController extends ScreenController implements Initia
             quote.setVat(0);
         else quote.setVat(QuoteManager.VAT);
 
-        if(txtExtra!=null)
-            if(txtExtra.getText()!=null)
-                quote.setOther(txtExtra.getText());
+        if(txtNotes.getText()!=null)
+            quote.setOther(txtNotes.getText());
 
         try
         {
-            QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblQuoteServices.getItems(), new Callback()
+            QuoteManager.getInstance().createQuote(quote, quoteItems, quoteServices, new Callback()
             {
                 @Override
                 public Object call(Object quote_id)
                 {
+                    /*if(quote_id!=null)
+                    {
+                        Platform.runLater(() ->
+                        {
+                            //clear fields on successful quote creation
+                            tblQuoteItems.setItems(null);
+                            tblQuoteItems.refresh();
+                            tblQuoteServices.setItems(null);
+                            tblQuoteServices.refresh();
+                            txtRequest.setText("");
+                            txtSite.setText("");
+                            txtNotes.setText("");
+                        });
+                    }*/
+
                     ScreenManager.getInstance().showLoadingScreen(param ->
                     {
                         new Thread(new Runnable()
@@ -1535,9 +1601,8 @@ public abstract class QuoteController extends ScreenController implements Initia
                 quote.setVat(0);
             else quote.setVat(QuoteManager.VAT);
 
-            if(txtExtra!=null)
-                if(txtExtra.getText()!=null)
-                    quote.setOther(txtExtra.getText());
+            if(txtNotes.getText()!=null)
+                quote.setOther(txtNotes.getText());
 
             try
             {
@@ -1681,6 +1746,8 @@ public abstract class QuoteController extends ScreenController implements Initia
             selected.setSitename(txtSite.getText());
             selected.setRequest(txtRequest.getText());
             selected.setAccount_name(cbxAccount.getValue());
+            if(txtNotes.getText()!=null)
+                selected.setOther(txtNotes.getText());
 
             QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems(), tblQuoteServices.getItems(), true, param -> {
                 QuoteManager.getInstance().initialize();
@@ -1774,7 +1841,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                     if(Desktop.isDesktopSupported())
                     {
                         Desktop.getDesktop().open(new File(path));
-                    }
+                    } else IO.logAndAlert("Error", "This environment not supported.", IO.TAG_ERROR);
                     /*PDFViewer pdfViewer = PDFViewer.getInstance();
                     pdfViewer.setVisible(true);
                     pdfViewer.doOpen(path);*/
@@ -1799,6 +1866,20 @@ public abstract class QuoteController extends ScreenController implements Initia
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
         }
+    }
+
+    @FXML
+    public void clearMaterials()
+    {
+        tblQuoteItems.getItems().removeAll();
+        tblQuoteItems.refresh();
+    }
+
+    @FXML
+    public void clearServices()
+    {
+        tblQuoteServices.getItems().removeAll();
+        tblQuoteServices.refresh();
     }
 
     @FXML

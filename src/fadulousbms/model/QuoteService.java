@@ -1,5 +1,6 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.QuoteManager;
 import fadulousbms.managers.ResourceManager;
@@ -25,7 +26,7 @@ public class QuoteService extends BusinessObject
         return quote_id;
     }
 
-    public void setQuote_id(String job_id)
+    public void setQuote_id(String quote_id)
     {
         this.quote_id = quote_id;
     }
@@ -58,6 +59,14 @@ public class QuoteService extends BusinessObject
         return null;
     }
 
+    public double getTotal()
+    {
+        Service service = getService();
+        if(service!=null)
+            return service.getTotal();
+        return 0;
+    }
+
     //Properties
 
     public StringProperty service_titleProperty()
@@ -75,6 +84,8 @@ public class QuoteService extends BusinessObject
             return new SimpleStringProperty(service.getService_description());
         else return new SimpleStringProperty("N/A");
     }
+
+    public StringProperty totalProperty(){return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + getTotal());}
 
     @Override
     public void parse(String var, Object val)

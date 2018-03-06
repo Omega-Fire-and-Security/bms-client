@@ -51,7 +51,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.quote_id = quote_id;
     }
 
-
     public String getResource_id()
     {
         return resource_id;
@@ -66,7 +65,7 @@ public class QuoteItem extends BusinessObject implements Serializable
     {
         Resource resource = getResource();
         if(resource!=null)
-            return resource.getResource_name();
+            return resource.getBrand_name();
         return "N/A";
     }
 
@@ -111,12 +110,12 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.quantity = quantity;
     }
 
-    public String getUnit_cost()
+    /*public String getUnit_cost()
     {
         return String.valueOf(getUnitCost());
-    }
+    }*/
 
-    public double getUnitCost()
+    public double getUnit_Cost()
     {
         return unit_cost;
     }
@@ -147,7 +146,7 @@ public class QuoteItem extends BusinessObject implements Serializable
 
     public Resource getResource()
     {
-        HashMap<String, Resource> resources = ResourceManager.getInstance().getAll_resources();
+        HashMap<String, Resource> resources = ResourceManager.getInstance().getDataset();
         if(resources!=null)
             return resources.get(getResource_id());
         return null;
@@ -155,8 +154,8 @@ public class QuoteItem extends BusinessObject implements Serializable
 
     public double getRate()
     {
-        //double marked_up = getUnitCost() + getUnitCost()*(markup/100);
-        double total = 0;//getUnitCost();
+        double marked_up_cost = getUnit_Cost() + getUnit_Cost()*(markup/100);
+        double total = marked_up_cost;
 
         //check additional costs
         if (getAdditional_costs() != null)
@@ -303,7 +302,7 @@ public class QuoteItem extends BusinessObject implements Serializable
             case "quantity":
                 return getQuantityValue();
             case "unit_cost":
-                return getUnitCost();
+                return getUnit_Cost();
             case "value":
                 return getCurrentValue();
             case "markup":

@@ -208,6 +208,8 @@ public class QuotesController extends OperationsController implements Initializa
                                                 public void run()
                                                 {
                                                     QuoteManager.getInstance().setSelected(quote);
+                                                    if(quote.getSiblingsMap().size()>0)
+                                                        QuoteManager.getInstance().selected_quote_sibling_cursor = quote.getSiblingsMap().size()-1;//point to latest revision
                                                     try
                                                     {
                                                         if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))

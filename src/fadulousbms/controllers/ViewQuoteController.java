@@ -40,13 +40,19 @@ public class ViewQuoteController extends QuoteController
             }
 
             //get selected Quote's siblings sorted by revision number
-            Quote[] siblings = selected.getSortedSiblings("revision");
-            if(siblings==null)
-                IO.log("View Quote Warning", "selected quote has no siblings. using self.", IO.TAG_WARN);
-            else selected = siblings[QuoteManager.getInstance().selected_quote_sibling_cursor];//set selected Quote to be selected_quote_sibling_cursor revision.
-
-            if(siblings!=null)
-                IO.log(getClass().getName(), IO.TAG_INFO, "selected Quote sibling count: " + siblings.length);
+            Quote[] revs = selected.getSortedSiblings("revision");
+            if(revs==null)
+            {
+                IO.log(getClass().getName(), IO.TAG_WARN, "selected quote has no siblings, which shouldn't be possible, so please reload this quote.");
+                return;
+            }
+            if(revs.length<=0)
+            {
+                IO.log(getClass().getName(), IO.TAG_WARN, "selected quote has no siblings, which shouldn't be possible, so please reload this quote.");
+                return;
+            }
+            //QuoteManager.getInstance().selected_quote_sibling_cursor =revs.length-1;//point selected_quote_sibling_cursor to latest revision
+            selected = revs[QuoteManager.getInstance().selected_quote_sibling_cursor];//make quote revision at [selected_quote_sibling_cursor] be selected quote
 
             if(selected.getContact_person()==null)
             {
@@ -68,25 +74,8 @@ public class ViewQuoteController extends QuoteController
                 btnApprove.setDisable(false);
             }
 
-            /*cbxClients.setCellFactory(new Callback<ListView<Client>, ListCell<Client>>()
-            {
-                @Override
-                public ListCell<Client> call(ListView<Client> param)
-                {
-                    return new ListCell<Client>()
-                    {
-                        @Override
-                        protected void updateItem(Client item, boolean empty)
-                        {
-                            super.updateItem(item, empty);
-                            if(item!=null && !empty)
-                                setText(item.getClient_name());
-                        }
-                    };
-                }
-            });*/
             cbxClients.setValue(selected.getClient());
-            cbxClients.setPromptText("Some client");
+            cbxClients.setPromptText("Client name");
             cbxContactPerson.setValue(selected.getContact_person());
             txtCell.setText(selected.getContact_person().getCell());
             txtTel.setText(selected.getContact_person().getTel());
@@ -96,6 +85,9 @@ public class ViewQuoteController extends QuoteController
                 txtQuoteId.setText(selected.getParent().get_id());
             else txtQuoteId.setText(selected.get_id());
             txtRevision.setText(String.valueOf(selected.getRevision()));
+
+            if(selected.getOther()!=null)
+                txtNotes.setText(selected.getOther());
             /*if(selected.getParent_id()!=null)
                 txtBase.setText(selected.getParent_id().get_id());
             else
@@ -171,13 +163,23 @@ public class ViewQuoteController extends QuoteController
                 }
             }
             tblQuoteItems.refresh();
-            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(selected.getTotal()));
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + QuoteManager.computeQuoteTotal(
+                    selected.getResources()!=null?FXCollections.observableArrayList(selected.getResources()):null,
+                    selected.getServices()!=null?FXCollections.observableArrayList(selected.getServices()):null));
         } else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 
     public void viewBase()
     {
-        Quote selected = ((Quote)QuoteManager.getInstance().getSelected());
+        QuoteManager.getInstance().selected_quote_sibling_cursor=0;
+        //refresh GUI
+        new Thread(() ->
+            refreshModel(param ->
+            {
+                Platform.runLater(() -> refreshView());
+                return null;
+            })).start();
+        /*Quote selected = ((Quote)QuoteManager.getInstance().getSelected());
         if(selected!=null)
             if(selected.getParent_id()!=null)
             {
@@ -190,7 +192,7 @@ public class ViewQuoteController extends QuoteController
                             return null;
                         })).start();
             } else IO.logAndAlert("View Quote Error", "Selected quote has no base quote.", IO.TAG_ERROR);
-        else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
+        else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);*/
     }
 
     public void nextRev()
@@ -199,11 +201,12 @@ public class ViewQuoteController extends QuoteController
         if(selected!=null)
         {
             //get selected Quote's siblings and traverse through them
-            Quote[] siblings = selected.getSortedSiblings("revision");
-            if (siblings != null)
+            //Quote[] siblings = selected.getSortedSiblings("revision");
+            HashMap revs = selected.getSiblingsMap();//uses a bit less resources
+            if (revs != null)
             {
                 //set selected quote
-                if(QuoteManager.getInstance().selected_quote_sibling_cursor+1>=siblings.length)
+                if(QuoteManager.getInstance().selected_quote_sibling_cursor+1>=revs.size())
                     QuoteManager.getInstance().selected_quote_sibling_cursor=0;//wrap around to first revision
                 else QuoteManager.getInstance().selected_quote_sibling_cursor++;//go to next revision
                 //QuoteManager.getInstance().setSelectedQuote(siblings[QuoteManager.getInstance().selected_quote_sibling_cursor]);
@@ -229,8 +232,8 @@ public class ViewQuoteController extends QuoteController
             {
                 //set selected quote
                 if(QuoteManager.getInstance().selected_quote_sibling_cursor-1<0)
-                    QuoteManager.getInstance().selected_quote_sibling_cursor=0;//wrap around to first revision
-                else QuoteManager.getInstance().selected_quote_sibling_cursor--;//go to next revision
+                    QuoteManager.getInstance().selected_quote_sibling_cursor=siblings.length-1;//wrap around to first revision
+                else QuoteManager.getInstance().selected_quote_sibling_cursor--;//go to previous revision
                 //QuoteManager.getInstance().setSelectedQuote(siblings[QuoteManager.getInstance().selected_quote_sibling_cursor]);//set selected to be
                 //refresh GUI
                 new Thread(() ->

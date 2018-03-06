@@ -195,15 +195,17 @@ public class Leave extends BusinessObject implements Serializable
     {
         String super_json = super.getJSONString();
         String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
-                +",\"usr\":\""+usr+"\"";
-        if(status>0)
-            json_obj+=",\"status\":\""+status+"\"";
-        if(start_date>0)
-            json_obj+=",\"start_date\":\""+start_date+"\"";
-        if(end_date>0)
-            json_obj+=",\"end_date\":\""+end_date+"\"";
-        if(return_date>0)
-            json_obj+=",\"return_date\":\""+return_date+"\"";
+                +",\"usr\":\""+getUsr()+"\"";
+        if(getType()!=null)
+            json_obj+=",\"type\":\""+getType()+"\"";
+        if(getStatus()>0)
+            json_obj+=",\"status\":\""+getStatus()+"\"";
+        if(getStart_date()>0)
+            json_obj+=",\"start_date\":\""+getStart_date()+"\"";
+        if(getEnd_date()>0)
+            json_obj+=",\"end_date\":\""+getEnd_date()+"\"";
+        if(getReturn_date()>0)
+            json_obj+=",\"return_date\":\""+getReturn_date()+"\"";
         json_obj+="}";
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);

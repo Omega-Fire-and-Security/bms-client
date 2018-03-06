@@ -6,6 +6,7 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -19,25 +20,27 @@ import java.net.URLEncoder;
  */
 public class Resource extends BusinessObject implements Serializable
 {
-    private String resource_name;
+    private String brand_name;
     private String resource_description;
-    private String resource_serial;
+    private String resource_code;
     private String resource_type;
     private double resource_value;
     private long quantity;
     private long date_acquired;
     private long date_exhausted;
     private String unit;
+    private String supplier_id;
+    private String part_number;
     public static final String TAG = "Resource";
 
-    public String getResource_name()
+    public String getBrand_name()
     {
-        return resource_name;
+        return brand_name;
     }
 
-    public void setResource_name(String resource_name)
+    public void setBrand_name(String brand_name)
     {
-        this.resource_name = resource_name;
+        this.brand_name = brand_name;
     }
 
     public String getResource_description()
@@ -50,14 +53,14 @@ public class Resource extends BusinessObject implements Serializable
         this.resource_description = description;
     }
 
-    public String getResource_serial()
+    public String getResource_code()
     {
-        return resource_serial;
+        return resource_code;
     }
 
-    public void setResource_serial(String resource_serial)
+    public void setResource_code(String resource_code)
     {
-        this.resource_serial = resource_serial;
+        this.resource_code = resource_code;
     }
 
     public String getResource_type()
@@ -120,15 +123,43 @@ public class Resource extends BusinessObject implements Serializable
         this.date_exhausted = date_exhausted;
     }
 
+    public String getSupplier_id()
+    {
+        return supplier_id;
+    }
+
+    public void setSupplier_id(String supplier_id)
+    {
+        this.supplier_id = supplier_id;
+    }
+
+    public String getPart_number()
+    {
+        return part_number;
+    }
+
+    public void setPart_number(String part_number)
+    {
+        this.part_number = part_number;
+    }
+
     //Properties
 
-    public StringProperty resource_nameProperty(){return new SimpleStringProperty(resource_name);}
+    public StringProperty brand_nameProperty(){return new SimpleStringProperty(brand_name);}
     public StringProperty resource_descriptionProperty(){return new SimpleStringProperty(resource_description);}
-    public StringProperty resource_serialProperty(){return new SimpleStringProperty(resource_serial);}
+    public StringProperty resource_codeProperty(){return new SimpleStringProperty(resource_code);}
     public StringProperty resource_typeProperty(){return new SimpleStringProperty(resource_type);}
     public StringProperty resource_valueProperty(){return new SimpleStringProperty(String.valueOf(resource_value));}
     public StringProperty unitProperty(){return new SimpleStringProperty(unit);}
     public StringProperty quantityProperty(){return new SimpleStringProperty(String.valueOf(quantity));}
+    public StringProperty supplierProperty()
+    {
+        if(getSupplier_id()!=null)
+            if(SupplierManager.getInstance().getDataset()!=null)
+                return new SimpleStringProperty(String.valueOf(SupplierManager.getInstance().getDataset().get(getSupplier_id())));
+            else return new SimpleStringProperty("N/A");
+        else return new SimpleStringProperty("N/A");
+    }
 
     @Override
     public void parse(String var, Object val)
@@ -138,8 +169,8 @@ public class Resource extends BusinessObject implements Serializable
         {
             switch (var.toLowerCase())
             {
-                case "resource_name":
-                    resource_name = (String)val;
+                case "brand_name":
+                    brand_name = (String)val;
                     break;
                 case "resource_type":
                     resource_type = (String)val;
@@ -147,8 +178,8 @@ public class Resource extends BusinessObject implements Serializable
                 case "resource_description":
                     resource_description = (String)val;
                     break;
-                case "resource_serial":
-                    resource_serial = (String)val;
+                case "resource_code":
+                    resource_code = (String)val;
                     break;
                 case "resource_value":
                     resource_value = Double.parseDouble(String.valueOf(val));
@@ -164,6 +195,12 @@ public class Resource extends BusinessObject implements Serializable
                     break;
                 case "unit":
                     unit = String.valueOf(val);
+                    break;
+                case "supplier_id":
+                    supplier_id = (String)val;
+                    break;
+                case "part_number":
+                    part_number = (String)val;
                     break;
                 default:
                     IO.log(TAG, IO.TAG_ERROR,"Unknown "+getClass().getName()+" attribute '" + var + "'.");
@@ -181,14 +218,14 @@ public class Resource extends BusinessObject implements Serializable
         switch (var.toLowerCase())
         {
             case "name":
-            case "resource_name":
-                return getResource_name();
+            case "brand_name":
+                return getBrand_name();
             case "resource_type":
                 return resource_type;
             case "resource_description":
                 return resource_description;
-            case "resource_serial":
-                return resource_serial;
+            case "resource_code":
+                return getResource_code();
             case "cost":
             case "value":
             case "resource_value":
@@ -201,6 +238,10 @@ public class Resource extends BusinessObject implements Serializable
                 return quantity;
             case "unit":
                 return unit;
+            case "supplier_id":
+                return getSupplier_id();
+            case "part_number":
+                return getPart_number();
         }
         return super.get(var);
     }
@@ -210,12 +251,17 @@ public class Resource extends BusinessObject implements Serializable
     {
         String super_json = super.getJSONString();
         String json_obj = super_json.substring(0, super_json.length()-1)//toString().length()-1 to ignore the last brace.
-                +",\"resource_name\":\""+getResource_name()+"\""
                 +",\"resource_description\":\""+getResource_description()+"\""
                 +",\"resource_value\":\""+getResource_value()+"\""
-                +",\"resource_serial\":\""+getResource_serial()+"\""
+                +",\"resource_code\":\""+getResource_code()+"\""
                 +",\"resource_type\":\""+getResource_type()+"\""
                 +",\"unit\":\""+getUnit()+"\"";
+        if(getPart_number()!=null)
+            json_obj+=",\"part_number\":\""+getPart_number()+"\"";
+        if(getBrand_name()!=null)
+            json_obj+=",\"brand_name\":\""+getBrand_name()+"\"";
+        if(getSupplier_id()!=null)
+            json_obj+=",\"supplier_id\":\""+getSupplier_id()+"\"";
         if(getQuantity()>0)
             json_obj+=",\"quantity\":\""+getQuantity()+"\"";
         if(getDate_acquired()>0)
@@ -231,7 +277,7 @@ public class Resource extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        return getResource_name();
+        return getBrand_name();
     }
 
     @Override

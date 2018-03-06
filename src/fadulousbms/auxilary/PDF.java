@@ -10,6 +10,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
@@ -42,14 +43,34 @@ public class PDF
 {
     private static final String TAG = "PDF";
     private static final int LINE_HEIGHT=20;
-    private static final int LINE_END = 300;
+    private static final int LINE_END = 500;
     private static final int TEXT_VERT_OFFSET=LINE_HEIGHT/4;
-    private static final int ROW_COUNT = 35;
-    private static final Insets page_margins = new Insets(100,10,100,10);
-    private static int quote_page_count=1;
-    private PDFont default_font;
+    //private static final int ROW_COUNT = 34;
+    private static final Insets PAGE_MARGINS = new Insets(90,25,35,25);
     private static String logo_path = "images/logo.png";
     private static String header_path = "images/header.jpg";
+
+    static class Border
+    {
+        private static final int BORDER_NONE = 0;
+        private static final int BORDER_LEFT = 1;
+        private static final int BORDER_TOP = 2;
+        private static final int BORDER_RIGHT = 3;
+        private static final int BORDER_BOTTOM = 4;
+        private static final int BORDER_ALL = 5;
+        int border = BORDER_ALL;
+        double border_width = 1.0;
+        Color border_colour = Color.BLACK;
+        Insets insets = new Insets(0, 0, 0, 0);
+
+        Border(int pos, Color border_colour, int border_width, Insets insets)
+        {
+            this.border = pos;
+            this.border_colour = border_colour;
+            this.border_width = border_width;
+            this.insets = insets;
+        }
+    }
 
     public static void printPDF(final byte[] byteStream) throws PrintException
     {
@@ -95,7 +116,7 @@ public class PDF
         for(int x: x_positions)
         {
             contents.moveTo(x, y_start);
-            contents.lineTo(x, page_margins.bottom);
+            contents.lineTo(x, PAGE_MARGINS.bottom);
             contents.stroke();
         }
     }
@@ -122,62 +143,62 @@ public class PDF
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
-        PDPageContentStream contents = new PDPageContentStream(document, page);
+        PDPageContentStream contents_stream = new PDPageContentStream(document, page);
         int logo_h = 60;
         PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-        contents.drawImage(logo, (w/2)-80, 770, 160, logo_h);
+        contents_stream.drawImage(logo, (w/2)-80, 770, 160, logo_h);
 
         int line_pos = (int)h-logo_h-LINE_HEIGHT;
 
         /** draw horizontal lines **/
-        drawHorzLines(contents, line_pos, (int)w, page_margins);
+        drawHorzLines(contents_stream, line_pos, (int)w, PAGE_MARGINS);
         /** draw vertical lines **/
         final int[] col_positions = {75, (int)((w / 2) + 100), (int)((w / 2) + 200)};
-        drawVertLines(contents, col_positions, line_pos-LINE_HEIGHT);
+        drawVertLines(contents_stream, col_positions, line_pos-LINE_HEIGHT);
         line_pos = (int)h-logo_h-LINE_HEIGHT;
 
         /** begin text from the top**/
-        contents.beginText();
-        contents.setFont(font, 12);
+        //contents.beginText();
+        //contents.setFont(font, 12);
         line_pos-=10;
         //Heading text
-        addTextToPageStream(contents, title, 16,(int)(w/2)-70, line_pos);
+        addTextToPageStream(document, title, 16,(int)(w/2)-70, line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
         //Create column headings
-        addTextToPageStream(contents,"Index", 14,10, line_pos);
-        addTextToPageStream(contents,"Label", 14, col_positions[0]+10, line_pos);
-        addTextToPageStream(contents,"Required?", 14,col_positions[1]+10, line_pos);
-        addTextToPageStream(contents,"Available?", 14,col_positions[2]+10, line_pos);
+        addTextToPageStream(document,"Index", 14,10, line_pos);
+        addTextToPageStream(document,"Label", 14, col_positions[0]+10, line_pos);
+        addTextToPageStream(document,"Required?", 14,col_positions[1]+10, line_pos);
+        addTextToPageStream(document,"Available?", 14,col_positions[2]+10, line_pos);
 
-        contents.endText();
+        //contents.endText();
         line_pos-=LINE_HEIGHT;//next line
 
         //int pos = line_pos;
         for(FileMetadata metadata : fileMetadata)
         {
-            contents.beginText();
+            //contents.beginText();
             //TODO:addTextToPageStream(contents, String.valueOf(metadata.getIndex()), 14, 20, line_pos);
 
             if(metadata.getLabel().length()>=105)
-                addTextToPageStream(contents, metadata.getLabel(), 6, 80, line_pos);
+                addTextToPageStream(document, metadata.getLabel(), 6, 80, line_pos);
             else if(metadata.getLabel().length()>=85)
-                addTextToPageStream(contents, metadata.getLabel(), 8, 80, line_pos);
+                addTextToPageStream(document, metadata.getLabel(), 8, 80, line_pos);
             else if(metadata.getLabel().length()>=45)
-                addTextToPageStream(contents, metadata.getLabel(), 11, 80, line_pos);
+                addTextToPageStream(document, metadata.getLabel(), 11, 80, line_pos);
             else if(metadata.getLabel().length()<45)
-                addTextToPageStream(contents, metadata.getLabel(), 14, 80, line_pos);
+                addTextToPageStream(document, metadata.getLabel(), 14, 80, line_pos);
 
             //TODO: addTextToPageStream(contents, String.valueOf(metadata.getRequired()), 14, (int) (w / 2)+120, line_pos);
-            contents.endText();
+            //contents.endText();
 
             //Availability field to be filled in by official
             line_pos-=LINE_HEIGHT;//next line
 
             //if reached bottom of page, add new page and reset cursor.
-            if(line_pos<page_margins.bottom)
+            /*if(line_pos<page_margins.bottom)
             {
-                contents.close();
+                //contents.close();
                 final PDPage new_page = new PDPage(PDRectangle.A4);
                 contents = new PDPageContentStream(document, new_page);
                 //Add page to document
@@ -191,10 +212,10 @@ public class PDF
                 //draw vertical lines
                 drawVertLines(contents, col_positions, line_pos);
                 line_pos -= 10;//move cursor down a bit for following
-            }
+            }*/
         }
 
-        contents.close();
+        //contents.close();
         document.save(path);
         document.close();
 
@@ -203,53 +224,56 @@ public class PDF
         pdfViewer.setVisible(true);
     }
 
-    public static void createBordersOnPage(PDPageContentStream contents, int page_w, int page_top, int page_bottom) throws IOException
+    public static void createBordersOnPage(PDPageContentStream contents, Insets insets, int page_w) throws IOException
     {
+        if(insets==null)
+        {
+            IO.log(PDF.class.getName(), IO.TAG_ERROR, "page insets are invalid");
+            return;
+        }
         //top border
         contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, page_top);
-        contents.lineTo(page_w-10, page_top);
+        contents.moveTo(insets.left, insets.top);
+        contents.lineTo(page_w-insets.right, insets.top);
         contents.stroke();
+
         //left border
         contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, page_top);
-        contents.lineTo(10, page_bottom-LINE_HEIGHT);
+        contents.moveTo(insets.left, insets.top);
+        contents.lineTo(insets.left, insets.bottom-LINE_HEIGHT);
         contents.stroke();
+
         //right border
         contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(page_w-10, page_top);
-        contents.lineTo(page_w-10, page_bottom-LINE_HEIGHT);
+        contents.moveTo(page_w-insets.left, insets.top);
+        contents.lineTo(page_w-insets.left, insets.bottom-LINE_HEIGHT);
         contents.stroke();
+
         //bottom border
         contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, page_bottom-LINE_HEIGHT);
-        contents.lineTo(page_w-10, page_bottom-LINE_HEIGHT);
+        contents.moveTo(insets.left, insets.bottom-LINE_HEIGHT);
+        contents.lineTo(page_w-insets.left, insets.bottom-LINE_HEIGHT);
         contents.stroke();
     }
 
-    public static void createLinesAndBordersOnPage(PDPageContentStream contents, int page_w, int page_top, int page_bottom) throws IOException
+    public static void createLinesAndBordersOnPage(PDPageContentStream contents, Insets insets, int page_w) throws IOException
     {
-        boolean isTextMode=false;
-        try
-        {//try to end the text of stream.
-            contents.endText();
-            isTextMode=true;
-        }catch (IllegalStateException e) {}
         //draw borders
-        createBordersOnPage(contents, page_w, page_top, page_bottom);
+        createBordersOnPage(contents, insets, page_w);
         //draw horizontal lines
-        int line_pos=page_top;
-        for(int i=0;i<ROW_COUNT;i++)//35 rows
+        int line_pos=insets.top;
+        //for(int i=0;i<ROW_COUNT;i++)//35 rows
+        while(line_pos>insets.bottom)
         {
             //horizontal underline
             contents.setStrokingColor(new Color(171, 170, 166));
-            contents.moveTo(10, line_pos-LINE_HEIGHT);
-            contents.lineTo(page_w-10, line_pos-LINE_HEIGHT);
+            contents.moveTo(insets.left, line_pos-LINE_HEIGHT);
+            contents.lineTo(page_w-insets.left, line_pos-LINE_HEIGHT);
             contents.stroke();
             line_pos-=LINE_HEIGHT;
         }
-        if(isTextMode)
-            contents.beginText();
+        /*if(isTextMode)
+            contents.beginText();*/
     }
 
     public static String createRequisitionPDF(Requisition requisition) throws IOException
@@ -274,44 +298,44 @@ public class PDF
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
-        PDPageContentStream contents = new PDPageContentStream(document, page);
+        PDPageContentStream contents_stream = new PDPageContentStream(document, page);
         int logo_h = 60;
         PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-        contents.drawImage(logo, (w/2)-80, 770, 160, logo_h);
+        contents_stream.drawImage(logo, (w/2)-80, 770, 160, logo_h);
 
         int line_pos = (int)h-logo_h-LINE_HEIGHT;
 
         /** draw horizontal lines **/
-        drawHorzLines(contents, line_pos, (int)w, page_margins);
+        drawHorzLines(contents_stream, line_pos, (int)w, PAGE_MARGINS);
         /** draw vertical lines **/
         //final int[] col_positions = {(int)((w / 2)), (int)((w / 2) + 100), (int)((w / 2) + 200)};
         //drawVertLines(contents, col_positions, line_pos-LINE_HEIGHT);
         line_pos = (int)h-logo_h-LINE_HEIGHT;
 
         /** begin text from the top**/
-        contents.beginText();
-        contents.setFont(font, 12);
+        //contents.beginText();
+        //contents.setFont(font, 12);
         line_pos-=10;
         //Heading text
-        addTextToPageStream(contents, "Requisition", 16,(int)(w/2)-70, line_pos);
+        addTextToPageStream(document, "Requisition", 16,(int)(w/2)-70, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "Client: "+ requisition.getClient().getClient_name(), 16 ,10, line_pos);
+        addTextToPageStream(document, "Client: "+ requisition.getClient().getClient_name(), 16 ,10, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "Description: "+ requisition.getDescription(), PDType1Font.TIMES_ITALIC, 16 ,10, line_pos);
+        addTextToPageStream(document, "Description: "+ requisition.getDescription(), PDType1Font.TIMES_ITALIC, 16 ,10, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "Requisition Type: "+ requisition.getType(), 16 ,10, line_pos);
+        addTextToPageStream(document, "Requisition Type: "+ requisition.getType(), 16 ,10, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "Responsible Person: "+ requisition.getResponsible_person().getFirstname()+" "+requisition.getResponsible_person().getLastname(), 16 ,10, line_pos);
+        addTextToPageStream(document, "Responsible Person: "+ requisition.getResponsible_person().getFirstname()+" "+requisition.getResponsible_person().getLastname(), 16 ,10, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "Logged By: "+ requisition.getCreatorEmployee().getFirstname()+" "+requisition.getCreatorEmployee().getLastname(), 16 ,10, line_pos);
+        addTextToPageStream(document, "Logged By: "+ requisition.getCreatorEmployee().getFirstname()+" "+requisition.getCreatorEmployee().getLastname(), 16 ,10, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "Date Logged: "+(new SimpleDateFormat("yyyy-MM-dd").format(requisition.getDate_logged()*1000)), 16,10, line_pos);
+        addTextToPageStream(document, "Date Logged: "+(new SimpleDateFormat("yyyy-MM-dd").format(requisition.getDate_logged()*1000)), 16,10, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
         line_pos-=LINE_HEIGHT*2;//next 2nd line
@@ -328,18 +352,18 @@ public class PDF
                 status="ARCHIVED";
                 break;
         }
-        addTextToPageStream(contents, "STATUS: ", 14,10, line_pos);
-        addTextToPageStream(contents, status, 14,100, line_pos);
+        addTextToPageStream(document, "STATUS: ", 14,10, line_pos);
+        addTextToPageStream(document, status, 14,100, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
         if(requisition.getOther()!=null)
-            addTextToPageStream(contents, "Extra: "+ requisition.getOther(), 16, 15, line_pos);
+            addTextToPageStream(document, "Extra: "+ requisition.getOther(), 16, 15, line_pos);
 
         /*line_pos-=LINE_HEIGHT*3;//next 3rd line
         addTextToPageStream(contents, "Applicant's Signature", 16,10, line_pos);
         addTextToPageStream(contents, "Manager Signature", 16, 200, line_pos);*/
 
-        contents.endText();
+        //contents.endText();
 
         String path = "out/pdf/requisition_" + requisition.get_id() + ".pdf";
         int i=1;
@@ -349,7 +373,7 @@ public class PDF
             i++;
         }
 
-        contents.close();
+        contents_stream.close();
         document.save(path);
         document.close();
 
@@ -378,58 +402,58 @@ public class PDF
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
-        PDPageContentStream contents = new PDPageContentStream(document, page);
+        PDPageContentStream contents_stream = new PDPageContentStream(document, page);
         int logo_h = 60;
         PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-        contents.drawImage(logo, (w/2)-80, 770, 160, logo_h);
+        contents_stream.drawImage(logo, (w/2)-80, 770, 160, logo_h);
 
         int line_pos = (int)h-logo_h-LINE_HEIGHT;
 
         /** draw horizontal lines **/
-        drawHorzLines(contents, line_pos, (int)w, page_margins);
+        drawHorzLines(contents_stream, line_pos, (int)w, PAGE_MARGINS);
         /** draw vertical lines **/
         final int[] col_positions = {(int)((w / 2)), (int)((w / 2) + 100), (int)((w / 2) + 200)};
-        drawVertLines(contents, col_positions, line_pos-LINE_HEIGHT);
+        drawVertLines(contents_stream, col_positions, line_pos-LINE_HEIGHT);
         line_pos = (int)h-logo_h-LINE_HEIGHT;
 
         /** begin text from the top**/
-        contents.beginText();
-        contents.setFont(font, 12);
+        //contents.beginText();
+        //contents.setFont(font, 12);
         line_pos-=10;
         //Heading text
-        addTextToPageStream(contents, "Leave Application", 16,(int)(w/2)-70, line_pos);
+        addTextToPageStream(document, "Leave Application", 16,(int)(w/2)-70, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "DATE LOGGED: ", 16,10, line_pos);
-        addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getDate_logged()*1000)), 16,(int)w/2+100, line_pos);
+        addTextToPageStream(document, "DATE LOGGED: ", 16,10, line_pos);
+        addTextToPageStream(document, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getDate_logged())), 16,(int)w/2+100, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "I "+leave.getEmployee().getName() + " hereby wish to apply for leave as indicated below.", PDType1Font.TIMES_ITALIC, 16 ,10, line_pos);
+        addTextToPageStream(document, "I "+leave.getEmployee().getName() + " hereby wish to apply for leave as indicated below.", PDType1Font.TIMES_ITALIC, 16 ,10, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
         //Create column headings
-        addTextToPageStream(contents,"Type", 14,10, line_pos);
-        addTextToPageStream(contents,"From", 14, col_positions[0]+10, line_pos);
-        addTextToPageStream(contents,"Till", 14,col_positions[1]+10, line_pos);
-        addTextToPageStream(contents,"Total Days", 14,col_positions[2]+10, line_pos);
+        addTextToPageStream(document,"Type", 14,10, line_pos);
+        addTextToPageStream(document,"From", 14, col_positions[0]+10, line_pos);
+        addTextToPageStream(document,"Till", 14,col_positions[1]+10, line_pos);
+        addTextToPageStream(document,"Total Days", 14,col_positions[2]+10, line_pos);
 
-        contents.endText();
+        //contents.endText();
         line_pos-=LINE_HEIGHT;//next line
 
         //int pos = line_pos;
-        contents.beginText();
-        addTextToPageStream(contents, String.valueOf(leave.getType()), 14, 10, line_pos);
+        //contents.beginText();
+        addTextToPageStream(document, String.valueOf(leave.getType()), 14, 10, line_pos);
 
         if(leave.getStart_date()>0)
-            addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getStart_date()*1000)), 12, col_positions[0]+5, line_pos);
-        else addTextToPageStream(contents, "N/A", 12, col_positions[0]+5, line_pos);
+            addTextToPageStream(document, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getStart_date())), 12, col_positions[0]+5, line_pos);
+        else addTextToPageStream(document, "N/A", 12, col_positions[0]+5, line_pos);
         if(leave.getEnd_date()>0)
-            addTextToPageStream(contents, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getEnd_date()*1000)), 12, col_positions[1]+5, line_pos);
-        else addTextToPageStream(contents, "N/A", 12, col_positions[1]+5, line_pos);
+            addTextToPageStream(document, (new SimpleDateFormat("yyyy-MM-dd").format(leave.getEnd_date())), 12, col_positions[1]+5, line_pos);
+        else addTextToPageStream(document, "N/A", 12, col_positions[1]+5, line_pos);
 
-        long diff = leave.getEnd_date()-leave.getStart_date();//in epoch seconds
-        long days = diff/60/60/24;
-        addTextToPageStream(contents, String.valueOf(days), 12, col_positions[2]+5, line_pos);
+        long diff_ms = leave.getEnd_date()-leave.getStart_date();//in epoch milliseconds
+        long days = diff_ms/1000/60/60/24;
+        addTextToPageStream(document, String.valueOf(days), 12, col_positions[2]+5, line_pos);
 
         line_pos-=LINE_HEIGHT*2;//next 2nd line
         String status = "N/A";
@@ -445,29 +469,29 @@ public class PDF
                 status="ARCHIVED";
                 break;
         }
-        addTextToPageStream(contents, "STATUS: ", 14,10, line_pos);
-        addTextToPageStream(contents, status, 14,100, line_pos);
+        addTextToPageStream(document, "STATUS: ", 14,10, line_pos);
+        addTextToPageStream(document, status, 14,100, line_pos);
         line_pos-=LINE_HEIGHT*2;//next 2nd line
 
-        addTextToPageStream(contents, "IF DENIED, REASON WILL BE STATED BELOW: ", 14,10, line_pos);
+        addTextToPageStream(document, "IF DENIED, REASON WILL BE STATED BELOW: ", 14,10, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         if(leave.getOther()!=null)
-            addTextToPageStream(contents, leave.getOther(), 16, 15, line_pos);
+            addTextToPageStream(document, leave.getOther(), 16, 15, line_pos);
 
         line_pos-=LINE_HEIGHT*3;//next 3rd line
-        addTextToPageStream(contents, "Applicant's Signature", 16,10, line_pos);
-        addTextToPageStream(contents, "Manager Signature", 16, 200, line_pos);
-        contents.endText();
+        addTextToPageStream(document, "Applicant's Signature", 16,10, line_pos);
+        addTextToPageStream(document, "Manager Signature", 16, 200, line_pos);
+        //contents.endText();
 
         //draw first signature line
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT+5);
-        contents.lineTo(120, line_pos+LINE_HEIGHT+5);
-        contents.stroke();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos+LINE_HEIGHT+5);
+        contents_stream.lineTo(120, line_pos+LINE_HEIGHT+5);
+        contents_stream.stroke();
         //draw second signature line
-        contents.moveTo(200, line_pos+LINE_HEIGHT+5);
-        contents.lineTo(320, line_pos+LINE_HEIGHT+5);
-        contents.stroke();
+        contents_stream.moveTo(200, line_pos+LINE_HEIGHT+5);
+        contents_stream.lineTo(320, line_pos+LINE_HEIGHT+5);
+        contents_stream.stroke();
 
         String path = "out/pdf/leave_" + leave.get_id() + ".pdf";
         int i=1;
@@ -477,7 +501,7 @@ public class PDF
             i++;
         }
 
-        contents.close();
+        contents_stream.close();
         document.save(path);
         document.close();
 
@@ -532,7 +556,7 @@ public class PDF
         // stores that under the name '/Helv' in the resources dictionary
         resources.put(COSName.getPDFName("Helv"), font);
 
-        PDPageContentStream contents = new PDPageContentStream(document, page);
+        PDPageContentStream contents_stream = new PDPageContentStream(document, page);
         int logo_h = 60;
         //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
         //contents.drawImage(logo, 10, 770, 160, logo_h);
@@ -544,12 +568,12 @@ public class PDF
 
         /**Draw lines**/
         int center_vert_line_start = line_pos;
-        int bottom_line = (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT;
-        createLinesAndBordersOnPage(contents, (int)w, line_pos, bottom_line);
+        //int bottom_line = (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT;
+        createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.top, PAGE_MARGINS.right), (int)w);
 
         /** begin text from the top**/
-        contents.beginText();
-        contents.setFont(font, 12);
+        //contents.beginText();
+        //contents.setFont(font, 12);
         line_pos-=LINE_HEIGHT/2;
 
         int temp_pos = line_pos;
@@ -559,75 +583,75 @@ public class PDF
         //right text
         //addTextToPageStream(contents,"PURCHASE ORDER", PDType1Font.COURIER_BOLD_OBLIQUE, 17, (int)(w/2)+20, line_pos);
         //line_pos-=LINE_HEIGHT;//next line
-        contents.endText();
+        //contents.endText();
         //System.out.println(">>>>>>"+new File("images/logo.png").getPath());
         //System.out.println(">>>>>>"+(new File(logo_path).exists()));
         //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-        contents.drawImage(header, 0, 760, w, header_h);
+        contents_stream.drawImage(header, 0, 760, w, header_h);
         //contents.drawImage(logo, (int)(w/2)+ 20, line_pos-logo_h, 150, logo_h);
-        contents.beginText();
+        //contents.beginText();
 
         //line_pos=temp_pos;//revert to original line
         //line_pos-=LINE_HEIGHT;//next line
 
         //left text
-        addTextToPageStream(contents,"Purchase Order #" + purchaseOrder.getObject_number(), PDType1Font.COURIER_BOLD_OBLIQUE, 17,20, line_pos);
+        addTextToPageStream(document,"Purchase Order #" + purchaseOrder.getObject_number(), PDType1Font.COURIER_BOLD_OBLIQUE, 17,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,20, line_pos);
+        addTextToPageStream(document,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,20, line_pos);
         line_pos-=LINE_HEIGHT;
-        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(purchaseOrder.getDate_logged()))), 12, 20, line_pos);
+        addTextToPageStream(document,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(purchaseOrder.getDate_logged()))), 12, 20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Overall Discount:  " + purchaseOrder.discountProperty().get(), 12,20 , line_pos);
+        addTextToPageStream(document,"Overall Discount:  " + purchaseOrder.discountProperty().get(), 12,20 , line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"VAT:  " + purchaseOrder.getVat() + "%", 12,20 , line_pos);
+        addTextToPageStream(document,"VAT:  " + purchaseOrder.getVat() + "%", 12,20 , line_pos);
 
         //line_pos=temp_pos;//revert to original line
         line_pos-=LINE_HEIGHT;//next line
         temp_pos=line_pos;
 
         //horizontal solid line after purchase order details
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos+LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos+LINE_HEIGHT/2);
+        contents_stream.stroke();
 
         //horizontal solid line after from/to labels
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos-LINE_HEIGHT/2);
+        contents_stream.stroke();
 
         //horizontal solid line after company details
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos-LINE_HEIGHT-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos-LINE_HEIGHT-LINE_HEIGHT/2);
+        contents_stream.stroke();
+        //contents.beginText();
 
         //Company Info
         //Left Text: From
-        addTextToPageStream(contents,"FROM", PDType1Font.HELVETICA_BOLD, 15,20, line_pos);
+        addTextToPageStream(document,"FROM", PDType1Font.HELVETICA_BOLD, 15,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,Globals.COMPANY.getValue(), PDType1Font.HELVETICA_BOLD, 16,20, line_pos);
+        addTextToPageStream(document,Globals.COMPANY.getValue(), PDType1Font.HELVETICA_BOLD, 16,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"VAT No.: #########", 12,20, line_pos);
+        addTextToPageStream(document,"VAT No.: #########", 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"POSTAL ADDRESS: ##########", 12,20, line_pos);
+        addTextToPageStream(document,"POSTAL ADDRESS: ##########", 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"CITY: ##########", 12,20, line_pos);
+        addTextToPageStream(document,"CITY: ##########", 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"POSTAL CODE: ####", 12,20, line_pos);
+        addTextToPageStream(document,"POSTAL CODE: ####", 12,20, line_pos);
 
         line_pos-=LINE_HEIGHT*2;//next 2ND line
 
-        addTextToPageStream(contents,"PHYSICAL ADDRESS: ########", 12,20, line_pos);
+        addTextToPageStream(document,"PHYSICAL ADDRESS: ########", 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"CITY: ########", 12,20, line_pos);
+        addTextToPageStream(document,"CITY: ########", 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"PROVINCE/STATE: #######", 12,20, line_pos);
+        addTextToPageStream(document,"PROVINCE/STATE: #######", 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"POSTAL CODE: ####", 12,20, line_pos);
+        addTextToPageStream(document,"POSTAL CODE: ####", 12,20, line_pos);
 
         line_pos=temp_pos;//revert to original line
         //line_pos-=LINE_HEIGHT;//next line
@@ -635,77 +659,77 @@ public class PDF
 
         //Right Text: To
         int supplier_text_x = (int)(w/2)+5;
-        addTextToPageStream(contents,"TO", PDType1Font.HELVETICA_BOLD, 15,supplier_text_x, line_pos);
+        addTextToPageStream(document,"TO", PDType1Font.HELVETICA_BOLD, 15,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents, purchaseOrder.getSupplier().getSupplier_name(), PDType1Font.HELVETICA_BOLD, 16, supplier_text_x, line_pos);
+        addTextToPageStream(document, purchaseOrder.getSupplier().getSupplier_name(), PDType1Font.HELVETICA_BOLD, 16, supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"VAT No.: "+purchaseOrder.getSupplier().getVat_number(), 12,supplier_text_x, line_pos);
+        addTextToPageStream(document,"VAT No.: "+purchaseOrder.getSupplier().getVat_number(), 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
         //addTextToPageStream(contents,"POSTAL ADDRESS: " + purchaseOrder.getSupplier().getPostal_address(), 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"CITY: ##########", 12,supplier_text_x, line_pos);
+        addTextToPageStream(document,"CITY: ##########", 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"POSTAL CODE: ####", 12,supplier_text_x, line_pos);
+        addTextToPageStream(document,"POSTAL CODE: ####", 12,supplier_text_x, line_pos);
 
         line_pos-=LINE_HEIGHT*2;//next 2ND line
 
         //addTextToPageStream(contents, String.format("PHYSICAL ADDRESS: %s", purchaseOrder.getSupplier().getPhysical_address()), 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"CITY: ########", 12,supplier_text_x, line_pos);
+        addTextToPageStream(document,"CITY: ########", 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"PROVINCE/STATE: #######", 12,supplier_text_x, line_pos);
+        addTextToPageStream(document,"PROVINCE/STATE: #######", 12,supplier_text_x, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"POSTAL CODE: ####", 12,supplier_text_x, line_pos);
+        addTextToPageStream(document,"POSTAL CODE: ####", 12,supplier_text_x, line_pos);
 
         //horizontal solid line after company details
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos-LINE_HEIGHT/2);
+        contents_stream.stroke();
+        contents_stream.beginText();
 
         line_pos-=LINE_HEIGHT;//next line
         temp_pos=line_pos;//backup current position
 
         //left text
-        addTextToPageStream(contents,"Creator: " + purchaseOrder.getCreator(), PDType1Font.COURIER_BOLD_OBLIQUE, 12, 20, line_pos);
+        addTextToPageStream(document,"Creator: " + purchaseOrder.getCreator(), PDType1Font.COURIER_BOLD_OBLIQUE, 12, 20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Tel    :  " + purchaseOrder.getCreatorEmployee().getTel(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
+        addTextToPageStream(document,"Tel    :  " + purchaseOrder.getCreatorEmployee().getTel(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Cell   :  " + purchaseOrder.getCreatorEmployee().getCell(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
+        addTextToPageStream(document,"Cell   :  " + purchaseOrder.getCreatorEmployee().getCell(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"eMail :  " + purchaseOrder.getCreatorEmployee().getEmail(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
+        addTextToPageStream(document,"eMail :  " + purchaseOrder.getCreatorEmployee().getEmail(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
 
         line_pos=temp_pos;//revert line pos
 
         //right text
-        addTextToPageStream(contents,"Supplier Contact: " + purchaseOrder.getContact_person(), PDType1Font.COURIER_BOLD_OBLIQUE, 12, (int)(w/2)+5, line_pos);
+        addTextToPageStream(document,"Supplier Contact: " + purchaseOrder.getContact_person(), PDType1Font.COURIER_BOLD_OBLIQUE, 12, (int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Tel    :  " + purchaseOrder.getContact_person().getTel(), PDType1Font.HELVETICA_BOLD, 12,(int)(w/2)+5, line_pos);
+        addTextToPageStream(document,"Tel    :  " + purchaseOrder.getContact_person().getTel(), PDType1Font.HELVETICA_BOLD, 12,(int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Cell   :  " + purchaseOrder.getContact_person().getCell(), PDType1Font.HELVETICA_BOLD, 12,(int)(w/2)+5, line_pos);
+        addTextToPageStream(document,"Cell   :  " + purchaseOrder.getContact_person().getCell(), PDType1Font.HELVETICA_BOLD, 12,(int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"eMail :  " + purchaseOrder.getContact_person().getEmail(), PDType1Font.HELVETICA_BOLD, 12,(int)(w/2)+5, line_pos);
+        addTextToPageStream(document,"eMail :  " + purchaseOrder.getContact_person().getEmail(), PDType1Font.HELVETICA_BOLD, 12,(int)(w/2)+5, line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
         //horizontal solid line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos+LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos+LINE_HEIGHT/2);
+        contents_stream.stroke();
+        //contents.beginText();
 
         //horizontal solid line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos-LINE_HEIGHT/2);
+        contents_stream.stroke();
+        //contents.beginText();
 
-        contents.endText();
+        //contents.endText();
 
         //horizontal solid line after reps
         /*contents.setStrokingColor(Color.BLACK);
@@ -726,26 +750,26 @@ public class PDF
         int col_divider_start = line_pos-LINE_HEIGHT;
 
         //vertical line going through center of page
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo((w/2), center_vert_line_start);
-        contents.lineTo((w/2),(col_divider_start-LINE_HEIGHT*2+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.stroke();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo((w/2), center_vert_line_start);
+        contents_stream.lineTo((w/2),(col_divider_start-LINE_HEIGHT*2+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.stroke();
         //
-        contents.moveTo((w/2), (col_divider_start+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.lineTo((w/2),(col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.stroke();
+        contents_stream.moveTo((w/2), (col_divider_start+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.lineTo((w/2),(col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.stroke();
 
-        contents.beginText();
+        //contents.beginText();
 
         //Column headings
         int col_pos = 10;
-        addTextToPageStream(contents,"Item No.", PDType1Font.COURIER_BOLD,14,15, line_pos);
+        addTextToPageStream(document,"Item No.", PDType1Font.COURIER_BOLD,14,15, line_pos);
         col_pos += 80;
-        addTextToPageStream(contents,"Item description", PDType1Font.COURIER_BOLD,14,col_pos+20, line_pos);
+        addTextToPageStream(document,"Item description", PDType1Font.COURIER_BOLD,14,col_pos+20, line_pos);
         col_pos = (int)(w/2);
         String[] cols = {"Unit", "Qty", "Cost", "Discount", "Total"};
         for(int i=0;i<5;i++)//7 cols in total
-            addTextToPageStream(contents,cols[i], PDType1Font.COURIER_BOLD, 12,col_pos+(55*i)+2, line_pos);
+            addTextToPageStream(document, cols[i], PDType1Font.COURIER_BOLD, 12,col_pos+(55*i)+2, line_pos);
         line_pos-=LINE_HEIGHT;//next line
 
         //Purchase Order Items
@@ -754,66 +778,66 @@ public class PDF
         for(PurchaseOrderItem item: purchaseOrderItems)
         {
             //quote content column dividers
-            contents.endText();
+            //contents.endText();
             //#1
-            contents.moveTo(80, (col_divider_start+LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-            contents.lineTo(80, line_pos-LINE_HEIGHT/2);
-            contents.stroke();
+            contents_stream.moveTo(80, (col_divider_start+LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+            contents_stream.lineTo(80, line_pos-LINE_HEIGHT/2);
+            contents_stream.stroke();
             //vertical line going through center of page
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo((w/2), (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-            contents.lineTo((w/2),line_pos-LINE_HEIGHT/2);
-            contents.stroke();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo((w/2), (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+            contents_stream.lineTo((w/2),line_pos-LINE_HEIGHT/2);
+            contents_stream.stroke();
             //#3+
             for(int i=1;i<5;i++)//7 cols in total
             {
-                contents.moveTo((w/2)+55*i, (col_divider_start+LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-                contents.lineTo((w/2)+55*i,line_pos-LINE_HEIGHT/2);
-                contents.stroke();
+                contents_stream.moveTo((w/2)+55*i, (col_divider_start+LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+                contents_stream.lineTo((w/2)+55*i,line_pos-LINE_HEIGHT/2);
+                contents_stream.stroke();
             }
-            contents.beginText();
+            //contents.beginText();
             //end draw columns
 
             //if the page can't hold another 4 lines[current item, blank, sub-total, vat] add a new page
-            if(line_pos-LINE_HEIGHT<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
+            /*if(line_pos-LINE_HEIGHT<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
             {
-                addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
+                addTextToPageStream(document, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
                 //add new page
                 page = new PDPage(PDRectangle.A4);
                 document.addPage(page);
                 //TODO: setup page, i.e. draw lines and stuff
-                contents.close();
+                //contents.close();
                 contents = new PDPageContentStream(document, page);
                 contents.beginText();
                 line_pos = (int)h-logo_h;
                 col_divider_start = line_pos+LINE_HEIGHT;
                 createLinesAndBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, bottom_line);
                 quote_page_count++;
-            }
+            }*/
 
             col_pos =0;//first column
             //Item # col
-            addTextToPageStream(contents, item.getItem_number(), 12,col_pos+30, line_pos);
+            addTextToPageStream(document, item.getItem_number(), 12,col_pos+30, line_pos);
             col_pos += 80;//next column
             //Description col
             //addTextToPageStream(contents, item.getItem_description(), 12,col_pos+5, line_pos);
-            addTextToPageStream(contents, item.getItem_description() , font, 12, col_pos+5, line_pos);
+            addTextToPageStream(document, item.getItem_description() , font, 12, col_pos+5, line_pos);
             col_pos = (int)w/2;//next column - starts at middle of page
             //Unit col
-            addTextToPageStream(contents,item.getUnit(), 12,col_pos+5, line_pos);
+            addTextToPageStream(document,item.getUnit(), 12,col_pos+5, line_pos);
             col_pos+=55;//next column
             //Quantity col
-            addTextToPageStream(contents,item.getQuantity(), digit_font_size,col_pos+5, line_pos);
+            addTextToPageStream(document,item.getQuantity(), digit_font_size,col_pos+5, line_pos);
             col_pos+=55;//next column
             //Cost col
-            addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getCostValue())), digit_font_size,col_pos+5, line_pos);
+            addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getCostValue())), digit_font_size,col_pos+5, line_pos);
             col_pos+=55;//next column
             //Discount col
-            addTextToPageStream(contents, String.valueOf(item.getDiscount()), digit_font_size,col_pos+5, line_pos);
+            addTextToPageStream(document, String.valueOf(item.getDiscount()), digit_font_size,col_pos+5, line_pos);
             col_pos+=55;//next column
             //Total col
             sub_total+=item.getTotal();
-            addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getTotal())), digit_font_size,col_pos+5, line_pos);
+            addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getTotal())), digit_font_size,col_pos+5, line_pos);
 
             line_pos -= LINE_HEIGHT;//next line
         }
@@ -836,48 +860,48 @@ public class PDF
         //solid horizontal line
         int col_divider_end= line_pos;
 
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos+LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos+LINE_HEIGHT/2);
+        contents_stream.stroke();
 
-        contents.beginText();
-        addTextToPageStream(contents, "Sub-Total [Excl. VAT]: ", PDType1Font.COURIER, 14,20, line_pos);
-        addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total)), PDType1Font.COURIER, 14,(int)(5+(w/2)), line_pos);
+        //contents.beginText();
+        addTextToPageStream(document, "Sub-Total [Excl. VAT]: ", PDType1Font.COURIER, 14,20, line_pos);
+        addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total)), PDType1Font.COURIER, 14,(int)(5+(w/2)), line_pos);
         line_pos -= LINE_HEIGHT;//next line
 
         //solid horizontal line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos+LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos+LINE_HEIGHT/2);
+        contents_stream.stroke();
 
         double vat = sub_total*(purchaseOrder.getVatVal()/100);
-        contents.beginText();
-        addTextToPageStream(contents, "VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14,20, line_pos);
-        addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int)(5+(w/2)), line_pos);
+        //contents.beginText();
+        addTextToPageStream(document, "VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14,20, line_pos);
+        addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int)(5+(w/2)), line_pos);
         line_pos -= LINE_HEIGHT;//next line
 
         //solid horizontal line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos+LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos+LINE_HEIGHT/2);
+        contents_stream.stroke();
 
-        contents.beginText();
-        addTextToPageStream(contents, "Total [Incl. VAT]: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14,20, line_pos);
-        addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total + vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int)(5+(w/2)), line_pos);
-        contents.endText();
+        //contents.beginText();
+        addTextToPageStream(document, "Total [Incl. VAT]: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14,20, line_pos);
+        addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total + vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int)(5+(w/2)), line_pos);
+        //contents.endText();
         line_pos -= LINE_HEIGHT;//next line
 
         //solid horizontal line
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos+LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos+LINE_HEIGHT/2);
+        contents_stream.stroke();
 
         //int col_divider_end = line_pos;
         line_pos -= LINE_HEIGHT*3;//next 3rd line
@@ -895,31 +919,31 @@ public class PDF
 
         //quote content column dividers
         //#1
-        contents.moveTo(80, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.lineTo(80, col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-        contents.stroke();
+        contents_stream.moveTo(80, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.lineTo(80, col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
+        contents_stream.stroke();
         //vertical line going through center of page again
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo((w/2), (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.lineTo((w/2), col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo((w/2), (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.lineTo((w/2), col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
         //contents.lineTo((w/2),col_divider_end-LINE_HEIGHT/2);
-        contents.stroke();
+        contents_stream.stroke();
         //#3+
         for(int i=1;i<5;i++)//7 cols in total
         {
-            contents.moveTo((w/2)+55*i, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-            contents.lineTo((w/2)+55*i,col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-            contents.stroke();
+            contents_stream.moveTo((w/2)+55*i, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+            contents_stream.lineTo((w/2)+55*i,col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
+            contents_stream.stroke();
         }
 
-        contents.beginText();
+        //contents.beginText();
 
         if(purchaseOrder.getOther()!=null)
-            addTextToPageStream(contents, "P.S. "+purchaseOrder.getOther(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
+            addTextToPageStream(document, "P.S. "+purchaseOrder.getOther(), PDType1Font.TIMES_ITALIC, 14,col_pos+5, line_pos);
 
         line_pos -= LINE_HEIGHT;//next line
         //if the page can't hold another 9 lines add a new page
-        if(line_pos-(LINE_HEIGHT*4)<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
+        /*if(line_pos-(LINE_HEIGHT*4)<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
         {
             addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
             //add new page
@@ -931,11 +955,10 @@ public class PDF
             line_pos = (int)h-logo_h;
             createLinesAndBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, bottom_line);
             quote_page_count++;
-        }
+        }*/
 
-        addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
-        contents.endText();
-        contents.close();
+        addTextToPageStream(document, "Page "+document.getNumberOfPages(), PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
+        //contents.endText();
 
         //create PDF output directory
         if(new File("out/pdf/").mkdirs())
@@ -951,6 +974,7 @@ public class PDF
 
         //Files.delete(Paths.get(path));//delete previous versions
 
+        contents_stream.close();
         document.save(path);
         document.close();
 
@@ -964,21 +988,20 @@ public class PDF
     {
         if(quote==null)
         {
-            IO.logAndAlert("PDF Viewer", "Quote object passed is null.", IO.TAG_ERROR);
+            IO.logAndAlert("PDF Generator", "Quote object passed is null.", IO.TAG_ERROR);
             return null;
         }
-        //Prepare PDF data from database.
         //Load Quote Client
         Client client = quote.getClient();
         if(client==null)
         {
-            IO.logAndAlert("PDF Viewer Error", "Quote has no client assigned to it.", IO.TAG_ERROR);
+            IO.logAndAlert("PDF Generator Error", "Quote has no client assigned to it.", IO.TAG_ERROR);
             return null;
         }
         Employee contact = quote.getContact_person();
         if(contact==null)
         {
-            IO.logAndAlert("PDF Viewer Error", "Quote has no client contact person assigned to it.", IO.TAG_ERROR);
+            IO.logAndAlert("PDF Generator Error", "Quote has no contact person assigned to it.", IO.TAG_ERROR);
             return null;
         }
 
@@ -996,182 +1019,125 @@ public class PDF
         float w = page.getBBox().getWidth();
         float h = page.getBBox().getHeight();
 
-        PDPageContentStream contents = new PDPageContentStream(document, page);
+        PDPageContentStream contents_stream = new PDPageContentStream(document, page);
         //int logo_h = 60;
-        int header_h = 90;
         //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-        PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
-        contents.drawImage(header, 0, 760, w, header_h);
+        int header_h = 90;
 
+        PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
+        contents_stream.drawImage(header, 0, 760, w, header_h);
+
+        int text_offset = 5;
         int line_pos = (int)h-header_h-0;
         int digit_font_size=9;
+        int page_content_max_width = (int)(w-PAGE_MARGINS.right-PAGE_MARGINS.left);
+        Border no_border = new Border(Border.BORDER_NONE, Color.BLACK, 0, new Insets(0, 0, 0, 0));
 
         /**Draw lines**/
-        int center_vert_line_start = line_pos;
-        int bottom_line = (int)h-header_h-(ROW_COUNT+1)*LINE_HEIGHT;
-        createLinesAndBordersOnPage(contents, (int)w, line_pos, bottom_line);
+        //int bottom_line = (int)h-header_h-(ROW_COUNT+1)*LINE_HEIGHT;
+        createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.bottom, PAGE_MARGINS.right), (int)w);
 
         /** begin text from the top**/
-        contents.beginText();
-        contents.setFont(font, 12);
         line_pos-=LINE_HEIGHT/2;
         //left text
-        addTextToPageStream(contents,"Client Details", PDType1Font.COURIER, 15,(int)((w/2)/4), line_pos);
+        line_pos = addTextToPageStream(document, "Client Details", PDType1Font.COURIER, 15, page_content_max_width, (int)((w/2)/4), line_pos, no_border, null);
         //right text
-        addTextToPageStream(contents,"Quotation No.: " + quote.quoteProperty().getValue(), PDType1Font.COURIER, 11, (int)(w/2)+5, line_pos);
+        line_pos = addTextToPageStream(document, "Quotation No.: " + quote.quoteProperty().getValue(), PDType1Font.COURIER, 11, page_content_max_width, (int)(w/2)+text_offset, line_pos,no_border, null);
         line_pos-=LINE_HEIGHT;//next line
 
         //left text
-        addTextToPageStream(contents,"Company: " + client.getClient_name(), 12, 20, line_pos);
+        line_pos = addTextToPageStream(document, "Company: " + client.getClient_name(), PDType1Font.COURIER, 12, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
         //right text
         //addTextToPageStream(contents,"Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))), 12,(int)(w/2)+5, line_pos);
         //line_pos-=LINE_HEIGHT;
-        addTextToPageStream(contents,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(quote.getDate_logged()))), 12,(int)(w/2)+5, line_pos);
+        line_pos = addTextToPageStream(document,"Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(quote.getDate_logged()))), PDType1Font.COURIER, 12, page_content_max_width,(int)(w/2)+text_offset, line_pos,no_border, null);
         line_pos-=LINE_HEIGHT;//next line
 
         //left text
-        addTextToPageStream(contents,"Company Tel: " + client.getTel(), 12,20, line_pos);
+        line_pos = addTextToPageStream(document,"Company Tel: " + client.getTel(), PDType1Font.COURIER, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
         //right text
-        addTextToPageStream(contents,"Sale Consultant(s): ", PDType1Font.COURIER, 16,(int)((w/2)+((w/2)/4)), line_pos);
+        //line_pos = addTextToPageStream(document,"Sale Consultant(s): ", PDType1Font.COURIER, 16, page_content_max_width, (int)((w/2)+((w/2)/4)), line_pos, no_border, null);
 
         //horizontal solid line after company details
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-PAGE_MARGINS.right, line_pos-LINE_HEIGHT/2);
+        contents_stream.stroke();
 
         line_pos-=LINE_HEIGHT;//next line
 
         int temp_pos = line_pos;
         //left text
-        addTextToPageStream(contents,"Contact Person:  " + contact.getName(), PDType1Font.HELVETICA_BOLD, 12,20, line_pos);
+        line_pos = addTextToPageStream(document,"Contact Person:  " + contact.getName(), PDType1Font.TIMES_ROMAN, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Cell   :  " + contact.getCell(), PDType1Font.HELVETICA_BOLD, 12,120, line_pos);
+        line_pos = addTextToPageStream(document,"Cell   :  " + contact.getCell(), PDType1Font.TIMES_ROMAN, 12, page_content_max_width,PAGE_MARGINS.left+text_offset*2, line_pos,no_border, null);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Tel    :  " + contact.getTel(), PDType1Font.HELVETICA_BOLD, 12,120, line_pos);
+        line_pos = addTextToPageStream(document,"Tel    :  " + contact.getTel(), PDType1Font.TIMES_ROMAN, 12, page_content_max_width,PAGE_MARGINS.left+text_offset*2, line_pos,no_border, null);
         line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"eMail :  " + contact.getEmail(), PDType1Font.HELVETICA_BOLD, 12,120, line_pos);
-
-        //horizontal solid line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        line_pos = addTextToPageStream(document,"eMail :  " + contact.getEmail(), PDType1Font.TIMES_ROMAN, 12, page_content_max_width,PAGE_MARGINS.left+text_offset*2, line_pos,no_border, null);
 
         line_pos-=LINE_HEIGHT;//next line (for external consultants)
-        //temp_pos-=LINE_HEIGHT;//next line (for internal consultants)
-        //Render sale representatives
-        int int_rep_count=0;
-        //if the page can't hold 4 more lines add a new page
-        if(line_pos-(4*LINE_HEIGHT)<h-header_h-(ROW_COUNT*LINE_HEIGHT) || temp_pos-(4*LINE_HEIGHT)<h-header_h-(ROW_COUNT*LINE_HEIGHT))
-        {
-            addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.HELVETICA_OBLIQUE, 14,(int)(w/2)-20, 50);
-            //add new page
-            page = new PDPage(PDRectangle.A4);
-            document.addPage(page);
-            //TODO: setup page, i.e. draw lines and stuff
-            contents.close();
-            contents = new PDPageContentStream(document, page);
-            temp_pos = (int)h-header_h;
-            line_pos = (int)h-header_h;
-
-            createLinesAndBordersOnPage(contents, (int)w, line_pos, line_pos+LINE_HEIGHT/2);
-
-            contents.beginText();
-            quote_page_count++;
-        }
-
-        //render Quote contact person
-        addTextToPageStream(contents,"Contact Person: "+quote.getContact_person().getFirstname()+" "+quote.getContact_person().getLastname(), 12,20, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Cell   :  " + quote.getContact_person().getCell(), 12,120, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"Tel    :  " + quote.getContact_person().getTel(), 12,120, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents,"eMail :  " + quote.getContact_person().getEmail(), 12,120, line_pos);
-        line_pos-=LINE_HEIGHT;//next line
 
         //render Quote creator
-        addTextToPageStream(contents, "Creator:  " + quote.getCreatorEmployee().getFirstname()+" "+quote.getCreatorEmployee().getLastname(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 5, temp_pos);
+        temp_pos = addTextToPageStream(document, "Creator:  " + quote.getCreatorEmployee().getFirstname()+" "+quote.getCreatorEmployee().getLastname(), PDType1Font.TIMES_ROMAN, 12, page_content_max_width, (int) (w / 2) + text_offset, temp_pos,no_border, null);
         temp_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "Tel    :  " + quote.getCreatorEmployee().getTel(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 105, temp_pos);
+        temp_pos = addTextToPageStream(document, "Tel    :  " + quote.getCreatorEmployee().getTel(), PDType1Font.TIMES_ROMAN, 12, page_content_max_width, (int) (w / 2) + text_offset*2, temp_pos,no_border, null);
         temp_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "Cell   :  " + quote.getCreatorEmployee().getCell(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 105, temp_pos);
+        temp_pos = addTextToPageStream(document, "Cell   :  " + quote.getCreatorEmployee().getCell(), PDType1Font.TIMES_ROMAN, 12, page_content_max_width, (int) (w / 2) + text_offset*2, temp_pos,no_border, null);
         temp_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "eMail :  " + quote.getCreatorEmployee().getEmail(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 105, temp_pos);
+        temp_pos = addTextToPageStream(document, "eMail :  " + quote.getCreatorEmployee().getEmail(), PDType1Font.TIMES_ROMAN, 12, page_content_max_width, (int) (w / 2) + text_offset*2, temp_pos,no_border, null);
         temp_pos -= LINE_HEIGHT;//next line
 
         //set the cursor to the line after the sale/client rep info
         line_pos = line_pos<temp_pos?line_pos:temp_pos;
-        //addTextToPageStream(contents,"Request: " + quote.getRequest(),PDType1Font.COURIER, 13,20, line_pos);
-        //line_pos-=LINE_HEIGHT;//next line
 
-        contents.endText();
+        //horizontal solid line after sale rep info
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(PAGE_MARGINS.left, line_pos+LINE_HEIGHT/2);
+        contents_stream.lineTo(w-PAGE_MARGINS.right, line_pos+LINE_HEIGHT/2);
+        contents_stream.stroke();
 
-        //horizontal solid line after reps
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
-        contents.stroke();
-        //horizontal solid line after request
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
         //solid horizontal line after site location, before quote_items
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, (line_pos-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.lineTo(w-10, (line_pos-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.stroke();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(PAGE_MARGINS.left, (line_pos-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.lineTo(w-PAGE_MARGINS.right, (line_pos-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.stroke();
 
-        int col_divider_start = line_pos-LINE_HEIGHT;
+        //vertical line going through page centre
+        contents_stream.moveTo((int)(w/2), h-header_h);// + LINE_HEIGHT / 2
+        contents_stream.lineTo((int)(w/2), line_pos + LINE_HEIGHT / 2);// - LINE_HEIGHT / 2
+        contents_stream.stroke();
 
-        //vertical line going through center of page
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo((w/2), center_vert_line_start);
-        contents.lineTo((w/2),(col_divider_start+LINE_HEIGHT*2+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.stroke();
-        //
-        contents.moveTo((w/2), (col_divider_start+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.lineTo((w/2),(col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.stroke();
-
-        contents.beginText();
-        addTextToPageStream(contents,"Site: " + quote.getSitename(),PDType1Font.COURIER, 13,20, line_pos);
-        //addTextToPageStream(contents,"Total Incl. VAT: "+String.valueOf(DecimalFormat.getCurrencyInstance().format(quote.getTotal()+quote.getTotal()*(Quote.VAT/100))), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int)((w/2)+15), line_pos);
+        line_pos = addTextToPageStream(document,"Site: " + quote.getSitename(),PDType1Font.COURIER, 13, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
         line_pos-=LINE_HEIGHT;//next line
 
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, (line_pos-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.lineTo(w-10, (line_pos-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.stroke();
-        contents.beginText();
+        //define column headings
+        String[] cols = {"Item", "Description", "Unit", "Qty", "Rate", "Total"};
+        //column heading positions
+        int[] col_positions = {PAGE_MARGINS.left, PAGE_MARGINS.left+35, (int) (w/2), (int) (w/2)+55, (int) (w/2)+85, (int) (w/2)+170};
 
-        //begin rendering column headings
-        int col_pos = 10;
-        addTextToPageStream(contents,"Item", PDType1Font.COURIER_BOLD,14,15, line_pos);
-        col_pos += 80;
-        addTextToPageStream(contents,"Equipment description", PDType1Font.COURIER_BOLD,14,col_pos+20, line_pos);
-        col_pos = (int)(w/2);
-        //define additional column headings
-        String[] cols = {"Unit", "Quantity", "Rate", "Total"};
-        //render additional column headings
+        //render column headings
         for(int i=0;i<cols.length;i++)//6 cols in total
-            addTextToPageStream(contents,cols[i], PDType1Font.COURIER_BOLD, 12,col_pos+(70*i)+10, line_pos);
+            line_pos = addTextToPageStream(document, cols[i], PDType1Font.COURIER_BOLD, 12, page_content_max_width,col_positions[i]+text_offset, line_pos, no_border, col_positions);
+
         line_pos-=LINE_HEIGHT;//next line
+
+        //horizontal bold line after column headings
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(col_positions[0], (line_pos+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.lineTo(w-PAGE_MARGINS.left, (line_pos+(int)Math.ceil(LINE_HEIGHT/2)));
+        contents_stream.stroke();
+
+        //add blank line
+        line_pos = addTextToPageStream(document, "", PDType1Font.COURIER, 12, 10, PAGE_MARGINS.left, line_pos, no_border, col_positions);
+        line_pos -= LINE_HEIGHT;//next line
 
         //render quote request
-        line_pos-=LINE_HEIGHT;//next line
-        addTextToPageStream(contents, quote.getRequest(), PDType1Font.COURIER_BOLD,14,105, line_pos);
+        line_pos = addTextToPageStream(document, quote.getRequest(), PDType1Font.COURIER, 11, col_positions[2]-col_positions[1], col_positions[1]+text_offset, line_pos,no_border, col_positions);
         line_pos -= LINE_HEIGHT;//next line
 
         //Actual quote information
-        col_pos = 10;
+        //col_pos = col_positions[0];
         double sub_total = 0;
         int item_index = 0;
         if(quote.getResources()!=null)
@@ -1200,327 +1166,181 @@ public class PDF
 
                 item_index++;//increment major index
 
-                //render category name
+                //add blank line
+                line_pos = addTextToPageStream(document, "", PDType1Font.COURIER, 12, 10, PAGE_MARGINS.left, line_pos, no_border, col_positions);
                 line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 14, 30, line_pos);
-                addTextToPageStream(contents,items.get(0).getCategory(), PDType1Font.COURIER_BOLD,14,90, line_pos);
+
+                //render category's index
+                line_pos = addTextToPageStream(document, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 12, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos,no_border, col_positions);
+                //render category name
+                if(items.get(0).getCategory()!=null)
+                    line_pos = addTextToPageStream(document,items.get(0).getCategory(), PDType1Font.COURIER_BOLD,11, page_content_max_width,col_positions[1]+text_offset, line_pos, no_border, col_positions);
+
                 line_pos -= LINE_HEIGHT;//next line
 
                 int item_index_minor =0;//reset minor index
                 for (QuoteItem item : items)
                 {
                     item_index_minor++;
-                    /**draw quote materials' column dividers for current line**/
-                    contents.endText();
-                    //Col #1
-                    contents.moveTo(80, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-                    contents.lineTo(80, line_pos - LINE_HEIGHT / 2);
-                    contents.stroke();
-                    //Col #2: vertical line going through center of page
-                    contents.setStrokingColor(Color.BLACK);
-                    contents.moveTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-                    contents.lineTo((w / 2), line_pos - LINE_HEIGHT / 2);
-                    contents.stroke();
-                    //Col #3+
-                    for (int i = 1; i < cols.length; i++)//6 cols in total
-                    {
-                        contents.moveTo((w / 2) + 70 * i, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-                        contents.lineTo((w / 2) + 70 * i, line_pos - LINE_HEIGHT / 2);
-                        contents.stroke();
-                    }
-                    contents.beginText();
-                    /**end draw columns, begin rendering text**/
 
                     /**begin rendering actual quote material information**/
                     //first column, Item number
-                    col_pos = 0;
-                    addTextToPageStream(contents, String.valueOf(item_index)+"."+String.valueOf(item_index_minor), 12, col_pos + 30, line_pos);//item.getItem_number()
-                    col_pos += 80;//next column
+                    line_pos = addTextToPageStream(document, String.valueOf(item_index)+"."+String.valueOf(item_index_minor), PDType1Font.COURIER, 11, page_content_max_width, col_positions[0]+text_offset, line_pos,no_border, col_positions);//item.getItem_number()
 
                     //Description col
-                    addTextToPageStream(contents, item.getResource().getResource_name(), 12, col_pos + 5, line_pos);
-                    col_pos = (int) w / 2;//next column - starts at middle of page
+                    line_pos = addTextToPageStream(document, item.getResource().getResource_description(), PDType1Font.COURIER, 9, col_positions[2]-col_positions[1], col_positions[1] + text_offset, line_pos,no_border, col_positions);
 
                     //Unit col
-                    addTextToPageStream(contents, item.getUnit(), 12, col_pos + 5, line_pos);
-                    col_pos += 70;//next column
+                    line_pos = addTextToPageStream(document, item.getUnit(), PDType1Font.COURIER, 9, col_positions[3]-col_positions[2], col_positions[2]+text_offset, line_pos,no_border, col_positions);
 
                     //Quantity col
-                    addTextToPageStream(contents, item.getQuantity(), digit_font_size, col_pos + 5, line_pos);
-                    col_pos += 70;//next column
+                    line_pos = addTextToPageStream(document, item.getQuantity(), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[3]+text_offset, line_pos,no_border, col_positions);
 
                     //Rate col
-                    addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getRate())), digit_font_size, col_pos + 5, line_pos);
-                    col_pos += 70;//next column
-                    //Labour col
-                    //addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getLabourCost())), digit_font_size,col_pos+5, line_pos);
-                    //col_pos += 55;//next column
+                    line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getRate())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[4]+text_offset, line_pos,no_border, col_positions);
 
                     //Total col
                     sub_total += item.getTotal();
-                    addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getTotal())), digit_font_size, col_pos + 5, line_pos);
+                    line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getTotal())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[5]+text_offset, line_pos,no_border, col_positions);
 
-                    //if the page can't hold another 4 lines[current item, blank, sub-total, vat] add a new page
-                    if (line_pos - LINE_HEIGHT < h - header_h - (ROW_COUNT * LINE_HEIGHT))
-                    {
-                        addTextToPageStream(contents, "Page " + quote_page_count, PDType1Font.COURIER, 14, (int) (w / 2) - 20, 30);
-                        //add new page
-                        page = new PDPage(PDRectangle.A4);
-                        document.addPage(page);
-                        //TODO: setup page, i.e. draw lines and stuff
-                        contents.close();
-                        contents = new PDPageContentStream(document, page);
-                        contents.beginText();
-                        line_pos = (int) h - header_h;
-                        col_divider_start = line_pos + LINE_HEIGHT;
-                        createLinesAndBordersOnPage(contents, (int) w, line_pos + LINE_HEIGHT / 2, bottom_line);
-                        quote_page_count++;
-                    }
                     line_pos -= LINE_HEIGHT;//next line
                 }
             }
             IO.log(TAG, IO.TAG_VERBOSE, "successfully processed quote resources.");
-        } else IO.log(TAG, IO.TAG_INFO, "quote has no resources.");
-        col_pos = 0;
+        } else IO.log(TAG, IO.TAG_WARN, "quote ["+quote.get_id()+"] has no resources.");
 
-
-        /** Render quote services **/
-        for (QuoteService service : quote.getServices())
+        if(quote.getServices()!=null)
         {
-            item_index++;//increment major index
-            //render service items
-            /**draw quote services' column dividers for current line**/
-            contents.endText();
-            //Col #1
-            contents.moveTo(80, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.lineTo(80, line_pos - LINE_HEIGHT / 2);
-            contents.stroke();
-            //Col #2: vertical line going through center of page
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.lineTo((w / 2), line_pos - LINE_HEIGHT / 2);
-            contents.stroke();
-            //Col #3+
-            for (int i = 1; i < cols.length; i++)//6 cols in total
+            /** Render quote services **/
+            for (QuoteService service : quote.getServices())
             {
-                contents.moveTo((w / 2) + 70 * i, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-                contents.lineTo((w / 2) + 70 * i, line_pos - LINE_HEIGHT / 2);
-                contents.stroke();
-            }
-            contents.beginText();
-            /**end draw columns, begin rendering text**/
-
-            //render service title
-            line_pos -= LINE_HEIGHT;//next line
-            //render service index
-            addTextToPageStream(contents, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 14, 30, line_pos);
-            addTextToPageStream(contents, service.getService().getService_title(), 12, 90, line_pos);
-            line_pos -= LINE_HEIGHT;//next line
-
-            if(service.getService()==null)
-            {
-                IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service ["+service.get_id()+"]'s service object for quote ["+quote.get_id()+"] is invalid.");
-                continue;
-            }
-            if(service.getService().getServiceItemsMap()==null)
-            {
-                IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service ["+service.get_id()+"] for quote ["+quote.get_id()+"] services are invalid.");
-                continue;
-            }
-            if(service.getService().getServiceItemsMap().isEmpty())
-            {
-                IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service ["+service.get_id()+"] for quote ["+quote.get_id()+"] has no services.");
-                continue;
-            }
-
-            int item_index_minor=0;//reset minor index
-            for (ServiceItem service_item : service.getService().getServiceItemsMap().values())
-            {
-                item_index_minor+=1;//increment minor item index
+                item_index++;//increment major index
                 //render service items
-                /**draw quote services' column dividers for current line**/
-                contents.endText();
-                //Col #1
-                contents.moveTo(80, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-                contents.lineTo(80, line_pos - LINE_HEIGHT / 2);
-                contents.stroke();
-                //Col #2: vertical line going through center of page
-                contents.setStrokingColor(Color.BLACK);
-                contents.moveTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-                contents.lineTo((w / 2), line_pos - LINE_HEIGHT / 2);
-                contents.stroke();
-                //Col #3+
-                for (int i = 1; i < cols.length; i++)//6 cols in total
-                {
-                    contents.moveTo((w / 2) + 70 * i, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-                    contents.lineTo((w / 2) + 70 * i, line_pos - LINE_HEIGHT / 2);
-                    contents.stroke();
-                }
-                contents.beginText();
-                /**end draw columns, begin rendering text**/
 
-                /**begin rendering actual quote service information**/
-                //first column, Item number
-                col_pos = 0;
-                addTextToPageStream(contents, String.valueOf(item_index)+"."+String.valueOf(item_index_minor), 12, col_pos + 30, line_pos);//item.getItem_number()
-                col_pos += 80;//next column
-
-                //Description col
-                addTextToPageStream(contents, service_item.getItem_name(), 12, col_pos + 5, line_pos);
-                col_pos = (int) w / 2;//next column - starts at middle of page
-
-                //Unit col
-                addTextToPageStream(contents, service_item.getUnit(), 12, col_pos + 5, line_pos);
-                col_pos += 70;//next column
-
-                //Quantity col
-                addTextToPageStream(contents, String.valueOf(service_item.getQuantity()), digit_font_size, col_pos + 5, line_pos);
-                col_pos += 70;//next column
-
-                //Rate col
-                addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getItem_rate())), digit_font_size, col_pos + 5, line_pos);
-                col_pos += 70;//next column
-
-                //Total col
-                sub_total += service_item.getTotal();
-                addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getTotal())), digit_font_size, col_pos + 5, line_pos);
-
-                //if the page can't hold another 4 lines[current item, blank, sub-total, vat] add a new page
-                if (line_pos - LINE_HEIGHT < h - header_h - (ROW_COUNT * LINE_HEIGHT)) {
-                    addTextToPageStream(contents, "Page " + quote_page_count, PDType1Font.COURIER, 14, (int) (w / 2) - 20, 30);
-                    //add new page
-                    page = new PDPage(PDRectangle.A4);
-                    document.addPage(page);
-                    //TODO: setup page, i.e. draw lines and stuff
-                    contents.close();
-                    contents = new PDPageContentStream(document, page);
-                    contents.beginText();
-                    line_pos = (int) h - header_h;
-                    col_divider_start = line_pos + LINE_HEIGHT;
-                    createLinesAndBordersOnPage(contents, (int) w, line_pos + LINE_HEIGHT / 2, bottom_line);
-                    quote_page_count++;
-                }
+                //add blank line
+                line_pos = addTextToPageStream(document, "", PDType1Font.COURIER, 9, 10, PAGE_MARGINS.left, line_pos, no_border, col_positions);
                 line_pos -= LINE_HEIGHT;//next line
+
+                //render service index
+                line_pos = addTextToPageStream(document, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 12, page_content_max_width, col_positions[0]+text_offset, line_pos, no_border, col_positions);
+
+                //render service title
+                line_pos = addTextToPageStream(document, service.getService().getService_title(), PDType1Font.COURIER_BOLD, 11, col_positions[2]-col_positions[1], col_positions[1] + text_offset, line_pos, no_border, col_positions);
+
+                line_pos -= LINE_HEIGHT;//next line
+
+                if (service.getService() == null) {
+                    IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "]'s service object for quote [" + quote.get_id() + "] is invalid.");
+                    continue;
+                }
+                if (service.getService().getServiceItemsMap() == null) {
+                    IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "] for quote [" + quote.get_id() + "] services are invalid.");
+                    continue;
+                }
+                if (service.getService().getServiceItemsMap().isEmpty()) {
+                    IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "] for quote [" + quote.get_id() + "] has no services.");
+                    continue;
+                }
+
+                int item_index_minor = 0;//reset minor index
+                for (ServiceItem service_item : service.getService().getServiceItemsMap().values())
+                {
+                    item_index_minor += 1;//increment minor item index
+                    //render service items
+
+                    /**begin rendering actual quote service information**/
+                    //Border quote_items_border = new Border(Border.BORDER_RIGHT, Color.BLACK, 1, new Insets(0, 0, 0, text_offset));
+
+                    //first column, Item number
+                    line_pos = addTextToPageStream(document, String.valueOf(item_index) + "." + String.valueOf(item_index_minor), PDType1Font.COURIER, 12, page_content_max_width, col_positions[0]+text_offset, line_pos, no_border, col_positions);
+
+                    //Description col //int new_line_pos
+                    line_pos = addTextToPageStream(document, service_item.getItem_name(), PDType1Font.COURIER, 9, col_positions[2]-col_positions[1], col_positions[1] + text_offset, line_pos, no_border, col_positions);
+                    System.out.println("current line position: "+ line_pos);
+
+                    //Unit col
+                    line_pos = addTextToPageStream(document, service_item.getUnit(), PDType1Font.COURIER, 8, col_positions[3]-col_positions[2], col_positions[2]+text_offset, line_pos, no_border, col_positions);
+
+                    //Quantity col
+                    line_pos = addTextToPageStream(document, String.valueOf(service_item.getQuantity()), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[3]+text_offset, line_pos, no_border, col_positions);
+
+                    //Rate col
+                    line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getItem_rate())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[4]+text_offset, line_pos, no_border, col_positions);
+
+                    //Total col
+                    sub_total += service_item.getTotal();
+                    line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getTotal())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[5]+text_offset, line_pos, no_border, col_positions);
+
+                    line_pos -= LINE_HEIGHT;//next line
+                }
             }
+        } else IO.log(PDF.class.getName(), IO.TAG_WARN,"quote ["+quote.get_id()+"] has no services.");
+
+        //render notes
+        if(quote.getOther()!=null)
+        {
+            line_pos -= LINE_HEIGHT;//next line
+            line_pos = addTextToPageStream(document, "Notes: ", PDType1Font.TIMES_BOLD, 12, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+            line_pos -= LINE_HEIGHT;//next line
+            line_pos = addTextToPageStream(document, quote.getOther(), PDType1Font.TIMES_ITALIC, 11, page_content_max_width,PAGE_MARGINS.left+ text_offset*2, line_pos, no_border, null);
+            line_pos -= LINE_HEIGHT*2;//next 2nd line
         }
-        col_pos=0;
 
-        //solid horizontal line
-        int col_divider_end= line_pos;
+        Border border = new Border(Border.BORDER_ALL, new Color(40,40,40), 2, new Insets(-1, -1*text_offset, -1, -1*text_offset));
 
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
-
-        contents.beginText();
-        addTextToPageStream(contents, "Sub-Total Excl. VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14,col_pos+30, line_pos);
-        addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total)), PDType1Font.COURIER_BOLD_OBLIQUE, 14,(int)(5+(w/2)), line_pos);
+        line_pos = addTextToPageStream(document, "Sub-Total Excl. VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 12, (int)(w-PAGE_MARGINS.right-PAGE_MARGINS.left)/2,PAGE_MARGINS.left+text_offset, line_pos, border, null);
+        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, page_content_max_width/2, (int)(text_offset+(w/2)), line_pos, border, null);
         line_pos -= LINE_HEIGHT;//next line
-
-        //solid horizontal line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
 
         double vat = sub_total*(quote.getVat()/100);
-        contents.beginText();
-        addTextToPageStream(contents, "VAT [" + quote.getVat() + "%]: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14,col_pos+30, line_pos);
-        addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14,(int)(5+(w/2)), line_pos);
+
+        line_pos = addTextToPageStream(document, "VAT [" + quote.getVat() + "%]: ", PDType1Font.COURIER_BOLD_OBLIQUE, 12, page_content_max_width/2,PAGE_MARGINS.left+text_offset, line_pos, border, null);
+        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, page_content_max_width/2, (int)(text_offset+(w/2)), line_pos, border, null);
         line_pos -= LINE_HEIGHT;//next line
 
-        //solid horizontal line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
+        line_pos = addTextToPageStream(document, "Total Incl. VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 12, page_content_max_width/2, PAGE_MARGINS.left+text_offset, line_pos, border, null);
+        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total + vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, page_content_max_width/2, (int)(text_offset+(w/2)), line_pos, border, null);
 
-        contents.beginText();
-        addTextToPageStream(contents, "Total Incl. VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14,col_pos+30, line_pos);
-        addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(sub_total + vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14,(int)(5+(w/2)), line_pos);
-        contents.endText();
-        line_pos -= LINE_HEIGHT;//next line
-
-        //solid horizontal line
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-        contents.stroke();
-
-        //int col_divider_end = line_pos;
         line_pos -= LINE_HEIGHT*2;//next 2nd line
 
-        //quote content column dividers
-        //#1
-        /*contents.moveTo(80, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.lineTo(80, col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-        contents.stroke();
-        //vertical line going through center of page again
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo((w/2), (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-        contents.lineTo((w/2), col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-        //contents.lineTo((w/2),col_divider_end-LINE_HEIGHT/2);
-        contents.stroke();
-        //#3+
-        for(int i=1;i<5;i++)//7 cols in total
-        {
-            contents.moveTo((w/2)+55*i, (col_divider_start-LINE_HEIGHT+(int)Math.ceil(LINE_HEIGHT/2)));
-            contents.lineTo((w/2)+55*i,col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-            contents.stroke();
-        }*/
-
-        contents.beginText();
-
-        if(quote.getOther()!=null)
-            addTextToPageStream(contents, "Notes: "+quote.getOther(), PDType1Font.TIMES_ITALIC, 14,105, line_pos);
+        line_pos = addTextToPageStream(document, "TERMS AND CONDITIONS OF SALE", PDType1Font.HELVETICA_BOLD, 12, page_content_max_width,(int)(w/2)-130, line_pos,no_border, null);
 
         line_pos -= LINE_HEIGHT;//next line
-        //if the page can't hold another 9 lines (for the terms and conditions and stuff) add a new page
-        if(line_pos-(LINE_HEIGHT*4)<h-header_h-(ROW_COUNT*LINE_HEIGHT))
+        line_pos = addTextToPageStream(document, "*Validity: Quote valid for 24 Hours.", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos -= LINE_HEIGHT;//next line
+        line_pos = addTextToPageStream(document, "*Payment Terms: COD / 30 Days on approved accounts. ", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos -= LINE_HEIGHT;//next line
+        line_pos = addTextToPageStream(document, "*Delivery: 1 - 6 Weeks, subject to stock availability.", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos -= LINE_HEIGHT;//next line
+        line_pos = addTextToPageStream(document, "*All pricing quoted, is subject to Rate of Exchange USD=R.", PDType1Font.HELVETICA_BOLD, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos -= LINE_HEIGHT;//next line
+        line_pos = addTextToPageStream(document, "*All goods / equipment remain the property of " + Globals.COMPANY.getValue()+ " until paid for completely. ", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+        line_pos -= LINE_HEIGHT;//next line
+        line_pos = addTextToPageStream(document, "*" + Globals.COMPANY.getValue() + " reserves the right to retake possession of all equipment not paid for completely", PDType1Font.HELVETICA, 10, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+        line_pos -= LINE_HEIGHT;//next line
+        line_pos = addTextToPageStream(document, "  Within the payment term set out above.", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos -= LINE_HEIGHT;//next line
+        line_pos = addTextToPageStream(document, "*E & O E", PDType1Font.HELVETICA, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+
+        line_pos -= LINE_HEIGHT*2;//next 2nd line
+        line_pos = addTextToPageStream(document, "Acceptance (Full Name):_______________________", PDType1Font.HELVETICA, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos = addTextToPageStream(document, "Signature :_____________________", PDType1Font.HELVETICA, 12, page_content_max_width,(int) (w/2)+15, line_pos,no_border, null);
+        line_pos -= LINE_HEIGHT;//next line
+        line_pos = addTextToPageStream(document, "Order / Reference No.:________________________", PDType1Font.HELVETICA, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos = addTextToPageStream(document, "Date :_________________________", PDType1Font.HELVETICA, 12, page_content_max_width,(int) (w/2)+15, line_pos,no_border, null);
+
+        //draw page numbers
+        for(int i=0;i<document.getNumberOfPages();i++)
         {
-            addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
-            //add new page
-            page = new PDPage(PDRectangle.A4);
-            document.addPage(page);
-            contents.close();
-            contents = new PDPageContentStream(document, page);
-            contents.beginText();
-            line_pos = (int)h-header_h;
-            createLinesAndBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, bottom_line);
-            quote_page_count++;
+            PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(i), PDPageContentStream.AppendMode.APPEND, true);
+            contentStream.beginText();
+            contentStream.setFont(font, 10);
+            contentStream.setTextMatrix(new Matrix(1, 0, 0, 1, w/2, 20));
+            contentStream.showText("Page " + (i+1) + " of " + document.getNumberOfPages());
+            contentStream.endText();
+            //close current page's stream writer
+            contentStream.close();
         }
-        addTextToPageStream(contents, "TERMS AND CONDITIONS OF SALE", PDType1Font.HELVETICA_BOLD, 14,(int)(w/2)-130, line_pos);
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo((int)(w/2)-140, line_pos-LINE_HEIGHT/2);
-        contents.lineTo((w/2)+120, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
-
-        line_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "*Validity: Quote valid for 24 Hours.", PDType1Font.HELVETICA, 12,col_pos+30, line_pos);
-        line_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "*Payment Terms: COD / 30 Days on approved accounts. ", PDType1Font.HELVETICA, 12,col_pos+30, line_pos);
-        line_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "*Delivery: 1 - 6 Weeks, subject to stock availability.", PDType1Font.HELVETICA, 12,col_pos+30, line_pos);
-        line_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "*All pricing quoted, is subject to Rate of Exchange USD=R.", PDType1Font.HELVETICA_BOLD, 12,col_pos+30, line_pos);
-        line_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "*All goods / equipment remain the property of " + Globals.COMPANY.getValue()+ " until paid for completely. ", PDType1Font.HELVETICA, 12,col_pos+30, line_pos);
-        line_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "*" + Globals.COMPANY.getValue() + " reserves the right to retake posession of all equipment not paid for completely", PDType1Font.HELVETICA, 12,col_pos+30, line_pos);
-        line_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "  Within the payment term set out above.", PDType1Font.HELVETICA, 12,col_pos+30, line_pos);
-        line_pos -= LINE_HEIGHT;//next line
-        addTextToPageStream(contents, "*E & O E", PDType1Font.HELVETICA, 12,col_pos+30, line_pos);
-
-        addTextToPageStream(contents, "Page "+quote_page_count, PDType1Font.COURIER_OBLIQUE, 14,(int)(w/2)-20, 30);
-        contents.endText();
-        contents.close();
 
         //create PDF output directory
         if(new File("out/pdf/").mkdirs())
@@ -1534,16 +1354,12 @@ public class PDF
             i++;
         }
 
-        //Files.delete(Paths.get("bin/pdf/quote_"+quote.get_id()+".pdf"));//delete previous versions
+        contents_stream.close();
+        page.getContents().close();
 
-        if(contents!=null)
-            contents.close();
         document.save(path);
         document.close();
 
-        //PDFViewer pdfViewer = PDFViewer.getInstance();
-        //pdfViewer.setVisible(true);
-        //pdfViewer.doOpen(path);//"bin/pdf/quote_" + quote.get_id() + ".pdf"
         return path;
     }
 
@@ -1602,47 +1418,46 @@ public class PDF
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
 
-            PDPageContentStream contents = new PDPageContentStream(document, page);
-            int logo_h = 60;
-            //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-            //contents.drawImage(logo, 10, 770, 160, logo_h);
+            PDPageContentStream contents_stream = new PDPageContentStream(document, page);
 
+            Border no_border = new Border(Border.BORDER_NONE, Color.BLACK, 0, new Insets(0, 0, 0, 0));
+
+            int header_h = 90;
             float w = page.getBBox().getWidth();
             float h = page.getBBox().getHeight();
             int line_pos = (int) h - 20;//(int)h-logo_h-20;
             int digit_font_size = 9;
+            int col_text_offset = 5;
+            int page_content_max_width=(int)(w-PAGE_MARGINS.right-PAGE_MARGINS.left);
 
             /**Draw lines**/
-            int bottom_line = (int) h - logo_h - (ROW_COUNT + 1) * LINE_HEIGHT;
-            createLinesAndBordersOnPage(contents, (int) w, line_pos, bottom_line);
+            //int bottom_line = (int) h - header_h - (ROW_COUNT + 1) * LINE_HEIGHT;
+            createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.bottom, PAGE_MARGINS.right), (int)w);
 
             /** begin text from the top**/
             line_pos -= LINE_HEIGHT / 2;
 
             //left text
-            contents.beginText();
+            //contents.beginText();
             int temp_pos = line_pos;
-            addTextToPageStream(contents, "Invoice ID: " + invoice
+            addTextToPageStream(document, "Invoice ID: " + invoice
                     .get_id(), PDType1Font.COURIER_BOLD_OBLIQUE, 15, 20, line_pos);
             line_pos -= LINE_HEIGHT;
             int center_vert_line_start = line_pos;
-            addTextToPageStream(contents, "Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd")
+            addTextToPageStream(document, "Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd")
                     .format(new Date(System.currentTimeMillis()))), 12, 20, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd")
-                    .format(new Date(job.getDate_logged() * 1000))), 12, 20, line_pos);
+            addTextToPageStream(document, "Date Logged:  " + (new SimpleDateFormat("yyyy-MM-dd")
+                    .format(new Date(job.getDate_logged()))), 12, 20, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Creator:  " + invoice.getCreator(), 12, 20, line_pos);
+            addTextToPageStream(document, "Invoice Creator:  " + invoice.getCreatorEmployee().getName(), 12, 20, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Quote ID: " + quote.get_id(), 14, 20, line_pos);
-            //line_pos-=LINE_HEIGHT;
-            //addTextToPageStream(contents,"Quote Date Generated: " + (new SimpleDateFormat("yyyy-MM-dd").format(new Date(quote.getDate_generated()*1000))), 12,(int)(w/2)+ 5, line_pos);
+            addTextToPageStream(document, "Invoice ID: " + invoice.get_id(), 14, 20, line_pos);
+            addTextToPageStream(document, "Quote ID: " + quote.get_id(), 14, (int)(w/2)+10, line_pos);
 
             line_pos = temp_pos;
 
             //right content
-            contents.endText();
-            int header_h = 90;
             PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
             //right text
             //addTextToPageStream(contents,"PURCHASE ORDER", PDType1Font.COURIER_BOLD_OBLIQUE, 17, (int)(w/2)+20, line_pos);
@@ -1650,49 +1465,48 @@ public class PDF
             //System.out.println(">>>>>>"+new File("images/logo.png").getPath());
             //System.out.println(">>>>>>"+(new File(logo_path).exists()));
             //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-            contents.drawImage(header, 0, 760, w, header_h);
+            contents_stream.drawImage(header, 0, 760, w, header_h);
             //contents.drawImage(logo, (int) (w / 2) + 20, line_pos - logo_h - 10, 150, logo_h);
 
             line_pos -= LINE_HEIGHT * 5;
             temp_pos = line_pos;
 
             //horizontal solid line after company logo
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos + LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
-            contents.stroke();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.stroke();
 
             //horizontal solid line after consultants heading
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos - LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos - LINE_HEIGHT / 2);
-            contents.stroke();
-            contents.beginText();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos - LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos - LINE_HEIGHT / 2);
+            contents_stream.stroke();
+            //contents.beginText();
 
             //left text
-            addTextToPageStream(contents, "Client Information", PDType1Font.COURIER_BOLD_OBLIQUE, 15, 20, line_pos);
+            addTextToPageStream(document, "Client Information", PDType1Font.COURIER_BOLD_OBLIQUE, 15, 20, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Company: " + client.getClient_name(), 12, 20, line_pos);
+            addTextToPageStream(document, "Company: " + client.getClient_name(), 12, 20, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Company Tel: " + client.getTel(), 12, 20, line_pos);
-            //addTextToPageStream(contents,"Contact Person[s]: ", 12,20, line_pos-LINE_HEIGHT);
+            addTextToPageStream(document, "Company Tel: " + client.getTel(), 12, 20, line_pos);
 
             line_pos = temp_pos;
 
             //right content
-            addTextToPageStream(contents, "Job Number #" + job.getObject_number(),
+            addTextToPageStream(document, "Job Number #" + job.getObject_number(),
                                     PDType1Font.COURIER_BOLD_OBLIQUE, 15, (int) (w / 2) + 5, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd")
-                    .format(new Date(job.getDate_logged() * 1000))), 12, (int) (w / 2) + 5, line_pos);
+            addTextToPageStream(document, "Date Generated:  " + (new SimpleDateFormat("yyyy-MM-dd")
+                    .format(new Date(job.getDate_logged()))), 12, (int) (w / 2) + 5, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Date Started:  " + (new SimpleDateFormat("yyyy-MM-dd")
-                    .format(new Date(job.getDate_started() * 1000))), 12, (int) (w / 2) + 5, line_pos);
+            addTextToPageStream(document, "Date Started:  " + (new SimpleDateFormat("yyyy-MM-dd")
+                    .format(new Date(job.getDate_started()))), 12, (int) (w / 2) + 5, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Date Completed:  " + (new SimpleDateFormat("yyyy-MM-dd")
-                    .format(new Date(job.getDate_completed() * 1000))), 12, (int) (w / 2) + 5, line_pos);
+            addTextToPageStream(document, "Date Completed:  " + (new SimpleDateFormat("yyyy-MM-dd")
+                    .format(new Date(job.getDate_completed()))), 12, (int) (w / 2) + 5, line_pos);
             line_pos -= LINE_HEIGHT;
-            addTextToPageStream(contents, "Creator:  " + invoice.getCreator(), 12, (int) (w / 2) + 5, line_pos);
+            addTextToPageStream(document, "Job Creator:  " + job.getCreatorEmployee().getName(), 12, (int) (w / 2) + 5, line_pos);
             //contents.endText();
             //PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
             //contents.drawImage(logo, (int)(w/2)+ 20, line_pos-logo_h, 150, logo_h);
@@ -1700,44 +1514,44 @@ public class PDF
             line_pos -= LINE_HEIGHT;
 
             //horizontal solid line after job details
-            contents.endText();
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos - LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos - LINE_HEIGHT / 2);
-            contents.stroke();
-            contents.beginText();
+            //contents.endText();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos - LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos - LINE_HEIGHT / 2);
+            contents_stream.stroke();
+            //contents.beginText();
 
             //horizontal solid line after company details
-            contents.endText();
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos - LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos - LINE_HEIGHT / 2);
-            contents.stroke();
-            contents.beginText();
+            //contents.endText();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos - LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos - LINE_HEIGHT / 2);
+            contents_stream.stroke();
+            //contents.beginText();
 
             line_pos -= LINE_HEIGHT;//next line
 
             temp_pos = line_pos;
             //left text
-            addTextToPageStream(contents, "Contact Person:  " + contact
+            addTextToPageStream(document, "Contact Person:  " + contact
                     .getName(), PDType1Font.HELVETICA_BOLD, 12, 20, line_pos);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "Tel    :  " + contact
-                    .getTel(), PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);
+            addTextToPageStream(document, "Tel    :  " + contact
+                    .getTel(), PDType1Font.HELVETICA_BOLD, 12, 30, line_pos);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "Cell   :  " + contact
-                    .getCell(), PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);
+            addTextToPageStream(document, "Cell   :  " + contact
+                    .getCell(), PDType1Font.HELVETICA_BOLD, 12, 30, line_pos);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "eMail :  " + contact
-                    .getEmail(), PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);
+            addTextToPageStream(document, "eMail :  " + contact
+                    .getEmail(), PDType1Font.HELVETICA_BOLD, 12, 30, line_pos);
 
             //horizontal solid line
-            contents.endText();
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos - LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos - LINE_HEIGHT / 2);
-            contents.stroke();
-            contents.beginText();
+            //contents.endText();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos - LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos - LINE_HEIGHT / 2);
+            contents_stream.stroke();
+            //contents.beginText();
 
             line_pos -= LINE_HEIGHT;//next line (for external consultants)
             //temp_pos-=LINE_HEIGHT;//next line (for internal consultants)
@@ -1745,326 +1559,323 @@ public class PDF
             int int_rep_count = 0;
             if(invoice.getJob().getQuote().getCreatorEmployee()!=null)
             {
-                //if the page can't hold 4 more lines add a new page
-                if (line_pos - (4 * LINE_HEIGHT) < h - logo_h - (ROW_COUNT * LINE_HEIGHT) || temp_pos - (4 * LINE_HEIGHT) < h - logo_h - (ROW_COUNT * LINE_HEIGHT))
-                {
-                    addTextToPageStream(contents, "Page " + quote_page_count, PDType1Font.HELVETICA_OBLIQUE, 14, (int) (w / 2) - 20, 50);
-                    //add new page
-                    page = new PDPage(PDRectangle.A4);
-                    document.addPage(page);
-                    //TODO: setup page, i.e. draw lines and stuff
-                    contents.close();
-                    contents = new PDPageContentStream(document, page);
-                    temp_pos = (int) h - logo_h;
-                    line_pos = (int) h - logo_h;
-
-                    createLinesAndBordersOnPage(contents, (int) w, line_pos, line_pos + LINE_HEIGHT / 2);
-
-                    contents.beginText();
-                    quote_page_count++;
-                }
-
-
-                addTextToPageStream(contents, "Created By:  " + invoice.getJob().getQuote().getCreatorEmployee().getFirstname()
+                addTextToPageStream(document, "Invoice Created By:  " + invoice.getJob().getQuote().getCreatorEmployee().getFirstname()
                         +" "+invoice.getJob().getQuote().getCreatorEmployee().getLastname(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 5, temp_pos);
                 temp_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "Tel    :  " + invoice.getJob().getQuote().getCreatorEmployee()
-                        .getTel(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 105, temp_pos);
+                addTextToPageStream(document, "Tel    :  " + invoice.getJob().getQuote().getCreatorEmployee()
+                        .getTel(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 5, temp_pos);
                 temp_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "Cell   :  " + invoice.getJob().getQuote().getCreatorEmployee()
-                        .getCell(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 105, temp_pos);
+                addTextToPageStream(document, "Cell   :  " + invoice.getJob().getQuote().getCreatorEmployee()
+                        .getCell(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 5, temp_pos);
                 temp_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "eMail :  " + invoice.getJob().getQuote().getCreatorEmployee()
-                        .getEmail(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 105, temp_pos);
+                addTextToPageStream(document, "eMail :  " + invoice.getJob().getQuote().getCreatorEmployee()
+                        .getEmail(), PDType1Font.HELVETICA_BOLD, 12, (int) (w / 2) + 5, temp_pos);
                 temp_pos -= LINE_HEIGHT;//next line
             }
             //set the cursor to the line after the sale/client rep info
             line_pos = line_pos < temp_pos ? line_pos : temp_pos;
-            addTextToPageStream(contents, "Request: " + quote.getRequest(), PDType1Font.HELVETICA, 13, 20, line_pos);
+            addTextToPageStream(document, "Request: " + quote.getRequest(), PDType1Font.HELVETICA, 13, 20, line_pos);
             line_pos -= LINE_HEIGHT;//next line
 
-            contents.endText();
-
-            //erase middle line by request field
-            /*contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos+LINE_HEIGHT/2);
-            contents.lineTo(w-10, line_pos+LINE_HEIGHT/2);
-            contents.stroke();*/
-
             //horizontal solid line after reps
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos + LINE_HEIGHT + LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos + LINE_HEIGHT + LINE_HEIGHT / 2);
-            contents.stroke();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos + LINE_HEIGHT + LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos + LINE_HEIGHT + LINE_HEIGHT / 2);
+            contents_stream.stroke();
             //horizontal solid line after request
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos + LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
-            contents.stroke();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.stroke();
             //solid horizontal line after site location, before quote_items
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, (line_pos - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.lineTo(w - 10, (line_pos - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.stroke();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, (line_pos - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents_stream.lineTo(w - 10, (line_pos - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents_stream.stroke();
 
             int col_divider_start = line_pos - LINE_HEIGHT;
 
             //vertical line going through center of page
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo((w / 2), center_vert_line_start + LINE_HEIGHT / 2);
-            contents.lineTo((w / 2), (col_divider_start + LINE_HEIGHT * 2 + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.stroke();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo((w / 2), center_vert_line_start + LINE_HEIGHT / 2);
+            contents_stream.lineTo((w / 2), (col_divider_start + LINE_HEIGHT * 2 + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents_stream.stroke();
             //
-            contents.moveTo((w / 2), (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.lineTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.stroke();
+            contents_stream.moveTo((w / 2), (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents_stream.lineTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents_stream.stroke();
 
-            contents.beginText();
-            addTextToPageStream(contents, "Site Location: " + quote
+            //contents.beginText();
+            addTextToPageStream(document, "Site Location: " + quote
                     .getSitename(), PDType1Font.HELVETICA, 13, 20, line_pos);
             line_pos -= LINE_HEIGHT;//next line
 
-            contents.endText();
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, (line_pos - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.lineTo(w - 10, (line_pos - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.stroke();
-            contents.beginText();
+            //contents.endText();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, (line_pos - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents_stream.lineTo(w - 10, (line_pos - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
+            contents_stream.stroke();
 
-            //Column headings
-            int col_pos = 10;
-            addTextToPageStream(contents, "Item No.", PDType1Font.COURIER_BOLD, 14, 15, line_pos);
-            col_pos += 80;
-            addTextToPageStream(contents, "Equipment description", PDType1Font.COURIER_BOLD, 14, col_pos + 20, line_pos);
-            col_pos = (int) (w / 2);
-            String[] cols = {"Unit", "Qty", "Rate", "Labour", "Total"};
-            for (int i = 0; i < 5; i++)//7 cols in total
-                addTextToPageStream(contents, cols[i], PDType1Font.COURIER_BOLD, 12, col_pos + (55 * i) + 10, line_pos);
+            //define column headings
+            String[] cols = {"Item", "Description", "Unit", "Qty", "Rate", "Total"};
+            //column heading positions
+            int[] col_positions = {10, 10+35, (int) (w/2), (int) (w/2)+55, (int) (w/2)+85, (int) (w/2)+170};
+
+            //render column headings
+            for(int i=0;i<cols.length;i++)//6 cols in total
+                line_pos = addTextToPageStream(document, cols[i], PDType1Font.COURIER_BOLD, 12, page_content_max_width,col_positions[i]+col_text_offset, line_pos, no_border, col_positions);
+            line_pos-=LINE_HEIGHT;//next line
+
+            //horizontal bold line after column headings
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(col_positions[0], (line_pos+(int)Math.ceil(LINE_HEIGHT/2)));
+            contents_stream.lineTo(w-10, (line_pos+(int)Math.ceil(LINE_HEIGHT/2)));
+            contents_stream.stroke();
+
+            //add blank line
+            line_pos = addTextToPageStream(document, "", PDType1Font.COURIER, 12, 10, 10, line_pos, no_border, col_positions);
+            line_pos -= LINE_HEIGHT;//next line
+
+            //render quote request
+            line_pos = addTextToPageStream(document, quote.getRequest(), PDType1Font.COURIER, 12, col_positions[2]-col_positions[1], col_positions[1]+col_text_offset, line_pos,no_border, col_positions);
             line_pos -= LINE_HEIGHT;//next line
 
             //Actual quote information
-            col_pos = 10;
+            //col_pos = col_positions[0];
             double sub_total = 0;
-            if (quote.getResources() != null)
+            int item_index = 0;
+            if(quote.getResources()!=null)
             {
-                for (QuoteItem item : quote.getResources())
+                //group quote materials by category
+                HashMap<String, ArrayList<QuoteItem>> quoteItemsCategoriesMap = new HashMap<>();
+                for(QuoteItem item: quote.getResources())
                 {
-                    contents.endText();
-                    //quote content column dividers
-                    //#1
-                    contents.moveTo(80, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-                    contents.lineTo(80, line_pos - LINE_HEIGHT / 2);
-                    contents.stroke();
-                    //vertical line going through center of page
-                    contents.setStrokingColor(Color.BLACK);
-                    contents.moveTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-                    contents.lineTo((w / 2), line_pos - LINE_HEIGHT / 2);
-                    contents.stroke();
-                    //#3+
-                    for (int i = 1; i < 5; i++)//7 cols in total
-                    {
-                        contents.moveTo((w / 2) + 55 * i, (col_divider_start + (int) Math.ceil(LINE_HEIGHT / 2)));
-                        contents.lineTo((w / 2) + 55 * i, line_pos - LINE_HEIGHT / 2);
-                        contents.stroke();
-                    }
-                    contents.beginText();
+                    if(quoteItemsCategoriesMap.get(item.getCategory())==null)//if material category is first of its type (i.e. has no bucket of materials)
+                        quoteItemsCategoriesMap.put(item.getCategory(), new ArrayList<>());//instantiate the category's bucket
+                    ArrayList cat_list = quoteItemsCategoriesMap.get(item.getCategory());//get current material's respective category's bucket of materials
+                    cat_list.add(item);//add current material to respective category's bucket of materials.
+                }
+                if(quoteItemsCategoriesMap.isEmpty())
+                {
+                    IO.log(PDF.class.getName(), IO.TAG_ERROR, "quote ["+quote.get_id()+"] has no resources.");
+                    return null;
+                }
+                //for each category, list that category's QuoteItems (materials/resources)
+                for(ArrayList<QuoteItem> items: quoteItemsCategoriesMap.values())//go through all categories
+                {
+                    if(items==null)
+                        continue;
+                    if(items.isEmpty())
+                        continue;
 
-                    //if the page can't hold another 4 lines[current item, blank, sub-total, vat] add a new page
-                    if (line_pos - LINE_HEIGHT < h - logo_h - (ROW_COUNT * LINE_HEIGHT))
-                    {
-                        addTextToPageStream(contents, "Page " + quote_page_count, PDType1Font.COURIER_OBLIQUE, 14, (int) (w / 2) - 20, 30);
-                        //add new page
-                        page = new PDPage(PDRectangle.A4);
-                        document.addPage(page);
-                        //TODO: setup page, i.e. draw lines and stuff
-                        contents.close();
-                        contents = new PDPageContentStream(document, page);
-                        contents.beginText();
-                        line_pos = (int) h - logo_h;
-                        col_divider_start = line_pos + LINE_HEIGHT;
-                        createLinesAndBordersOnPage(contents, (int) w, line_pos + LINE_HEIGHT / 2, bottom_line);
-                        quote_page_count++;
-                    }
+                    item_index++;//increment major index
 
-                    col_pos = 0;//first column
-                    //Item col
-                    addTextToPageStream(contents, item.getItem_number(), 12, col_pos + 30, line_pos);
-                    col_pos += 80;//next column
-                    //Description col
-                    addTextToPageStream(contents, item.getResource().getResource_name(), 12, col_pos + 5, line_pos);
-                    col_pos = (int) w / 2;//next column - starts at middle of page
-                    //Unit col
-                    addTextToPageStream(contents, item.getUnit(), 12, col_pos + 5, line_pos);
-                    col_pos += 55;//next column
-                    //Quantity col
-                    addTextToPageStream(contents, item.getQuantity(), digit_font_size, col_pos + 5, line_pos);
-                    col_pos += 55;//next column
-                    //Rate col
-                    addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance()
-                            .format(item.getRate())), digit_font_size, col_pos + 5, line_pos);
-                    col_pos += 55;//next column
-                    //Labour col
-                    //addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getLabourCost())), digit_font_size,col_pos+5, line_pos);
-                    col_pos += 55;//next column
-                    //Total col
-                    sub_total += item.getTotal();
-                    addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance()
-                            .format(item.getTotal())), digit_font_size, col_pos + 5, line_pos);
+                    //add blank line
+                    line_pos = addTextToPageStream(document, "", PDType1Font.COURIER, 12, 10, 10, line_pos, no_border, col_positions);
+                    line_pos -= LINE_HEIGHT;//next line
+
+                    //render category's index
+                    line_pos = addTextToPageStream(document, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 14, page_content_max_width, 15, line_pos,no_border, null);
+                    //render category name
+                    if(items.get(0).getCategory()!=null)
+                        line_pos = addTextToPageStream(document,items.get(0).getCategory(), PDType1Font.COURIER_BOLD,14, page_content_max_width,50, line_pos,no_border, null);
 
                     line_pos -= LINE_HEIGHT;//next line
+
+                    int item_index_minor =0;//reset minor index
+                    for (QuoteItem item : items)
+                    {
+                        item_index_minor++;
+
+                        /**begin rendering actual quote material information**/
+                        //first column, Item number
+                        line_pos = addTextToPageStream(document, String.valueOf(item_index)+"."+String.valueOf(item_index_minor), PDType1Font.COURIER, 12, page_content_max_width, col_positions[0]+col_text_offset, line_pos,no_border, null);//item.getItem_number()
+
+                        //Description col
+                        line_pos = addTextToPageStream(document, item.getResource().getResource_description(), PDType1Font.COURIER, 12, col_positions[2]-col_positions[1], col_positions[1] + col_text_offset, line_pos,no_border, null);
+
+                        //Unit col
+                        line_pos = addTextToPageStream(document, item.getUnit(), PDType1Font.COURIER, 12, col_positions[3]-col_positions[2], col_positions[2]+col_text_offset, line_pos,no_border, null);//col_pos + 5
+
+                        //Quantity col
+                        line_pos = addTextToPageStream(document, item.getQuantity(), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[3]+col_text_offset, line_pos,no_border, null);
+
+                        //Rate col
+                        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getRate())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[4]+col_text_offset, line_pos,no_border, null);
+
+                        //Total col
+                        sub_total += item.getTotal();
+                        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(item.getTotal())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[5]+col_text_offset, line_pos,no_border, null);
+
+                        line_pos -= LINE_HEIGHT;//next line
+                    }
                 }
-                IO.log(TAG, IO.TAG_INFO, "successfully created quote PDF.");
-            }
-            else IO.log(TAG, IO.TAG_INFO, "quote has no resources.");
-            col_pos = 0;
-            //line_pos -= LINE_HEIGHT;//skip another line
-            /*if the page can't hold another 2 lines add a new page
-            if(line_pos-LINE_HEIGHT*2<h-logo_h-(ROW_COUNT*LINE_HEIGHT) || temp_pos-LINE_HEIGHT*2<h-logo_h-(ROW_COUNT*LINE_HEIGHT))
+                IO.log(TAG, IO.TAG_VERBOSE, "successfully processed quote resources.");
+            } else IO.log(TAG, IO.TAG_INFO, "quote has no resources.");
+
+            if(quote.getServices()!=null)
             {
-                //add new page
-                page = new PDPage(PDRectangle.A4);
-                document.addPage(page);
-                //TODO: setup page, i.e. draw lines and stuff
-                contents.close();
-                contents = new PDPageContentStream(document, page);
-                contents.beginText();
-                line_pos = (int)h-logo_h;
-                col_divider_start = line_pos+LINE_HEIGHT;
-            }*/
+                /** Render quote services **/
+                for (QuoteService service : quote.getServices())
+                {
+                    item_index++;//increment major index
+                    //render service items
+
+                    //add blank line
+                    line_pos = addTextToPageStream(document, "", PDType1Font.COURIER, 12, 10, 10, line_pos, no_border, col_positions);
+                    line_pos -= LINE_HEIGHT;//next line
+
+                    //render service index
+                    line_pos = addTextToPageStream(document, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 14, page_content_max_width, col_positions[0]+col_text_offset, line_pos, no_border, col_positions);
+
+                    //render service title
+                    line_pos = addTextToPageStream(document, service.getService().getService_title(), PDType1Font.COURIER_BOLD, 14, col_positions[2]-col_positions[1], col_positions[1] + col_text_offset, line_pos, new Border(Border.BORDER_RIGHT, Color.RED, 2, new Insets(0, 0, 0, col_text_offset)), col_positions);
+
+                    line_pos -= LINE_HEIGHT;//next line
+
+                    if (service.getService() == null) {
+                        IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "]'s service object for quote [" + quote.get_id() + "] is invalid.");
+                        continue;
+                    }
+                    if (service.getService().getServiceItemsMap() == null) {
+                        IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "] for quote [" + quote.get_id() + "] services are invalid.");
+                        continue;
+                    }
+                    if (service.getService().getServiceItemsMap().isEmpty()) {
+                        IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "] for quote [" + quote.get_id() + "] has no services.");
+                        continue;
+                    }
+
+                    int item_index_minor = 0;//reset minor index
+                    for (ServiceItem service_item : service.getService().getServiceItemsMap().values())
+                    {
+                        item_index_minor += 1;//increment minor item index
+                        //render service items
+
+                        /**begin rendering actual quote service information**/
+                        Border quote_items_border = new Border(Border.BORDER_RIGHT, Color.BLACK, 1, new Insets(0, 0, 0, col_text_offset));
+
+                        //first column, Item number
+                        line_pos = addTextToPageStream(document, String.valueOf(item_index) + "." + String.valueOf(item_index_minor), PDType1Font.COURIER, 12, page_content_max_width, col_positions[0]+col_text_offset, line_pos,no_border, col_positions);
+
+                        //Description col //int new_line_pos
+                        line_pos = addTextToPageStream(document, service_item.getItem_name(), PDType1Font.COURIER, 12, col_positions[2]-col_positions[1], col_positions[1] + col_text_offset, line_pos, no_border, col_positions);
+                        System.out.println("current line position: "+ line_pos);
+
+                        //Unit col
+                        line_pos = addTextToPageStream(document, service_item.getUnit(), PDType1Font.COURIER, 8, col_positions[3]-col_positions[2], col_positions[2]+col_text_offset, line_pos, no_border, col_positions);
+
+                        //Quantity col
+                        line_pos = addTextToPageStream(document, String.valueOf(service_item.getQuantity()), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[3]+col_text_offset, line_pos, no_border, col_positions);
+
+                        //Rate col
+                        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getItem_rate())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[4]+col_text_offset, line_pos,no_border, col_positions);
+
+                        //Total col
+                        sub_total += service_item.getTotal();
+                        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getTotal())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[5]+col_text_offset, line_pos,no_border, col_positions);
+
+                        line_pos -= LINE_HEIGHT;//next line
+                    }
+                }
+            } else IO.log(PDF.class.getName(), IO.TAG_WARN,"quote ["+quote.get_id()+"] has no services.");
+
+            //render notes
+            if(quote.getOther()!=null)
+            {
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, "Notes: ", PDType1Font.TIMES_BOLD, 14, page_content_max_width, 15, line_pos,no_border, null);
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, quote.getOther(), PDType1Font.TIMES_ITALIC, 12, page_content_max_width,15, line_pos,no_border, null);
+                line_pos -= LINE_HEIGHT*2;//next 2nd line
+            }
+            int col_pos = 0;
+
             //solid horizontal line
             int col_divider_end = line_pos;
 
-            contents.endText();
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos + LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
-            contents.stroke();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.stroke();
 
-            contents.beginText();
-            addTextToPageStream(contents, "Sub-Total Excl. VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14, col_pos + 30, line_pos);
-            addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance()
+            addTextToPageStream(document, "Sub-Total Excl. VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14, col_pos + 30, line_pos);
+            addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance()
                     .format(sub_total)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int) (5 + (w / 2)), line_pos);
             line_pos -= LINE_HEIGHT;//next line
 
             //solid horizontal line
-            contents.endText();
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos + LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
-            contents.stroke();
+            //contents.endText();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.stroke();
 
             double vat = sub_total * (quote.getVat() / 100);
-            contents.beginText();
-            addTextToPageStream(contents, "VAT[" + quote
+
+            addTextToPageStream(document, "VAT[" + quote
                     .getVat() + "%]: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14, col_pos + 30, line_pos);
-            addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance()
+            addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance()
                     .format(vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int) (5 + (w / 2)), line_pos);
             line_pos -= LINE_HEIGHT;//next line
 
             //solid horizontal line
-            contents.endText();
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos + LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
-            contents.stroke();
+            //contents.endText();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.stroke();
 
-            contents.beginText();
-            addTextToPageStream(contents, "Total Incl. VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14, col_pos + 30, line_pos);
-            addTextToPageStream(contents, String.valueOf(DecimalFormat.getCurrencyInstance()
+
+            addTextToPageStream(document, "Total Incl. VAT: ", PDType1Font.COURIER_BOLD_OBLIQUE, 14, col_pos + 30, line_pos);
+            addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance()
                     .format(sub_total + vat)), PDType1Font.COURIER_BOLD_OBLIQUE, 14, (int) (5 + (w / 2)), line_pos);
-            contents.endText();
+
             line_pos -= LINE_HEIGHT;//next line
 
             //solid horizontal line
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, line_pos + LINE_HEIGHT / 2);
-            contents.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
-            contents.stroke();
+            contents_stream.setStrokingColor(Color.BLACK);
+            contents_stream.moveTo(10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.lineTo(w - 10, line_pos + LINE_HEIGHT / 2);
+            contents_stream.stroke();
 
             //int col_divider_end = line_pos;
             line_pos -= LINE_HEIGHT * 3;//next 3rd line
-            /*solid horizontal lines after quote_items
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo(10, col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-            contents.lineTo(w-10, col_divider_end+LINE_HEIGHT+LINE_HEIGHT/2);
-            contents.stroke();
-            contents.moveTo(10, col_divider_end+LINE_HEIGHT/2);
-            contents.lineTo(w-10, col_divider_end+LINE_HEIGHT/2);
-            contents.stroke();
-            contents.moveTo(10, col_divider_end-LINE_HEIGHT+LINE_HEIGHT/2);
-            contents.lineTo(w-10, col_divider_end-LINE_HEIGHT+LINE_HEIGHT/2);
-            contents.stroke();*/
-
-            //quote content column dividers
-            //#1
-            contents.moveTo(80, (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.lineTo(80, col_divider_end + LINE_HEIGHT + LINE_HEIGHT / 2);
-            contents.stroke();
-            //vertical line going through center of page again
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo((w / 2), (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-            contents.lineTo((w / 2), col_divider_end + LINE_HEIGHT + LINE_HEIGHT / 2);
-            //contents.lineTo((w/2),col_divider_end-LINE_HEIGHT/2);
-            contents.stroke();
-            //#3+
-            for (int i = 1; i < 5; i++)//7 cols in total
-            {
-                contents.moveTo((w / 2) + 55 * i, (col_divider_start - LINE_HEIGHT + (int) Math.ceil(LINE_HEIGHT / 2)));
-                contents.lineTo((w / 2) + 55 * i, col_divider_end + LINE_HEIGHT + LINE_HEIGHT / 2);
-                contents.stroke();
-            }
-
-            contents.beginText();
 
             if (quote.getOther() != null)
-                addTextToPageStream(contents, "P.S. " + quote
+                addTextToPageStream(document, "P.S. " + quote
                         .getOther(), PDType1Font.TIMES_ITALIC, 14, col_pos + 5, line_pos);
 
             line_pos -= LINE_HEIGHT;//next line
-            //if the page can't hold another 9 lines add a new page
-            if (line_pos - (LINE_HEIGHT * 4) < h - logo_h - (ROW_COUNT * LINE_HEIGHT))
-            {
-                addTextToPageStream(contents, "Page " + quote_page_count, PDType1Font.COURIER_OBLIQUE, 14, (int) (w / 2) - 20, 30);
-                //add new page
-                page = new PDPage(PDRectangle.A4);
-                document.addPage(page);
-                contents.close();
-                contents = new PDPageContentStream(document, page);
-                contents.beginText();
-                line_pos = (int) h - logo_h;
-                createLinesAndBordersOnPage(contents, (int) w, line_pos + LINE_HEIGHT / 2, bottom_line);
-                quote_page_count++;
-            }
-            addTextToPageStream(contents, "TERMS AND CONDITIONS OF SALE", PDType1Font.HELVETICA_BOLD, 14, (int) (w / 2) - 130, line_pos);
-            contents.endText();
-            contents.setStrokingColor(Color.BLACK);
-            contents.moveTo((int) (w / 2) - 140, line_pos - LINE_HEIGHT / 2);
-            contents.lineTo((w / 2) + 120, line_pos - LINE_HEIGHT / 2);
-            contents.stroke();
-            contents.beginText();
+
+            line_pos = addTextToPageStream(document, "TERMS AND CONDITIONS OF SALE", PDType1Font.HELVETICA_BOLD, 14, page_content_max_width,(int)(w/2)-130, line_pos,no_border, null);
 
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "*Validity: Quote valid for 24 Hours.", PDType1Font.HELVETICA, 12, col_pos + 30, line_pos);
+            line_pos = addTextToPageStream(document, "*Validity: Quote valid for 24 Hours.", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "*Payment Terms: COD / 30 Days on approved accounts. ", PDType1Font.HELVETICA, 12, col_pos + 30, line_pos);
+            line_pos = addTextToPageStream(document, "*Payment Terms: COD / 30 Days on approved accounts. ", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "*Delivery: 1 - 6 Weeks, subject to stock availability.", PDType1Font.HELVETICA, 12, col_pos + 30, line_pos);
+            line_pos = addTextToPageStream(document, "*Delivery: 1 - 6 Weeks, subject to stock availability.", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "*All pricing quoted, is subject to Rate of Exchange USD=R.", PDType1Font.HELVETICA_BOLD, 12, col_pos + 30, line_pos);
+            line_pos = addTextToPageStream(document, "*All pricing quoted, is subject to Rate of Exchange USD=R.", PDType1Font.HELVETICA_BOLD, 12, page_content_max_width,15, line_pos,no_border, null);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "*All goods / equipment remain the property of " + Globals.COMPANY
-                    .getValue() + " until paid for completely. ", PDType1Font.HELVETICA, 12, col_pos + 30, line_pos);
+            line_pos = addTextToPageStream(document, "*All goods / equipment remain the property of " + Globals.COMPANY.getValue()+ " until paid for completely. ", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "*" + Globals.COMPANY
-                    .getValue() + " reserves the right to retake posession of all equipment not paid for completely", PDType1Font.HELVETICA, 12, col_pos + 30, line_pos);
+            line_pos = addTextToPageStream(document, "*" + Globals.COMPANY.getValue() + " reserves the right to retake possession of all equipment not paid for completely", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "  Within the payment term set out above.", PDType1Font.HELVETICA, 12, col_pos + 30, line_pos);
+            line_pos = addTextToPageStream(document, "  Within the payment term set out above.", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
             line_pos -= LINE_HEIGHT;//next line
-            addTextToPageStream(contents, "*E & O E", PDType1Font.HELVETICA, 12, col_pos + 30, line_pos);
+            line_pos = addTextToPageStream(document, "*E & O E", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
 
-            addTextToPageStream(contents, "Page " + quote_page_count, PDType1Font.COURIER_OBLIQUE, 14, (int) (w / 2) - 20, 30);
-            contents.endText();
-            contents.close();
+            line_pos -= LINE_HEIGHT*2;//next 2nd line
+            line_pos = addTextToPageStream(document, "Acceptance (Full Name):______________________", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
+            line_pos = addTextToPageStream(document, "Signature :_____________________", PDType1Font.HELVETICA, 12, page_content_max_width,(int) (w/2)+col_text_offset, line_pos,no_border, null);
+            line_pos -= LINE_HEIGHT;//next line
+            line_pos = addTextToPageStream(document, "Order / Reference No.:________________________", PDType1Font.HELVETICA, 12, page_content_max_width,15, line_pos,no_border, null);
+            line_pos = addTextToPageStream(document, "Date :_________________________", PDType1Font.HELVETICA, 12, page_content_max_width,(int) (w/2)+col_text_offset, line_pos,no_border, null);
+
+            if(contents_stream!=null)
+                contents_stream.close();
         }
 
         //create PDF output directory
@@ -2078,9 +1889,6 @@ public class PDF
             path = "out/pdf/invoice_" + job.get_id() + "." + i + ".pdf";
             i++;
         }
-
-        //if(contents!=null)
-        //    contents.close();
 
         document.save(path);
         document.close();
@@ -2146,7 +1954,7 @@ public class PDF
 
         int header_h = 90;
 
-        PDPageContentStream contents = null;// = new PDPageContentStream(document, page);
+        PDPageContentStream contents_stream = null;// = new PDPageContentStream(document, page);
 
         if(job.getAssigned_employees()!=null)
         {
@@ -2158,8 +1966,8 @@ public class PDF
                 final PDPage new_page = new PDPage(PDRectangle.A4);
                 //Add page to document
                 document.addPage(new_page);
-                contents = new PDPageContentStream(document, new_page);
-                contents.setFont(font, 14);
+                contents_stream = new PDPageContentStream(document, new_page);
+                //contents.setFont(font, 14);
 
                 //line_pos = (int)h-logo_h-20;
                 IO.log("Job PDF Exporter", IO.TAG_INFO, "added new page.");
@@ -2172,94 +1980,117 @@ public class PDF
                 int digit_font_size = 9;
 
                 PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
-                contents.drawImage(header, 0, 760, w, header_h);
+                contents_stream.drawImage(header, 0, 760, w, header_h);
                 //contents.drawImage(logo, (int) (w / 2) - 80, 770, 160, logo_h);
 
                 /**Draw lines**/
-                createLinesAndBordersOnPage(contents, (int)w, line_pos, (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT);
-                createBordersOnPage(contents, (int)w, line_pos, line_pos);
+                //createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT, PAGE_MARGINS.right), (int)w);
+                //createBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT, PAGE_MARGINS.right), (int)w);
+                createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.top, PAGE_MARGINS.right), (int)w);
+                createBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.top, PAGE_MARGINS.right), (int)w);
 
                 /** begin text from the top**/
-                contents.beginText();
-                contents.setFont(font, 12);
+                //contents.beginText();
+                //contents.setFont(font, 12);
                 line_pos -= LINE_HEIGHT/2;
                 String str_job_card = job.getQuote().getClient().getClient_name() + ": "
                         + job.getQuote().getSitename() + " JOB CARD";
-                addTextToPageStream(contents, str_job_card, PDType1Font.HELVETICA_BOLD, 14, (int) (w / 2)-100, line_pos);
+                addTextToPageStream(document, str_job_card, PDType1Font.HELVETICA_BOLD, 14, 70, line_pos);//(int) (w / 2)
                 line_pos -= LINE_HEIGHT * 2;//next line
 
-                addTextToPageStream(contents, "JOB NUMBER: " + job.getObject_number(), 12, 20, line_pos);
-                addTextToPageStream(contents, "CUSTOMER: " + job.getQuote().getClient().getClient_name(), 14, (int)(w/2)+30, line_pos);
+                addTextToPageStream(document, "JOB NUMBER: " + job.getObject_number(), 12, 20, line_pos);
+                addTextToPageStream(document, "CUSTOMER: " + job.getQuote().getClient().getClient_name(), 14, (int)(w/2)+30, line_pos);
                 line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "SITENAME: " + job.getQuote().getSitename(), 12, 20, line_pos);
-                addTextToPageStream(contents, "STATUS: " + (job.isJob_completed()?"completed":"pending"), 12, (int)(w/2)+30, line_pos);
+                addTextToPageStream(document, "SITENAME: " + job.getQuote().getSitename(), 12, 20, line_pos);
+                addTextToPageStream(document, "STATUS: " + (job.isJob_completed()?"completed":"pending"), 12, (int)(w/2)+30, line_pos);
                 line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "CONTACT: " + job.getQuote().getContact_person(), 12, 20, line_pos);
-                addTextToPageStream(contents, "CELL: " + job.getQuote().getContact_person().getCell(), 12, (int)(w/2)+30, line_pos);
-                addTextToPageStream(contents, "TEL: " + job.getQuote().getContact_person().getTel(), 12, (int)(w/2)+150, line_pos);
+                addTextToPageStream(document, "CONTACT: " + job.getQuote().getContact_person(), 12, 20, line_pos);
+                addTextToPageStream(document, "CELL: " + job.getQuote().getContact_person().getCell(), 12, (int)(w/2)+30, line_pos);
+                addTextToPageStream(document, "TEL: " + job.getQuote().getContact_person().getTel(), 12, (int)(w/2)+150, line_pos);
                 line_pos -= LINE_HEIGHT;//next line
 
                 //addTextToPageStream(contents, "Date Logged: " + LocalDate.parse(formatter.format(new Date(job.getDate_logged()*1000))), 12, 10, line_pos);
                 //addTextToPageStream(contents, "Planned Start Date: " + LocalDate.parse(formatter.format(new Date(job.getPlanned_start_date()*1000))), 12, (int)(w/2)+30, line_pos);
                 //line_pos -= LINE_HEIGHT;//next line
                 //addTextToPageStream(contents, "Date Assigned: " + LocalDate.parse(formatter.format(new Date(job.getDate_assigned()*1000))), 12, 10, line_pos);
-                addTextToPageStream(contents, "DATE STARTED: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()))):"N/A"), 12, 20, line_pos);
-                addTextToPageStream(contents, "DATE COMPLETED: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()))):"N/A"), 12, (int)(w/2)+30, line_pos);
+                addTextToPageStream(document, "DATE STARTED: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()))):"N/A"), 12, 20, line_pos);
+                addTextToPageStream(document, "DATE COMPLETED: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()))):"N/A"), 12, (int)(w/2)+30, line_pos);
                 line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "ASSIGNED EMPLOYEE: " + employee, 12, 20, line_pos);
-                addTextToPageStream(contents, "TEL: " + employee.getTel(), 12, (int)(w/2)+30, line_pos);
-                addTextToPageStream(contents, "CELL: " + employee.getCell(), 12, (int)(w/2)+150, line_pos);
+                addTextToPageStream(document, "ASSIGNED EMPLOYEE: " + employee, 12, 20, line_pos);
+                addTextToPageStream(document, "TEL: " + employee.getTel(), 12, (int)(w/2)+30, line_pos);
+                addTextToPageStream(document, "CELL: " + employee.getCell(), 12, (int)(w/2)+150, line_pos);
                 line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(contents, "REQUEST: " + job.getQuote().getRequest(), 12, 20, line_pos);
+                addTextToPageStream(document, "REQUEST: " + job.getQuote().getRequest(), 12, 20, line_pos);
                 line_pos -= LINE_HEIGHT;//next line
-                contents.endText();
+                //contents.endText();
 
                 //vertical lines
-                contents.setStrokingColor(Color.BLACK);
+                contents_stream.setStrokingColor(Color.BLACK);
                 //vertical line going through center of page
-                contents.moveTo((w / 2), VERT_LINE_START-LINE_HEIGHT);
-                contents.lineTo((w / 2), line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
-                contents.stroke();
+                contents_stream.moveTo((w / 2), VERT_LINE_START-LINE_HEIGHT);
+                contents_stream.lineTo((w / 2), line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
+                contents_stream.stroke();
                 //
-                contents.moveTo((w / 2), line_pos+LINE_HEIGHT/2);
-                contents.lineTo((w / 2), LINE_END);
-                contents.stroke();
+                contents_stream.moveTo((w / 2), line_pos+LINE_HEIGHT/2);
+                contents_stream.lineTo((w / 2), LINE_END);
+                contents_stream.stroke();
                 //#1
-                contents.moveTo(95, line_pos+LINE_HEIGHT/2);
-                contents.lineTo(95, LINE_END);
-                contents.stroke();
+                contents_stream.moveTo(95, line_pos+LINE_HEIGHT/2);
+                contents_stream.lineTo(95, LINE_END);
+                contents_stream.stroke();
                 //#2
-                contents.moveTo(195, line_pos+LINE_HEIGHT/2);
-                contents.lineTo(195, LINE_END);
-                contents.stroke();
+                contents_stream.moveTo(195, line_pos+LINE_HEIGHT/2);
+                contents_stream.lineTo(195, LINE_END);
+                contents_stream.stroke();
                 //draw horizontal line
-                createBordersOnPage(contents, (int)w, line_pos+LINE_HEIGHT/2, line_pos+LINE_HEIGHT/2);
+                createBordersOnPage(contents_stream, new Insets(line_pos+LINE_HEIGHT/2, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
 
-                contents.beginText();
-                addTextToPageStream(contents, "DATE " , PDType1Font.HELVETICA_BOLD, 12, 20, line_pos);
-                addTextToPageStream(contents, "TIME IN ", PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);
-                addTextToPageStream(contents, "TIME OUT ", PDType1Font.HELVETICA_BOLD, 12, 220, line_pos);
-                addTextToPageStream(contents, "DESCRIPTION OF WORK DONE ", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
+                //contents.beginText();
+                addTextToPageStream(document, "DATE " , PDType1Font.HELVETICA_BOLD, 12, 20, line_pos);
+                addTextToPageStream(document, "TIME IN ", PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);
+                addTextToPageStream(document, "TIME OUT ", PDType1Font.HELVETICA_BOLD, 12, 220, line_pos);
+                addTextToPageStream(document, "DESCRIPTION OF WORK DONE ", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
 
                 line_pos = LINE_END - LINE_HEIGHT/2;//(int) h - logo_h - LINE_HEIGHT - (LINE_HEIGHT*30) - LINE_HEIGHT/2;
 
-                addTextToPageStream(contents, "Materials Used" , 14, 100, line_pos);
-                addTextToPageStream(contents, "Model/Serial" , 14, (int)(w/2)+50, line_pos);
-                addTextToPageStream(contents, "Quantity" , 14, (int) w-100, line_pos);
+                addTextToPageStream(document, "Materials Used" , 14, 100, line_pos);
+                addTextToPageStream(document, "Model/Serial" , 14, (int)(w/2)+50, line_pos);
+                addTextToPageStream(document, "Quantity" , 14, (int) w-100, line_pos);
                 final int BORDER_START = line_pos;
                 line_pos -= LINE_HEIGHT;//next line
-                for(QuoteItem item : job.getQuote().getResources())
-                {
-                    addTextToPageStream(contents, item.getResource().getResource_name() , 14, 20, line_pos);
-                    addTextToPageStream(contents, item.getResource().getResource_serial() , 14, (int)(w/2)+20, line_pos);
-                    addTextToPageStream(contents, item.getQuantity() , 14, (int) w-80, line_pos);
-                    line_pos -= LINE_HEIGHT;//next line
-                }
-                contents.endText();
-                createBordersOnPage(contents, (int)w, BORDER_START+LINE_HEIGHT/2, BORDER_START+LINE_HEIGHT/2);
-                createBordersOnPage(contents, (int)w, BORDER_START+LINE_HEIGHT/2, line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
 
-                contents.close();
+                //render quote materials
+                if(job.getQuote().getResources()!=null)
+                {
+                    for (QuoteItem item : job.getQuote().getResources())
+                    {
+                        addTextToPageStream(document, item.getResource().getResource_description(), 14, 20, line_pos);
+                        addTextToPageStream(document, item.getResource().getResource_code(), 14, (int) (w / 2) + 20, line_pos);
+                        addTextToPageStream(document, item.getQuantity(), 14, (int) w - 80, line_pos);
+                        line_pos -= LINE_HEIGHT;//next line
+                    }
+                }
+
+                //render quote services
+                if(job.getQuote().getServices()!=null)
+                {
+                    for (QuoteService service : job.getQuote().getServices())
+                    {
+                        addTextToPageStream(document, service.getService().getService_title(), 14, 20, line_pos);
+                        addTextToPageStream(document, service.getService().getService_description()!=null?service.getService().getService_description():"N/A", 14, (int) (w / 2) + 20, line_pos);
+                        int service_qty = 0;
+                        if(service.getService().getServiceItemsMap()!=null)
+                            for(ServiceItem serviceItem : service.getService().getServiceItemsMap().values())
+                                service_qty+=serviceItem.getQuantity();
+                        addTextToPageStream(document, String.valueOf(service_qty), 14, (int) w - 80, line_pos);
+                        line_pos -= LINE_HEIGHT;//next line
+                    }
+                }
+                //contents.endText();
+                createBordersOnPage(contents_stream, new Insets(BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.left, BORDER_START-LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
+                createBordersOnPage(contents_stream, new Insets(BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.left, line_pos+BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
+
+                //contents.close();
             }
         }else
         {
@@ -2280,8 +2111,8 @@ public class PDF
             i++;
         }
 
-        if(contents!=null)
-            contents.close();
+        if(contents_stream!=null)
+            contents_stream.close();
         document.save(path);
         document.close();
         return path;
@@ -2349,10 +2180,10 @@ public class PDF
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
-        PDPageContentStream contents = new PDPageContentStream(document, page);
+        PDPageContentStream contents_stream = new PDPageContentStream(document, page);
         int logo_h = 60;
         PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-        contents.drawImage(logo, 10, 770, 160, logo_h);
+        contents_stream.drawImage(logo, 10, 770, 160, logo_h);
 
         float w = page.getBBox().getWidth();
         float h = page.getBBox().getHeight();
@@ -2361,13 +2192,13 @@ public class PDF
 
         /**Draw lines**/
         int center_vert_line_start = line_pos;
-        int bottom_line = (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT;
+        //int bottom_line = (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT;
         //createLinesAndBordersOnPage(contents, (int)w, line_pos, bottom_line);
-        drawHorzLines(contents, line_pos, (int) w, new Insets(0,0,80,0));
+        drawHorzLines(contents_stream, line_pos, (int) w, new Insets(0,0,80,0));
 
         /** begin text from the top**/
-        contents.beginText();
-        contents.setFont(font, 12);
+        //contents.beginText();
+        //contents.setFont(font, 12);
         line_pos-=LINE_HEIGHT/2;
 
         String gj_title = "General Journal";
@@ -2377,32 +2208,32 @@ public class PDF
                 new Date(end * 1000)));
         String date_generated = (new SimpleDateFormat("yyyy/MM/dd").format(
                 new Date(System.currentTimeMillis())));
-        addTextToPageStream(contents, gj_title, PDType1Font.COURIER_BOLD, 16,(int)(w-250), 830);
-        addTextToPageStream(contents, "Company: " + Globals.COMPANY.getValue(), PDType1Font.COURIER, 12,(int)(w-250), 815);
-        addTextToPageStream(contents, "Period: "+date_start+" - " + date_end, PDType1Font.COURIER, 12,(int)(w-200), 800);
-        addTextToPageStream(contents, "Generated: " + date_generated, PDType1Font.COURIER, 12,(int)(w-200), 785);
+        addTextToPageStream(document, gj_title, PDType1Font.COURIER_BOLD, 16,(int)(w-250), 830);
+        addTextToPageStream(document, "Company: " + Globals.COMPANY.getValue(), PDType1Font.COURIER, 12,(int)(w-250), 815);
+        addTextToPageStream(document, "Period: "+date_start+" - " + date_end, PDType1Font.COURIER, 12,(int)(w-200), 800);
+        addTextToPageStream(document, "Generated: " + date_generated, PDType1Font.COURIER, 12,(int)(w-200), 785);
 
         //horizontal solid line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos-LINE_HEIGHT/2);
+        contents_stream.stroke();
+        //contents.beginText();
         line_pos-=LINE_HEIGHT;
 
-        addTextToPageStream(contents,"Date", PDType1Font.COURIER_BOLD_OBLIQUE, 15,10, line_pos);
-        addTextToPageStream(contents,"Account", PDType1Font.COURIER_BOLD_OBLIQUE, 15,150, line_pos);
-        addTextToPageStream(contents,"Debit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-180, line_pos);
-        addTextToPageStream(contents,"Credit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-100, line_pos);
+        addTextToPageStream(document,"Date", PDType1Font.COURIER_BOLD_OBLIQUE, 15,10, line_pos);
+        addTextToPageStream(document,"Account", PDType1Font.COURIER_BOLD_OBLIQUE, 15,150, line_pos);
+        addTextToPageStream(document,"Debit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-180, line_pos);
+        addTextToPageStream(document,"Credit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-100, line_pos);
 
         //horizontal solid line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos-LINE_HEIGHT/2);
+        contents_stream.stroke();
+        //contents.beginText();
 
         line_pos-=LINE_HEIGHT;//next line
 
@@ -2415,27 +2246,27 @@ public class PDF
                 if (lines > 15)
                 {
                     //line_pos-=LINE_HEIGHT;
-                    addTextToPageStream(contents, "page " + pages, PDType1Font.HELVETICA, 18, (int) (w / 2) - 50, 30);
-                    contents.close();
+                    addTextToPageStream(document, "page " + pages, PDType1Font.HELVETICA, 18, (int) (w / 2) - 50, 30);
+                    //contents.close();
                     page = new PDPage(PDRectangle.A4);
                     document.addPage(page);
-                    contents = new PDPageContentStream(document, page);
-                    contents.drawImage(logo, 10, 770, 160, logo_h);
+                    contents_stream = new PDPageContentStream(document, page);
+                    contents_stream.drawImage(logo, 10, 770, 160, logo_h);
                     line_pos = (int) h - logo_h - 20;
                     //line_pos = 700;
-                    drawHorzLines(contents, line_pos, (int) w, new Insets(0, 0, 80, 0));
+                    drawHorzLines(contents_stream, line_pos, (int) w, new Insets(0, 0, 80, 0));
                     line_pos -= LINE_HEIGHT / 2;
-                    contents.beginText();
+                    //contents.beginText();
 
-                    addTextToPageStream(contents, gj_title, PDType1Font.COURIER_BOLD, 16, (int) (w - 250), 830);
-                    addTextToPageStream(contents, "Company: " + Globals.COMPANY.getValue(), PDType1Font.COURIER, 12, (int) (w - 250), 815);
-                    addTextToPageStream(contents, "Period: "+date_start+" - " + date_end, PDType1Font.COURIER, 12,(int)(w-200), 800);
-                    addTextToPageStream(contents, "Generated: " + date_generated, PDType1Font.COURIER, 12,(int)(w-200), 785);
+                    addTextToPageStream(document, gj_title, PDType1Font.COURIER_BOLD, 16, (int) (w - 250), 830);
+                    addTextToPageStream(document, "Company: " + Globals.COMPANY.getValue(), PDType1Font.COURIER, 12, (int) (w - 250), 815);
+                    addTextToPageStream(document, "Period: "+date_start+" - " + date_end, PDType1Font.COURIER, 12,(int)(w-200), 800);
+                    addTextToPageStream(document, "Generated: " + date_generated, PDType1Font.COURIER, 12,(int)(w-200), 785);
                     line_pos -= LINE_HEIGHT;
                     pages++;
                     lines = 0;
                 }
-                addTextToPageStream(contents,
+                addTextToPageStream(document,
                         (new SimpleDateFormat("yyyy-MM-dd").format(
                                 new Date(t.getDate() * 1000))),
                         PDType1Font.HELVETICA, 15, 10, line_pos);
@@ -2445,78 +2276,78 @@ public class PDF
                     //title
                     String title = ((Invoice) t.getBusinessObject()).getAccount();
                     if (title.length() <= 50)
-                        addTextToPageStream(contents, title, PDType1Font.HELVETICA, 12, 105, line_pos);
+                        addTextToPageStream(document, title, PDType1Font.HELVETICA, 12, 105, line_pos);
                     if (title.length() > 50 && title.length() <= 60)
-                        addTextToPageStream(contents, title, PDType1Font.HELVETICA, 10, 105, line_pos);
+                        addTextToPageStream(document, title, PDType1Font.HELVETICA, 10, 105, line_pos);
                     if (title.length() > 60)
-                        addTextToPageStream(contents, title, PDType1Font.HELVETICA, 8, 105, line_pos);
+                        addTextToPageStream(document, title, PDType1Font.HELVETICA, 8, 105, line_pos);
                     //debit
                     double difference = 0;
                     if (((Invoice) t.getBusinessObject()).getJob() != null)
                         if (((Invoice) t.getBusinessObject()).getJob().getQuote() != null)
                             difference = ((Invoice) t.getBusinessObject()).getJob().getQuote().getTotal() - ((Invoice) t.getBusinessObject()).getReceivable();
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(difference), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(difference), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
-                    addTextToPageStream(contents, "Accounts Receivable", PDType1Font.HELVETICA, 15, 105, line_pos);
+                    addTextToPageStream(document, "Accounts Receivable", PDType1Font.HELVETICA, 15, 105, line_pos);
                     //debit
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Invoice) t.getBusinessObject()).getReceivable()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Invoice) t.getBusinessObject()).getReceivable()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
-                    addTextToPageStream(contents, "Service Revenue", PDType1Font.HELVETICA, 15, 150, line_pos);
+                    addTextToPageStream(document, "Service Revenue", PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Invoice) t.getBusinessObject()).getTotal()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Invoice) t.getBusinessObject()).getTotal()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                 } else if (t.getBusinessObject() instanceof Expense)
                 {
                     //title
                     String title = ((Expense) t.getBusinessObject()).getExpense_title();
                     if (title.length() <= 50)
-                        addTextToPageStream(contents, title, PDType1Font.HELVETICA, 12, 105, line_pos);
+                        addTextToPageStream(document, title, PDType1Font.HELVETICA, 12, 105, line_pos);
                     if (title.length() > 50 && title.length() <= 60)
-                        addTextToPageStream(contents, title, PDType1Font.HELVETICA, 10, 105, line_pos);
+                        addTextToPageStream(document, title, PDType1Font.HELVETICA, 10, 105, line_pos);
                     if (title.length() > 60)
-                        addTextToPageStream(contents, title, PDType1Font.HELVETICA, 8, 105, line_pos);
+                        addTextToPageStream(document, title, PDType1Font.HELVETICA, 8, 105, line_pos);
                     //debit
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) t.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) t.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
-                    addTextToPageStream(contents, ((Expense) t.getBusinessObject()).getAccount(), PDType1Font.HELVETICA, 15, 150, line_pos);
+                    addTextToPageStream(document, ((Expense) t.getBusinessObject()).getAccount(), PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) t.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) t.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                 } else if (t.getBusinessObject() instanceof Asset)
                 {
                     //title
                     String title = ((Asset) t.getBusinessObject()).getAsset_name();
                     if (title.length() <= 50)
-                        addTextToPageStream(contents, "Purchased asset: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
+                        addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
                     if (title.length() > 50 && title.length() <= 60)
-                        addTextToPageStream(contents, "Purchased asset: " + title, PDType1Font.HELVETICA, 10, 105, line_pos);
+                        addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 10, 105, line_pos);
                     if (title.length() > 60)
-                        addTextToPageStream(contents, "Purchased asset: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
+                        addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
                     //debit
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
                     //addTextToPageStream(contents, ((Asset) t.getBusinessObject()).getAccount_name(), PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                 } else if (t.getBusinessObject() instanceof Resource)
                 {
                     //title
-                    String title = ((Resource) t.getBusinessObject()).getResource_name();
+                    String title = ((Resource) t.getBusinessObject()).getResource_description();
                     if (title.length() <= 50)
-                        addTextToPageStream(contents, "Purchased stock: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
+                        addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
                     if (title.length() > 50 && title.length() <= 60)
-                        addTextToPageStream(contents, "Purchased stock: " + title, PDType1Font.HELVETICA, 10, 105, line_pos);
+                        addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 10, 105, line_pos);
                     if (title.length() > 60)
-                        addTextToPageStream(contents, "Purchased stock: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
+                        addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
                     //debit
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
                     //addTextToPageStream(contents, ((Resource) t.getBusinessObject()).getAccount_name(), PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
-                    addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                 }
                 //addTextToPageStream(contents,"Account", PDType1Font.COURIER_BOLD_OBLIQUE, 15,100, line_pos);
                 //addTextToPageStream(contents,"Credit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-100, line_pos);
@@ -2524,14 +2355,14 @@ public class PDF
                 line_pos -= LINE_HEIGHT;//next line
             }
         }
-        addTextToPageStream(contents, "page " + pages, PDType1Font.HELVETICA, 18, (int)(w/2)-50, 30);
+        addTextToPageStream(document, "page " + pages, PDType1Font.HELVETICA, 18, (int)(w/2)-50, 30);
 
         //horizontal solid line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(0, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(0, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w, line_pos-LINE_HEIGHT/2);
+        contents_stream.stroke();
 
         //create PDF output directory
         if(new File("out/pdf/").mkdirs())
@@ -2545,7 +2376,8 @@ public class PDF
             i++;
         }
 
-        contents.close();
+        if(contents_stream!=null)
+            contents_stream.close();
         document.save(path);
         document.close();
 
@@ -2554,7 +2386,7 @@ public class PDF
         pdfViewer.doOpen(path);
     }
 
-    private static PDPageContentStream initLedgerPage(PDDocument document,String account, long start, long end) throws IOException
+    private static PDPage initLedgerPage(PDDocument document,String account, long start, long end) throws IOException
     {
         // Create a new document with an empty page.
         //PDDocument document = new PDDocument();
@@ -2567,21 +2399,21 @@ public class PDF
         PDResources resources = new PDResources();
         resources.put(COSName.getPDFName("Helv"), font);
 
-        PDPageContentStream contents = new PDPageContentStream(document, page);
+        PDPageContentStream contents_stream = new PDPageContentStream(document, page);
         int logo_h = 60;
         PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
-        contents.drawImage(logo, 10, 770, 160, logo_h);
+        contents_stream.drawImage(logo, 10, 770, 160, logo_h);
 
         float w = page.getBBox().getWidth();
         float h = page.getBBox().getHeight();
         int line_pos = (int)h-logo_h-20;
 
         /**Draw lines**/
-        drawHorzLines(contents, line_pos, (int) w, new Insets(0,0,80,0));
+        drawHorzLines(contents_stream, line_pos, (int) w, new Insets(0,0,80,0));
 
         /** begin text from the top**/
-        contents.beginText();
-        contents.setFont(font, 12);
+        //contents.beginText();
+        //contents.setFont(font, 12);
         line_pos-=LINE_HEIGHT/2;
 
         String ledger_title = account.substring(0,1).toUpperCase() + account.substring(1) + " General Ledger";
@@ -2591,34 +2423,34 @@ public class PDF
                 new Date(end * 1000)));
         String date_generated = (new SimpleDateFormat("yyyy/MM/dd").format(
                 new Date(System.currentTimeMillis())));
-        addTextToPageStream(contents, ledger_title, PDType1Font.COURIER_BOLD, 16,(int)(w/2-100), 830);
-        addTextToPageStream(contents, "Company: " + Globals.COMPANY.getValue(), PDType1Font.COURIER, 12,(int)(w/2-100), 815);
-        addTextToPageStream(contents, "Period: "+date_start+" - " + date_end, PDType1Font.COURIER, 12,(int)(w/2-100), 800);
-        addTextToPageStream(contents, "Generated: " + date_generated, PDType1Font.COURIER, 12,(int)(w/2-100), 785);
+        addTextToPageStream(document, ledger_title, PDType1Font.COURIER_BOLD, 16,(int)(w/2-100), 830);
+        addTextToPageStream(document, "Company: " + Globals.COMPANY.getValue(), PDType1Font.COURIER, 12,(int)(w/2-100), 815);
+        addTextToPageStream(document, "Period: "+date_start+" - " + date_end, PDType1Font.COURIER, 12,(int)(w/2-100), 800);
+        addTextToPageStream(document, "Generated: " + date_generated, PDType1Font.COURIER, 12,(int)(w/2-100), 785);
 
         //horizontal solid line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
-        contents.beginText();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos-LINE_HEIGHT/2);
+        contents_stream.stroke();
+        //contents.beginText();
         line_pos-=LINE_HEIGHT;
 
-        addTextToPageStream(contents,"Date", PDType1Font.COURIER_BOLD_OBLIQUE, 15,10, line_pos);
-        addTextToPageStream(contents,"Description", PDType1Font.COURIER_BOLD_OBLIQUE, 15,150, line_pos);
-        addTextToPageStream(contents,"Debit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-180, line_pos);
-        addTextToPageStream(contents,"Credit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-100, line_pos);
+        addTextToPageStream(document,"Date", PDType1Font.COURIER_BOLD_OBLIQUE, 15,10, line_pos);
+        addTextToPageStream(document,"Description", PDType1Font.COURIER_BOLD_OBLIQUE, 15,150, line_pos);
+        addTextToPageStream(document,"Debit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-180, line_pos);
+        addTextToPageStream(document,"Credit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-100, line_pos);
 
         //horizontal solid line
-        contents.endText();
-        contents.setStrokingColor(Color.BLACK);
-        contents.moveTo(10, line_pos-LINE_HEIGHT/2);
-        contents.lineTo(w-10, line_pos-LINE_HEIGHT/2);
-        contents.stroke();
+        //contents.endText();
+        contents_stream.setStrokingColor(Color.BLACK);
+        contents_stream.moveTo(10, line_pos-LINE_HEIGHT/2);
+        contents_stream.lineTo(w-10, line_pos-LINE_HEIGHT/2);
+        //contents.stroke();
         //contents.beginText();
 
-        return contents;
+        return page;
     }
 
     public static void createGeneralLedgerPdf(long start, long end) throws IOException
@@ -2804,8 +2636,8 @@ public class PDF
                 contents.endText();
                 contents.close();
             }
-            contents = initLedgerPage(document, account.getAccount_name(), start, end);
-            contents.beginText();
+            PDPage page = initLedgerPage(document, account.getAccount_name(), start, end);
+            //contents.beginText();
             h = (int)document.getPage(0).getBBox().getHeight();
             w = (int)document.getPage(0).getBBox().getWidth();
             line_pos = h-logo_h-LINE_HEIGHT*3-LINE_HEIGHT/2;
@@ -2822,15 +2654,15 @@ public class PDF
                     if (lines > 32)
                     {
                         //line_pos-=LINE_HEIGHT;
-                        addTextToPageStream(contents, "page " + pages, PDType1Font.HELVETICA, 18, (int) (w / 2) - 50, 30);
-                        contents.close();
-                        contents = initLedgerPage(document, account.getAccount_name(), start, end);
+                        addTextToPageStream(document, "page " + pages, PDType1Font.HELVETICA, 18, (int) (w / 2) - 50, 30);
+                        //contents.close();
+                        page = initLedgerPage(document, account.getAccount_name(), start, end);
                         contents.beginText();
                         pages++;
                         lines = 0;
                         line_pos = h-logo_h-LINE_HEIGHT*3-LINE_HEIGHT/2;
                     }
-                    addTextToPageStream(contents,
+                    addTextToPageStream(document,
                             (new SimpleDateFormat("yyyy-MM-dd").format(
                                     new Date(transaction.getDate() * 1000))),
                             PDType1Font.HELVETICA, 15, 10, line_pos);
@@ -2841,7 +2673,7 @@ public class PDF
                         //title
                         String title = ((Revenue) transaction.getBusinessObject()).getRevenue_title();
                         //TODO: add to Additional Revenue account
-                        addTextToPageStream(contents, title, PDType1Font.HELVETICA, 15, 105, line_pos);
+                        addTextToPageStream(document, title, PDType1Font.HELVETICA, 15, 105, line_pos);
                         //debit
                         /*double difference = 0;
                         if (((Invoice) transaction.getBusinessObject()).getJob() != null)
@@ -2850,20 +2682,20 @@ public class PDF
                         if(!account.getAccount_name().toLowerCase().equals("additional revenue") && !account.getAccount_name().toLowerCase().equals("accounts receivable"))
                         {
                             //debit
-                            addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Revenue) transaction.getBusinessObject()).getRevenue_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
+                            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Revenue) transaction.getBusinessObject()).getRevenue_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
                             debit += ((Revenue) transaction.getBusinessObject()).getRevenue_value();
                         }else
                         {
                             //credit
-                            addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Revenue) transaction.getBusinessObject()).getRevenue_value()), PDType1Font.HELVETICA, 15, w - 100, line_pos);
+                            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Revenue) transaction.getBusinessObject()).getRevenue_value()), PDType1Font.HELVETICA, 15, w - 100, line_pos);
                             credit += ((Revenue) transaction.getBusinessObject()).getRevenue_value();
                         }
-                    }else if (transaction.getBusinessObject() instanceof Invoice)
+                    } else if (transaction.getBusinessObject() instanceof Invoice)
                     {
                         //title
                         String title = "Service Revenue";
                         //TODO: add to Service Revenue account if diff>0 add to accounts receivable
-                        addTextToPageStream(contents, title, PDType1Font.HELVETICA, 15, 105, line_pos);
+                        addTextToPageStream(document, title, PDType1Font.HELVETICA, 15, 105, line_pos);
                         //debit
                         double difference = 0;
                         if (((Invoice) transaction.getBusinessObject()).getJob() != null)
@@ -2875,17 +2707,17 @@ public class PDF
                             if(!account.getAccount_name().toLowerCase().equals("accounts receivable"))
                             {
                                 //debit
-                                addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(invoice_total), PDType1Font.HELVETICA, 15, w - 180, line_pos);
+                                addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(invoice_total), PDType1Font.HELVETICA, 15, w - 180, line_pos);
                                 debit += invoice_total;
-                            }else{
+                            } else{
                                 //purchased on credit, debit accounts receivable
-                                addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(difference), PDType1Font.HELVETICA, 15, w - 180, line_pos);
+                                addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(difference), PDType1Font.HELVETICA, 15, w - 180, line_pos);
                                 debit += difference;
                             }
-                        }else
+                        } else
                         {
                             //credit
-                            addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(invoice_total), PDType1Font.HELVETICA, 15, w - 100, line_pos);
+                            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(invoice_total), PDType1Font.HELVETICA, 15, w - 100, line_pos);
                             credit += invoice_total;
                         }
                     } else if (transaction.getBusinessObject() instanceof Expense)
@@ -2893,43 +2725,43 @@ public class PDF
                         //title
                         String title = ((Expense) transaction.getBusinessObject()).getExpense_title();
                         if (title.length() <= 50)
-                            addTextToPageStream(contents, title, PDType1Font.HELVETICA, 14, 105, line_pos);
+                            addTextToPageStream(document, title, PDType1Font.HELVETICA, 14, 105, line_pos);
                         if (title.length() > 50 && title.length() <= 60)
-                            addTextToPageStream(contents, title, PDType1Font.HELVETICA, 10, 105, line_pos);
+                            addTextToPageStream(document, title, PDType1Font.HELVETICA, 10, 105, line_pos);
                         if (title.length() > 60)
-                            addTextToPageStream(contents, title, PDType1Font.HELVETICA, 8, 105, line_pos);
+                            addTextToPageStream(document, title, PDType1Font.HELVETICA, 8, 105, line_pos);
                         //debit
                         //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) transaction.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                         //credit
-                        addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) transaction.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15,  w - 100, line_pos);
+                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) transaction.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15,  w - 100, line_pos);
                         credit+=((Expense) transaction.getBusinessObject()).getExpense_value();
                     } else if (transaction.getBusinessObject() instanceof Asset)
                     {
                         //title
                         String title = ((Asset) transaction.getBusinessObject()).getAsset_name();
                         if (title.length() <= 50)
-                            addTextToPageStream(contents, "Purchased asset: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
+                            addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
                         if (title.length() > 50 && title.length() <= 60)
-                            addTextToPageStream(contents, "Purchased asset: " + title, PDType1Font.HELVETICA, 10, 105, line_pos);
+                            addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 10, 105, line_pos);
                         if (title.length() > 60)
-                            addTextToPageStream(contents, "Purchased asset: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
+                            addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
                         //debit
-                        addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) transaction.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15,w - 180, line_pos);
+                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) transaction.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15,w - 180, line_pos);
                         debit+=((Asset) transaction.getBusinessObject()).getAsset_value();
                         //credit
                         //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) transaction.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                     } else if (transaction.getBusinessObject() instanceof Resource)
                     {
                         //title
-                        String title = ((Resource) transaction.getBusinessObject()).getResource_name();
+                        String title = ((Resource) transaction.getBusinessObject()).getResource_description();
                         if (title.length() <= 50)
-                            addTextToPageStream(contents, "Purchased stock: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
+                            addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
                         if (title.length() > 50 && title.length() <= 60)
-                            addTextToPageStream(contents, "Purchased stock: " + title, PDType1Font.HELVETICA, 10, 105, line_pos);
+                            addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 10, 105, line_pos);
                         if (title.length() > 60)
-                            addTextToPageStream(contents, "Purchased stock: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
+                            addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
                         //debit
-                        addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) transaction.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
+                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) transaction.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
                         debit+=((Resource) transaction.getBusinessObject()).getResource_value();
                         //credit
                         //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) transaction.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
@@ -2948,9 +2780,9 @@ public class PDF
             contents.stroke();
             contents.beginText();
 
-            addTextToPageStream(contents, "Totals", PDType1Font.COURIER_BOLD_OBLIQUE, 16, 105, line_pos);
-            addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(debit), PDType1Font.HELVETICA, 14, w - 200, line_pos);
-            addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(credit), PDType1Font.HELVETICA, 14, w - 100, line_pos);
+            addTextToPageStream(document, "Totals", PDType1Font.COURIER_BOLD_OBLIQUE, 16, 105, line_pos);
+            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(debit), PDType1Font.HELVETICA, 14, w - 200, line_pos);
+            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(credit), PDType1Font.HELVETICA, 14, w - 100, line_pos);
             line_pos-=LINE_HEIGHT;
 
             //horizontal solid line
@@ -2961,11 +2793,11 @@ public class PDF
             contents.stroke();
             contents.beginText();
 
-            addTextToPageStream(contents, "Closing Balance", PDType1Font.COURIER_BOLD_OBLIQUE, 16, 105, line_pos);
+            addTextToPageStream(document, "Closing Balance", PDType1Font.COURIER_BOLD_OBLIQUE, 16, 105, line_pos);
             double balance = debit-credit;
             if(balance>0)
-                addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(Math.abs(balance)), PDType1Font.HELVETICA, 14, w - 200, line_pos);
-            else addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(Math.abs(balance)), PDType1Font.HELVETICA, 14, w - 100, line_pos);
+                addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(Math.abs(balance)), PDType1Font.HELVETICA, 14, w - 200, line_pos);
+            else addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(Math.abs(balance)), PDType1Font.HELVETICA, 14, w - 100, line_pos);
 
             //horizontal solid line
             contents.endText();
@@ -2975,7 +2807,7 @@ public class PDF
             contents.stroke();
 
             contents.beginText();
-            addTextToPageStream(contents, "page " + pages, PDType1Font.HELVETICA, 18, (w/2)-50, 30);
+            addTextToPageStream(document, "page " + pages, PDType1Font.HELVETICA, 18, (w/2)-50, 30);
         }
 
         //create PDF output directory
@@ -2999,21 +2831,24 @@ public class PDF
         pdfViewer.doOpen(path);
     }
 
-    public static void addTextToPageStream(PDPageContentStream contents, String text, int font_size, int x, int y) throws IOException
+    private static void addTextToPageStream(PDDocument document, String text, int font_size, int x, int y) throws IOException
     {
         try
         {
-            addTextToPageStream(contents, text, PDType1Font.HELVETICA, font_size, x, y);
+            addTextToPageStream(document, text, PDType1Font.HELVETICA, font_size, x, y);
         }catch (IllegalArgumentException e)
         {
             IO.log("PDF creator", IO.TAG_ERROR, e.getMessage());
         }
     }
 
-    public static void addTextToPageStream(PDPageContentStream contents, String text, PDFont font,int font_size, int x, int y) throws IOException
+    private static void addTextToPageStream(PDDocument document, String text, PDFont font,int font_size, int x, int y) throws IOException
     {
-        contents.setFont(font, font_size);
-        contents.setTextMatrix(new Matrix(1, 0, 0, 1, x, y-TEXT_VERT_OFFSET));
+        PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(document.getNumberOfPages()-1), PDPageContentStream.AppendMode.PREPEND, true);
+        contentStream.beginText();
+
+        contentStream.setFont(font, font_size);
+        contentStream.setTextMatrix(new Matrix(1, 0, 0, 1, x, y-TEXT_VERT_OFFSET));
 
         char[] text_arr = text.toCharArray();
         StringBuilder str_builder = new StringBuilder();
@@ -3043,133 +2878,148 @@ public class PDF
             }
             str_builder.appendCodePoint(code);*/
         }
-        contents.showText(str_builder.toString().replaceAll("\u00A0","").trim());
+        contentStream.showText(str_builder.toString().replaceAll("\u00A0","").trim());
+
+        contentStream.endText();
+        contentStream.close();
+    }
+
+    private static void drawLine(PDPageContentStream contentStream, Color color, int start_x, int start_y, int end_x, int end_y) throws IOException {
+        contentStream.setStrokingColor(color);
+        contentStream.moveTo(start_x, start_y);
+        contentStream.lineTo(end_x, end_y);
+        contentStream.stroke();
     }
 
     /**
-     * Example PDFRenderer subclass, uses MyPageDrawer for custom rendering.
+     * Adds text to a page with text-wrapping
+     * @param text
+     * @param font
+     * @param font_size
+     * @param text_block_width
+     * @param x
+     * @param y
+     * @throws IOException
      */
-    private static class BMSPDFRenderer extends PDFRenderer
+    public static int addTextToPageStream(PDDocument document, String text, PDFont font, int font_size, int text_block_width, int x, int y, Border border, int[] col_positions) throws IOException
     {
-        BMSPDFRenderer(PDDocument document)
-        {
-            super(document);
-        }
+        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\n\n::::::::::::::::::::Processing Text: [" + text + "]::::::::::::::::::::");
 
-        @Override
-        protected PageDrawer createPageDrawer(PageDrawerParameters parameters) throws IOException
-        {
-            return new BMSPageDrawer(parameters);
-        }
-    }
+        float w = document.getPage(document.getNumberOfPages()-1).getBBox().getWidth();//page width
+        //open stream on last page
+        PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(document.getNumberOfPages()-1), PDPageContentStream.AppendMode.PREPEND, true);
 
-    /**
-     * Example PageDrawer subclass with custom rendering.
-     */
-    private static class BMSPageDrawer extends PageDrawer
-    {
-        BMSPageDrawer(PageDrawerParameters parameters) throws IOException
+        //draw column dividers if they exist
+        if(col_positions!=null)
         {
-            super(parameters);
-        }
-
-        /**
-         * Color replacement.
-         */
-        @Override
-        protected Paint getPaint(PDColor color) throws IOException
-        {
-            // if this is the non-stroking color
-            if (getGraphicsState().getNonStrokingColor() == color)
+            contentStream.setStrokingColor(Color.BLACK);
+            for (int i = 0; i < col_positions.length; i++)//6 cols in total
             {
-                // find red, ignoring alpha channel
-                if (color.toRGB() == (Color.RED.getRGB() & 0x00FFFFFF))
+                if(y > PAGE_MARGINS.bottom)
                 {
-                    // replace it with blue
-                    return Color.BLUE;
+                    contentStream.moveTo(col_positions[i], y + LINE_HEIGHT / 2);
+                    contentStream.lineTo(col_positions[i], y - LINE_HEIGHT / 2);
+                    contentStream.stroke();
                 }
             }
-            return super.getPaint(color);
         }
 
-        /**
-         * Glyph bounding boxes.
-         */
-        @Override
-        protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
-                                 Vector displacement) throws IOException
+        int char_w = (int)(font_size/1.5);
+
+        char[] text_arr = text.toCharArray();
+        StringBuilder str_builder = new StringBuilder();
+        Encoding e = org.apache.pdfbox.pdmodel.font.encoding.Encoding.getInstance(COSName.WIN_ANSI_ENCODING);// EncodingManager.INSTANCE.getEncoding(COSName.WIN_ANSI_ENCODING);
+
+        //remove unsupported characters
+        for (int i = 0; i < text_arr.length; i++)
         {
-            // draw glyph
-            super.showGlyph(textRenderingMatrix, font, code, unicode, displacement);
-
-            /*// bbox in EM -> user units
-            Shape bbox = new Rectangle2D.Float(0, 0, font.getWidth(code) / 1000, 1);
-            AffineTransform at = textRenderingMatrix.createAffineTransform();
-            bbox = at.createTransformedShape(bbox);
-
-            // save
-            Graphics2D graphics = getGraphics();
-            Color color = graphics.getColor();
-            Stroke stroke = graphics.getStroke();
-            Shape clip = graphics.getClip();
-
-            // draw
-            graphics.setClip(graphics.getDeviceConfiguration().getBounds());
-            graphics.setColor(Color.RED);
-            graphics.setStroke(new BasicStroke(.5f));
-            graphics.draw(bbox);
-
-            // restore
-            graphics.setStroke(stroke);
-            graphics.setColor(color);
-            graphics.setClip(clip);*/
+            Character c = text_arr[i];
+            //IO.log(PDF.class.getName(), IO.TAG_VERBOSE, String.format("Character [%s] has codename: [%s] and code [%s]", c, e.getName(c), String.valueOf(e.getNameToCodeMap().get(c))));
+            if(e.getName(c).toLowerCase().equals(".notdef") || e.getName(c).toLowerCase().equals("nbspace"))
+                str_builder.append("[?]");
+            else str_builder.append(c);
         }
+        String new_text = str_builder.toString().replaceAll("\u00A0","").trim();
 
-        /**
-         * Filled path bounding boxes.
-         */
-        @Override
-        public void fillPath(int windingRule) throws IOException
+        //if adding one more line makes the line cursor move out the page, add a new page
+        if (y < PAGE_MARGINS.bottom)//page.getBBox().getLowerLeftY()//- LINE_HEIGHT
         {
-            // bbox in user units
-            //Shape bbox = getLinePath().getBounds2D();
+            IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "##########line position: [" + y + "] is out of page bounds, adding new page.");
 
-            // draw path (note that getLinePath() is now reset)
-            super.fillPath(windingRule);
+            //close current page's stream writer
+            contentStream.close();
 
-            // save
-            /*Graphics2D graphics = getGraphics();
-            Color color = graphics.getColor();
-            Stroke stroke = graphics.getStroke();
-            Shape clip = graphics.getClip();
+            //create new page
+            PDPage new_page = new PDPage(PDRectangle.A4);
+            //add new page to document
+            document.addPage(new_page);
+            //create new stream writer using new page
+            contentStream = new PDPageContentStream(document, new_page);//, PDPageContentStream.AppendMode.PREPEND, true
+            //update line cursor to point to top of new page
+            y = (int)new_page.getBBox().getHeight()-LINE_HEIGHT-LINE_HEIGHT/2;
 
-            // draw
-            graphics.setClip(graphics.getDeviceConfiguration().getBounds());
-            graphics.setColor(Color.GREEN);
-            graphics.setStroke(new BasicStroke(.5f));
-            graphics.draw(bbox);
-
-            // restore
-            graphics.setStroke(stroke);
-            graphics.setColor(color);
-            graphics.setClip(clip);*/
+            //draw lines and borders on new page
+            createLinesAndBordersOnPage(contentStream, new Insets(y, PAGE_MARGINS.left, 35, PAGE_MARGINS.right), (int)new_page.getBBox().getWidth());
+            //return addTextToPageStream(new_document, contentStream, text, font, font_size, text_block_width, x, (int)new_page.getBBox().getHeight()-100);
+            y-=LINE_HEIGHT/2;
         }
 
-        /**
-         * Custom annotation rendering.
-         */
-        @Override
-        public void showAnnotation(PDAnnotation annotation) throws IOException
+        //draw border
+        switch (border.border)
         {
-            // save
-            saveGraphicsState();
-
-            // 35% alpha
-            getGraphicsState().setNonStrokeAlphaConstant(0.35);
-            super.showAnnotation(annotation);
-
-            // restore
-            restoreGraphicsState();
+            case Border.BORDER_LEFT:
+                drawLine(contentStream, border.border_colour, x+border.insets.left, (y+LINE_HEIGHT/2)+border.insets.top, x+border.insets.left, (y-LINE_HEIGHT+LINE_HEIGHT/2)-border.insets.bottom);
+                break;
+            case Border.BORDER_TOP:
+                drawLine(contentStream, border.border_colour, x+border.insets.left, y+LINE_HEIGHT/2+border.insets.top, x+border.insets.right+text_block_width, y+LINE_HEIGHT/2+border.insets.top);
+                break;
+            case Border.BORDER_RIGHT:
+                drawLine(contentStream, border.border_colour, x+text_block_width+border.insets.right, (y+LINE_HEIGHT/2)+border.insets.top, x+text_block_width+border.insets.right, (y-LINE_HEIGHT+LINE_HEIGHT/2)-border.insets.bottom);
+                break;
+            case Border.BORDER_BOTTOM:
+                drawLine(contentStream, border.border_colour, x+border.insets.left, y-LINE_HEIGHT+LINE_HEIGHT/2-border.insets.bottom, x+border.insets.right+text_block_width, y-LINE_HEIGHT+LINE_HEIGHT/2-border.insets.bottom);
+                break;
+            case Border.BORDER_ALL:
+                //left
+                drawLine(contentStream, border.border_colour, x+border.insets.left, (y+LINE_HEIGHT/2)+border.insets.top, x+border.insets.left, (y-LINE_HEIGHT+LINE_HEIGHT/2)-border.insets.bottom);
+                //top
+                drawLine(contentStream, border.border_colour, x+border.insets.left, y+LINE_HEIGHT/2+border.insets.top, x+border.insets.right+text_block_width, y+LINE_HEIGHT/2+border.insets.top);
+                //right
+                drawLine(contentStream, border.border_colour, x+text_block_width+border.insets.right, (y+LINE_HEIGHT/2)+border.insets.top, x+text_block_width+border.insets.right, (y-LINE_HEIGHT+LINE_HEIGHT/2)-border.insets.bottom);
+                //bottom
+                drawLine(contentStream, border.border_colour, x+border.insets.left, y-LINE_HEIGHT+LINE_HEIGHT/2-border.insets.bottom, x+border.insets.right+text_block_width, y-LINE_HEIGHT+LINE_HEIGHT/2-border.insets.bottom);
+                break;
+            case Border.BORDER_NONE:
+                break;
+            default:
+                IO.log(PDF.class.getName(), IO.TAG_WARN, "invalid border position.");
+                break;
         }
+
+        contentStream.beginText();
+        contentStream.setFont(font, font_size);
+        contentStream.setTextMatrix(new Matrix(1, 0, 0, 1, x, y-TEXT_VERT_OFFSET));
+
+        //if the length (in px) of the text is greater than the allowed width [col_width]
+        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "new text length: " + new_text.length()*char_w + ", block max width: " + text_block_width);
+        if((new_text.length()-1)*char_w>=text_block_width)
+        {
+            IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "text is too long, splitting..");
+            String block_text = new_text.substring(0, text_block_width/char_w);//copy all chars that can fit in the text block
+            //TODO: split the text at last index of space
+            //String[] lines = text.lastIndexOf(" ");
+            contentStream.showText(block_text.charAt(block_text.length()-1)!=' '?block_text+'-':block_text);
+            contentStream.endText();
+            contentStream.close();
+
+            y-=LINE_HEIGHT;//go to next line
+            //draw remainder of text on next line
+            return addTextToPageStream(document, new_text.substring(text_block_width/char_w), font, font_size, text_block_width, x, y, border, col_positions);
+        } else contentStream.showText(new_text);
+
+        contentStream.endText();
+        contentStream.close();
+
+        return y;
     }
 }

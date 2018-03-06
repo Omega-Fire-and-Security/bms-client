@@ -70,7 +70,7 @@ public class OvertimeManager extends BusinessObjectManager
                             headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/overtime_timestamp", headers);
+                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/overtime_records_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {

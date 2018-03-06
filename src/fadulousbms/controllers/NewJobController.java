@@ -274,7 +274,8 @@ public class NewJobController extends ScreenController implements Initializable
                             try
                             {
                                 job_item.setMarkup(Double.valueOf(txt.getText()));
-                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems())));
+                                //TODO: include service items below
+                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems(), null)));
                                 tblJobItems.refresh();
                                 //RemoteComms.updateBusinessObjectOnServer(job_item, "/api/job/resource", "markup");
                                 //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
@@ -448,13 +449,13 @@ public class NewJobController extends ScreenController implements Initializable
         lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vat)+"%]");
         if(tblJobItems.getItems()!=null)
         {
-            double total = QuoteManager.computeQuoteTotal(tblJobItems.getItems());
+            double total = QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null);
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                     new DecimalFormat("##.##").format((total + (total*(vat)))));
         }
         if(tblJobItems.getItems()!=null)
         {
-            double total = QuoteManager.computeQuoteTotal(tblJobItems.getItems());
+            double total = QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null);
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                     new DecimalFormat("##.##").format((total + (total*(vat/100)))));
         }
@@ -559,7 +560,7 @@ public class NewJobController extends ScreenController implements Initializable
                                 {
                                     callback.call(null);
                                     tblJobItems.refresh();
-                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
+                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null)));
                                 }
                             });
                             txtMarkup.setOnKeyPressed(event ->
@@ -568,7 +569,7 @@ public class NewJobController extends ScreenController implements Initializable
                                 {
                                     callback.call(null);
                                     tblJobItems.refresh();
-                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
+                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null)));
                                 }
                             });
 
@@ -732,7 +733,7 @@ public class NewJobController extends ScreenController implements Initializable
             tblJobItems.getColumns().add(col);
             tblJobItems.refresh();
 
-            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null)));
         });
 
         HBox row1 = new HBox(lblName, txtName);
@@ -761,7 +762,7 @@ public class NewJobController extends ScreenController implements Initializable
 
                     ComboBox<Resource> resourceComboBox = new ComboBox<>();
                     resourceComboBox.setMinWidth(240);
-                    resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getAll_resources().values()));
+                    resourceComboBox.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getDataset().values()));
                     HBox.setHgrow(resourceComboBox, Priority.ALWAYS);
 
                     Button btnAdd = new Button("Add");
@@ -835,7 +836,7 @@ public class NewJobController extends ScreenController implements Initializable
 
                             //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                             //        String.valueOf(QuoteManager.computeQuoteTotal(JobManager.getInstance().getSelectedJob())));
-                            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
+                            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null)));
 
                         } else IO.logAndAlert("New Job Resource", "Invalid resource selected.", IO.TAG_ERROR);
                     });

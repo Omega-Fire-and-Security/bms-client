@@ -7,11 +7,15 @@ import fadulousbms.model.*;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,6 +24,7 @@ import java.net.MalformedURLException;
 import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 
 public class LeaveManager extends BusinessObjectManager
@@ -72,7 +77,7 @@ public class LeaveManager extends BusinessObjectManager
                             headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/leave_timestamp", headers);
+                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/leave_records_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
@@ -144,9 +149,9 @@ public class LeaveManager extends BusinessObjectManager
 
                 if(path!=null)
                 {
-                    PDFViewer pdfViewer = PDFViewer.getInstance();
-                    pdfViewer.setVisible(true);
-                    pdfViewer.doOpen(path);
+                    if(Desktop.isDesktopSupported())
+                        Desktop.getDesktop().open(new File(path));
+                    else IO.logAndAlert("Error", "This environment not supported.", IO.TAG_ERROR);
                 } else IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, "could not get a valid path for generated leave application PDF for user ["+leave.getUsr()+"].");
             } catch (IOException e)
             {
@@ -218,22 +223,16 @@ public class LeaveManager extends BusinessObjectManager
                 return;
             if (!Validators.isValidNode(dpk_end_date, dpk_end_date.getValue() == null ? "" : dpk_end_date.getValue().toString(), 4, date_regex))
                 return;
-            long start_date_in_sec = dpk_start_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-            long end_date_in_sec = dpk_end_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
+            long start_date_in_sec = dpk_start_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000;
+            long end_date_in_sec = dpk_end_date.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000;
             String str_other = txt_other.getText();
-
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("usr", SessionManager.getInstance().getActiveEmployee().getUsr()));
-            params.add(new AbstractMap.SimpleEntry<>("type", cbx_type.getValue()));
-            params.add(new AbstractMap.SimpleEntry<>("start_date", String.valueOf(start_date_in_sec)));
-            params.add(new AbstractMap.SimpleEntry<>("end_date", String.valueOf(end_date_in_sec)));
 
             Leave leave_record = new Leave(SessionManager.getInstance().getActiveEmployee().getUsr(),start_date_in_sec, end_date_in_sec, cbx_type.getValue());
             leave_record.setCreator(SessionManager.getInstance().getActiveEmployee().getUsr());
 
             if (str_other != null)
                 if (!str_other.isEmpty())
-                    params.add(new AbstractMap.SimpleEntry<>("other", str_other));
+                    leave_record.setOther(str_other);
 
             try
             {
@@ -247,19 +246,22 @@ public class LeaveManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/leave_record/add", params, headers);
+                HttpURLConnection connection = RemoteComms.putJSON("/leave_records", leave_record.getJSONString(), headers);
                 if (connection != null)
                 {
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                     {
                         IO.logAndAlert("Success", "Successfully logged leave application.", IO.TAG_INFO);
+                        //execute callback w/ args
                         if (callback != null)
-                            callback.call(null);
-                    }
-                    else
+                            callback.call(IO.readStream(connection.getInputStream()));
+                    } else
                     {
                         IO.logAndAlert("ERROR_" + connection.getResponseCode(), IO
                                 .readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                        //execute callback w/o args
+                        if (callback != null)
+                            callback.call(null);
                     }
                     connection.disconnect();
                 }
@@ -399,8 +401,7 @@ public class LeaveManager extends BusinessObjectManager
      * @param leave Leave object to be signed.
      * @param callback Callback to be executed on successful request.
      */
-    public static void requestApproval(Leave leave, Callback callback)
-    {
+    public static void requestApproval(Leave leave, Callback callback) throws IOException {
         if(leave==null)
         {
             IO.logAndAlert("Error", "Invalid Leave object.", IO.TAG_ERROR);
@@ -427,8 +428,30 @@ public class LeaveManager extends BusinessObjectManager
             return;
         }
 
-        //upload Leave PDF to server
-        uploadPDF(leave);
+        String path = PDF.createLeaveApplicationPDF(leave);
+        String base64_leave_application = null;
+        if(path!=null)
+        {
+            File f = new File(path);
+            if (f != null)
+            {
+                if (f.exists())
+                {
+                    FileInputStream in = new FileInputStream(f);
+                    byte[] buffer =new byte[(int) f.length()];
+                    in.read(buffer, 0, buffer.length);
+                    in.close();
+                    base64_leave_application = Base64.getEncoder().encodeToString(buffer);
+                } else
+                {
+                    IO.logAndAlert(QuoteManager.class.getName(), "File [" + path + "] not found.", IO.TAG_ERROR);
+                }
+            } else
+            {
+                IO.log(QuoteManager.class.getName(), "File [" + path + "] object is null.", IO.TAG_ERROR);
+            }
+        } else IO.log(QuoteManager.class.getName(), "Could not get valid path for created leave application pdf.", IO.TAG_ERROR);
+        final String finalBase64_leave_application = base64_leave_application;
 
         Stage stage = new Stage();
         stage.setTitle(Globals.APP_NAME.getValue() + " - Request Leave Application Approval");
@@ -437,43 +460,6 @@ public class LeaveManager extends BusinessObjectManager
         stage.setAlwaysOnTop(true);
 
         VBox vbox = new VBox(1);
-
-        //gather list of Employees with enough clearance to sign leaves
-        ArrayList<Employee> lst_auth_employees = new ArrayList<>();
-        for(Employee employee: EmployeeManager.getInstance().getDataset().values())
-            if(employee.getAccessLevel()>=AccessLevels.SUPERUSER.getLevel())
-                lst_auth_employees.add(employee);
-
-        if(lst_auth_employees==null)
-        {
-            IO.logAndAlert("Error", "Could not find any employee with the required access rights to approval the leave application.", IO.TAG_ERROR);
-            return;
-        }
-
-        final ComboBox<Employee> cbx_destination = new ComboBox(FXCollections.observableArrayList(lst_auth_employees));
-        cbx_destination.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
-        {
-            @Override
-            public ListCell<Employee> call(ListView<Employee> param)
-            {
-                return new ListCell<Employee>()
-                {
-                    @Override
-                    protected void updateItem(Employee employee, boolean empty)
-                    {
-                        if(employee!=null && !empty)
-                        {
-                            super.updateItem(employee, empty);
-                            setText(employee.getName() + " <" + employee.getEmail() + ">");
-                        }
-                    }
-                };
-            }
-        });
-        cbx_destination.setMinWidth(200);
-        cbx_destination.setMaxWidth(Double.MAX_VALUE);
-        cbx_destination.setPromptText("Pick a recipient");
-        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, cbx_destination);
 
         final TextField txt_subject = new TextField();
         txt_subject.setMinWidth(200);
@@ -487,14 +473,17 @@ public class LeaveManager extends BusinessObjectManager
         txt_message.setMaxWidth(Double.MAX_VALUE);
         HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
 
+        //set default message
+        Employee sender = SessionManager.getInstance().getActiveEmployee();
+        String title = sender.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";;
+        String def_msg = "Good day,\n\nCould you please assist me" +
+                " by approving this leave application to be issued to "  + leave.getEmployee().getName() + ".\nThank you.\n\nBest Regards,\n"
+                + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
+        txt_message.setText(def_msg);
+
         HBox submit;
         submit = CustomTableViewControls.getSpacedButton("Send", event ->
         {
-            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
-
-            //TODO: check this
-            if(!Validators.isValidNode(cbx_destination, cbx_destination.getValue()==null?"":cbx_destination.getValue().getEmail(), 1, ".+"))
-                return;
             if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
                 return;
             if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
@@ -505,38 +494,43 @@ public class LeaveManager extends BusinessObjectManager
             //convert all new line chars to HTML break-lines
             msg = msg.replaceAll("\\n", "<br/>");
 
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("leave_record_id", leave.get_id()));
-            params.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
-            params.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
-            params.add(new AbstractMap.SimpleEntry<>("message", msg));
-
             try
             {
                 //send email
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));//multipart/form-data
+                headers.add(new AbstractMap.SimpleEntry<>("leave_record_id", leave.get_id()));
+                //headers.add(new AbstractMap.SimpleEntry<>("to_email", cbx_destination.getValue().getEmail()));
+                headers.add(new AbstractMap.SimpleEntry<>("message", msg));
+                headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
                 if(SessionManager.getInstance().getActive()!=null)
                 {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
+                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+                    headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
                 } else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/leave_record/request_approval", params, headers);
+                FileMetadata fileMetadata = new FileMetadata("leave_"+leave.get_id()+".pdf","application/pdf");
+                fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
+                fileMetadata.setFile(finalBase64_leave_application);
+                HttpURLConnection connection = RemoteComms.postJSON("/leave_records/request_approval", fileMetadata.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         //TODO: CC self
-                        IO.logAndAlert("Success", "Successfully requested leave application approval from ["+cbx_destination.getValue()+"]!", IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully requested leave application approval!", IO.TAG_INFO);
+                        //execute callback w/ args
                         if(callback!=null)
-                            callback.call(null);
+                            callback.call(IO.readStream(connection.getInputStream()));
                     } else {
                         IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                        //execute callback w/o args
+                        if(callback!=null)
+                            callback.call(null);
                     }
                     connection.disconnect();
                 }
@@ -547,27 +541,8 @@ public class LeaveManager extends BusinessObjectManager
             }
         });
 
-        cbx_destination.valueProperty().addListener((observable, oldValue, newValue) ->
-        {
-            if(newValue==null)
-            {
-                IO.log(LeaveManager.class.getName(), "invalid destination address.", IO.TAG_ERROR);
-                return;
-            }
-            Employee sender = SessionManager.getInstance().getActiveEmployee();
-            String title = null;
-            if(newValue.getGender()!=null)
-                title = newValue.getGender().toLowerCase().equals("male") ? "Mr." : "Miss.";
-            String msg = "Good day " + title + " " + newValue.getLastname() + ",\n\nCould you please assist me" +
-                    " by approving this leave application for "  + leave.getEmployee() + ".\nThank you.\n\nBest Regards,\n"
-                    + title + " " + sender.getFirstname().toCharArray()[0]+". "+sender.getLastname();
-            txt_message.setText(msg);
-        });
-
         //Add form controls vertically on the stage
-        vbox.getChildren().add(destination);
         vbox.getChildren().add(subject);
-        //vbox.getChildren().add(hbox_leave_id);
         vbox.getChildren().add(message);
         vbox.getChildren().add(submit);
 
@@ -666,7 +641,7 @@ public class LeaveManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/leave_record/signed/mailto", params, headers);
+                HttpURLConnection connection = RemoteComms.postData("/leave_records/signed/mailto", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
