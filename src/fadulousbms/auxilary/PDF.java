@@ -1279,10 +1279,18 @@ public class PDF
         //render notes
         if(quote.getOther()!=null)
         {
+            Border border = new Border(Border.BORDER_ALL, Color.CYAN, 2, new Insets(-1, -1*text_offset, -1, -1*text_offset));
+
             line_pos -= LINE_HEIGHT;//next line
             line_pos = addTextToPageStream(document, "Notes: ", PDType1Font.TIMES_BOLD, 12, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
             line_pos -= LINE_HEIGHT;//next line
-            line_pos = addTextToPageStream(document, quote.getOther(), PDType1Font.TIMES_ITALIC, 11, page_content_max_width,PAGE_MARGINS.left+ text_offset*2, line_pos, no_border, null);
+            String[] other_lines = quote.getOther().split(";");
+            for(String line: other_lines)
+            {
+                line_pos = addTextToPageStream(document, line, PDType1Font.TIMES_ROMAN, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+                //line_pos = addTextToPageStream(document, line, PDType1Font.TIMES_ITALIC, 11, page_content_max_width, PAGE_MARGINS.left + text_offset * 2, line_pos, border, null);
+                line_pos -= LINE_HEIGHT;//next line
+            }
             line_pos -= LINE_HEIGHT*2;//next 2nd line
         }
 
@@ -1308,13 +1316,13 @@ public class PDF
         line_pos -= LINE_HEIGHT;//next line
         line_pos = addTextToPageStream(document, "*Validity: Quote valid for 24 Hours.", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
         line_pos -= LINE_HEIGHT;//next line
-        line_pos = addTextToPageStream(document, "*Payment Terms: COD / 30 Days on approved accounts. ", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos = addTextToPageStream(document, "*Payment Terms: COD / 30 Days on approved accounts.", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
         line_pos -= LINE_HEIGHT;//next line
         line_pos = addTextToPageStream(document, "*Delivery: 1 - 6 Weeks, subject to stock availability.", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
         line_pos -= LINE_HEIGHT;//next line
         line_pos = addTextToPageStream(document, "*All pricing quoted, is subject to Rate of Exchange USD=R.", PDType1Font.HELVETICA_BOLD, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
         line_pos -= LINE_HEIGHT;//next line
-        line_pos = addTextToPageStream(document, "*All goods / equipment remain the property of " + Globals.COMPANY.getValue()+ " until paid for completely. ", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+        line_pos = addTextToPageStream(document, "*All goods / equipment remain the property of " + Globals.COMPANY.getValue()+ " until paid for completely.", PDType1Font.HELVETICA, 11, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
         line_pos -= LINE_HEIGHT;//next line
         line_pos = addTextToPageStream(document, "*" + Globals.COMPANY.getValue() + " reserves the right to retake possession of all equipment not paid for completely", PDType1Font.HELVETICA, 10, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
         line_pos -= LINE_HEIGHT;//next line
@@ -1323,7 +1331,7 @@ public class PDF
         line_pos = addTextToPageStream(document, "*E & O E", PDType1Font.HELVETICA, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
 
         line_pos -= LINE_HEIGHT*2;//next 2nd line
-        line_pos = addTextToPageStream(document, "Acceptance (Full Name):_______________________", PDType1Font.HELVETICA, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
+        line_pos = addTextToPageStream(document, "Acceptance (Full Name):______________________", PDType1Font.HELVETICA, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
         line_pos = addTextToPageStream(document, "Signature :_____________________", PDType1Font.HELVETICA, 12, page_content_max_width,(int) (w/2)+15, line_pos,no_border, null);
         line_pos -= LINE_HEIGHT;//next line
         line_pos = addTextToPageStream(document, "Order / Reference No.:________________________", PDType1Font.HELVETICA, 12, page_content_max_width,PAGE_MARGINS.left+text_offset, line_pos,no_border, null);
@@ -2924,8 +2932,6 @@ public class PDF
             }
         }
 
-        int char_w = (int)(font_size/1.5);
-
         char[] text_arr = text.toCharArray();
         StringBuilder str_builder = new StringBuilder();
         Encoding e = org.apache.pdfbox.pdmodel.font.encoding.Encoding.getInstance(COSName.WIN_ANSI_ENCODING);// EncodingManager.INSTANCE.getEncoding(COSName.WIN_ANSI_ENCODING);
@@ -2954,7 +2960,7 @@ public class PDF
             //add new page to document
             document.addPage(new_page);
             //create new stream writer using new page
-            contentStream = new PDPageContentStream(document, new_page);//, PDPageContentStream.AppendMode.PREPEND, true
+            contentStream = new PDPageContentStream(document, new_page);
             //update line cursor to point to top of new page
             y = (int)new_page.getBBox().getHeight()-LINE_HEIGHT-LINE_HEIGHT/2;
 
@@ -3000,21 +3006,28 @@ public class PDF
         contentStream.setFont(font, font_size);
         contentStream.setTextMatrix(new Matrix(1, 0, 0, 1, x, y-TEXT_VERT_OFFSET));
 
+
+        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "horizontal space for text: " + (font.getStringWidth(new_text)/1000)*font_size + ", space width: " + font.getSpaceWidth() + ", average width: " + font.getAverageFontWidth() + ", block max width: " + text_block_width);
+
+        float char_w = (font.getStringWidth("A")/1000)*(float)font_size;//(int)(font_size/1.6);
+
         //if the length (in px) of the text is greater than the allowed width [col_width]
-        IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "new text length: " + new_text.length()*char_w + ", block max width: " + text_block_width);
-        if((new_text.length()-1)*char_w>=text_block_width)
+        if(((font.getStringWidth(new_text)/1000)*font_size)-char_w >= text_block_width)//if text is too long
         {
             IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "text is too long, splitting..");
-            String block_text = new_text.substring(0, text_block_width/char_w);//copy all chars that can fit in the text block
+            String block_text = new_text.substring(0, (int) (text_block_width/char_w)-1);//copy all chars that can fit in the text block
+
             //TODO: split the text at last index of space
             //String[] lines = text.lastIndexOf(" ");
-            contentStream.showText(block_text.charAt(block_text.length()-1)!=' '?block_text+'-':block_text);
+            char last_char = block_text.trim().length()!=0?block_text.charAt(block_text.length()-1):' ';
+
+            contentStream.showText(last_char!=' '?block_text+'-':block_text);
             contentStream.endText();
             contentStream.close();
 
             y-=LINE_HEIGHT;//go to next line
             //draw remainder of text on next line
-            return addTextToPageStream(document, new_text.substring(text_block_width/char_w), font, font_size, text_block_width, x, y, border, col_positions);
+            return addTextToPageStream(document, new_text.substring((int) (text_block_width/char_w)-1), font, font_size, text_block_width, x, y, border, col_positions);
         } else contentStream.showText(new_text);
 
         contentStream.endText();

@@ -141,7 +141,7 @@
                                         </children>
                                     </HBox>
                                     <Label text="Request/Description" GridPane.rowIndex="10" />
-                                    <TextArea fx:id="txtRequest" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.vgrow="ALWAYS" />
+                                    <TextArea fx:id="txtRequest" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.vgrow="ALWAYS" />
                                     <Label fx:id="lblVat" text="VAT [%]" GridPane.rowIndex="7" />
                                     <Label text="Status" GridPane.rowIndex="12" />
                                     <TextField fx:id="txtStatus" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="12" />
@@ -151,7 +151,7 @@
                                     <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (excluding VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                     <TextField fx:id="txtTotal" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                               <Label text="Notes" GridPane.rowIndex="11" />
-                              <TextArea fx:id="txtNotes" layoutX="180.0" layoutY="420.0" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                              <TextArea fx:id="txtNotes" layoutX="180.0" layoutY="420.0" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="11" GridPane.vgrow="ALWAYS" />
                                 </children>
                                 <padding>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

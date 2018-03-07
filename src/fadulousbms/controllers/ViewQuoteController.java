@@ -87,7 +87,7 @@ public class ViewQuoteController extends QuoteController
             txtRevision.setText(String.valueOf(selected.getRevision()));
 
             if(selected.getOther()!=null)
-                txtNotes.setText(selected.getOther());
+                txtNotes.setText(selected.getOther().replaceAll(";", "\n"));
             /*if(selected.getParent_id()!=null)
                 txtBase.setText(selected.getParent_id().get_id());
             else

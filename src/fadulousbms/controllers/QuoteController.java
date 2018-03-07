@@ -1452,7 +1452,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         else quote.setVat(QuoteManager.VAT);
 
         if(txtNotes.getText()!=null)
-            quote.setOther(txtNotes.getText());
+            quote.setOther(txtNotes.getText().replaceAll("\n", ";"));
 
         try
         {
@@ -1747,7 +1747,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             selected.setRequest(txtRequest.getText());
             selected.setAccount_name(cbxAccount.getValue());
             if(txtNotes.getText()!=null)
-                selected.setOther(txtNotes.getText());
+                selected.setOther(txtNotes.getText().replaceAll("\n", ";"));
 
             QuoteManager.getInstance().updateQuote(selected, tblQuoteItems.getItems(), tblQuoteServices.getItems(), true, param -> {
                 QuoteManager.getInstance().initialize();
