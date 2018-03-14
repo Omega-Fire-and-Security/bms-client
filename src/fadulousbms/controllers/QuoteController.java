@@ -42,8 +42,10 @@ import org.controlsfx.control.textfield.TextFields;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.time.ZoneId;
 import java.util.*;
 
 /**
@@ -72,13 +74,14 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     protected Label lblVat;
     @FXML
-    protected Button btnApprove, btnNewService;
+    protected Button btnApprove, btnNewMaterial, btnNewService;
     protected HashMap<String, TableColumn> colsMap = new HashMap<>();
     protected ObservableList<TableColumn<QuoteItem, ?>> default_cols;
 
     protected Client selected_client = null;
     protected Resource selected_material = null;
-    protected Employee selected_contact_person;
+    protected Employee selected_contact_person = null;
+    protected ResourceType selected_material_type = null;
 
     /**
      * Initializes the controller class.
@@ -665,6 +668,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             {
                 if(event.getCompletion()!=null)
                 {
+                    //update selected material
                     selected_material = event.getCompletion();
                     IO.log(getClass().getName(), IO.TAG_INFO, "selected resource: " + selected_material.getBrand_name());
                     itemsModified = true;
@@ -1337,51 +1341,260 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     public void newMaterial()
     {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(FadulousBMS.class.getResource("views/"+Screens.NEW_RESOURCE.getScreen()));
+        selected_material = null;
+        selected_material_type = null;
+
+        TextField txt_mat_description = new TextField("");
+        txt_mat_description.setMinWidth(120);
+        txt_mat_description.setPromptText("Summary of material");
+        Label lbl_des = new Label("Material Description*: ");
+        lbl_des.setMinWidth(160);
+
+        TextField txt_mat_category = new TextField("");
+        txt_mat_category.setMinWidth(120);
+        txt_mat_category.setPromptText("Material type e.g. Access Control Hardware");
+        Label lbl_cat = new Label("Material Category*: ");
+        lbl_cat.setMinWidth(160);
+
+        TextField txt_mat_value = new TextField("");
+        txt_mat_value.setMinWidth(120);
+        txt_mat_value.setPromptText("Material cost excl. tax");
+        Label lbl_val = new Label("Material Value*: ");
+        lbl_val.setMinWidth(160);
+
+        TextField txt_mat_unit = new TextField("");
+        txt_mat_unit.setMinWidth(120);
+        txt_mat_unit.setPromptText("Unit of measurement");
+        Label lbl_unit = new Label("Material Unit*: ");
+        lbl_unit.setMinWidth(160);
+
+        Button btnSubmit = new Button("Create & Add Material");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnSubmit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        btnSubmit.getStyleClass().add("btnAdd");
+        btnSubmit.setMinWidth(140);
+        btnSubmit.setMinHeight(35);
+        HBox.setMargin(btnSubmit, new Insets(15, 0, 0, 10));
+
+        GridPane page = new GridPane();
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.setHgap(20);
+        page.setVgap(20);
+
+        page.add(lbl_des, 0, 0);
+        page.add(txt_mat_description, 1, 0);
+
+        page.add(lbl_cat, 0, 1);
+        page.add(txt_mat_category, 1, 1);
+
+        page.add(lbl_val, 0, 2);
+        page.add(txt_mat_value, 1, 2);
+
+        page.add(lbl_unit, 0, 3);
+        page.add(txt_mat_unit, 1, 3);
+
+        page.add(btnSubmit, 0, 4);
+
+        PopOver popover = new PopOver(page);
+        popover.setTitle("Create & Add Material");
+        popover.setDetached(true);
+        popover.show(btnNewMaterial);
+
+        TextFields.bindAutoCompletion(txt_mat_category, ResourceManager.getInstance().getResource_types().values()).setOnAutoCompleted(event ->
+        {
+            if(event!=null)
+            {
+                if(event.getCompletion()!=null)
+                {
+                    selected_material_type = event.getCompletion();
+                }
+            }
+        });
+
+        TextFields.bindAutoCompletion(txt_mat_description, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
+        {
+            if(event!=null)
+            {
+                if(event.getCompletion()!=null)
+                {
+                    //update selected material
+                    selected_material = event.getCompletion();
+
+                    IO.log(getClass().getName(), IO.TAG_INFO, "auto-completed material: " + selected_material.getResource_description());
+                    txt_mat_description.setText(selected_material.getResource_description());
+
+                    if(ResourceManager.getInstance().getResource_types()!=null && selected_material.getResource_type()!=null)
+                    {
+                        selected_material_type = ResourceManager.getInstance().getResource_types().get(selected_material.getResource_type());
+                        txt_mat_category.setText(selected_material_type.getType_name());
+                    }
+                    txt_mat_value.setText(String.valueOf(selected_material.getResource_value()));
+                    txt_mat_unit.setText(selected_material.getUnit());
+                }
+            }
+        });
+
+        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                if(SessionManager.getInstance().getActive()==null)
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+                if(SessionManager.getInstance().getActive().isExpired())
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+
+                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+                if(!Validators.isValidNode(txt_mat_description, txt_mat_description.getText(), 1, ".+"))
+                {
+                    txt_mat_description.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                    return;
+                }
+
+                if(txt_mat_category.getText()==null)
+                {
+                    IO.logAndAlert("Error", "Invalid material category.\nPlease enter a valid value.", IO.TAG_WARN);
+                    return;
+                }
+
+                if(txt_mat_category.getText().isEmpty())
+                {
+                    IO.logAndAlert("Error", "Invalid material category.\nPlease enter a valid value.", IO.TAG_WARN);
+                    return;
+                }
+
+                if(!Validators.isValidNode(txt_mat_value, txt_mat_value.getText(), 1, ".+"))
+                {
+                    txt_mat_value.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                    return;
+                }
+                if(!Validators.isValidNode(txt_mat_unit, txt_mat_unit.getText(), 1, ".+"))
+                {
+                    txt_mat_unit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                    return;
+                }
+
+                String resource_type_id = null;
+
+                if(selected_material_type!=null)
+                {
+                    /*
+                        If category text is not exactly the same as the category text inputted in the material creation
+                        Form then create new category/material type.
+                     */
+                    if(selected_material_type.getType_name().equals(txt_mat_category.getText()))
+                        resource_type_id = selected_material_type.get_id();
+                }
+
+                Resource resource = new Resource();
+                resource.setResource_description(txt_mat_description.getText());
+                resource.setUnit(txt_mat_unit.getText());
+                resource.setQuantity(Long.valueOf(1));
+                resource.setDate_acquired(System.currentTimeMillis());
+                resource.setCreator(SessionManager.getInstance().getActive().getUsr());
+                try
+                {
+                    resource.setResource_value(Double.valueOf(txt_mat_value.getText()));
+                } catch (NumberFormatException e)
+                {
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    return;
+                }
+                /*
+                    If selected_material_type is null then create new material type/category using inputted
+                    Text from material creation form
+                 */
+                if(resource_type_id==null)
+                {
+                    //create new resource type/category
+                    ResourceType resourceType = new ResourceType(txt_mat_category.getText(), "");
+                    resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
+                    try
+                    {
+                        ResourceManager.getInstance().createBusinessObject(resourceType, material_category_id ->
+                        {
+                            if(material_category_id!=null)
+                            {
+                                selected_material_type = ResourceManager.getInstance().getResource_types().get(material_category_id);
+
+                                resource.setResource_type((String) material_category_id);
+
+                                //create new material using new category
+                                createMaterial(resource);
+                            } else IO.logAndAlert("Error", "Could not create material category ["+txt_mat_category.getText()+"]", IO.TAG_ERROR);
+                            return null;
+                        });
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                } else //new material not in new category
+                {
+                    //create new material using selected category
+                    resource.setResource_type(resource_type_id);
+                    createMaterial(resource);
+                }
+            }
+        });
+    }
+
+    public void createMaterial(Resource resource)
+    {
+        if(resource==null)
+        {
+            IO.logAndAlert("Error: Invalid Resource", "Resource to be created is invalid.", IO.TAG_ERROR);
+            return;
+        }
         try
         {
-            VBox page = loader.load();
-            if(page!=null)
+            String proceed = IO.OK;
+            if(selected_material!=null)
+                if(resource.getResource_description().equals(selected_material.getResource_description()))
+                    proceed = IO.showConfirm("Duplicate material found, proceed?", "New material's description is the same as an existing material, continue with creation of material?");
+
+            if(proceed.equals(IO.OK))
             {
-                PopOver popover = new PopOver(page);
-                popover.setTitle("Add Material");
-                popover.show(btnNewService);
-                popover.setDetached(true);
-
-                popover.focusedProperty().addListener(new ChangeListener<Boolean>()
+                ResourceManager.getInstance().createBusinessObject(resource, new_res_id ->
                 {
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading materials combo box");
-                        //reload services, to load the newly added service
-                        ResourceManager.getInstance().forceSynchronise();
+                    //update selected material
+                    selected_material = ResourceManager.getInstance().getDataset().get(new_res_id);
+                    //ResourceManager.getInstance().setSelected(ResourceManager.getInstance().getDataset().get(new_res_id));
 
-                        Platform.runLater(() ->
+                    //add material to QuoteItems table
+                    addMaterial();
+
+                    //refresh materials combobox
+                    Platform.runLater(() ->
+                    {
+                        if (ResourceManager.getInstance().getDataset().values() != null)
                         {
-                            //refresh services combobox
-                            if(ResourceManager.getInstance().getDataset().values()!=null)
+                            TextFields.bindAutoCompletion(txtMaterials, FXCollections.observableArrayList());
+                            TextFields.bindAutoCompletion(txtMaterials, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(evt ->
                             {
-                                //txtMaterials = new TextField();
-                                TextFields.bindAutoCompletion(txtMaterials, FXCollections.observableArrayList());
-                                TextFields.bindAutoCompletion(txtMaterials, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
+                                if (evt != null)
                                 {
-                                    if(event!=null)
+                                    if (evt.getCompletion() != null)
                                     {
-                                        if(event.getCompletion()!=null)
-                                        {
-                                            selected_material = event.getCompletion();
-                                            IO.log(getClass().getName(), IO.TAG_INFO, "selected resource: " + selected_material.getBrand_name());
-                                            itemsModified = true;
-                                        }
+                                        //update selected material
+                                        selected_material = evt.getCompletion();
+
+                                        IO.log(getClass().getName(), IO.TAG_INFO, "selected material: " + selected_material.getResource_description());
+                                        itemsModified = true;
                                     }
-                                });
-                            }
-                        });
-                    }
+                                }
+                            });
+                        }
+                    });
+                    return null;
                 });
-            }else IO.logAndAlert("Error", "Could not load material creation screen.", IO.TAG_ERROR);
+            } else IO.log(getClass().getName(), IO.TAG_ERROR, "aborted material creation procedure.");
         } catch (IOException e)
         {
             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());

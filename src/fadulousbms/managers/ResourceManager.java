@@ -521,8 +521,7 @@ public class ResourceManager extends BusinessObjectManager
 
             try
             {
-                createResourceType(resourceType, callback);
-                //stage.close();
+                ResourceManager.getInstance().createBusinessObject(resourceType, callback);
             } catch (IOException e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
@@ -546,78 +545,6 @@ public class ResourceManager extends BusinessObjectManager
 
         stage.setScene(scene);
         stage.show();
-    }
-
-    public void createResource(Resource resource, Callback callback) throws IOException
-    {
-        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-        if(SessionManager.getInstance().getActive()!=null)
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-        else
-        {
-            IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);
-            return;
-        }
-
-        HttpURLConnection connection = RemoteComms.putJSON("/resources", resource.getJSONString(), headers);
-        if(connection!=null)
-        {
-            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-            {
-                IO.log("Success", IO.TAG_INFO, "Successfully created new material: "+resource.toString()+"!");
-                //refresh model & view when material has been created.
-                forceSynchronise();
-
-                //execute callback w/ args
-                if(callback!=null)
-                    callback.call(IO.readStream(connection.getInputStream()));
-                return;
-            } else
-            {
-                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-            }
-            connection.disconnect();
-        }
-        //execute callback w/o args
-        if(callback!=null)
-            callback.call(null);
-    }
-
-    public void createResourceType(ResourceType resourceType, Callback callback) throws IOException
-    {
-        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-        if(SessionManager.getInstance().getActive()!=null)
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-        else
-        {
-            IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);
-            return;
-        }
-
-        HttpURLConnection connection = RemoteComms.putJSON("/resources/types", resourceType.getJSONString(), headers);
-        if(connection!=null)
-        {
-            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-            {
-                IO.logAndAlert("Success", "Successfully added new material type!", IO.TAG_INFO);
-                //refresh model & view when material type has been created.
-                forceSynchronise();
-
-                //execute callback w/ args
-                if(callback!=null)
-                    callback.call(IO.readStream(connection.getInputStream()));
-                return;
-            } else
-            {
-                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-            }
-            connection.disconnect();
-        }
-        //execute callback w/o args
-        if(callback!=null)
-            callback.call(null);
     }
 
     class ResourceServerObject extends ServerObject

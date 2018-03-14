@@ -138,6 +138,59 @@ public abstract class BusinessObjectManager implements HSSFListener
         return obj;
     }
 
+    public void createBusinessObject(BusinessObject businessObject, Callback callback) throws IOException
+    {
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+
+        HttpURLConnection connection = RemoteComms.putJSON(businessObject.apiEndpoint(), businessObject.getJSONString(), headers);
+        if(connection!=null)
+        {
+            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+            {
+                IO.log("Success", IO.TAG_INFO, "Successfully created new BusinessObject("+businessObject.getClass().getName()+"): " +businessObject.toString()+"!");
+
+                //refresh model & view after object has been created.
+                forceSynchronise();
+
+                String response = IO.readStream(connection.getInputStream());
+                String new_obj_id = null;
+                if(response!=null)
+                {
+                    //server will return message object in format "object_id"
+                    new_obj_id = response.replaceAll("\"","");//strip inverted commas around object_id
+                    new_obj_id = new_obj_id.replaceAll("\n","");//strip new line chars
+                    new_obj_id = new_obj_id.replaceAll(" ","");//strip whitespace chars
+
+                    IO.log(getClass().getName(), IO.TAG_INFO, "Successfully created BusinessObject("+businessObject.getClass().getName()+")["+new_obj_id+"].");
+                }
+                //execute callback w/ args
+                if(callback!=null)
+                    callback.call(new_obj_id);
+                return;
+            } else
+            {
+                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+            }
+            connection.disconnect();
+        }
+        //execute callback w/o args
+        if(callback!=null)
+            callback.call(null);
+    }
+
     public void emailBusinessObject(BusinessObject businessObject, String pdf_path, Callback callback) throws IOException
     {
         if(businessObject==null)

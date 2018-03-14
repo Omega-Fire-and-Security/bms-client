@@ -339,7 +339,7 @@ public abstract class ScreenController
                                 resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
                                 try
                                 {
-                                    ResourceManager.getInstance().createResourceType(resourceType, res_type_id ->
+                                    ResourceManager.getInstance().createBusinessObject(resourceType, res_type_id ->
                                     {
                                         if(res_type_id !=null)
                                         {
@@ -362,7 +362,7 @@ public abstract class ScreenController
                                                 //create resource
                                                 try
                                                 {
-                                                    ResourceManager.getInstance().createResource(resource, res_id ->
+                                                    ResourceManager.getInstance().createBusinessObject(resource, res_id ->
                                                     {
                                                         if (res_id != null)
                                                             IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);
@@ -409,7 +409,7 @@ public abstract class ScreenController
                                 resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
                                 try
                                 {
-                                    ResourceManager.getInstance().createResourceType(resourceType, res_type_id ->
+                                    ResourceManager.getInstance().createBusinessObject(resourceType, res_type_id ->
                                     {
                                         if(res_type_id !=null)
                                         {
@@ -432,7 +432,7 @@ public abstract class ScreenController
                                                 //create resource
                                                 try
                                                 {
-                                                    ResourceManager.getInstance().createResource(resource, res_id ->
+                                                    ResourceManager.getInstance().createBusinessObject(resource, res_id ->
                                                     {
                                                         if (res_id != null)
                                                             IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);
@@ -479,7 +479,7 @@ public abstract class ScreenController
                                 resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
                                 try
                                 {
-                                    ResourceManager.getInstance().createResourceType(resourceType, res_type_id ->
+                                    ResourceManager.getInstance().createBusinessObject(resourceType, res_type_id ->
                                     {
                                         if(res_type_id !=null)
                                         {
@@ -502,7 +502,7 @@ public abstract class ScreenController
                                                 //create resource
                                                 try
                                                 {
-                                                    ResourceManager.getInstance().createResource(resource, res_id ->
+                                                    ResourceManager.getInstance().createBusinessObject(resource, res_id ->
                                                     {
                                                         if (res_id != null)
                                                             IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);
