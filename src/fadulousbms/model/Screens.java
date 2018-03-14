@@ -57,7 +57,8 @@ public enum Screens
     NEW_PURCHASE_ORDER("NewPurchaseOrder.fxml"),
     VIEW_PURCHASE_ORDER("ViewPurchaseOrder.fxml"),
     NEW_REQUISITION("NewRequisition.fxml"),
-    NEW_JOB("NewJob.fxml");
+    NEW_JOB("NewJob.fxml"),
+    AGENDA("Agenda.fxml");
 
     private String screen;
     

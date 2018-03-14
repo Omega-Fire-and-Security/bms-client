@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <Tab fx:id="quotesTab" text="Quotes" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.QuotesController">
-    <content>
-        <TableView fx:id="tblQuotes" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+   <content>
+        <TableView fx:id="tblQuotes" editable="true" tableMenuButtonVisible="true">
             <columns>
-                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Quote ID" visible="false"/>
-                <TableColumn fx:id="colClient" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Client"/>
-                <TableColumn fx:id="colRequest" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Request"/>
-                <TableColumn fx:id="colSitename" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Sitename"/>
-                <TableColumn fx:id="colContactPerson" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Contact Person"/>
-                <TableColumn fx:id="colDateGenerated" editable="false" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Date Logged"/>
-                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="60.0" text="Status" visible="true"/>
+                <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Quote ID" visible="false" />
+                <TableColumn fx:id="colClient" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Client" />
+                <TableColumn fx:id="colRequest" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Request" />
+                <TableColumn fx:id="colSitename" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Sitename" />
+                <TableColumn fx:id="colContactPerson" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Contact Person" />
+                <TableColumn fx:id="colDateGenerated" editable="false" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Date Logged" />
+                <TableColumn fx:id="colStatus" maxWidth="1.7976931348623157E308" minWidth="60.0" text="Status" visible="true" />
                 <TableColumn fx:id="colCreator" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Creator" />
                 <TableColumn fx:id="colVat" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="VAT [%]" />
                 <TableColumn fx:id="colTotal" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Total [incl. VAT]" />
                 <TableColumn fx:id="colRevision" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Revision" visible="false" />
-                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="420.0" prefWidth="-1.0" text="Action"/>
-                <TableColumn fx:id="colExtra" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Extra" visible="false"/>
+                <TableColumn fx:id="colAction" maxWidth="1.7976931348623157E308" minWidth="420.0" prefWidth="-1.0" text="Action" />
+                <TableColumn fx:id="colExtra" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Extra" visible="false" />
             </columns>
         </TableView>
-    </content>
+   </content>
 </Tab>

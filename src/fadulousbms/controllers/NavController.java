@@ -2,6 +2,7 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.RadialMenuItemCustom;
+import fadulousbms.managers.EmployeeManager;
 import fadulousbms.model.Screens;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -36,6 +37,8 @@ public class NavController extends ScreenController implements Initializable
     private ImageView btnBack,btnNext,btnHome,img_logo;
     public static int FONT_SIZE_MULTIPLIER = 40;
     public static boolean first_run = true;
+    @FXML
+    private Label user_name;
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -81,10 +84,16 @@ public class NavController extends ScreenController implements Initializable
             {
                 if (!SessionManager.getInstance().getActive().isExpired())
                 {
+                    IO.log(getClass().getName(), IO.TAG_VERBOSE, "refreshing navbar, user currently signed in is ["+SessionManager.getInstance().getActive().getUsr()+"]");
+                    user_name.setText("");
+                    user_name.setManaged(true);
+                    user_name.setCache(false);
                     //Render user name
-                    Employee e = SessionManager.getInstance().getActiveEmployee();
+                    Employee e = EmployeeManager.getInstance().getDataset().get(SessionManager.getInstance().getActive().getUsr());//SessionManager.getInstance().getActiveEmployee();
+                    System.out.println("########"+e.getName());
                     if (e != null)
-                        this.getUserNameLabel().setText(e.getName());
+                        //this.getUserNameLabel().setText(e.getName());
+                        user_name.setText(e.getName());
                     else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
                 }
                 else

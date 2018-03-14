@@ -37,6 +37,7 @@ import jfxtras.labs.scene.control.radialmenu.RadialMenu;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import org.controlsfx.control.MaskerPane;
 
+
 /**
  *
  * @author ghost
@@ -167,7 +168,7 @@ public class ScreenManager extends StackPane
                 new KeyFrame(Duration.millis(250),new KeyValue(opacity_transition, 0.0)));
         transition.play();
         if(translucent_borderpane!=null)
-        this.getChildren().remove(translucent_borderpane);
+            this.getChildren().remove(translucent_borderpane);
         radialMenu.setVisible(false);
     }
 
@@ -262,6 +263,7 @@ public class ScreenManager extends StackPane
                                             .getActiveEmployee() != null ? " " + SessionManager.getInstance()
                                             .getActiveEmployee() + "!" : "!"));
                                     focused.refreshView();//refresh the screen every time it's loaded
+
                                     IO.log(getClass().getName(), IO.TAG_INFO, "focused screen: " + id);
 
                                     if(lblScreenName!=null)
@@ -269,14 +271,14 @@ public class ScreenManager extends StackPane
                                     getChildren().add(screen);
 
                                     //peekScreens()
-                                    screen.setOnContextMenuRequested(event ->
+                                    /*screen.setOnContextMenuRequested(event ->
                                     {
                                         if(radialMenu!=null)
                                             if(radialMenu.isVisible())
                                                 hideContextMenu();
                                             else showContextMenu();
                                         else showContextMenu();
-                                    });
+                                    });*/
 
                                     //initRadialMenu(focused.getDefaultContextMenu());
                                     //getChildren().add(radialMenu);
@@ -330,7 +332,7 @@ public class ScreenManager extends StackPane
     {
         return this.focused_id;
     }
-    
+
     public Node removeScreen(Node screen)
     {
         //screens

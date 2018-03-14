@@ -182,15 +182,20 @@ public class ServiceManager extends BusinessObjectManager
 
     public void createService(Service service, Callback callback) throws IOException
     {
-        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-        if(SessionManager.getInstance().getActive()!=null)
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-        else
+        if(SessionManager.getInstance().getActive()==null)
         {
-            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            IO.logAndAlert("Session Invalid", "No valid active sessions.\nPlease log in.", IO.TAG_ERROR);
             return;
         }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Session Expired", "Active session has expired.\nPlease log in.", IO.TAG_ERROR);
+            return;
+        }
+
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
         //create new quote on database
         //ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
@@ -224,6 +229,7 @@ public class ServiceManager extends BusinessObjectManager
 
                 ServiceManager.getInstance().forceSynchronise();
 
+                //set new service as selected service
                 if(ServiceManager.getInstance().getDataset()!=null && new_service_id!=null)
                     ServiceManager.getInstance().setSelected(ServiceManager.getInstance().getDataset().get(new_service_id));
 
@@ -248,18 +254,22 @@ public class ServiceManager extends BusinessObjectManager
 
     public void createServiceItem(ServiceItem serviceItem, Callback callback) throws IOException
     {
-        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-        if(SessionManager.getInstance().getActive()!=null)
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-        else
+        if(SessionManager.getInstance().getActive()==null)
         {
-            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            IO.logAndAlert("Session Invalid", "No valid active sessions.\nPlease log in.", IO.TAG_ERROR);
+            return;
+        }
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Session Expired", "Active session has expired.\nPlease log in.", IO.TAG_ERROR);
             return;
         }
 
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
+
         //create new quote on database
-        //ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
         HttpURLConnection connection = RemoteComms.putJSON(serviceItem.apiEndpoint(), serviceItem.getJSONString(), headers);
         if(connection!=null)
         {

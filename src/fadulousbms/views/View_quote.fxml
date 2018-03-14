@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import org.controlsfx.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.control.cell.*?>
@@ -97,7 +98,6 @@
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -108,21 +108,19 @@
                                     <Label text="Cell Number" GridPane.rowIndex="3" />
                                     <TextField fx:id="txtCell" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                     <TextField fx:id="txtTel" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                    <TextField fx:id="txtFax" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                    <TextField fx:id="txtEmail" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <TextField fx:id="txtEmail" editable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                     <Label text="Tel Number" GridPane.rowIndex="4" />
-                                    <Label text="eMail Address" GridPane.rowIndex="6" />
-                                    <Label text="Site name" GridPane.rowIndex="9" />
-                                    <TextField fx:id="txtSite" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-                                    <Label text="Fax Number" GridPane.rowIndex="5" />
+                                    <Label text="eMail Address" GridPane.rowIndex="5" />
+                                    <Label text="Site name" GridPane.rowIndex="8" />
+                                    <TextField fx:id="txtSite" GridPane.columnIndex="1" GridPane.rowIndex="8" />
                                     <Label text="Client details" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                                         <font>
                                             <Font name="System Bold" size="17.0" />
                                         </font>
                                     </Label>
-                                    <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                                    <HBox GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                                         <children>
-                                            <ComboBox fx:id="cbxClients" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select client" HBox.hgrow="ALWAYS" />
+                                    <TextField fx:id="txtClient" minHeight="35.0" minWidth="150.0" promptText="type to search for client" HBox.hgrow="ALWAYS" />
                                             <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newClient" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
                                                 <HBox.margin>
                                                     <Insets left="10.0" />
@@ -132,7 +130,7 @@
                                     </HBox>
                                     <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                                         <children>
-                                            <ComboBox fx:id="cbxContactPerson" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="150.0" promptText="select contact" HBox.hgrow="ALWAYS" />
+                                    <TextField fx:id="txtContactPerson" minHeight="35.0" minWidth="150.0" promptText="type to search for contact person" HBox.hgrow="ALWAYS" />
                                             <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newEmployee" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
                                                 <HBox.margin>
                                                     <Insets left="10.0" />
@@ -140,18 +138,18 @@
                                             </Button>
                                         </children>
                                     </HBox>
-                                    <Label text="Request/Description" GridPane.rowIndex="10" />
-                                    <TextArea fx:id="txtRequest" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.vgrow="ALWAYS" />
-                                    <Label fx:id="lblVat" text="VAT [%]" GridPane.rowIndex="7" />
-                                    <Label text="Status" GridPane.rowIndex="12" />
-                                    <TextField fx:id="txtStatus" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="12" />
-                                    <ToggleButton fx:id="toggleVatExempt" minWidth="150.0" mnemonicParsing="false" text="14%" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="7" />
-                                    <Label text="Account" GridPane.rowIndex="8" />
-                                    <ComboBox fx:id="cbxAccount" minWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                                    <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (excluding VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                                    <TextField fx:id="txtTotal" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-                              <Label text="Notes" GridPane.rowIndex="11" />
-                              <TextArea fx:id="txtNotes" layoutX="180.0" layoutY="420.0" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="11" GridPane.vgrow="ALWAYS" />
+                                    <Label text="Request/Description" GridPane.rowIndex="9" />
+                                    <TextArea fx:id="txtRequest" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="9" GridPane.vgrow="ALWAYS" />
+                                    <Label fx:id="lblVat" text="VAT [%]" GridPane.rowIndex="6" />
+                                    <Label text="Status" GridPane.rowIndex="11" />
+                                    <TextField fx:id="txtStatus" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                                    <ToggleButton fx:id="toggleVatExempt" minWidth="150.0" mnemonicParsing="false" text="14%" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" />
+                                    <Label text="Account" GridPane.rowIndex="7" />
+                                    <ComboBox fx:id="cbxAccount" minWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                    <Label nodeOrientation="LEFT_TO_RIGHT" text="Total (excluding VAT)" GridPane.hgrow="ALWAYS" GridPane.rowIndex="12" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <TextField fx:id="txtTotal" editable="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="12" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                              <Label text="Notes" GridPane.rowIndex="10" />
+                              <TextArea fx:id="txtNotes" layoutX="180.0" layoutY="420.0" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.vgrow="ALWAYS" />
                                 </children>
                                 <padding>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -241,11 +239,10 @@
                               <left>
                                   <HBox BorderPane.alignment="CENTER">
                                       <children>
-                                          <ComboBox fx:id="cbxMaterials" minWidth="150.0" prefWidth="200.0" HBox.hgrow="NEVER">
-                                              <HBox.margin>
-                                                  <Insets right="20.0" top="6.0" />
-                                              </HBox.margin>
-                                          </ComboBox>
+                                    <TextField fx:id="txtMaterials" minHeight="35.0" minWidth="220.0" promptText="type to search for materials" HBox.hgrow="ALWAYS">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin></TextField>
                                           <Button minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#addMaterial" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Add Material" />
                                           <Button layoutX="180.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#newMaterial" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New Material">
                                               <HBox.margin>
@@ -259,23 +256,13 @@
                                           </Button>
                                       </children>
                                       <BorderPane.margin>
-                                          <Insets top="10.0" />
+                                          <Insets bottom="10.0" top="10.0" />
                                       </BorderPane.margin>
                                   </HBox>
                               </left>
                               <right>
                                   <HBox BorderPane.alignment="CENTER">
                                       <children>
-                                          <ComboBox fx:id="cbxServices" minWidth="150.0" prefWidth="200.0" HBox.hgrow="NEVER">
-                                              <HBox.margin>
-                                                  <Insets right="20.0" top="6.0" />
-                                              </HBox.margin>
-                                          </ComboBox>
-                                          <Button minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#addService" styleClass="btnDefault" stylesheets="@../styles/home.css" text="Add Service">
-                                              <HBox.margin>
-                                                  <Insets left="10.0" />
-                                              </HBox.margin>
-                                          </Button>
                                           <Button fx:id="btnNewService" layoutX="190.0" layoutY="10.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" onMouseClicked="#newService" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New Service">
                                               <HBox.margin>
                                                   <Insets left="10.0" />
@@ -297,7 +284,7 @@
                               <items>
                                   <AnchorPane minHeight="200.0" minWidth="200.0">
                                       <children>
-                                            <TableView fx:id="tblQuoteItems" editable="true" minHeight="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <TableView fx:id="tblQuoteItems" editable="true" minHeight="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                 <columns>
                                                     <TableColumn fx:id="colItemNumber" maxWidth="1.7976931348623157E308" minWidth="70.0" prefWidth="-1.0" text="Item #">
                                                         <cellValueFactory>
@@ -382,7 +369,7 @@
                                   </AnchorPane>
                                   <AnchorPane minHeight="200.0" minWidth="200.0">
                                       <children>
-                                            <TableView fx:id="tblQuoteServices" minHeight="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <TableView fx:id="tblQuoteServices" minHeight="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                 <columns>
                                                     <TableColumn fx:id="colServiceTitle" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Service Title">
                                                         <cellValueFactory>

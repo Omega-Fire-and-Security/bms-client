@@ -42,10 +42,10 @@ public class FacilitiesController extends ScreenController implements Initializa
     @Override
     public void refreshView()
     {
-        Employee e = SessionManager.getInstance().getActiveEmployee();
+        /*Employee e = SessionManager.getInstance().getActiveEmployee();
         if(e!=null)
             this.getUserNameLabel().setText(e.getFirstname() + " " + e.getLastname());
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
+        else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");*/
     }
 
     @Override

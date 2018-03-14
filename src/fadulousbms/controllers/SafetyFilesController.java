@@ -71,11 +71,6 @@ public class SafetyFilesController extends ScreenController implements Initializ
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading safety files view..");
 
-        Employee e = SessionManager.getInstance().getActiveEmployee();
-        if(e!=null)
-            this.getUserNameLabel().setText(e.getFirstname() + " " + e.getLastname());
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
-
         CustomTableViewControls.makeEditableTableColumn(colIndex, TextFieldTableCell.forTableColumn(), 215, "index", "/api/safety/index");
         CustomTableViewControls.makeEditableTableColumn(colLabel, TextFieldTableCell.forTableColumn(), 215, "label", "/api/safety/index");
         CustomTableViewControls.makeEditableTableColumn(colPath, TextFieldTableCell.forTableColumn(), 215, "pdf_path", "/api/safety/index");

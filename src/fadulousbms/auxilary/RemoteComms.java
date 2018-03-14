@@ -60,9 +60,9 @@ public class RemoteComms
             Session session = new GsonBuilder().create().fromJson(session_str, Session.class);
             if(session!=null)
             {
-                    IO.log("User Authenticator", IO.TAG_INFO, "successfully signed in.");
-                    connObj.disconnect();
-                    return session;
+                IO.log("User Authenticator", IO.TAG_INFO, "successfully signed in.");
+                connObj.disconnect();
+                return session;
             } else
             {
                 connObj.disconnect();

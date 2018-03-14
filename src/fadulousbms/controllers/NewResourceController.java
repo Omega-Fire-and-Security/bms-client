@@ -105,16 +105,16 @@ public class NewResourceController extends ScreenController implements Initializ
             txtName.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
         }
-        if(!Validators.isValidNode(txtDescription, txtDescription.getText(), 1, ".+"))
+        /*if(!Validators.isValidNode(txtDescription, txtDescription.getText(), 1, ".+"))
         {
             txtDescription.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
-        }
-        if(!Validators.isValidNode(txtSerial, txtSerial.getText(), 1, ".+"))
+        }*/
+        /*if(!Validators.isValidNode(txtSerial, txtSerial.getText(), 1, ".+"))
         {
             txtSerial.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
             return;
-        }
+        }*/
         if(!Validators.isValidNode(txtValue, txtValue.getText(), 1, ".+"))
         {
             txtValue.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));

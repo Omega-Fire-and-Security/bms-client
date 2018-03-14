@@ -48,11 +48,11 @@ public class SessionManager
 
     public Employee getActiveEmployee()
     {
-        if(getActive()!=null)
+        if(this.getActive()!=null)
         {
-            EmployeeManager.getInstance().initialize();
+            //EmployeeManager.getInstance().initialize();
             if (EmployeeManager.getInstance().getDataset() != null)
-                return EmployeeManager.getInstance().getDataset().get(getActive().getUsr());
+                return EmployeeManager.getInstance().getDataset().get(this.getActive().getUsr());
         }
         return null;
     }
@@ -70,6 +70,13 @@ public class SessionManager
                 return s;
         }
         return null;
+    }
+
+    public void clearSessions()
+    {
+        //sessions = new ArrayList<>();
+        sessions.removeAll(sessions);
+        active = null;
     }
     
     public void setActive(Session session)

@@ -118,6 +118,34 @@ public class HomescreenController extends ScreenController implements Initializa
         });
     }
 
+    public void agendaClick()
+    {
+        final ScreenManager screenManager = ScreenManager.getInstance();
+        ScreenManager.getInstance().showLoadingScreen(param ->
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if(screenManager.loadScreen(Screens.AGENDA.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.AGENDA.getScreen())))
+                        {
+                            //Platform.runLater(() ->
+                            screenManager.setScreen(Screens.AGENDA.getScreen());
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load agenda screen.");
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            return null;
+        });
+    }
+
     public void safetyClick()
     {
         if (SessionManager.getInstance().getActive() != null)
@@ -223,20 +251,6 @@ public class HomescreenController extends ScreenController implements Initializa
             }).start();
             return null;
         });
-    }
-
-    @FXML
-    public void facilitiesClick()
-    {
-        try
-        {
-            if(ScreenManager.getInstance().loadScreen(Screens.FACILITIES.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/"+Screens.FACILITIES.getScreen())))
-                ScreenManager.getInstance().setScreen(Screens.FACILITIES.getScreen());
-            else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load facilities screen.");
-        } catch (IOException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
     }
 
     @FXML

@@ -11,17 +11,24 @@ import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.QuoteManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import jfxtras.scene.control.agenda.Agenda;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalField;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  *
  * @author ghost
  */
-public class Job extends BusinessObject
+public class Job extends BusinessObject implements Agenda.Appointment, Temporal
 {
     private long planned_start_date;
     private long date_assigned;
@@ -351,4 +358,164 @@ public class Job extends BusinessObject
         return "/jobs";
     }
 
+    @Override
+    public Boolean isWholeDay() {
+        IO.log(getClass().getName(), IO.TAG_VERBOSE, "duration: " + (getDate_completed()-getDate_started())/1000/60/60 + " hours");
+        return (getDate_completed()-getDate_started())/1000/60/60 == 24 ? true : false;
+    }
+
+    @Override
+    public void setWholeDay(Boolean aBoolean) {
+
+    }
+
+    @Override
+    public String getSummary() {
+        if(getQuote()!=null)
+            if(getQuote().getClient()!=null)
+                return "Job to be executed at " + getQuote().getSitename() + " for client \"" + getQuote().getClient().getClient_name() + "\"";
+            else return "N/A - no clients in database.";
+        else return "N/A - no quotes in database.";
+    }
+
+    @Override
+    public void setSummary(String s) {
+
+    }
+
+    @Override
+    public String getDescription()
+    {
+        if(getQuote()!=null)
+            return getQuote().getRequest();
+        else return "N/A";
+    }
+
+    @Override
+    public void setDescription(String s) {
+
+    }
+
+    @Override
+    public String getLocation() {
+        if(getQuote()!=null)
+            return getQuote().getSitename();
+        else return "N/A";
+    }
+
+    @Override
+    public void setLocation(String s) {
+
+    }
+
+    @Override
+    public Agenda.AppointmentGroup getAppointmentGroup() {
+        return new Agenda.AppointmentGroupImpl();
+    }
+
+    @Override
+    public void setAppointmentGroup(Agenda.AppointmentGroup appointmentGroup) {
+
+    }
+
+    @Override
+    public Calendar getStartTime() {
+        Date date = new Date();
+        date.setTime(getDate_started());
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar;
+    }
+
+    @Override
+    public void setStartTime(Calendar calendar) {
+
+    }
+
+    @Override
+    public Calendar getEndTime()
+    {
+        Date date = new Date();
+        date.setTime(getDate_completed());
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar;
+    }
+
+    @Override
+    public void setEndTime(Calendar calendar) {
+
+    }
+
+    @Override
+    public Temporal getStartTemporal() {
+        return this;
+    }
+
+    @Override
+    public void setStartTemporal(Temporal temporal) {
+
+    }
+
+    @Override
+    public Temporal getEndTemporal() {
+        return this;
+    }
+
+    @Override
+    public void setEndTemporal(Temporal temporal) {
+
+    }
+
+    @Override
+    public LocalDateTime getStartLocalDateTime() {
+        return LocalDateTime.now();
+    }
+
+    @Override
+    public void setStartLocalDateTime(LocalDateTime localDateTime) {
+
+    }
+
+    @Override
+    public LocalDateTime getEndLocalDateTime() {
+        return LocalDateTime.now();
+    }
+
+    @Override
+    public void setEndLocalDateTime(LocalDateTime localDateTime) {
+
+    }
+
+    @Override
+    public boolean isSupported(TemporalUnit unit) {
+        return false;
+    }
+
+    @Override
+    public Temporal with(TemporalField field, long newValue) {
+        return this;
+    }
+
+    @Override
+    public Temporal plus(long amountToAdd, TemporalUnit unit) {
+        return this;
+    }
+
+    @Override
+    public long until(Temporal endExclusive, TemporalUnit unit) {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(TemporalField field) {
+        return false;
+    }
+
+    @Override
+    public long getLong(TemporalField field) {
+        return 0;
+    }
 }

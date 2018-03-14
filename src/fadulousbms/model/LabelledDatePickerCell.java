@@ -2,16 +2,9 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -36,6 +29,7 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
 
         formatter = new SimpleDateFormat("yyyy-MM-dd");
         datePicker = new DatePicker();
+        //datePicker = new DateTimePicker();
         //datePicker.setEditable(editable);
         datePicker.setDisable(!editable);
 

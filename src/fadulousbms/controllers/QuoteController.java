@@ -30,22 +30,21 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.controlsfx.control.PopOver;
+import org.controlsfx.control.textfield.TextFields;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.List;
 
 /**
  * views Controller class
@@ -60,19 +59,10 @@ public abstract class QuoteController extends ScreenController implements Initia
     protected TableView<QuoteItem> tblQuoteItems;
     @FXML
     protected TableView<QuoteService> tblQuoteServices;
-    //Quote items table columns
     @FXML
     protected TableColumn colMarkup,colQuantity, colItemNumber, colEquipmentName, colDescription, colCategory, colUnit, colUnitCost, colValue, colRate, colTotal, colAction, colServiceAction;
     @FXML
-    protected ComboBox<Client> cbxClients;
-    @FXML
-    protected ComboBox<Employee> cbxContactPerson;
-    @FXML
-    protected ComboBox<Service> cbxServices;
-    @FXML
-    protected ComboBox<Resource> cbxMaterials;
-    @FXML
-    protected TextField txtCell,txtTel,txtTotal,txtQuoteId,txtFax,txtEmail,txtSite,txtDateGenerated,txtStatus,txtRevision;
+    protected TextField txtCell, txtTel, txtTotal, txtQuoteId, txtEmail, txtSite, txtDateGenerated, txtStatus,txtRevision, txtClient, txtMaterials, txtContactPerson;
     @FXML
     protected TextArea txtRequest, txtNotes;
     @FXML
@@ -84,7 +74,11 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     protected Button btnApprove, btnNewService;
     protected HashMap<String, TableColumn> colsMap = new HashMap<>();
-    private ObservableList<TableColumn<QuoteItem, ?>> default_cols;
+    protected ObservableList<TableColumn<QuoteItem, ?>> default_cols;
+
+    protected Client selected_client = null;
+    protected Resource selected_material = null;
+    protected Employee selected_contact_person;
 
     /**
      * Initializes the controller class.
@@ -162,10 +156,13 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                 }
                                             }
                                         }
-                                        getTableView().getItems().remove(quoteItem);
+
+                                        if(getTableView().getItems().remove(quoteItem))
+                                            getTableView().setItems(getTableView().getItems());
+                                        else IO.log(getClass().getName(), IO.TAG_ERROR, "could not remove quote item: " + quoteItem);
                                         getTableView().refresh();
                                         IO.log(getClass().getName(), IO.TAG_INFO, "removed QuoteItem["+quoteItem.get_id()+"]");
-                                        txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Quote)QuoteManager.getInstance().getSelected()).getTotal()));
+                                        //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Quote)QuoteManager.getInstance().getSelected()).getTotal()));
                                     });
 
                                     hBox.setFillHeight(true);
@@ -191,8 +188,8 @@ public abstract class QuoteController extends ScreenController implements Initia
                     {
                         final TableCell<QuoteService, String> cell = new TableCell<QuoteService, String>()
                         {
-                            final Button btnNew = new Button("New Service Item");
-                            final Button btnAdd = new Button("Add Service Item");
+                            final Button btnNewServiceItem = new Button("New Service Item");
+                            //final Button btnAdd = new Button("Add Service Item");
                             final Button btnShow = new Button("Show Service Items");
                             final Button btnRemove = new Button("Remove");
 
@@ -201,18 +198,19 @@ public abstract class QuoteController extends ScreenController implements Initia
                             {
                                 super.updateItem(item, empty);
                                 File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                                //fCss.ex
 
-                                btnNew.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                                btnNew.getStyleClass().add("btnAdd");
-                                btnNew.setMinWidth(150);
-                                btnNew.setMinHeight(35);
-                                HBox.setHgrow(btnNew, Priority.ALWAYS);
+                                btnNewServiceItem.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnNewServiceItem.getStyleClass().add("btnAdd");
+                                btnNewServiceItem.setMinWidth(150);
+                                btnNewServiceItem.setMinHeight(35);
+                                HBox.setHgrow(btnNewServiceItem, Priority.ALWAYS);
 
-                                btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                /*btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnAdd.getStyleClass().add("btnAdd");
                                 btnAdd.setMinWidth(150);
                                 btnAdd.setMinHeight(35);
-                                HBox.setHgrow(btnAdd, Priority.ALWAYS);
+                                HBox.setHgrow(btnAdd, Priority.ALWAYS);*/
 
                                 btnShow.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnShow.getStyleClass().add("btnDefault");
@@ -226,7 +224,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                 btnRemove.setMinHeight(35);
                                 HBox.setHgrow(btnRemove, Priority.ALWAYS);
 
-                                HBox hBox = new HBox(btnAdd, btnNew, btnShow, btnRemove);
+                                HBox hBox = new HBox(btnNewServiceItem, btnShow, btnRemove);
 
                                 if (empty)
                                 {
@@ -234,7 +232,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                     setText(null);
                                 } else
                                 {
-                                    btnNew.setOnAction(new EventHandler<ActionEvent>()
+                                    btnNewServiceItem.setOnAction(new EventHandler<ActionEvent>()
                                     {
                                         @Override
                                         public void handle(ActionEvent event)
@@ -254,7 +252,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                 {
                                                     PopOver popover = new PopOver(page);
                                                     popover.setTitle("Create Service Item");
-                                                    popover.show(btnNew);
+                                                    popover.show(btnNewServiceItem);
 
                                                     popover.focusedProperty().addListener(new ChangeListener<Boolean>()
                                                     {
@@ -265,12 +263,12 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                             //reload services, to load the newly added service
                                                             ServiceManager.getInstance().forceSynchronise();
 
-                                                            Platform.runLater(() ->
+                                                            /*Platform.runLater(() ->
                                                             {
                                                                 //refresh services combobox
                                                                 if(ServiceManager.getInstance().getDataset()!=null)
                                                                     cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
-                                                            });
+                                                            });*/
                                                         }
                                                     });
                                                 }else IO.logAndAlert("Error", "Could not load service creation screen.", IO.TAG_ERROR);
@@ -281,7 +279,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                         }
                                     });
 
-                                    btnAdd.setOnAction(event ->
+                                    /*btnAdd.setOnAction(event ->
                                     {
                                         QuoteService quoteService = getTableView().getItems().get(getIndex());
                                         if(quoteService!=null)
@@ -343,7 +341,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                 });
                                             } else IO.logAndAlert("Error", "Invalid service selected", IO.TAG_WARN);
                                         } else IO.logAndAlert("Error", "Invalid service selected", IO.TAG_WARN);
-                                    });
+                                    });*/
 
                                     btnShow.setOnAction(event ->
                                     {
@@ -438,6 +436,16 @@ public abstract class QuoteController extends ScreenController implements Initia
             IO.logAndAlert(getClass().getName(), "no clients were found in the database.", IO.TAG_WARN);
             //return;
         }
+        if( ResourceManager.getInstance().getDataset()==null)
+        {
+            IO.logAndAlert(getClass().getName(), "no resources were found in the database.", IO.TAG_WARN);
+            //return;
+        }
+        if( ServiceManager.getInstance().getDataset()==null)
+        {
+            IO.logAndAlert(getClass().getName(), "no services were found in the database.", IO.TAG_WARN);
+            //return;
+        }
 
         Employee[] employees=null;
         if(EmployeeManager.getInstance().getDataset()!=null)
@@ -448,17 +456,6 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         //setup Quote default accounts
         cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
-        //set clients list to clients combo box
-        cbxClients.valueProperty().addListener((observable, oldValue, newValue) ->
-        {
-            if(newValue!=null)
-            {
-                IO.log(getClass().getName(), IO.TAG_INFO, "selected client id: " + newValue.get_id());
-                cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", newValue.getAccount_name()}));
-                txtFax.setText(newValue.getFax());
-                itemsModified=true;
-            }
-        });
 
         refreshTotal();
         toggleVatExempt.selectedProperty().addListener((observable, oldValue, newValue) ->
@@ -646,78 +643,49 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
-        if(ServiceManager.getInstance().getDataset()!=null)
-            cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
-        if(ResourceManager.getInstance().getDataset()!=null)
-            cbxMaterials.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getDataset().values()));
-
-        cbxClients.setItems(FXCollections.observableArrayList((Collection<Client>) ClientManager.getInstance().getDataset().values()));
-        cbxClients.setCellFactory(new Callback<ListView<Client>, ListCell<Client>>()
+        TextFields.bindAutoCompletion(txtClient, (Collection<Client>)ClientManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
         {
-            @Override
-            public ListCell<Client> call(ListView<Client> param)
+            if(event!=null)
             {
-                return new ListCell<Client>()
+                if(event.getCompletion()!=null)
                 {
-                    @Override
-                    protected void updateItem(Client item, boolean empty)
-                    {
-                        super.updateItem(item, empty);
-                        if (item == null || empty) {
-                            setGraphic(null);
-                            setText(null);
-                        } else {
-                            setText(item.getClient_name());
-                        }
-                    }
-                };
+                    selected_client = event.getCompletion();
+
+                    IO.log(getClass().getName(), IO.TAG_INFO, "selected client id: " + selected_client.get_id());
+                    cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", selected_client.getAccount_name()}));
+                    //txtFax.setText(selected_client.getFax());
+                    itemsModified = true;
+                }
             }
         });
-        cbxClients.setButtonCell(null);
-        /*cbxClients.setOnAction(event ->
-        {
-            if(cbxClients.getValue()!=null)
-            {
-                txtFax.setText(cbxClients.getValue().getFax());
-                itemsModified=true;
-            }
-            //else IO.logAndAlert("Invalid Client", "Client company selected is invalid.", IO.TAG_ERROR);
-        });*/
 
-        cbxContactPerson.setCellFactory(new Callback<ListView<Employee>, ListCell<Employee>>()
+        TextFields.bindAutoCompletion(txtMaterials, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
         {
-            @Override public ListCell<Employee> call(ListView<Employee> p)
+            if(event!=null)
             {
-                return new ListCell<Employee>()
+                if(event.getCompletion()!=null)
                 {
-                    @Override
-                    protected void updateItem(Employee item, boolean empty)
-                    {
-                        super.updateItem(item, empty);
-
-                        if (item == null || empty)
-                        {
-                            setGraphic(null);
-                        } else{
-                            setText(item.getFirstname() + " " + item.getLastname());
-                        }
-                    }
-                };
+                    selected_material = event.getCompletion();
+                    IO.log(getClass().getName(), IO.TAG_INFO, "selected resource: " + selected_material.getBrand_name());
+                    itemsModified = true;
+                }
             }
         });
-        //cbxContactPerson.setButtonCell(null);
-        if(employees!=null)
-            cbxContactPerson.setItems(FXCollections.observableArrayList(employees));
-        cbxContactPerson.setOnAction(event ->
+
+        TextFields.bindAutoCompletion(txtContactPerson, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
         {
-            Employee employee = cbxContactPerson.getValue();
-            if(employee!=null)
+            if(event!=null)
             {
-                txtCell.setText(employee.getCell());
-                txtTel.setText(employee.getTel());
-                txtEmail.setText(employee.getEmail());
-                itemsModified=true;
-            }//else IO.logAndAlert("Invalid Employee", "Selected contact person is invalid", IO.TAG_ERROR);
+                if(event.getCompletion()!=null)
+                {
+                    selected_contact_person = event.getCompletion();
+                    IO.log(getClass().getName(), IO.TAG_INFO, "selected contact person: " + selected_contact_person.getName());
+                    txtCell.setText(selected_contact_person.getCell());
+                    txtTel.setText(selected_contact_person.getTel());
+                    txtEmail.setText(selected_contact_person.getEmail());
+                    itemsModified = true;
+                } else IO.logAndAlert("Invalid Employee", "Selected contact person is invalid", IO.TAG_ERROR);
+            }
         });
 
         if(default_cols==null)
@@ -1186,74 +1154,161 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @FXML
-    public void addService()
-    {
-        if(cbxServices.getValue()!=null)
-        {
-            QuoteService quoteService = new QuoteService();
-            quoteService.setService_id(cbxServices.getValue().get_id());
-            //Quote_id will be set on creation
-            tblQuoteServices.getItems().add(quoteService);
-            tblQuoteServices.refresh();
-
-            itemsModified = true;
-
-            //TODO: compute total with service costs
-            // txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems())));
-
-        } else IO.logAndAlert("Error", "Invalid service.", IO.TAG_ERROR);
-    }
-
-    @FXML
     public void newService()
     {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(FadulousBMS.class.getResource("views/NewService.fxml"));
-        try
+        TextField txt_service_title = new TextField("");
+        txt_service_title.setMinWidth(120);
+        Label lbl_title = new Label("Service Title*: ");
+        lbl_title.setMinWidth(160);
+
+        TextField txt_service_description = new TextField("");
+        txt_service_description.setMinWidth(120);
+        Label lbl_desc = new Label("Service Description[optional]: ");
+        lbl_desc.setMinWidth(160);
+
+        Button btnSubmit = new Button("Create & Add Service");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnSubmit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        btnSubmit.getStyleClass().add("btnAdd");
+        btnSubmit.setMinWidth(140);
+        btnSubmit.setMinHeight(35);
+        HBox.setMargin(btnSubmit, new Insets(15, 0, 0, 10));
+
+        GridPane page = new GridPane();
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.setHgap(20);
+        page.setVgap(20);
+        page.add(lbl_title, 0, 0);
+        page.add(txt_service_title, 1, 0);
+        page.add(lbl_desc, 0, 1);
+        page.add(txt_service_description, 1, 1);
+        page.add(btnSubmit, 0, 2);
+
+        PopOver popover = new PopOver(page);
+        popover.setTitle("Add Service");
+        popover.show(btnNewService);
+
+        TextFields.bindAutoCompletion(txt_service_title, ServiceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
         {
-            VBox page = loader.load();
-            if(page!=null)
+            if(event!=null)
             {
-                PopOver popover = new PopOver(page);
-                popover.setTitle("Add Service");
-                popover.show(btnNewService);
-
-                popover.focusedProperty().addListener(new ChangeListener<Boolean>()
+                if(event.getCompletion()!=null)
                 {
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-                    {
-                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading services combo box");
-                        //reload services, to load the newly added service
-                        ServiceManager.getInstance().forceSynchronise();
+                    IO.log(getClass().getName(), IO.TAG_INFO, "auto-completed service: " + event.getCompletion().getService_title());
+                    txt_service_description.setText(event.getCompletion().getService_description());
 
-                        Platform.runLater(() ->
+                    String res = IO.showConfirm("Copy service items?", "Create new service with the title \""+event.getCompletion().getService_title()+"\" \n" +
+                            "And copy ["+event.getCompletion().getServiceItemsMap().size()+"] service items to the new service?");
+                    if(res.equals(IO.OK))
+                    {
+                        //create service
+                        Service service = new Service();
+                        service.setService_title(txt_service_title.getText());
+                        service.setCreator(SessionManager.getInstance().getActive().getUsr());
+                        if(txt_service_description.getText()!=null)
+                            service.setService_description(txt_service_description.getText());
+
+                        try
                         {
-                            //refresh services combobox
-                            if(ServiceManager.getInstance().getDataset()!=null)
-                                cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
-                        });
+                            ServiceManager.getInstance().createService(service, service_id ->
+                            {
+                                if(service_id!=null)
+                                {
+                                    //copy service items from completion to new service
+                                    for (ServiceItem serviceItem : event.getCompletion().getServiceItemsMap().values()) {
+                                        //update service_id to match current service
+                                        serviceItem.setService_id(service.get_id());
+                                        //create ServiceItem on database
+                                        try {
+                                            ServiceManager.getInstance().createServiceItem(serviceItem, null);
+                                        } catch (IOException e) {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                        }
+                                    }
+
+                                    //add new service to table and refresh
+                                    QuoteService quoteService = new QuoteService();
+                                    quoteService.setService_id((String) service_id);
+                                    //Quote_id will be set on creation
+                                    tblQuoteServices.getItems().add(quoteService);
+                                    tblQuoteServices.refresh();
+                                }
+                                return null;
+                            });
+                        } catch (IOException e)
+                        {
+                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        }
+                        itemsModified = true;
+                    } else {
+                        txt_service_title.setText(event.getCompletion().getService_title());
+                        txt_service_description.setText(event.getCompletion().getService_description());
+                        if(!popover.isShowing())
+                            popover.show(btnNewService);
                     }
-                });
-            }else IO.logAndAlert("Error", "Could not load service creation screen.", IO.TAG_ERROR);
-        } catch (IOException e)
+                }
+            }
+        });
+
+        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
         {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
+            @Override
+            public void handle(ActionEvent event)
+            {
+                if(txt_service_title.getText()==null)
+                {
+                    IO.logAndAlert("Error", "Invalid service title.\nPlease enter a valid value.", IO.TAG_WARN);
+                    return;
+                }
+
+                Service service = new Service();
+                service.setService_title(txt_service_title.getText());
+                service.setCreator(SessionManager.getInstance().getActive().getUsr());
+                if(txt_service_description.getText()!=null)
+                    service.setService_description(txt_service_description.getText());
+
+                try
+                {
+                    //create new service
+                    ServiceManager.getInstance().createService(service, service_id ->
+                    {
+                        if(service_id!=null)
+                        {
+                            //add new service to table and refresh
+                            QuoteService quoteService = new QuoteService();
+                            quoteService.setService_id((String) service_id);
+                            //Quote_id will be set on creation
+                            tblQuoteServices.getItems().add(quoteService);
+                            tblQuoteServices.refresh();
+                        }
+                        return null;
+                    });
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+            }
+        });
     }
 
     @FXML
     public void addMaterial()
     {
-        if(cbxMaterials.getValue()!=null)
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+        if(selected_material!=null)
         {
+            txtClient.getStyleClass().remove("control-input-error");
+            txtClient.getStyleClass().add("text-field");
+
             QuoteItem quoteItem = new QuoteItem();
 
+            //quoteItem.set_id(String.valueOf(System.currentTimeMillis()));
             quoteItem.setItem_number(tblQuoteItems.getItems().size());
             quoteItem.setQuantity(1);
-            quoteItem.setUnit_cost(cbxMaterials.getValue().getResource_value());
+            quoteItem.setUnit_cost(selected_material.getResource_value());
             quoteItem.setMarkup(0);
-            quoteItem.setResource_id(cbxMaterials.getValue().get_id());
+            quoteItem.setResource_id(selected_material.get_id());
             //quoteItem.setEquipment_description(resourceComboBox.getValue().getResource_description());
             //quoteItem.setUnit(resourceComboBox.getValue().getUnit());
             //quoteItem.setRate(resourceComboBox.getValue().getResource_value());
@@ -1270,7 +1325,13 @@ public abstract class QuoteController extends ScreenController implements Initia
             //        String.valueOf(QuoteManager.computeQuoteTotal(QuoteManager.getInstance().getSelectedQuote())));
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems())));
 
-        } else IO.logAndAlert("Error", "Invalid resource.", IO.TAG_ERROR);
+        } else
+        {
+            txtMaterials.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+            txtClient.getStyleClass().remove("form-control-default");
+            txtClient.getStyleClass().add("control-input-error");
+            IO.logAndAlert("Warning", "Invalid resource.", IO.TAG_WARN);
+        }
     }
 
     @FXML
@@ -1286,6 +1347,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                 PopOver popover = new PopOver(page);
                 popover.setTitle("Add Material");
                 popover.show(btnNewService);
+                popover.setDetached(true);
 
                 popover.focusedProperty().addListener(new ChangeListener<Boolean>()
                 {
@@ -1299,8 +1361,23 @@ public abstract class QuoteController extends ScreenController implements Initia
                         Platform.runLater(() ->
                         {
                             //refresh services combobox
-                            if(ServiceManager.getInstance().getDataset()!=null)
-                                cbxMaterials.setItems(FXCollections.observableArrayList(ResourceManager.getInstance().getDataset().values()));
+                            if(ResourceManager.getInstance().getDataset().values()!=null)
+                            {
+                                //txtMaterials = new TextField();
+                                TextFields.bindAutoCompletion(txtMaterials, FXCollections.observableArrayList());
+                                TextFields.bindAutoCompletion(txtMaterials, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
+                                {
+                                    if(event!=null)
+                                    {
+                                        if(event.getCompletion()!=null)
+                                        {
+                                            selected_material = event.getCompletion();
+                                            IO.log(getClass().getName(), IO.TAG_INFO, "selected resource: " + selected_material.getBrand_name());
+                                            itemsModified = true;
+                                        }
+                                    }
+                                });
+                            }
                         });
                     }
                 });
@@ -1367,26 +1444,26 @@ public abstract class QuoteController extends ScreenController implements Initia
     {
         File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
-        cbxClients.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(cbxClients.getValue()==null)
+        txtClient.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        if(selected_client==null)
         {
-            cbxClients.getStyleClass().remove("form-control-default");
-            cbxClients.getStyleClass().add("control-input-error");
+            txtClient.getStyleClass().remove("form-control-default");
+            txtClient.getStyleClass().add("control-input-error");
             return;
-        }else{
-            cbxClients.getStyleClass().remove("control-input-error");
-            cbxClients.getStyleClass().add("form-control-default");
+        } else {
+            txtClient.getStyleClass().remove("control-input-error");
+            txtClient.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(cbxContactPerson.getValue()==null)
+        txtContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        if(selected_contact_person==null)
         {
-            cbxContactPerson.getStyleClass().remove("form-control-default");
-            cbxContactPerson.getStyleClass().add("control-input-error");
+            txtContactPerson.getStyleClass().remove("form-control-default");
+            txtContactPerson.getStyleClass().add("control-input-error");
             return;
         }else{
-            cbxContactPerson.getStyleClass().remove("control-input-error");
-            cbxContactPerson.getStyleClass().add("form-control-default");
+            txtContactPerson.getStyleClass().remove("control-input-error");
+            txtContactPerson.getStyleClass().add("form-control-default");
         }
 
         if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
@@ -1438,8 +1515,8 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         //prepare quote attributes
         Quote quote = new Quote();
-        quote.setClient_id(cbxClients.getValue().get_id());
-        quote.setContact_person_id(cbxContactPerson.getValue().getUsr());
+        quote.setClient_id(selected_client.get_id());
+        quote.setContact_person_id(selected_contact_person.getUsr());
         quote.setSitename(txtSite.getText());
         quote.setRequest(txtRequest.getText());
         quote.setStatus(Quote.STATUS_PENDING);
@@ -1514,26 +1591,26 @@ public abstract class QuoteController extends ScreenController implements Initia
     {
         File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
-        cbxClients.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(cbxClients.getValue()==null)
+        txtClient.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        if(selected_client==null)
         {
-            cbxClients.getStyleClass().remove("form-control-default");
-            cbxClients.getStyleClass().add("control-input-error");
+            txtClient.getStyleClass().remove("form-control-default");
+            txtClient.getStyleClass().add("control-input-error");
             return;
         }else{
-            cbxClients.getStyleClass().remove("control-input-error");
-            cbxClients.getStyleClass().add("form-control-default");
+            txtClient.getStyleClass().remove("control-input-error");
+            txtClient.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(cbxContactPerson.getValue()==null)
+        txtContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        if(selected_contact_person==null)
         {
-            cbxContactPerson.getStyleClass().remove("form-control-default");
-            cbxContactPerson.getStyleClass().add("control-input-error");
+            txtContactPerson.getStyleClass().remove("form-control-default");
+            txtContactPerson.getStyleClass().add("control-input-error");
             return;
         } else {
-            cbxContactPerson.getStyleClass().remove("control-input-error");
-            cbxContactPerson.getStyleClass().add("form-control-default");
+            txtContactPerson.getStyleClass().remove("control-input-error");
+            txtContactPerson.getStyleClass().add("form-control-default");
         }
 
         if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
@@ -1578,8 +1655,8 @@ public abstract class QuoteController extends ScreenController implements Initia
         {
             // create a new Quote with selected Quote as parent and +1 revision number
             Quote quote = new Quote();
-            quote.setClient_id(cbxClients.getValue().get_id());
-            quote.setContact_person_id(cbxContactPerson.getValue().getUsr());
+            quote.setClient_id(selected_client.get_id());
+            quote.setContact_person_id(selected_contact_person.getUsr());
             quote.setSitename(txtSite.getText());
             quote.setRequest(txtRequest.getText());
             quote.setAccount_name(cbxAccount.getValue());
@@ -1671,26 +1748,26 @@ public abstract class QuoteController extends ScreenController implements Initia
     {
         File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
-        cbxClients.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(cbxClients.getValue()==null)
+        txtClient.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        if(selected_client==null)
         {
-            cbxClients.getStyleClass().remove("form-control-default");
-            cbxClients.getStyleClass().add("control-input-error");
+            txtClient.getStyleClass().remove("form-control-default");
+            txtClient.getStyleClass().add("control-input-error");
             return;
         }else{
-            cbxClients.getStyleClass().remove("control-input-error");
-            cbxClients.getStyleClass().add("form-control-default");
+            txtClient.getStyleClass().remove("control-input-error");
+            txtClient.getStyleClass().add("form-control-default");
         }
 
-        cbxContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(cbxContactPerson.getValue()==null)
+        txtContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        if(selected_contact_person==null)
         {
-            cbxContactPerson.getStyleClass().remove("form-control-default");
-            cbxContactPerson.getStyleClass().add("control-input-error");
+            txtContactPerson.getStyleClass().remove("form-control-default");
+            txtContactPerson.getStyleClass().add("control-input-error");
             return;
         }else{
-            cbxContactPerson.getStyleClass().remove("control-input-error");
-            cbxContactPerson.getStyleClass().add("form-control-default");
+            txtContactPerson.getStyleClass().remove("control-input-error");
+            txtContactPerson.getStyleClass().add("form-control-default");
         }
 
         if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
@@ -1738,8 +1815,8 @@ public abstract class QuoteController extends ScreenController implements Initia
                 IO.logAndAlert("Error", "Selected Quote has already been approved and can no longer be changed. \nCreate a new revision if you'd like to make updates to this quote.", IO.TAG_ERROR);
                 return;
             }
-            selected.setClient_id(cbxClients.getValue().get_id());
-            selected.setContact_person_id(cbxContactPerson.getValue().getUsr());
+            selected.setClient_id(selected_client.get_id());
+            selected.setContact_person_id(selected_contact_person.getUsr());
             if(toggleVatExempt.isSelected())
                 selected.setVat(0);
             else selected.setVat(QuoteManager.VAT);
@@ -1881,6 +1958,53 @@ public abstract class QuoteController extends ScreenController implements Initia
         tblQuoteServices.getItems().removeAll();
         tblQuoteServices.refresh();
     }
+
+    /*@FXML
+    public void newClient()
+    {
+        ClientManager.newClientWindow("Create a new Client for this Quote", param ->
+        {
+            new Thread(() ->
+                    refreshModel(c->
+                    {
+                        Platform.runLater(() -> refreshView());
+                        return null;
+                    })).start();
+            return null;
+        });
+    }
+
+    @FXML
+    public void newEmployee()
+    {
+        EmployeeManager.getInstance().newExternalEmployeeWindow("Create a new Contact Person for this Job", param ->
+        {
+            new Thread(() ->
+                    refreshModel(cb->
+                    {
+                        Platform.runLater(() -> refreshView());
+
+                        TextFields.bindAutoCompletion(txtContactPerson, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
+                        {
+                            if(event!=null)
+                            {
+                                if(event.getCompletion()!=null)
+                                {
+                                    selected_contact_person = event.getCompletion();
+                                    IO.log(getClass().getName(), IO.TAG_INFO, "selected contact person: " + selected_contact_person.getName());
+                                    txtCell.setText(selected_contact_person.getCell());
+                                    txtTel.setText(selected_contact_person.getTel());
+                                    txtEmail.setText(selected_contact_person.getEmail());
+                                    itemsModified = true;
+                                } else IO.logAndAlert("Invalid Employee", "Selected contact person is invalid", IO.TAG_ERROR);
+                            }
+                        });
+
+                        return null;
+                    })).start();
+            return null;
+        });
+    }*/
 
     @FXML
     public void back()

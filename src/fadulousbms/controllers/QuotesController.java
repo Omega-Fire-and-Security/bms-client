@@ -14,12 +14,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+import org.controlsfx.control.textfield.TextFields;
 
 import java.awt.*;
 import java.io.*;
@@ -339,11 +341,55 @@ public class QuotesController extends OperationsController implements Initializa
     @Override
     public void initialize(URL url, ResourceBundle rb) 
     {
+        //register tab controller
         OperationsController.registerTabController(quotesTab.getId(),this);
+        //refresh data-set and GUI
         new Thread(() ->
                 refreshModel(cb->{Platform.runLater(() -> refreshView());return null;})).start();
     }
 
+    public Callback getContextSearchCallback()
+    {
+        return txtSearch ->
+        {
+            if(txtSearch!=null)
+            {
+                ClientManager.getInstance().initialize();
+                TextFields.bindAutoCompletion((TextField) txtSearch, ClientManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
+                {
+                    if (event != null)
+                    {
+                        if (event.getCompletion() != null)
+                        {
+                            Client selected_client = (Client) event.getCompletion();
+                            HashMap<String, Quote> selected_client_quotes = new HashMap<>();
+                            for(Quote quote: QuoteManager.getInstance().getDataset().values())
+                                if(quote.getClient_id().equals(selected_client.get_id()))
+                                    selected_client_quotes.putIfAbsent(quote.get_id(), quote);
+
+                            tblQuotes.setItems(FXCollections.observableArrayList(selected_client_quotes.values()));
+                            tblQuotes.refresh();
+                            //itemsModified = true;
+                        }
+                    }
+                });
+            } else IO.log(getClass().getName(), IO.TAG_ERROR, "context search TextField is null");
+            return null;
+        };
+    }
+
+    public Callback getContextSearchResetCallback()
+    {
+        return param ->
+        {
+            if(QuoteManager.getInstance().getDataset()!=null)
+            {
+                tblQuotes.setItems(FXCollections.observableArrayList(QuoteManager.getInstance().getDataset().values()));
+                tblQuotes.refresh();
+            }
+            return null;
+        };
+    }
     public static RadialMenuItem[] getDefaultContextMenu()
     {
         //RadialMenuItem level1Item = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "level 1 item 1", null, null, null);//RadialMenuItem(menuSize, "level 1 item", null, null);

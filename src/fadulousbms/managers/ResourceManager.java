@@ -29,8 +29,8 @@ import java.util.HashMap;
  */
 public class ResourceManager extends BusinessObjectManager
 {
-    private HashMap<String, Resource> resources;//resources that have been approved/acquired/delivered
-    private HashMap<String, Resource> acquired_resources;
+    private HashMap<String, Resource> resources;
+    private HashMap<String, Resource> acquired_resources;//resources that have been approved/acquired/delivered
     private HashMap<String, ResourceType> resource_types;
     private Gson gson;
     private static ResourceManager resource_manager = new ResourceManager();
@@ -54,16 +54,17 @@ public class ResourceManager extends BusinessObjectManager
         return resource_manager;
     }
 
-    /**
-     *
-     * @return Approved Resource objects.
-     */
+
     @Override
     public HashMap<String, Resource> getDataset()
     {
         return resources;
     }
 
+    /**
+     *
+     * @return Approved Resource objects.
+     */
     public HashMap<String, Resource> getApproved_resources()
     {
         return acquired_resources;
@@ -564,7 +565,7 @@ public class ResourceManager extends BusinessObjectManager
         {
             if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
             {
-                IO.log("Success", IO.TAG_INFO, "Successfully created new material: "+resource.getResource_description()+"!");
+                IO.log("Success", IO.TAG_INFO, "Successfully created new material: "+resource.toString()+"!");
                 //refresh model & view when material has been created.
                 forceSynchronise();
 

@@ -52,7 +52,9 @@ public class ViewQuoteController extends QuoteController
                 return;
             }
             //QuoteManager.getInstance().selected_quote_sibling_cursor =revs.length-1;//point selected_quote_sibling_cursor to latest revision
-            selected = revs[QuoteManager.getInstance().selected_quote_sibling_cursor];//make quote revision at [selected_quote_sibling_cursor] be selected quote
+            if(QuoteManager.getInstance().selected_quote_sibling_cursor<revs.length)
+                selected = revs[QuoteManager.getInstance().selected_quote_sibling_cursor];//make quote revision at [selected_quote_sibling_cursor] be selected quote
+            else selected = revs[revs.length-1];//make last quote revision be selected quote
 
             if(selected.getContact_person()==null)
             {
@@ -69,18 +71,21 @@ public class ViewQuoteController extends QuoteController
             {
                 btnApprove.setVisible(false);
                 btnApprove.setDisable(true);
-            }else{
+            } else{
                 btnApprove.setVisible(true);
                 btnApprove.setDisable(false);
             }
 
-            cbxClients.setValue(selected.getClient());
-            cbxClients.setPromptText("Client name");
-            cbxContactPerson.setValue(selected.getContact_person());
+            selected_client = selected.getClient();
+            selected_contact_person = selected.getContact_person();
+
+            txtClient.setText(selected.getClient().getClient_name());
+            txtContactPerson.setText(selected.getContact_person().getName());
+
             txtCell.setText(selected.getContact_person().getCell());
             txtTel.setText(selected.getContact_person().getTel());
             txtEmail.setText(selected.getContact_person().getEmail());
-            txtFax.setText(selected.getClient().getFax());
+            //txtFax.setText(selected.getClient().getFax());
             if(selected.getParent_id()!=null)
                 txtQuoteId.setText(selected.getParent().get_id());
             else txtQuoteId.setText(selected.get_id());

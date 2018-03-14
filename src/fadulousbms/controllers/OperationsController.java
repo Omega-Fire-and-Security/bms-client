@@ -16,6 +16,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialContainerMenuItem;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
@@ -29,6 +30,8 @@ public class OperationsController extends ScreenController implements Initializa
 {
     @FXML
     private TabPane BMSTabs;
+    @FXML
+    private static TextField txtSearch;
     private static HashMap<String,ScreenController> tabControllers = new HashMap<>();
     private static Tab selected_tab;
     private static ScreenController selected_controller;
@@ -54,8 +57,6 @@ public class OperationsController extends ScreenController implements Initializa
             {
                 selected_tab = newValue;
                 selected_controller = tabControllers.get(newValue.getId());
-                if(selected_controller!=null)
-                    IO.log(getClass().getName(), IO.TAG_INFO, "selected tab: " + newValue.getId());
             }
             /*if(!newValue.getId().toLowerCase().equals("clientsTab") && !newValue.getId().toLowerCase().equals("suppliersTab"))
             {
@@ -176,7 +177,38 @@ public class OperationsController extends ScreenController implements Initializa
         {
             selected_tab = tab;
             selected_controller = tabControllers.get(tab.getId());
-            IO.log(OperationsController.class.getName(), IO.TAG_INFO, "selected tab: " + tab.getText());
+            IO.log(OperationsController.class.getName(), IO.TAG_INFO, "selected operations tab: " + tab.getText());
+        }
+    }
+
+    @FXML
+    public void searchText(KeyEvent event)
+    {
+        if(selected_controller!=null)
+        {
+            if(event.getSource() instanceof TextField)
+            {
+                //set context search controls
+                if (selected_controller instanceof QuotesController)
+                {
+                    IO.log(OperationsController.class.getName(), IO.TAG_VERBOSE, "using quotes' context search callback");
+                    ((QuotesController) selected_controller).getContextSearchCallback().call(event.getSource());
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void resetClick()
+    {
+        if(selected_controller!=null)
+        {
+            //set context search controls
+            if (selected_controller instanceof QuotesController)
+            {
+                IO.log(OperationsController.class.getName(), IO.TAG_VERBOSE, "using quotes' context search reset callback");
+                ((QuotesController) selected_controller).getContextSearchResetCallback().call(null);
+            }
         }
     }
 

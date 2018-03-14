@@ -277,7 +277,11 @@ public class Resource extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        return getBrand_name();
+        /*if(getBrand_name()!=null)
+            if(!getBrand_name().isEmpty())
+                return getBrand_name();*/
+
+        return getBrand_name() + " - " + getResource_description();
     }
 
     @Override

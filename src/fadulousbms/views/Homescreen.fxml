@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -73,9 +74,9 @@
                               </Label>
                            </center>
                         </BorderPane>
-                        <BorderPane onMouseClicked="#facilitiesClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <BorderPane onMouseClicked="#agendaClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="2">
                            <center>
-                              <Label text="Facilities" BorderPane.alignment="CENTER">
+                              <Label text="Agenda" BorderPane.alignment="CENTER">
                                  <font>
                                     <Font size="31.0" />
                                  </font>
@@ -93,7 +94,7 @@
       </StackPane>
    </center>
    <top>
-       <fx:include source="SystemNav.fxml"/>
+       <fx:include source="SystemNav.fxml" />
    </top>
    <bottom>
       <HBox BorderPane.alignment="CENTER">

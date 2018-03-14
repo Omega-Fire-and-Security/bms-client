@@ -207,4 +207,20 @@ public abstract class BusinessObject implements Serializable
         //IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if(o instanceof BusinessObject)
+            if(((BusinessObject)o).get_id()==null)
+                return false;
+            else return ((BusinessObject)o).get_id().equals(get_id());
+        else return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return get_id().hashCode();
+    }
 }

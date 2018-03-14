@@ -72,45 +72,6 @@ public class ServiceController extends ScreenController implements Initializable
     }
 
     @FXML
-    public void createService()
-    {
-        if(SessionManager.getInstance().getActive()==null)
-        {
-            IO.logAndAlert("Session Invalid", "No valid active sessions.\nPlease log in.", IO.TAG_ERROR);
-            return;
-        }
-        if(SessionManager.getInstance().getActive().isExpired())
-        {
-            IO.logAndAlert("Session Expired", "Active session has expired.\nPlease log in.", IO.TAG_ERROR);
-            return;
-        }
-        if(txtServiceName.getText()==null)
-        {
-            IO.logAndAlert("Error", "Invalid service name.\nPlease enter a valid value.", IO.TAG_WARN);
-            return;
-        }
-        if(txtServiceName.getText().isEmpty())
-        {
-            IO.logAndAlert("Error", "Invalid service name.\nPlease enter a valid value.", IO.TAG_WARN);
-            return;
-        }
-
-        Service service = new Service();
-        service.setService_title(txtServiceName.getText());
-        service.setCreator(SessionManager.getInstance().getActive().getUsr());
-        if(txtServiceDescription.getText()!=null)
-            service.setService_description(txtServiceDescription.getText());
-
-        try
-        {
-            ServiceManager.getInstance().createService(service, null);
-        } catch (IOException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
-    }
-
-    @FXML
     public void createServiceItem()
     {
         if(SessionManager.getInstance().getActive()==null)

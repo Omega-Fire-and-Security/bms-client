@@ -65,8 +65,8 @@ public class LoginController extends ScreenController implements Initializable
     public void refreshView()
     {
         //TODO: remove this
-        txtUsr.setText("ghost");
-        txtPwd.setText("Reventone42");
+        txtUsr.setText("jivesh");
+        txtPwd.setText("#Robertsham1234");
 
         txtPwd.setOnKeyReleased(event ->
         {
@@ -178,8 +178,15 @@ public class LoginController extends ScreenController implements Initializable
                             Session session = RemoteComms.auth(usr, pwd);
                             if(session != null)
                             {
-                                SessionManager ssn_mgr = SessionManager.getInstance();
-                                ssn_mgr.addSession(session);
+                                //SessionManager ssn_mgr = SessionManager.getInstance();
+                                //ssn_mgr.getSessions().removeAll(ssn_mgr.getSessions());
+                                SessionManager.getInstance().clearSessions();
+                                SessionManager.getInstance().addSession(session);
+                                SessionManager.getInstance().setActive(session);
+                                /*ssn_mgr.getActive().setDate(session.getDate());
+                                ssn_mgr.getActive().setSession_id(session.getSession_id());
+                                ssn_mgr.getActive().setTtl(session.getTtl());
+                                ssn_mgr.getActive().setUsr(session.getUsr());*/
                                 //load User data to memory
                                 EmployeeManager.getInstance().initialize();
                                 if (ScreenManager.getInstance().loadScreen(Screens.HOME.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/" + Screens.HOME.getScreen())))
@@ -193,15 +200,19 @@ public class LoginController extends ScreenController implements Initializable
                     } catch(ConnectException ex)
                     {
                         IO.logAndAlert("Login failure", ex.getMessage() + ", \nis the server up? are you connected to the network?", IO.TAG_ERROR);
+                        ex.printStackTrace();
                     } catch (LoginException ex)
                     {
                         IO.logAndAlert("Login failure", ex.getMessage(), IO.TAG_ERROR);
+                        ex.printStackTrace();
                     } catch (IOException e)
                     {
                         IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
+                        e.printStackTrace();
                     } catch (Exception e)
                     {
                         IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
+                        e.printStackTrace();
                     }
                     //hide loading pane
                     if(param!=null)

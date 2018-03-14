@@ -14,7 +14,7 @@
                 <TableColumn fx:id="colContactPerson" minWidth="120.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Contact Person" visible="false"/>
                 <TableColumn fx:id="colStatus" minWidth="80.0" maxWidth="1.7976931348623157E308" text="Status" visible="true"/>
                 <TableColumn fx:id="colDateGenerated" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Date Logged"/>
-                <TableColumn fx:id="colPlannedStartDate" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Planned Start Date"/>
+                <TableColumn fx:id="colPlannedStartDate" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Scheduled Start Date"/>
                 <TableColumn fx:id="colDateAssigned" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Date Assigned"/>
                 <TableColumn fx:id="colDateStarted" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Date Started"/>
                 <TableColumn fx:id="colDateEnded" editable="false" minWidth="90.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Date Completed"/>
