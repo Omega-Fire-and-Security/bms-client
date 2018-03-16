@@ -40,21 +40,26 @@ public class ViewQuoteController extends QuoteController
             }
 
             //get selected Quote's siblings sorted by revision number
-            Quote[] revs = selected.getSortedSiblings("revision");
-            if(revs==null)
+            Quote[] selected_quote_siblings = selected.getSortedSiblings("revision");
+            //Quote[] selected_quote_children = selected.getChildren("revision");
+            if(selected_quote_siblings==null)
             {
                 IO.log(getClass().getName(), IO.TAG_WARN, "selected quote has no siblings, which shouldn't be possible, so please reload this quote.");
                 return;
             }
-            if(revs.length<=0)
+            if(selected_quote_siblings.length<=0)
             {
                 IO.log(getClass().getName(), IO.TAG_WARN, "selected quote has no siblings, which shouldn't be possible, so please reload this quote.");
                 return;
             }
             //QuoteManager.getInstance().selected_quote_sibling_cursor =revs.length-1;//point selected_quote_sibling_cursor to latest revision
-            if(QuoteManager.getInstance().selected_quote_sibling_cursor<revs.length)
-                selected = revs[QuoteManager.getInstance().selected_quote_sibling_cursor];//make quote revision at [selected_quote_sibling_cursor] be selected quote
-            else selected = revs[revs.length-1];//make last quote revision be selected quote
+            if(selected_quote_siblings != null)
+            {
+                if (QuoteManager.getInstance().selected_quote_sibling_cursor < selected_quote_siblings.length)
+                    selected = selected_quote_siblings[QuoteManager.getInstance().selected_quote_sibling_cursor];//make quote revision at [selected_quote_sibling_cursor] be selected quote
+                else
+                    selected = selected.getLatestRevisionFromChildren();//[selected_quote_children.length-1];//make last quote revision be selected quote
+            } //else has no other revisions, use currently selected Quote object
 
             if(selected.getContact_person()==null)
             {
@@ -207,14 +212,15 @@ public class ViewQuoteController extends QuoteController
         {
             //get selected Quote's siblings and traverse through them
             //Quote[] siblings = selected.getSortedSiblings("revision");
+            //HashMap childrenQuotes = selected.getChildrenMap();
             HashMap revs = selected.getSiblingsMap();//uses a bit less resources
+
             if (revs != null)
             {
                 //set selected quote
                 if(QuoteManager.getInstance().selected_quote_sibling_cursor+1>=revs.size())
                     QuoteManager.getInstance().selected_quote_sibling_cursor=0;//wrap around to first revision
                 else QuoteManager.getInstance().selected_quote_sibling_cursor++;//go to next revision
-                //QuoteManager.getInstance().setSelectedQuote(siblings[QuoteManager.getInstance().selected_quote_sibling_cursor]);
                 //refresh GUI
                 new Thread(() ->
                         refreshModel(param ->
@@ -222,7 +228,7 @@ public class ViewQuoteController extends QuoteController
                             Platform.runLater(() -> refreshView());
                             return null;
                         })).start();
-            } else IO.logAndAlert("View Quote Error", "Selected quote has no siblings. Should return self as first arg of array.", IO.TAG_ERROR);
+            } else IO.logAndAlert("View Quote Error", "Selected quote has no siblings. Should return self as first object in siblings array.", IO.TAG_ERROR);
         } else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 
@@ -232,14 +238,17 @@ public class ViewQuoteController extends QuoteController
         if(selected!=null)
         {
             //get selected Quote's parent's children and traverse through them
-            Quote[] siblings = selected.getSortedSiblings("revision");
-            if (siblings != null)
+            //Quote[] siblings = selected.getSortedSiblings("revision");
+            //HashMap childrenQuotes = selected.getChildrenMap();
+            HashMap revs = selected.getSiblingsMap();//uses a bit less resources
+
+            if (revs != null)
             {
                 //set selected quote
                 if(QuoteManager.getInstance().selected_quote_sibling_cursor-1<0)
-                    QuoteManager.getInstance().selected_quote_sibling_cursor=siblings.length-1;//wrap around to first revision
+                    QuoteManager.getInstance().selected_quote_sibling_cursor=revs.size()-1;//wrap around to first revision
                 else QuoteManager.getInstance().selected_quote_sibling_cursor--;//go to previous revision
-                //QuoteManager.getInstance().setSelectedQuote(siblings[QuoteManager.getInstance().selected_quote_sibling_cursor]);//set selected to be
+
                 //refresh GUI
                 new Thread(() ->
                         refreshModel(param ->
@@ -247,7 +256,7 @@ public class ViewQuoteController extends QuoteController
                             Platform.runLater(() -> refreshView());
                             return null;
                         })).start();
-            } else IO.logAndAlert("View Quote Error", "Selected quote has no siblings. Should return self as first arg of siblings array.", IO.TAG_ERROR);
+            } else IO.logAndAlert("View Quote Error", "Selected quote has no siblings. Should return self as first object in siblings array.", IO.TAG_ERROR);
         } else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 

@@ -396,6 +396,7 @@ public class JobsController extends ScreenController implements Initializable
                                 container.setSpacing(10);
                                 container.getChildren().add(checkBox);
                             }
+
                             Button btnSubmit = new Button("Submit");
                             btnSubmit.setOnAction(event1 ->
                             {

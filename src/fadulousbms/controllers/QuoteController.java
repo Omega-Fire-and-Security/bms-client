@@ -386,7 +386,8 @@ public abstract class QuoteController extends ScreenController implements Initia
         }
 
         //setup Quote default accounts
-        cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash"}));
+        cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", "Credit"}));
+        cbxAccount.getSelectionModel().select(0);
 
         refreshTotal();
         toggleVatExempt.selectedProperty().addListener((observable, oldValue, newValue) ->
@@ -1534,18 +1535,24 @@ public abstract class QuoteController extends ScreenController implements Initia
             if(!smgr.getActive().isExpired())
             {
                 //Update Quote if already been added
-                if(txtQuoteId.getText()!=null)
+                /*if(txtQuoteId.getText()!=null)
                 {
                     if(!txtQuoteId.getText().isEmpty())
                     {
                         newQuoteRevision();
                         return;
                     }
-                }
+                }*/
+                //force createQuote() to create new QuoteItems for new Quote revision
+                for(QuoteItem quoteItem: tblQuoteItems.getItems())
+                    quoteItem.set_id(null);
+                for(QuoteService quoteService: tblQuoteServices.getItems())
+                    quoteService.set_id(null);
+
                 //else create new Quote
                 createQuote();
-            }else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        }else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            }else IO.showMessage("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        }else IO.showMessage("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
     @FXML
@@ -1586,6 +1593,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         {
             txtClient.getStyleClass().remove("form-control-default");
             txtClient.getStyleClass().add("control-input-error");
+            IO.logAndAlert("Error: Invalid input", "Selected client is invalid.", IO.TAG_WARN);
             return;
         } else {
             txtClient.getStyleClass().remove("control-input-error");
@@ -1597,6 +1605,7 @@ public abstract class QuoteController extends ScreenController implements Initia
         {
             txtContactPerson.getStyleClass().remove("form-control-default");
             txtContactPerson.getStyleClass().add("control-input-error");
+            IO.logAndAlert("Error: Invalid input", "Selected contact person is invalid.", IO.TAG_WARN);
             return;
         }else{
             txtContactPerson.getStyleClass().remove("control-input-error");
@@ -1633,11 +1642,13 @@ public abstract class QuoteController extends ScreenController implements Initia
         if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
         {
             txtSite.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+            IO.logAndAlert("Error: Invalid input", "Invalid site name.", IO.TAG_WARN);
             return;
         }
         if(!Validators.isValidNode(txtRequest, txtRequest.getText(), 1, ".+"))
         {
             txtRequest.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+            IO.logAndAlert("Error: Invalid input", "Invalid request.", IO.TAG_WARN);
             return;
         }
 
@@ -1660,6 +1671,21 @@ public abstract class QuoteController extends ScreenController implements Initia
         quote.setAccount_name(cbxAccount.getValue());
         quote.setCreator(SessionManager.getInstance().getActive().getUsr());
         quote.setRevision(1.0);
+
+        //set current Quote as parent
+        if(txtQuoteId.getText()!=null)
+        {
+            if (!txtQuoteId.getText().isEmpty())
+            {
+                //increment revision number by +1
+                quote.setRevision(((Quote) QuoteManager.getInstance().getSelected()).getSiblingsMap().size()+1);
+                if (((Quote) QuoteManager.getInstance().getSelected()).getParent_id() != null)//use selected Quote's parent for as new Quote's parent_id
+                    quote.setParent_id(((Quote) QuoteManager.getInstance().getSelected()).getParent_id());
+                else if (((Quote) QuoteManager.getInstance().getSelected()).getParent_id() != null)//use selected Quote's _id as new Quote's parent_id
+                    quote.setParent_id(QuoteManager.getInstance().getSelected().get_id());
+                else quote.setParent_id(txtQuoteId.getText());//default to ID from TextField
+            }
+        }
 
         if(toggleVatExempt.isSelected())
             quote.setVat(0);
@@ -1721,163 +1747,6 @@ public abstract class QuoteController extends ScreenController implements Initia
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
         }
-    }
-
-    @FXML
-    public void newQuoteRevision()
-    {
-        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-
-        txtClient.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(selected_client==null)
-        {
-            txtClient.getStyleClass().remove("form-control-default");
-            txtClient.getStyleClass().add("control-input-error");
-            return;
-        }else{
-            txtClient.getStyleClass().remove("control-input-error");
-            txtClient.getStyleClass().add("form-control-default");
-        }
-
-        txtContactPerson.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(selected_contact_person==null)
-        {
-            txtContactPerson.getStyleClass().remove("form-control-default");
-            txtContactPerson.getStyleClass().add("control-input-error");
-            return;
-        } else {
-            txtContactPerson.getStyleClass().remove("control-input-error");
-            txtContactPerson.getStyleClass().add("form-control-default");
-        }
-
-        if(!Validators.isValidNode(txtCell, txtCell.getText(), 1, ".+"))
-        {
-            txtCell.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-            return;
-        }
-        if(!Validators.isValidNode(txtTel, txtTel.getText(), 1, ".+"))
-        {
-            txtTel.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-            return;
-        }
-        if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
-        {
-            txtEmail.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-            return;
-        }
-        cbxAccount.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        if(cbxAccount.getValue()==null)
-        {
-            cbxAccount.getStyleClass().remove("form-control-default");
-            cbxAccount.getStyleClass().add("control-input-error");
-            return;
-        }else{
-            cbxAccount.getStyleClass().remove("control-input-error");
-            cbxAccount.getStyleClass().add("form-control-default");
-        }
-
-        if(!Validators.isValidNode(txtSite, txtSite.getText(), 1, ".+"))
-        {
-            txtSite.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-            return;
-        }
-        if(!Validators.isValidNode(txtRequest, txtRequest.getText(), 1, ".+"))
-        {
-            txtRequest.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-            return;
-        }
-
-        Quote selected = (Quote)QuoteManager.getInstance().getSelected();
-        if(selected!=null)
-        {
-            // create a new Quote with selected Quote as parent and +1 revision number
-            Quote quote = new Quote();
-            quote.setClient_id(selected_client.get_id());
-            quote.setContact_person_id(selected_contact_person.getUsr());
-            quote.setSitename(txtSite.getText());
-            quote.setRequest(txtRequest.getText());
-            quote.setAccount_name(cbxAccount.getValue());
-            quote.setStatus(Quote.STATUS_PENDING);
-            quote.setAccount_name(cbxAccount.getValue());
-            quote.setCreator(SessionManager.getInstance().getActive().getUsr());
-            quote.setRevision(1.0);//set default revision number
-            //get selected Quote's siblings sorted by revision number
-            Quote[] quote_revisions = selected.getSortedSiblings("revision");
-            if(quote_revisions!=null)
-                if(quote_revisions.length>0)
-                    quote.setRevision(quote_revisions[quote_revisions.length-1].getRevision()+1);//get revision # of last Quote +1
-            //set parent of new Quote to be the root Quote of the selected Quote, if is root/base then use selected Quote
-            if(selected.getRoot()!=null)
-                quote.setParent_id(selected.getRoot().get_id());
-            else quote.setParent_id(selected.get_id());
-
-            if(toggleVatExempt.isSelected())
-                quote.setVat(0);
-            else quote.setVat(QuoteManager.VAT);
-
-            if(txtNotes.getText()!=null)
-                quote.setOther(txtNotes.getText());
-
-            try
-            {
-                //Create new Quote with new _id & +1 revision number, with parent Quote pointing to current selected Quote
-                QuoteManager.getInstance().createQuote(quote, tblQuoteItems.getItems(), tblQuoteServices.getItems(), new Callback()
-                {
-                    @Override
-                    public Object call(Object quote_id)
-                    {
-                        //on successful Quote creation refresh model & UI
-                        ScreenManager.getInstance().showLoadingScreen(param ->
-                        {
-                            QuoteManager.getInstance().initialize();
-
-                            //update selected Quote
-                            if(quote_id!=null)
-                            {
-                                if (QuoteManager.getInstance().getDataset() != null)
-                                {
-                                    Quote new_selected = QuoteManager.getInstance().getDataset().get(quote_id);
-                                    if(new_selected!=null)
-                                    {
-                                        IO.log(getClass().getName(), IO.TAG_INFO,
-                                                "setting selected quote to: " + quote_id + " revision: "
-                                                        +new_selected.getRevision());
-                                        QuoteManager.getInstance().setSelected(new_selected);
-                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "newly created Quote is invalid.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not update Quote, no Quotes were found in the database.");
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not update Quote, quote_id is not set.");
-
-                            //refresh GUI
-                            new Thread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    try
-                                    {
-                                        if(ScreenManager.getInstance().loadScreen(Screens.VIEW_QUOTE.getScreen(),fadulousbms.FadulousBMS.class.getResource("views/"+Screens.VIEW_QUOTE.getScreen())))
-                                        {
-                                            //Platform.runLater(() ->
-                                            ScreenManager.getInstance().setScreen(Screens.VIEW_QUOTE.getScreen());
-                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load view quote screen.");
-                                    } catch (IOException e)
-                                    {
-                                        e.printStackTrace();
-                                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                    }
-                                }
-                            }).start();
-                            return null;
-                        });
-                        txtQuoteId.setText(quote_id.toString());
-                        return null;
-                    }
-                });
-            } catch (IOException e)
-            {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            }
-        } else IO.logAndAlert("Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 
     @FXML
@@ -2087,13 +1956,6 @@ public abstract class QuoteController extends ScreenController implements Initia
     {
         tblQuoteItems.getItems().removeAll();
         tblQuoteItems.refresh();
-    }
-
-    @FXML
-    public void clearServices()
-    {
-        tblQuoteServices.getItems().removeAll();
-        tblQuoteServices.refresh();
     }
 
     @FXML

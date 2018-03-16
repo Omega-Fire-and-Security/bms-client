@@ -234,18 +234,19 @@ public class Quote extends BusinessObject
     public HashMap<Double, Quote> getSiblingsMap()
     {
         HashMap<Double, Quote> siblings = new HashMap<>();
+
         siblings.put(this.getRevision(), this);//make self be first child of requested siblings
+
         if(getParent_id()!=null)
         {
-            QuoteManager.getInstance().initialize();
-            siblings.put(getParent().getRevision(), getParent());//make parent_id be second child of requested siblings
+            siblings.put(getParent().getRevision(), getParent());//make parent be second child of requested siblings
+            
             if (QuoteManager.getInstance().getDataset() != null)
             {
                 for (Quote quote : QuoteManager.getInstance().getDataset().values())
                     if (getParent_id().equals(quote.getParent_id()))
                         siblings.put(quote.getRevision(), quote);
-            }
-            else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
+            } else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
         } else IO.log(getClass().getName(), IO.TAG_WARN, "quote ["+get_id()+"] has no parent_id.");
         return siblings;
     }
@@ -269,13 +270,31 @@ public class Quote extends BusinessObject
         return null;
     }
 
+    public Quote getLatestRevisionFromChildren()
+    {
+        Quote[] children = getChildren("revision");
+        if(children!=null)
+            if(children.length>0)
+                return children[children.length - 1];
+        return this;
+    }
+
+    public Quote getLatestRevisionFromSiblings()
+    {
+        Quote[] siblings = getSortedSiblings("revision");
+        if(siblings!=null)
+            if(siblings.length>0)
+                return siblings[siblings.length - 1];
+        return this;
+    }
+
     /**
      * @return HashMap of Quote objects whose parent is this Quote, using their revision numbers as the keys.
      */
     public HashMap<Double, Quote> getChildrenMap()
     {
         HashMap<Double, Quote> children = new HashMap<>();
-        QuoteManager.getInstance().initialize();//refresh data model//TODO: remove
+
         if (QuoteManager.getInstance().getDataset() != null)
         {
             for (Quote quote : QuoteManager.getInstance().getDataset().values())
@@ -295,14 +314,20 @@ public class Quote extends BusinessObject
     public Quote[] getChildren(String comparator)
     {
         HashMap<Double, Quote> children = getChildrenMap();
-        Quote[] children_arr = new Quote[children.size()];
-        children.values().toArray(children_arr);
-        if(children_arr!=null)
-            if(children_arr.length>0)
+        if(children!=null)
+        {
+            Quote[] children_arr = new Quote[children.size()];
+            children.values().toArray(children_arr);
+
+            if (children_arr != null)
             {
-                IO.getInstance().quickSort(children_arr, 0, children_arr.length - 1, comparator);
-                return children_arr;
+                if (children_arr.length > 0)
+                {
+                    IO.getInstance().quickSort(children_arr, 0, children_arr.length - 1, comparator);
+                    return children_arr;
+                }
             }
+        }
         return null;
     }
 

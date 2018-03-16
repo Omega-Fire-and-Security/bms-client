@@ -291,25 +291,13 @@ public class QuotesController extends OperationsController implements Initializa
         tblQuotes.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
                 QuoteManager.getInstance().setSelected(tblQuotes.getSelectionModel().getSelectedItem()));
 
-        HashMap<String, Quote> latest_rev_quotes = new HashMap<>();
-        for(Quote quote: QuoteManager.getInstance().getDataset().values())
-        {
-            if(quote.getParent_id()!=null)//if quote has parent, i.e. siblings
-            {
-                //get Quote's siblings
-                Quote[] siblings = quote.getSortedSiblings("revision");
-                if (siblings != null)
-                {
-                    //add latest revision/sibling to list of latest revisions with identifier of parent.
-                    latest_rev_quotes.put(quote.getParent().get_id(), siblings[siblings.length - 1]);//overwrite existing value if exists
-                } else IO.log(getClass().getName(), IO.TAG_WARN, "Quote [" + quote.get_id() + "] has no siblings. should return self as first sibling.");
-            } else if(quote.getChildren("revision")==null)//if Quote has no parent and no children add it to list.
-            {
-                latest_rev_quotes.put(quote.get_id(), quote);//has no parent & no children
-            }
-        }
         //set list of latest Quotes
-        tblQuotes.setItems(FXCollections.observableArrayList(latest_rev_quotes.values()));
+        HashMap latest_revs =QuoteManager.getInstance().getLatestRevisions();
+        if(latest_revs!=null)
+        {
+            tblQuotes.setItems(FXCollections.observableArrayList(latest_revs.values()));
+            tblQuotes.refresh();
+        }
     }
 
     @Override
@@ -363,7 +351,7 @@ public class QuotesController extends OperationsController implements Initializa
                         {
                             Client selected_client = (Client) event.getCompletion();
                             HashMap<String, Quote> selected_client_quotes = new HashMap<>();
-                            for(Quote quote: QuoteManager.getInstance().getDataset().values())
+                            for(Quote quote: QuoteManager.getInstance().getLatestRevisions().values())
                                 if(quote.getClient_id().equals(selected_client.get_id()))
                                     selected_client_quotes.putIfAbsent(quote.get_id(), quote);
 
@@ -382,9 +370,9 @@ public class QuotesController extends OperationsController implements Initializa
     {
         return param ->
         {
-            if(QuoteManager.getInstance().getDataset()!=null)
+            if(QuoteManager.getInstance().getLatestRevisions()!=null)
             {
-                tblQuotes.setItems(FXCollections.observableArrayList(QuoteManager.getInstance().getDataset().values()));
+                tblQuotes.setItems(FXCollections.observableArrayList(QuoteManager.getInstance().getLatestRevisions().values()));
                 tblQuotes.refresh();
             }
             return null;

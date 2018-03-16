@@ -203,6 +203,24 @@ public class QuoteManager extends BusinessObjectManager
         };
     }
 
+    public HashMap<String, Quote> getLatestRevisions()
+    {
+        if(QuoteManager.getInstance().getDataset()==null)
+            return null;
+        if(QuoteManager.getInstance().getDataset().values()==null)
+            return null;
+        if(QuoteManager.getInstance().getDataset().isEmpty())
+            return null;
+
+        //collect map of latest quote revisions
+        HashMap<String, Quote> latest_rev_quotes = new HashMap<>();
+        for(Quote quote: QuoteManager.getInstance().getDataset().values())
+            if(quote.getParent_id()==null)
+                latest_rev_quotes.put(quote.get_id(), quote.getLatestRevisionFromChildren());
+
+        return latest_rev_quotes;
+    }
+
     public static double computeQuoteTotal(List<QuoteItem> quoteItems, List<QuoteService> quoteServices)
     {
         //compute total
