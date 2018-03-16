@@ -33,7 +33,7 @@ public class NewResourceController extends ScreenController implements Initializ
 {
     private boolean itemsModified;
     @FXML
-    private TextField txtName,txtDescription,txtSerial,txtValue,txtUnit,txtQuantity;
+    private TextField txtDescription,txtSerial,txtValue,txtUnit,txtQuantity;
     @FXML
     private DatePicker dateAcquired,dateExhausted;
     @FXML
@@ -100,21 +100,6 @@ public class NewResourceController extends ScreenController implements Initializ
             return;
         }
         File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-        if(!Validators.isValidNode(txtName, txtName.getText(), 1, ".+"))
-        {
-            txtName.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-            return;
-        }
-        /*if(!Validators.isValidNode(txtDescription, txtDescription.getText(), 1, ".+"))
-        {
-            txtDescription.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-            return;
-        }*/
-        /*if(!Validators.isValidNode(txtSerial, txtSerial.getText(), 1, ".+"))
-        {
-            txtSerial.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-            return;
-        }*/
         if(!Validators.isValidNode(txtValue, txtValue.getText(), 1, ".+"))
         {
             txtValue.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
@@ -152,7 +137,6 @@ public class NewResourceController extends ScreenController implements Initializ
 
         //prepare supplier parameters
         Resource resource = new Resource();
-        resource.setBrand_name(txtName.getText());
         resource.setResource_description(txtDescription.getText());
         resource.setResource_code(txtSerial.getText());
         try {

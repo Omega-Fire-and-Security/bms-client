@@ -17,13 +17,6 @@ public class PurchaseOrderResource extends PurchaseOrderItem
 {
     public static final String TAG = "PurchaseOrderResource";
 
-    public String getItem_name()
-    {
-        if(getItem()!=null)
-            return getItem().getBrand_name();
-        return "N/A";
-    }
-
     public String getItem_description()
     {
         if(getItem()!=null)

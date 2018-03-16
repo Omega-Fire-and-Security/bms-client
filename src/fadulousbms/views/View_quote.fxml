@@ -121,7 +121,7 @@
                                     <HBox GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                                         <children>
                                     <TextField fx:id="txtClient" minHeight="35.0" minWidth="150.0" promptText="type to search for client" HBox.hgrow="ALWAYS" />
-                                            <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newClient" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                                            <Button fx:id="btnNewClient" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newClient" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
                                                 <HBox.margin>
                                                     <Insets left="10.0" />
                                                 </HBox.margin>
@@ -131,7 +131,7 @@
                                     <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                                         <children>
                                     <TextField fx:id="txtContactPerson" minHeight="35.0" minWidth="150.0" promptText="type to search for contact person" HBox.hgrow="ALWAYS" />
-                                            <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newEmployee" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
+                                            <Button fx:id="btnNewClientRepresentative" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#newEmployee" styleClass="btnAdd" stylesheets="@../styles/home.css" text="New" HBox.hgrow="ALWAYS">
                                                 <HBox.margin>
                                                     <Insets left="10.0" />
                                                 </HBox.margin>
@@ -228,7 +228,7 @@
                               </Label>
                               </left>
                               <right>
-                                  <Label text="Services" BorderPane.alignment="CENTER">
+                                  <Label text="Material Sub-items" BorderPane.alignment="CENTER">
                                       <font>
                                           <Font size="20.0" />
                                       </font>
@@ -272,12 +272,7 @@
                                                             <PropertyValueFactory property="item_number" />
                                                         </cellValueFactory>
                                                     </TableColumn>
-                                                    <TableColumn fx:id="colEquipmentName" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="200.0" text="Equipment Name">
-                                                        <cellValueFactory>
-                                                            <PropertyValueFactory property="equipment_name" />
-                                                        </cellValueFactory>
-                                                    </TableColumn>
-                                                    <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Equipment Description" visible="false">
+                                                    <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Equipment Description">
                                                         <cellValueFactory>
                                                             <PropertyValueFactory property="equipment_description" />
                                                         </cellValueFactory>
@@ -306,7 +301,7 @@
                                                             <TextFieldTableCellOld fx:factory="forTableColumn" />
                                                               </cellFactory>-->
                                                     </TableColumn>
-                                                    <TableColumn fx:id="colUnitCost" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Unit Cost">
+                                                    <TableColumn fx:id="colUnitCost" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Base Cost">
                                                         <cellValueFactory>
                                                             <PropertyValueFactory property="unit_cost" />
                                                         </cellValueFactory>

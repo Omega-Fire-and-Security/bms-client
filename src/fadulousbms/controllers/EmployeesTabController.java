@@ -62,16 +62,16 @@ public class EmployeesTabController extends ScreenController implements Initiali
 
         colEmployeeId.setMinWidth(100);
         colEmployeeId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeFirstName, TextFieldTableCell.forTableColumn(), 120, "firstname", "/api/employee");
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeLastName, TextFieldTableCell.forTableColumn(), 120, "lastname", "/api/employee");
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeUsername, TextFieldTableCell.forTableColumn(), 120, "usr", "/api/employee");
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeEmail, TextFieldTableCell.forTableColumn(), 120, "email", "/api/employee");
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeCell, TextFieldTableCell.forTableColumn(), 120, "cell", "/api/employee");
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeTel, TextFieldTableCell.forTableColumn(), 120, "tell", "/api/employee");
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeSex, TextFieldTableCell.forTableColumn(), 120, "gender", "/api/employee");
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeActive, TextFieldTableCell.forTableColumn(), 120, "active", "/api/employee");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeFirstName, TextFieldTableCell.forTableColumn(), 120, "firstname", "/employees");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeLastName, TextFieldTableCell.forTableColumn(), 120, "lastname", "/employees");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeUsername, TextFieldTableCell.forTableColumn(), 120, "usr", "/employees");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeEmail, TextFieldTableCell.forTableColumn(), 120, "email", "/employees");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeCell, TextFieldTableCell.forTableColumn(), 120, "cell", "/employees");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeTel, TextFieldTableCell.forTableColumn(), 120, "tel", "/employees");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeSex, TextFieldTableCell.forTableColumn(), 120, "gender", "/employees");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeActive, TextFieldTableCell.forTableColumn(), 120, "active", "/employees");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colEmployeeDateJoined, "date_joined");
-        CustomTableViewControls.makeEditableTableColumn(colEmployeeOther, TextFieldTableCell.forTableColumn(), 120, "other", "/api/employee");
+        CustomTableViewControls.makeEditableTableColumn(colEmployeeOther, TextFieldTableCell.forTableColumn(), 120, "other", "/employees");
 
         ObservableList<Employee> lst_employees = FXCollections.observableArrayList();
         lst_employees.addAll(EmployeeManager.getInstance().getDataset().values());

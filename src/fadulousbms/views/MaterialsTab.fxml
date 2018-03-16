@@ -11,11 +11,6 @@
                         <PropertyValueFactory property="_id" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colName" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" text="Item Name">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="resource_name" />
-                    </cellValueFactory>
-                </TableColumn>
                 <TableColumn fx:id="colSerial" maxWidth="1.7976931348623157E308" minWidth="80.0" prefWidth="-1.0" text="Serial Number" visible="false">
                     <cellValueFactory>
                         <PropertyValueFactory property="resource_serial" />
@@ -26,7 +21,7 @@
                         <PropertyValueFactory property="resource_type" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Description" visible="false">
+                <TableColumn fx:id="colDescription" maxWidth="1.7976931348623157E308" minWidth="120.0" prefWidth="-1.0" text="Material Description">
                     <cellValueFactory>
                         <PropertyValueFactory property="resource_description" />
                     </cellValueFactory>

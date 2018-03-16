@@ -74,7 +74,7 @@ public abstract class QuoteController extends ScreenController implements Initia
     @FXML
     protected Label lblVat;
     @FXML
-    protected Button btnApprove, btnNewMaterial, btnNewService;
+    protected Button btnApprove, btnNewMaterial, btnNewService, btnNewClient, btnNewClientRepresentative;
     protected HashMap<String, TableColumn> colsMap = new HashMap<>();
     protected ObservableList<TableColumn<QuoteItem, ?>> default_cols;
 
@@ -192,7 +192,6 @@ public abstract class QuoteController extends ScreenController implements Initia
                         final TableCell<QuoteService, String> cell = new TableCell<QuoteService, String>()
                         {
                             final Button btnNewServiceItem = new Button("New Service Item");
-                            //final Button btnAdd = new Button("Add Service Item");
                             final Button btnShow = new Button("Show Service Items");
                             final Button btnRemove = new Button("Remove");
 
@@ -201,19 +200,12 @@ public abstract class QuoteController extends ScreenController implements Initia
                             {
                                 super.updateItem(item, empty);
                                 File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-                                //fCss.ex
 
                                 btnNewServiceItem.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnNewServiceItem.getStyleClass().add("btnAdd");
                                 btnNewServiceItem.setMinWidth(150);
                                 btnNewServiceItem.setMinHeight(35);
                                 HBox.setHgrow(btnNewServiceItem, Priority.ALWAYS);
-
-                                /*btnAdd.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                                btnAdd.getStyleClass().add("btnAdd");
-                                btnAdd.setMinWidth(150);
-                                btnAdd.setMinHeight(35);
-                                HBox.setHgrow(btnAdd, Priority.ALWAYS);*/
 
                                 btnShow.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnShow.getStyleClass().add("btnDefault");
@@ -282,70 +274,6 @@ public abstract class QuoteController extends ScreenController implements Initia
                                         }
                                     });
 
-                                    /*btnAdd.setOnAction(event ->
-                                    {
-                                        QuoteService quoteService = getTableView().getItems().get(getIndex());
-                                        if(quoteService!=null)
-                                        {
-                                            Service service = quoteService.getService();
-                                            if (service != null)
-                                            {
-                                                ServiceManager.getInstance().setSelected(service);
-
-                                                VBox page = new VBox();
-                                                ComboBox<ServiceItem> cbx_service_items = new ComboBox<>();
-                                                if (ServiceManager.getInstance().getService_items() != null)
-                                                    cbx_service_items.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getService_items().values()));
-                                                else
-                                                {
-                                                    IO.logAndAlert("Error", "No service items in the database.", IO.TAG_WARN);
-                                                    //return;
-                                                }
-
-                                                Button btnAddService = new Button("Add");
-                                                page.getChildren().addAll(new HBox(new Label("Service: "), cbx_service_items), btnAddService);
-
-                                                PopOver popover = new PopOver(page);
-                                                popover.setTitle("Add Service Item");
-                                                popover.show(btnAdd);
-
-                                                btnAddService.setOnMouseClicked(evt ->
-                                                {
-                                                    if (cbx_service_items.getValue() != null)
-                                                    {
-                                                        //clone/duplicate the ServiceItem on database
-                                                        ServiceItem serviceItem = cbx_service_items.getValue();
-                                                        //update service_id to match current service
-                                                        serviceItem.setService_id(service.get_id());
-                                                        //create ServiceItem on database
-                                                        try {
-                                                            ServiceManager.getInstance().createServiceItem(serviceItem, null);
-                                                        } catch (IOException e) {
-                                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
-                                                        }
-                                                    } else
-                                                        IO.logAndAlert("Error", "Please select a valid service item to add.", IO.TAG_WARN);
-                                                });
-
-                                                popover.focusedProperty().addListener(new ChangeListener<Boolean>() {
-                                                    @Override
-                                                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                                                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloading services combo box");
-                                                        //reload services, to load the newly added service
-                                                        ServiceManager.getInstance().forceSynchronise();
-
-                                                        Platform.runLater(() ->
-                                                        {
-                                                            //refresh services combobox
-                                                            if (ServiceManager.getInstance().getDataset() != null)
-                                                                cbxServices.setItems(FXCollections.observableArrayList(ServiceManager.getInstance().getDataset().values()));
-                                                        });
-                                                    }
-                                                });
-                                            } else IO.logAndAlert("Error", "Invalid service selected", IO.TAG_WARN);
-                                        } else IO.logAndAlert("Error", "Invalid service selected", IO.TAG_WARN);
-                                    });*/
-
                                     btnShow.setOnAction(event ->
                                     {
                                         if(getTableView().getItems().get(getIndex())!=null)
@@ -362,10 +290,10 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                 colName.setCellValueFactory(new PropertyValueFactory<>("item_name"));
                                                 colName.setMinWidth(150);
 
-                                                TableColumn colDescription = new TableColumn("Item Description");
-                                                colDescription.setCellValueFactory(new PropertyValueFactory<>("item_description"));
-                                                colDescription.setMinWidth(100);
-                                                colDescription.setVisible(false);
+                                                TableColumn colItemDescription = new TableColumn("Item Description");
+                                                colItemDescription.setCellValueFactory(new PropertyValueFactory<>("item_description"));
+                                                colItemDescription.setMinWidth(100);
+                                                colItemDescription.setVisible(false);
 
                                                 TableColumn colRate = new TableColumn("Item Rate");
                                                 colRate.setCellValueFactory(new PropertyValueFactory<>("item_rate"));
@@ -380,7 +308,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                                                 colQuantity.setMinWidth(70);
 
                                                 tblServiceItems.getColumns().add(colName);
-                                                tblServiceItems.getColumns().add(colDescription);
+                                                tblServiceItems.getColumns().add(colItemDescription);
                                                 tblServiceItems.getColumns().add(colRate);
                                                 tblServiceItems.getColumns().add(colUnit);
                                                 tblServiceItems.getColumns().add(colQuantity);
@@ -670,7 +598,7 @@ public abstract class QuoteController extends ScreenController implements Initia
                 {
                     //update selected material
                     selected_material = event.getCompletion();
-                    IO.log(getClass().getName(), IO.TAG_INFO, "selected resource: " + selected_material.getBrand_name());
+                    IO.log(getClass().getName(), IO.TAG_INFO, "selected resource: " + selected_material.getResource_description());
                     itemsModified = true;
                 }
             }
@@ -752,14 +680,10 @@ public abstract class QuoteController extends ScreenController implements Initia
         if(tblQuoteItems.getItems()!=null)
         {
             double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems());
+
+            //render total excluding tax
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
-                    new DecimalFormat("##.##").format((total + (total*(vat)))));
-        }
-        if(tblQuoteItems.getItems()!=null)
-        {
-            double total = QuoteManager.computeQuoteTotal(tblQuoteItems.getItems(), tblQuoteServices.getItems());
-            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
-                    new DecimalFormat("##.##").format((total + (total*(vat/100)))));
+                    new DecimalFormat("##.##").format((total)));
         }
     }
 
@@ -2172,52 +2096,466 @@ public abstract class QuoteController extends ScreenController implements Initia
         tblQuoteServices.refresh();
     }
 
-    /*@FXML
+    @FXML
     public void newClient()
     {
-        ClientManager.newClientWindow("Create a new Client for this Quote", param ->
+        selected_client = null;
+
+        final TextField txt_client_name = new TextField();
+        txt_client_name.setMinWidth(200);
+        txt_client_name.setMaxWidth(Double.MAX_VALUE);
+        //HBox client_name = CustomTableViewControls.getLabelledNode("Client Name", 200, txt_client_name);
+
+        final TextArea txt_physical_address = new TextArea();
+        txt_physical_address.setMinWidth(200);
+        txt_physical_address.setMaxWidth(Double.MAX_VALUE);
+        txt_physical_address.setPrefHeight(70);
+        //HBox physical_address = CustomTableViewControls.getLabelledNode("Physical Address", 200, txt_physical_address);
+
+        final TextArea txt_postal_address = new TextArea();
+        txt_postal_address.setMinWidth(200);
+        txt_postal_address.setMaxWidth(Double.MAX_VALUE);
+        txt_postal_address.setPrefHeight(70);
+        //HBox postal_address = CustomTableViewControls.getLabelledNode("Postal Address", 200, txt_postal_address);
+
+        final TextField txt_tel = new TextField();
+        txt_tel.setMinWidth(200);
+        txt_tel.setMaxWidth(Double.MAX_VALUE);
+        //HBox tel = CustomTableViewControls.getLabelledNode("Tel Number", 200, txt_tel);
+
+        final TextField txt_contact_email = new TextField();
+        txt_contact_email.setMinWidth(200);
+        txt_contact_email.setMaxWidth(Double.MAX_VALUE);
+        //HBox contact_email = CustomTableViewControls.getLabelledNode("eMail Address", 200, txt_contact_email);
+
+        final TextField txt_client_reg = new TextField("N/A");
+        txt_client_reg.setMinWidth(200);
+        txt_client_reg.setMaxWidth(Double.MAX_VALUE);
+        //HBox client_reg = CustomTableViewControls.getLabelledNode("Registration Number", 200, txt_client_reg);
+
+        final TextField txt_client_vat = new TextField("N/A");
+        txt_client_vat.setMinWidth(200);
+        txt_client_vat.setMaxWidth(Double.MAX_VALUE);
+        //HBox client_vat = CustomTableViewControls.getLabelledNode("VAT Number", 200, txt_client_vat);
+
+        final TextField txt_client_account = new TextField();
+        txt_client_account.setMinWidth(200);
+        txt_client_account.setMaxWidth(Double.MAX_VALUE);
+        //HBox client_account = CustomTableViewControls.getLabelledNode("Account Name", 200, txt_client_account);
+
+        txt_client_name.textProperty().addListener((observable, oldValue, newValue) ->
         {
-            new Thread(() ->
-                    refreshModel(c->
+            if(txt_client_name.getText()!=null)
+                txt_client_account.setText(txt_client_name.getText().toLowerCase().replaceAll(" ", "-"));
+        });
+
+        final DatePicker dpk_date_partnered = new DatePicker();
+        dpk_date_partnered.setMinWidth(200);
+        dpk_date_partnered.setMaxWidth(Double.MAX_VALUE);
+        //HBox date_partnered = CustomTableViewControls.getLabelledNode("Date Partnered", 200, dpk_date_partnered);
+
+        final TextField txt_website = new TextField();
+        txt_website.setMinWidth(200);
+        txt_website.setMaxWidth(Double.MAX_VALUE);
+        //HBox website = CustomTableViewControls.getLabelledNode("Website", 200, txt_website);
+
+        final TextArea txt_other = new TextArea();
+        txt_other.setMinWidth(200);
+        txt_other.setMaxWidth(Double.MAX_VALUE);
+        txt_other.setPrefHeight(70);
+        //HBox other = CustomTableViewControls.getLabelledNode("Other", 200, txt_other);
+
+        Button btnSubmit = new Button("Create New Client");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnSubmit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        btnSubmit.getStyleClass().add("btnAdd");
+        btnSubmit.setMinWidth(140);
+        btnSubmit.setMinHeight(45);
+        HBox.setMargin(btnSubmit, new Insets(15, 0, 0, 10));
+
+        GridPane page = new GridPane();
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.setHgap(20);
+        page.setVgap(20);
+
+        page.add(new Label("Client Name: "), 0, 0);
+        page.add(txt_client_name, 1, 0);
+
+        page.add(new Label("Physical Address: "), 0, 1);
+        page.add(txt_physical_address, 1, 1);
+
+        page.add(new Label("Postal Address: "), 0, 2);
+        page.add(txt_postal_address, 1, 2);
+
+        page.add(new Label("Tel No.: "), 0, 3);
+        page.add(txt_tel, 1, 3);
+
+        page.add(new Label("eMail address: "), 0, 4);
+        page.add(txt_contact_email, 1, 4);
+
+        page.add(new Label("Registration Number: "), 0, 5);
+        page.add(txt_client_reg, 1, 5);
+
+        page.add(new Label("Tax Number"), 0, 6);
+        page.add(txt_client_vat, 1, 6);
+
+        page.add(new Label("Credit account name: "), 0, 7);
+        page.add(txt_client_account, 1, 7);
+
+        page.add(new Label("Website: "), 0, 8);
+        page.add(txt_website, 1, 8);
+
+        page.add(new Label("Other Info: "), 0, 9);
+        page.add(txt_other, 1, 9);
+
+        page.add(btnSubmit, 1, 10);
+
+        PopOver popover = new PopOver(page);
+        popover.setTitle("Create new Client");
+        popover.setDetached(true);
+        popover.show(btnNewClient);
+
+        TextFields.bindAutoCompletion(txt_client_name, ClientManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
+        {
+            if(event!=null)
+            {
+                if(event.getCompletion()!=null)
+                {
+                    selected_client = (Client) event.getCompletion();
+
+                    if(selected_client.getPhysical_address()!=null)
+                        txt_physical_address.setText(selected_client.getPhysical_address());
+                    if(selected_client.getPostal_address()!=null)
+                        txt_postal_address.setText(selected_client.getRegistration_number());
+                    if(selected_client.getRegistration_number()!=null)
+                        txt_client_reg.setText(selected_client.getRegistration_number());
+                    if(selected_client.getVat_number()!=null)
+                        txt_client_vat.setText(selected_client.getRegistration_number());
+                    if(selected_client.getAccount_name()!=null)
+                        txt_client_account.setText(selected_client.getAccount_name());
+                    if(selected_client.getTel()!=null)
+                        txt_tel.setText(selected_client.getTel());
+                    if(selected_client.getWebsite()!=null)
+                        txt_website.setText(selected_client.getWebsite());
+                    if(selected_client.getContact_email()!=null)
+                        txt_contact_email.setText(selected_client.getContact_email());
+                    if(selected_client.getOther()!=null)
+                        txt_other.setText(selected_client.getOther());
+                }
+            }
+        });
+
+        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                if(SessionManager.getInstance().getActive()==null)
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+                if(SessionManager.getInstance().getActive().isExpired())
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+
+                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+                String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+                if(!Validators.isValidNode(txt_client_name, txt_client_name.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_physical_address, txt_physical_address.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_postal_address, txt_postal_address.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_tel, txt_tel.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_contact_email, txt_contact_email.getText(), 1, ".+"))
+                    return;
+                /*if(!Validators.isValidNode(txt_client_reg, txt_client_reg.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_client_vat, txt_client_vat.getText(), 1, ".+"))
+                    return;*/
+                if(!Validators.isValidNode(txt_client_account, txt_client_account.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(dpk_date_partnered, dpk_date_partnered.getValue()==null?"":dpk_date_partnered.getValue().toString(), 4, date_regex))
+                    return;
+                /*if(!Validators.isValidNode(txt_website, txt_website.getText(), 1, ".+"))
+                    return;*/
+
+                //if txt_client_name matches selected_client's client_name ask if they want to make a duplicate record
+                String proceed = IO.OK;
+                if(selected_client!=null)
+                    if(txt_client_name.getText().equals(selected_client.getClient_name()))
+                        proceed = IO.showConfirm("Found duplicate client, continue?", "Found client with the name ["+txt_client_name.getText()+"], add another record?");
+
+                //did they choose to continue with the creation or cancel?
+                if(!proceed.equals(IO.OK))
+                {
+                    IO.log(getClass().getName(), "aborting new Client creation.", IO.TAG_VERBOSE);
+                    return;
+                }
+
+                long date_partnered_in_sec = dpk_date_partnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
+
+                Client client = new Client();
+                client.setClient_name(txt_client_name.getText());
+                client.setPhysical_address(txt_physical_address.getText());
+                client.setPostal_address(txt_postal_address.getText());
+                client.setTel(txt_tel.getText());
+                client.setContact_email(txt_contact_email.getText());
+                client.setRegistration_number(txt_client_reg.getText());
+                client.setVat_number(txt_client_vat.getText());
+                client.setAccount_name(txt_client_account.getText());
+                client.setDate_partnered(date_partnered_in_sec);
+                client.setWebsite(txt_website.getText());
+                client.setActive(true);
+                client.setCreator(SessionManager.getInstance().getActive().getUsr());
+                if(txt_other.getText()!=null)
+                    client.setOther(txt_other.getText());
+
+                try
+                {
+                    ClientManager.getInstance().createBusinessObject(client, new_client_id ->
                     {
-                        Platform.runLater(() -> refreshView());
+                        if(new_client_id!=null)
+                        {
+                            selected_client = (Client) ClientManager.getInstance().getDataset().get(new_client_id);
+                        } else IO.logAndAlert("Error", "Could not create new client ["+txt_client_name.getText()+"]", IO.TAG_ERROR);
                         return null;
-                    })).start();
-            return null;
+                    });
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+            }
         });
     }
 
     @FXML
     public void newEmployee()
     {
-        EmployeeManager.getInstance().newExternalEmployeeWindow("Create a new Contact Person for this Job", param ->
+        selected_client = null;
+
+        TextField txtFirstname = new TextField();
+        txtFirstname.setMinWidth(200);
+        txtFirstname.setMaxWidth(Double.MAX_VALUE);
+        //HBox first_name = CustomTableViewControls.getLabelledNode("First Name", 200, txtFirstname);
+
+        TextField txtLastname = new TextField();
+        txtLastname.setMinWidth(200);
+        txtLastname.setMaxWidth(Double.MAX_VALUE);
+        //HBox last_name = CustomTableViewControls.getLabelledNode("Last Name", 200, txtLastname);
+
+        TextField txtEmail = new TextField();
+        txtEmail.setMinWidth(200);
+        txtEmail.setMaxWidth(Double.MAX_VALUE);
+        //HBox email = CustomTableViewControls.getLabelledNode("eMail Address:", 200, txtEmail);
+
+        TextField txtTelephone = new TextField();
+        txtTelephone.setMinWidth(200);
+        txtTelephone.setMaxWidth(Double.MAX_VALUE);
+        //HBox telephone = CustomTableViewControls.getLabelledNode("Telephone #: ", 200, txtTelephone);
+
+        TextField txtCellphone = new TextField();
+        txtCellphone.setMinWidth(200);
+        txtCellphone.setMaxWidth(Double.MAX_VALUE);
+        //HBox cellphone = CustomTableViewControls.getLabelledNode("Cellphone #: ", 200, txtCellphone);
+
+        TextArea txtOther = new TextArea();
+        txtOther.setMinWidth(200);
+        txtOther.setMaxWidth(Double.MAX_VALUE);
+        //HBox other = CustomTableViewControls.getLabelledNode("Other: ", 200, txtOther);
+
+        Button btnSubmit = new Button("Create New Client Representative");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnSubmit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        btnSubmit.getStyleClass().add("btnAdd");
+        btnSubmit.setMinWidth(140);
+        btnSubmit.setMinHeight(45);
+        HBox.setMargin(btnSubmit, new Insets(15, 0, 0, 10));
+
+        GridPane page = new GridPane();
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.setHgap(20);
+        page.setVgap(20);
+
+        page.add(new Label("First Name: "), 0, 0);
+        page.add(txtFirstname, 1, 0);
+
+        page.add(new Label("Last Name: "), 0, 1);
+        page.add(txtLastname, 1, 1);
+
+        page.add(new Label("eMail Address: "), 0, 2);
+        page.add(txtEmail, 1, 2);
+
+        page.add(new Label("Tel No.: "), 0, 3);
+        page.add(txtTelephone, 1, 3);
+
+        page.add(new Label("Cellphone Address: "), 0, 4);
+        page.add(txtCellphone, 1, 4);
+
+        page.add(new Label("Other info: "), 0, 5);
+        page.add(txtOther, 1, 5);
+
+        page.add(btnSubmit, 1, 6);
+
+        PopOver popover = new PopOver(page);
+        popover.setTitle("Create new Client Representative");
+        popover.setDetached(true);
+        popover.show(btnNewClientRepresentative);
+
+        TextFields.bindAutoCompletion(txtFirstname, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
         {
-            new Thread(() ->
-                    refreshModel(cb->
-                    {
-                        Platform.runLater(() -> refreshView());
+            if(event!=null)
+            {
+                if(event.getCompletion()!=null)
+                {
+                    selected_contact_person = event.getCompletion();
 
-                        TextFields.bindAutoCompletion(txtContactPerson, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
-                        {
-                            if(event!=null)
-                            {
-                                if(event.getCompletion()!=null)
-                                {
-                                    selected_contact_person = event.getCompletion();
-                                    IO.log(getClass().getName(), IO.TAG_INFO, "selected contact person: " + selected_contact_person.getName());
-                                    txtCell.setText(selected_contact_person.getCell());
-                                    txtTel.setText(selected_contact_person.getTel());
-                                    txtEmail.setText(selected_contact_person.getEmail());
-                                    itemsModified = true;
-                                } else IO.logAndAlert("Invalid Employee", "Selected contact person is invalid", IO.TAG_ERROR);
-                            }
-                        });
-
-                        return null;
-                    })).start();
-            return null;
+                    if(selected_contact_person.getFirstname()!=null)
+                        txtFirstname.setText(selected_contact_person.getFirstname());
+                    if(selected_contact_person.getLastname()!=null)
+                        txtLastname.setText(selected_contact_person.getLastname());
+                    if(selected_contact_person.getCell()!=null)
+                        txtCellphone.setText(selected_contact_person.getCell());
+                    if(selected_contact_person.getTel()!=null)
+                        txtTelephone.setText(selected_contact_person.getTel());
+                    if(selected_contact_person.getEmail()!=null)
+                        txtEmail.setText(selected_contact_person.getEmail());
+                    if(selected_contact_person.getTel()!=null)
+                        txtOther.setText(selected_contact_person.getOther());
+                }
+            }
         });
-    }*/
+
+        TextFields.bindAutoCompletion(txtLastname, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
+        {
+            if(event!=null)
+            {
+                if(event.getCompletion()!=null)
+                {
+                    selected_contact_person = event.getCompletion();
+
+                    if(selected_contact_person.getFirstname()!=null)
+                        txtFirstname.setText(selected_contact_person.getFirstname());
+                    if(selected_contact_person.getLastname()!=null)
+                        txtLastname.setText(selected_contact_person.getLastname());
+                    if(selected_contact_person.getCell()!=null)
+                        txtCellphone.setText(selected_contact_person.getCell());
+                    if(selected_contact_person.getTel()!=null)
+                        txtTelephone.setText(selected_contact_person.getTel());
+                    if(selected_contact_person.getEmail()!=null)
+                        txtEmail.setText(selected_contact_person.getEmail());
+                    if(selected_contact_person.getTel()!=null)
+                        txtOther.setText(selected_contact_person.getOther());
+                }
+            }
+        });
+
+        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                if(SessionManager.getInstance().getActive()==null)
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+                if(SessionManager.getInstance().getActive().isExpired())
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+
+                //File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+                //String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
+
+                if(!Validators.isValidNode(txtFirstname, txtFirstname.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txtLastname, txtLastname.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txtCellphone, txtCellphone.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txtTelephone, txtTelephone.getText(), 1, ".+"))
+                    return;
+                //check if email doesn't exist already
+                if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
+                    return;
+
+                boolean found = false;
+                for(Employee employee: EmployeeManager.getInstance().getDataset().values())
+                    if(txtEmail.getText().toLowerCase().equals(employee.getEmail().toLowerCase()))
+                        found=true;
+
+                if(found)
+                {
+                    IO.logAndAlert("Error", "User with email address ["+txtEmail.getText()+"] already exists.", IO.TAG_ERROR);
+                    return;
+                }
+
+                //if txtFirstname and txtLastname matches selected_contact_person's first_name and last_name ask if they want to make a duplicate record
+                String proceed = IO.OK;
+                if(selected_contact_person!=null)
+                    if(txtFirstname.getText().equals(selected_contact_person.getFirstname()) && txtLastname.equals(selected_contact_person.getLastname()))
+                        proceed = IO.showConfirm("Found duplicate person, continue?", "Found person with the name ["+selected_contact_person.getName()+"], add another record?");
+
+                //did they choose to continue with the creation or cancel?
+                if(!proceed.equals(IO.OK))
+                {
+                    IO.log(getClass().getName(), "aborting new Client contact person creation.", IO.TAG_VERBOSE);
+                    return;
+                }
+
+                int access_lvl=0;
+
+                Employee employee = new Employee();
+                employee.setUsr(txtEmail.getText().toLowerCase());
+                String pwd = "";
+                try
+                {
+                    pwd = IO.generateRandomString(12);
+                    assert pwd.length()==12;
+                    employee.setPwd(IO.getEncryptedHexString(pwd));
+                } catch (Exception e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+
+                employee.setAccessLevel(access_lvl);
+                employee.setFirstname(txtFirstname.getText());
+                employee.setLastname(txtLastname.getText());
+                employee.setGender("Male");
+                employee.setEmail(txtEmail.getText());
+                employee.setTel(txtTelephone.getText());
+                employee.setCell(txtCellphone.getText());
+                employee.setCreator(SessionManager.getInstance().getActive().getUsr());
+
+                if(txtOther.getText()!=null)
+                    employee.setOther(txtOther.getText());
+                employee.setOther(employee.getOther() + " pwd=" + pwd);
+                try
+                {
+                    EmployeeManager.getInstance().createBusinessObject(employee, new_user_id ->
+                    {
+                        if(new_user_id!=null)
+                        {
+                            selected_contact_person = (Employee) EmployeeManager.getInstance().getDataset().get(new_user_id);
+                        } else IO.logAndAlert("Error", "Could not create new client representative ["+txtFirstname.getText()+ " " + txtLastname.getText() + "]", IO.TAG_ERROR);
+                        return null;
+                    });
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+            }
+        });
+    }
 
     @FXML
     public void back()

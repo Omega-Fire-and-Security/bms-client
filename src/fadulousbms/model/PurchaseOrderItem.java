@@ -75,13 +75,6 @@ public abstract class PurchaseOrderItem extends BusinessObject
         this.item_id = item_id;
     }
 
-    public StringProperty item_nameProperty()
-    {
-        return new SimpleStringProperty(getItem_name());
-    }
-
-    public abstract String getItem_name();
-
     public StringProperty item_descriptionProperty(){return new SimpleStringProperty(getItem_description());}
 
     public abstract String getItem_description();
@@ -204,8 +197,6 @@ public abstract class PurchaseOrderItem extends BusinessObject
                 return getItem_id();
             case "item_number":
                 return getItem_number();
-            case "item_name":
-                return getItem_name();
             case "cost":
                 return getCostValue();
             case "item_description":

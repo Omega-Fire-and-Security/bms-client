@@ -6,6 +6,7 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -20,7 +21,7 @@ import java.net.URLEncoder;
  */
 public class Resource extends BusinessObject implements Serializable
 {
-    private String brand_name;
+    //private String brand_name;
     private String resource_description;
     private String resource_code;
     private String resource_type;
@@ -32,16 +33,6 @@ public class Resource extends BusinessObject implements Serializable
     private String supplier_id;
     private String part_number;
     public static final String TAG = "Resource";
-
-    public String getBrand_name()
-    {
-        return brand_name;
-    }
-
-    public void setBrand_name(String brand_name)
-    {
-        this.brand_name = brand_name;
-    }
 
     public String getResource_description()
     {
@@ -66,6 +57,13 @@ public class Resource extends BusinessObject implements Serializable
     public String getResource_type()
     {
         return resource_type;
+    }
+
+    public String getResourceType()
+    {
+        if(ResourceManager.getInstance().getResource_types()!=null && getResource_type()!=null)
+            return ResourceManager.getInstance().getResource_types().get(getResource_type()).getType_name();
+        else return null;
     }
 
     public void setResource_type(String resource_type)
@@ -145,10 +143,9 @@ public class Resource extends BusinessObject implements Serializable
 
     //Properties
 
-    public StringProperty brand_nameProperty(){return new SimpleStringProperty(brand_name);}
     public StringProperty resource_descriptionProperty(){return new SimpleStringProperty(resource_description);}
     public StringProperty resource_codeProperty(){return new SimpleStringProperty(resource_code);}
-    public StringProperty resource_typeProperty(){return new SimpleStringProperty(resource_type);}
+    public StringProperty resource_typeProperty(){return new SimpleStringProperty(getResource_type());}
     public StringProperty resource_valueProperty(){return new SimpleStringProperty(String.valueOf(resource_value));}
     public StringProperty unitProperty(){return new SimpleStringProperty(unit);}
     public StringProperty quantityProperty(){return new SimpleStringProperty(String.valueOf(quantity));}
@@ -169,9 +166,6 @@ public class Resource extends BusinessObject implements Serializable
         {
             switch (var.toLowerCase())
             {
-                case "brand_name":
-                    brand_name = (String)val;
-                    break;
                 case "resource_type":
                     resource_type = (String)val;
                     break;
@@ -217,9 +211,6 @@ public class Resource extends BusinessObject implements Serializable
     {
         switch (var.toLowerCase())
         {
-            case "name":
-            case "brand_name":
-                return getBrand_name();
             case "resource_type":
                 return resource_type;
             case "resource_description":
@@ -258,8 +249,6 @@ public class Resource extends BusinessObject implements Serializable
                 +",\"unit\":\""+getUnit()+"\"";
         if(getPart_number()!=null)
             json_obj+=",\"part_number\":\""+getPart_number()+"\"";
-        if(getBrand_name()!=null)
-            json_obj+=",\"brand_name\":\""+getBrand_name()+"\"";
         if(getSupplier_id()!=null)
             json_obj+=",\"supplier_id\":\""+getSupplier_id()+"\"";
         if(getQuantity()>0)
@@ -277,11 +266,7 @@ public class Resource extends BusinessObject implements Serializable
     @Override
     public String toString()
     {
-        /*if(getBrand_name()!=null)
-            if(!getBrand_name().isEmpty())
-                return getBrand_name();*/
-
-        return getBrand_name() + " - " + getResource_description();
+        return getResource_description();
     }
 
     @Override

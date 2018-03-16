@@ -61,14 +61,6 @@ public class QuoteItem extends BusinessObject implements Serializable
         this.resource_id = resource_id;
     }
 
-    public String getEquipment_name()
-    {
-        Resource resource = getResource();
-        if(resource!=null)
-            return resource.getBrand_name();
-        return "N/A";
-    }
-
     public String getEquipment_description()
     {
         Resource resource = getResource();
@@ -203,7 +195,11 @@ public class QuoteItem extends BusinessObject implements Serializable
 
     public String getCategory()
     {
-        return category;
+        if(category!=null)
+            return category;
+        else if(getResource()!=null)
+            return getResource().getResourceType();
+        else return null;
     }
 
     public void setCategory(String category)
@@ -220,7 +216,6 @@ public class QuoteItem extends BusinessObject implements Serializable
     public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
     public StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
     public StringProperty resource_idProperty(){return new SimpleStringProperty(resource_id);}
-    public StringProperty equipment_nameProperty(){return new SimpleStringProperty(getEquipment_name());}
     public StringProperty equipment_descriptionProperty(){return new SimpleStringProperty(getEquipment_description());}
     public StringProperty additional_costsProperty(){return new SimpleStringProperty(additional_costs);}
     public StringProperty unitProperty(){return new SimpleStringProperty(getUnit());}
@@ -232,7 +227,11 @@ public class QuoteItem extends BusinessObject implements Serializable
         return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + getRate());
     }
     public StringProperty markupProperty(){return new SimpleStringProperty(String.valueOf(markup));}
-    public StringProperty categoryProperty(){return new SimpleStringProperty(String.valueOf(getCategory()));}
+    public StringProperty categoryProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(getCategory()));
+    }
+
     public StringProperty totalProperty()
     {
         return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + getTotal());
@@ -291,8 +290,6 @@ public class QuoteItem extends BusinessObject implements Serializable
                 return getResource_id();
             case "item_number":
                 return getItem_number();
-            case "equipment_name":
-                return getEquipment_name();
             case "equipment_description":
                 return getEquipment_description();
             case "additional_costs":
