@@ -9,6 +9,7 @@ import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.JobManager;
 import fadulousbms.managers.QuoteManager;
+import fadulousbms.managers.TaskManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import jfxtras.scene.control.agenda.Agenda;
@@ -20,6 +21,7 @@ import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  *
@@ -36,6 +38,7 @@ public class Task extends BusinessObject
     private String location;
     private int status;
     private String assignees;
+    private HashMap<String, TaskItem> taskItems;
 
     //Getters and setters
 
@@ -127,6 +130,16 @@ public class Task extends BusinessObject
         }
         else IO.logAndAlert(getClass().getName(), IO.TAG_ERROR, "No jobs were found on the database.");
         return null;
+    }
+
+    public HashMap<String, TaskItem> getTaskItems()
+    {
+        return taskItems;
+    }
+
+    public void setTaskItems(HashMap<String, TaskItem> taskItems)
+    {
+        this.taskItems = taskItems;
     }
 
     /**

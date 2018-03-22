@@ -2074,14 +2074,6 @@ public class PDF
                                                 (int) (w-PAGE_MARGINS.right-200),//PAGE_MARGINS.left+text_offset+520
                                                 (int) (w-PAGE_MARGINS.right-70)};//PAGE_MARGINS.left+text_offset+600
 
-                /*addTextToPageStream(document, "DATE " , PDType1Font.HELVETICA_BOLD, 12, PAGE_MARGINS.left+text_offset, line_pos);
-                addTextToPageStream(document, "TIME IN ", PDType1Font.HELVETICA_BOLD, 12, PAGE_MARGINS.left+text_offset+100, line_pos);
-                addTextToPageStream(document, "TIME OUT ", PDType1Font.HELVETICA_BOLD, 12, PAGE_MARGINS.left+text_offset+200, line_pos);
-                addTextToPageStream(document, "DESCRIPTION OF WORK DONE ", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
-                addTextToPageStream(document, "Materials Used", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
-                addTextToPageStream(document, "Model/Serial", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
-                addTextToPageStream(document, "Quantity", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);*/
-
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "DATE ", PDType1Font.HELVETICA_BOLD, 11, col_positions[0] - PAGE_MARGINS.left - text_offset, PAGE_MARGINS.left + text_offset, line_pos, no_border, col_positions);
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "TIME IN ", PDType1Font.HELVETICA_BOLD, 11, col_positions[1] - col_positions[0] - text_offset, col_positions[0] + text_offset, line_pos, no_border, col_positions);
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "TIME OUT ", PDType1Font.HELVETICA_BOLD, 11, col_positions[2] - col_positions[1] - text_offset, col_positions[1] + text_offset, line_pos, no_border, col_positions);

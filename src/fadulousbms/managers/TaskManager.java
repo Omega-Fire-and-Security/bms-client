@@ -19,6 +19,7 @@ import java.util.HashMap;
 public class TaskManager extends BusinessObjectManager
 {
     private HashMap<String, Task> tasks;
+    private HashMap<String, HashMap<String, TaskItem>> task_items;
     private Gson gson;
     private static TaskManager task_manager = new TaskManager();
     public static final String TAG = "TaskManager";
@@ -49,6 +50,13 @@ public class TaskManager extends BusinessObjectManager
     public HashMap<String, Task> getDataset()
     {
         return this.tasks;
+    }
+
+    public HashMap<String, TaskItem> getTaskItems(String task_id)
+    {
+        if(task_id!=null && task_items!=null)
+            return task_items.get(task_id);
+        else return null;
     }
 
     @Override
@@ -99,16 +107,50 @@ public class TaskManager extends BusinessObjectManager
                                         tasks = new HashMap<>();
                                         for (Task task : tasks_arr)
                                             tasks.put(task.get_id(), task);
+
+                                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloaded tasks.");
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Tasks in the database.");
                                 } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Tasks in the database.");
 
+                                String task_items_json = RemoteComms.sendGetRequest("/tasks/resources", headers);
+                                TaskItemServerObject taskItemsServerObject = gson.fromJson(task_items_json, TaskItemServerObject.class);
+                                if (taskItemsServerObject != null)
+                                {
+                                    if (taskItemsServerObject.get_embedded() != null)
+                                    {
+                                        TaskItem[] task_items_arr = taskItemsServerObject.get_embedded().getTask_resources();
+
+                                        task_items = new HashMap<>();
+                                        for (TaskItem taskItem : task_items_arr)
+                                        {
+                                            //check if bucket exists for Task
+                                            if(task_items.get(taskItem.getTask_id())!=null)
+                                                task_items.get(taskItem.getTask_id()).put(taskItem.get_id(), taskItem);//add TaskItem to Task's bucket
+                                            else //does not exist, create one
+                                            {
+                                                //init Task TaskItem bucket
+                                                HashMap items = new HashMap<>();
+                                                items.put(taskItem.get_id(), taskItem);
+                                                //put first item in bucket
+                                                task_items.put(taskItem.getTask_id(), items);
+                                            }
+                                        }
+
+                                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "reloaded task resources/materials.");
+                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any TaskItems in the database.");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any TaskItems in the database.");
+
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of tasks.");
+
                                 serialize(ROOT_PATH + filename, tasks);
+                                serialize(ROOT_PATH + "task_items.dat", task_items);
+
                             } else
                             {
                                 IO.log(this.getClass()
                                         .getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                                 tasks = (HashMap<String, Task>) deserialize(ROOT_PATH + filename);
+                                task_items = (HashMap<String, HashMap<String, TaskItem>>) deserialize(ROOT_PATH + "task_items.dat");
                             }
                         } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
                     } else IO.logAndAlert("Session Expired", "No valid active sessions found.", IO.TAG_ERROR);
@@ -212,6 +254,36 @@ public class TaskManager extends BusinessObjectManager
             public void setTasks(Task[] tasks)
             {
                 this.tasks = tasks;
+            }
+        }
+    }
+
+    class TaskItemServerObject extends ServerObject
+    {
+        private Embedded _embedded;
+
+        Embedded get_embedded()
+        {
+            return _embedded;
+        }
+
+        void set_embedded(Embedded _embedded)
+        {
+            this._embedded = _embedded;
+        }
+
+        class Embedded
+        {
+            private TaskItem[] task_resources;
+
+            public TaskItem[] getTask_resources()
+            {
+                return task_resources;
+            }
+
+            public void setTask_resources(TaskItem[] task_resources)
+            {
+                this.task_resources = task_resources;
             }
         }
     }

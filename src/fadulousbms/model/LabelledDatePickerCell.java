@@ -38,7 +38,7 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
             //System.out.println("\noldVal: " + oldVal + ", newVal: " + newVal + ", isShowing? " + datePicker.isShowing() + ", isFocused?" + datePicker.isFocused() + "\n");
             updateItem(datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond(), isEmpty());
             if(datePicker.isFocused() || datePicker.isShowing())
-                commitEdit(datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+                commitEdit(datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);
         });
 
 
@@ -46,12 +46,15 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
         {
             if(!newValue)//if lost focus
             {
-                long date_epoch = datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
+                if(datePicker.getValue() != null)
+                {
+                    long date_epoch = datePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
 
-                if(date_epoch>0)
-                    setGraphic(datePicker);
-                else setGraphic(label);
-                getTableView().refresh();
+                    if (date_epoch > 0)
+                        setGraphic(datePicker);
+                    else setGraphic(label);
+                    getTableView().refresh();
+                }
             }
         });
     }

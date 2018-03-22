@@ -9,6 +9,7 @@ import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.QuoteManager;
+import fadulousbms.managers.TaskManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import jfxtras.scene.control.agenda.Agenda;
@@ -23,6 +24,7 @@ import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  *
@@ -89,6 +91,19 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
     public void setStatus(int status)
     {
         this.status = status;
+    }
+
+    public HashMap<String, Task> getTasks()
+    {
+        HashMap<String, Task> all_tasks = TaskManager.getInstance().getDataset();
+        if(all_tasks!=null) {
+            HashMap<String, Task> job_tasks = new HashMap<>();
+            for (Task task : all_tasks.values())
+                if (task.getJob_id() != null)
+                    if (this.get_id().equals(task.getJob_id()))
+                        job_tasks.put(task.get_id(), task);
+            return job_tasks;
+        } else return null;
     }
 
     public String getQuote_id()
