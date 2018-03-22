@@ -46,7 +46,7 @@ public class PDF
     private static final int LINE_END = 500;
     private static final int TEXT_VERT_OFFSET=LINE_HEIGHT/4;
     //private static final int ROW_COUNT = 34;
-    private static final Insets PAGE_MARGINS = new Insets(90,25,35,25);
+    private static final Insets PAGE_MARGINS = new Insets(90,25,60,25);
     private static String logo_path = "images/logo.png";
     private static String header_path = "images/header.jpg";
 
@@ -68,7 +68,9 @@ public class PDF
             this.border = pos;
             this.border_colour = border_colour;
             this.border_width = border_width;
-            this.insets = insets;
+            if(insets!=null)
+                this.insets = insets;
+            else this.insets = new Insets(0,0,0,0);
         }
     }
 
@@ -1971,7 +1973,7 @@ public class PDF
             for (Employee employee : job.getAssigned_employees())
             {
                 //contents.close();
-                final PDPage new_page = new PDPage(PDRectangle.A4);
+                final PDPage new_page = new PDPage(new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()));
                 //Add page to document
                 document.addPage(new_page);
                 contents_stream = new PDPageContentStream(document, new_page);
@@ -1982,129 +1984,243 @@ public class PDF
                 int logo_h = 60;
                 float w = new_page.getBBox().getWidth();
                 float h = new_page.getBBox().getHeight();
-                int line_pos = (int) h - logo_h - 20;
+                int line_pos = (int) h - logo_h - LINE_HEIGHT;
                 final int VERT_LINE_START = line_pos;
-                //float center_horz = (w/2)-20;
+                int text_offset = 5;
                 int digit_font_size = 9;
 
                 PDImageXObject header = PDImageXObject.createFromFile(header_path, document);
-                contents_stream.drawImage(header, 0, 760, w, header_h);
+                contents_stream.drawImage(header, PAGE_MARGINS.left, h-header_h+10, w-PAGE_MARGINS.right-PAGE_MARGINS.left, header_h);//new_page.getBBox().getHeight()
                 //contents.drawImage(logo, (int) (w / 2) - 80, 770, 160, logo_h);
+                int page_content_max_width = (int)(w-PAGE_MARGINS.right-PAGE_MARGINS.left);
+                Border no_border = new Border(Border.BORDER_NONE, Color.BLACK, 0, new Insets(0, 0, 0, 0));
 
                 /**Draw lines**/
                 //createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT, PAGE_MARGINS.right), (int)w);
                 //createBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, (int)h-logo_h-(ROW_COUNT+1)*LINE_HEIGHT, PAGE_MARGINS.right), (int)w);
-                createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.top, PAGE_MARGINS.right), (int)w);
-                createBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.top, PAGE_MARGINS.right), (int)w);
+                //createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.top, PAGE_MARGINS.right), (int)w);
+                //createBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.top, PAGE_MARGINS.right), (int)w);
+                createLinesAndBordersOnPage(contents_stream, new Insets(line_pos, PAGE_MARGINS.left, PAGE_MARGINS.bottom+35, PAGE_MARGINS.right), (int)w);
 
                 /** begin text from the top**/
                 //contents.beginText();
                 //contents.setFont(font, 12);
                 line_pos -= LINE_HEIGHT/2;
+                int title_font_size = 14;
                 String str_job_card = job.getQuote().getClient().getClient_name() + ": "
                         + job.getQuote().getSitename() + " JOB CARD";
-                addTextToPageStream(document, str_job_card, PDType1Font.HELVETICA_BOLD, 14, 70, line_pos);//(int) (w / 2)
+
+                float str_w = (PDType1Font.COURIER.getStringWidth(str_job_card)/1000)*title_font_size;
+
+                line_pos = addTextToPageStream(document, str_job_card, PDType1Font.HELVETICA, title_font_size, page_content_max_width, (int) ((w/2)-(str_w/2)), line_pos, no_border, null);
                 line_pos -= LINE_HEIGHT * 2;//next line
 
-                addTextToPageStream(document, "JOB NUMBER: " + job.getObject_number(), 12, 20, line_pos);
-                addTextToPageStream(document, "CUSTOMER: " + job.getQuote().getClient().getClient_name(), 14, (int)(w/2)+30, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(document, "SITENAME: " + job.getQuote().getSitename(), 12, 20, line_pos);
-                addTextToPageStream(document, "STATUS: " + (job.isJob_completed()?"completed":"pending"), 12, (int)(w/2)+30, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(document, "CONTACT: " + job.getQuote().getContact_person(), 12, 20, line_pos);
-                addTextToPageStream(document, "CELL: " + job.getQuote().getContact_person().getCell(), 12, (int)(w/2)+30, line_pos);
-                addTextToPageStream(document, "TEL: " + job.getQuote().getContact_person().getTel(), 12, (int)(w/2)+150, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos+LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos+LINE_HEIGHT/2);
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos-LINE_HEIGHT/2);
 
-                //addTextToPageStream(contents, "Date Logged: " + LocalDate.parse(formatter.format(new Date(job.getDate_logged()*1000))), 12, 10, line_pos);
-                //addTextToPageStream(contents, "Planned Start Date: " + LocalDate.parse(formatter.format(new Date(job.getPlanned_start_date()*1000))), 12, (int)(w/2)+30, line_pos);
-                //line_pos -= LINE_HEIGHT;//next line
-                //addTextToPageStream(contents, "Date Assigned: " + LocalDate.parse(formatter.format(new Date(job.getDate_assigned()*1000))), 12, 10, line_pos);
-                addTextToPageStream(document, "DATE STARTED: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()))):"N/A"), 12, 20, line_pos);
-                addTextToPageStream(document, "DATE COMPLETED: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()))):"N/A"), 12, (int)(w/2)+30, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(document, "ASSIGNED EMPLOYEE: " + employee, 12, 20, line_pos);
-                addTextToPageStream(document, "TEL: " + employee.getTel(), 12, (int)(w/2)+30, line_pos);
-                addTextToPageStream(document, "CELL: " + employee.getCell(), 12, (int)(w/2)+150, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                addTextToPageStream(document, "REQUEST: " + job.getQuote().getRequest(), 12, 20, line_pos);
-                line_pos -= LINE_HEIGHT;//next line
-                //contents.endText();
+                line_pos = addTextToPageStream(document, "ISO 9001:2008", PDType1Font.HELVETICA, 12, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
 
-                //vertical lines
-                contents_stream.setStrokingColor(Color.BLACK);
-                //vertical line going through center of page
-                contents_stream.moveTo((w / 2), VERT_LINE_START-LINE_HEIGHT);
-                contents_stream.lineTo((w / 2), line_pos+LINE_HEIGHT+LINE_HEIGHT/2);
-                contents_stream.stroke();
-                //
-                contents_stream.moveTo((w / 2), line_pos+LINE_HEIGHT/2);
-                contents_stream.lineTo((w / 2), LINE_END);
-                contents_stream.stroke();
-                //#1
-                contents_stream.moveTo(95, line_pos+LINE_HEIGHT/2);
-                contents_stream.lineTo(95, LINE_END);
-                contents_stream.stroke();
-                //#2
-                contents_stream.moveTo(195, line_pos+LINE_HEIGHT/2);
-                contents_stream.lineTo(195, LINE_END);
-                contents_stream.stroke();
+                line_pos = addTextToPageStream(document, "Effective Date: " + formatter.format(new Date(System.currentTimeMillis())), PDType1Font.HELVETICA, 12, page_content_max_width, (int) (w/2)-160, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+
+                line_pos = addTextToPageStream(document, "Authorized By: ", PDType1Font.HELVETICA, 12, page_content_max_width, (int) (w/2)+40, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+
+                line_pos -= LINE_HEIGHT;//next line
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos-LINE_HEIGHT/2);
+
+                line_pos = addTextToPageStream(document, "JOB NUMBER: " + job.getObject_number(), PDType1Font.HELVETICA, 11, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, "DATE LOGGED: " + (job.getDate_logged()>0?LocalDate.parse(formatter.format(new Date(job.getDate_logged()))):"N/A"), PDType1Font.HELVETICA, 11, page_content_max_width, (int)(w/2)-70, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+
+                line_pos -= LINE_HEIGHT;//next line
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos-LINE_HEIGHT/2);
+
+                //(int) (w-PAGE_MARGINS.right-(w/2)-70)
+                line_pos = addTextToPageStream(document, "CUSTOMER: " + job.getQuote().getClient().getClient_name(), PDType1Font.HELVETICA, 11, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, "ADDRESS: " + job.getQuote().getClient().getPhysical_address(), PDType1Font.HELVETICA, 11, page_content_max_width/2, (int)(w/2)-70, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+
+                line_pos -= LINE_HEIGHT;//next line
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos-LINE_HEIGHT/2);
+
+                line_pos = addTextToPageStream(document, "SITE: " + job.getQuote().getSitename(), PDType1Font.HELVETICA, 11, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, "CONTACT: " + job.getQuote().getContact_person(), PDType1Font.HELVETICA, 11, page_content_max_width, (int)(w/2)-70, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+                line_pos = addTextToPageStream(document, "TEL: " + job.getQuote().getContact_person().getTel(), PDType1Font.HELVETICA, 11, page_content_max_width, (int)w-170, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+
+                line_pos -= LINE_HEIGHT;//next line
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos-LINE_HEIGHT/2);
+
+                line_pos = addTextToPageStream(document, "REQUEST: " + job.getQuote().getRequest(), PDType1Font.HELVETICA, 11, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+
+                line_pos -= LINE_HEIGHT;//next line
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos-LINE_HEIGHT/2);
+
+                /*line_pos = addTextToPageStream(document, "START DATE: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()))):"N/A"), PDType1Font.HELVETICA, 11, page_content_max_width, (int)(w/2)-70, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+                line_pos = addTextToPageStream(document, "COMP DATE: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()))):"N/A"), PDType1Font.HELVETICA, 11, page_content_max_width, (int)w-170, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);*/
+                line_pos = addTextToPageStream(document, "TECHNICIAN: ", PDType1Font.HELVETICA, 11, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, "START DATE: ", PDType1Font.HELVETICA, 11, page_content_max_width, (int)(w/2)-70, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+                line_pos = addTextToPageStream(document, "COMP DATE: ", PDType1Font.HELVETICA, 11, page_content_max_width, (int)w-170, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
+
+                line_pos -= LINE_HEIGHT;//next line
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos-LINE_HEIGHT/2);
+
+
+                //addTextToPageStream(document, "STATUS: " + (job.isJob_completed()?"completed":"pending"), 12, (int)(w/2)+30, line_pos);
+
                 //draw horizontal line
-                createBordersOnPage(contents_stream, new Insets(line_pos+LINE_HEIGHT/2, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
+                createBordersOnPage(contents_stream, new Insets(line_pos+LINE_HEIGHT/2, PAGE_MARGINS.left, line_pos+LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);//line_pos-LINE_HEIGHT/2
 
-                //contents.beginText();
-                addTextToPageStream(document, "DATE " , PDType1Font.HELVETICA_BOLD, 12, 20, line_pos);
-                addTextToPageStream(document, "TIME IN ", PDType1Font.HELVETICA_BOLD, 12, 120, line_pos);
-                addTextToPageStream(document, "TIME OUT ", PDType1Font.HELVETICA_BOLD, 12, 220, line_pos);
+                int[] col_positions = new int[]{PAGE_MARGINS.left+text_offset+60,
+                                                PAGE_MARGINS.left+text_offset+130,
+                                                PAGE_MARGINS.left+text_offset+200,
+                                                (int) (w-PAGE_MARGINS.right-350),//PAGE_MARGINS.left+text_offset+400 //(int) (w/2)
+                                                (int) (w-PAGE_MARGINS.right-200),//PAGE_MARGINS.left+text_offset+520
+                                                (int) (w-PAGE_MARGINS.right-70)};//PAGE_MARGINS.left+text_offset+600
+
+                /*addTextToPageStream(document, "DATE " , PDType1Font.HELVETICA_BOLD, 12, PAGE_MARGINS.left+text_offset, line_pos);
+                addTextToPageStream(document, "TIME IN ", PDType1Font.HELVETICA_BOLD, 12, PAGE_MARGINS.left+text_offset+100, line_pos);
+                addTextToPageStream(document, "TIME OUT ", PDType1Font.HELVETICA_BOLD, 12, PAGE_MARGINS.left+text_offset+200, line_pos);
                 addTextToPageStream(document, "DESCRIPTION OF WORK DONE ", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
+                addTextToPageStream(document, "Materials Used", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
+                addTextToPageStream(document, "Model/Serial", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);
+                addTextToPageStream(document, "Quantity", PDType1Font.HELVETICA_BOLD, 12, (int)(w/2)+70, line_pos);*/
 
-                line_pos = LINE_END - LINE_HEIGHT/2;//(int) h - logo_h - LINE_HEIGHT - (LINE_HEIGHT*30) - LINE_HEIGHT/2;
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "DATE ", PDType1Font.HELVETICA_BOLD, 11, col_positions[0] - PAGE_MARGINS.left - text_offset, PAGE_MARGINS.left + text_offset, line_pos, no_border, col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "TIME IN ", PDType1Font.HELVETICA_BOLD, 11, col_positions[1] - col_positions[0] - text_offset, col_positions[0] + text_offset, line_pos, no_border, col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "TIME OUT ", PDType1Font.HELVETICA_BOLD, 11, col_positions[2] - col_positions[1] - text_offset, col_positions[1] + text_offset, line_pos, no_border, col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "DESCRIPTION OF WORK DONE ", PDType1Font.HELVETICA_BOLD, 10, col_positions[3] - col_positions[2] - text_offset, col_positions[2] + text_offset, line_pos, no_border, col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Materials Used", PDType1Font.HELVETICA_BOLD, 11, col_positions[4] - col_positions[3] - text_offset, col_positions[3] + text_offset, line_pos, no_border, col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Model/Serial", PDType1Font.HELVETICA_BOLD, 11, col_positions[5] - col_positions[4] - text_offset, col_positions[4] + text_offset, line_pos, no_border, col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Quantity", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - col_positions[5] - text_offset), col_positions[5] + text_offset, line_pos, no_border, col_positions);
 
-                addTextToPageStream(document, "Materials Used" , 14, 100, line_pos);
-                addTextToPageStream(document, "Model/Serial" , 14, (int)(w/2)+50, line_pos);
-                addTextToPageStream(document, "Quantity" , 14, (int) w-100, line_pos);
-                final int BORDER_START = line_pos;
+                //render 5 blank lines
+                for(int i=0;i<5;i++)
+                {
+                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[0] - PAGE_MARGINS.left - text_offset, PAGE_MARGINS.left + text_offset, line_pos, no_border, col_positions);
+                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[1] - col_positions[0] - text_offset, col_positions[0] + text_offset, line_pos, no_border, col_positions);
+                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[2] - col_positions[1] - text_offset, col_positions[1] + text_offset, line_pos, no_border, col_positions);
+                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 10, col_positions[3] - col_positions[2] - text_offset, col_positions[2] + text_offset, line_pos, no_border, col_positions);
+                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[4] - col_positions[3] - text_offset, col_positions[3] + text_offset, line_pos, no_border, col_positions);
+                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[5] - col_positions[4] - text_offset, col_positions[4] + text_offset, line_pos, no_border, col_positions);
+                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - col_positions[5] - text_offset), col_positions[5] + text_offset, line_pos, no_border, col_positions);
+                    line_pos -= LINE_HEIGHT;//next line
+                }
+                //line_pos = LINE_END - LINE_HEIGHT/2;//(int) h - logo_h - LINE_HEIGHT - (LINE_HEIGHT*30) - LINE_HEIGHT/2;
+                //line_pos -= LINE_HEIGHT*10;//skip 10 lines
+
+                //render PnGs
+                int[] png_col_positions = new int[]
+                        {
+                            PAGE_MARGINS.left+text_offset+90,
+                            PAGE_MARGINS.left+text_offset+180,
+                            PAGE_MARGINS.left+text_offset+250,
+                            (int) (w-PAGE_MARGINS.right-350)
+                        };
+
+                createBordersOnPage(contents_stream, new Insets(line_pos+LINE_HEIGHT/2, PAGE_MARGINS.left, line_pos+LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);//line_pos-LINE_HEIGHT/2
+
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Labour Hours ", PDType1Font.HELVETICA_BOLD, 11, png_col_positions[0] - PAGE_MARGINS.left - text_offset, PAGE_MARGINS.left + text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Travel Hours", PDType1Font.HELVETICA_BOLD, 11, png_col_positions[1] - png_col_positions[0] - text_offset, png_col_positions[0] + text_offset, line_pos, no_border, png_col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Kilometres", PDType1Font.HELVETICA_BOLD, 11, png_col_positions[2] - png_col_positions[1] - text_offset, png_col_positions[1] + text_offset, line_pos, no_border, png_col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Other Staff ", PDType1Font.HELVETICA_BOLD, 10, png_col_positions[3] - png_col_positions[2] - text_offset, png_col_positions[2] + text_offset, line_pos, no_border, png_col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "PO", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - png_col_positions[3] - text_offset), png_col_positions[3] + text_offset, line_pos, no_border, png_col_positions);
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Quote", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - png_col_positions[3] - text_offset), png_col_positions[3] + text_offset, line_pos, no_border, png_col_positions);
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Client PO", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - png_col_positions[3] - text_offset), png_col_positions[3] + text_offset, line_pos, no_border, png_col_positions);
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Invoice", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - png_col_positions[3] - text_offset), png_col_positions[3] + text_offset, line_pos, no_border, png_col_positions);
+
+                drawLine(contents_stream, Color.BLACK, PAGE_MARGINS.left, line_pos-LINE_HEIGHT/2, (int) (w-PAGE_MARGINS.right), line_pos-LINE_HEIGHT/2);
+
                 line_pos -= LINE_HEIGHT;//next line
 
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "CUSTOMER NOTE: _______________________________________________________________________________________________________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + text_offset, line_pos, no_border, null);
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "________________________________________________________________________________________________________________________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + text_offset, line_pos, no_border, null);
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "The authorised signatory agrees that the detailed task above have been performed and completed to the client's satisfaction and " +
+                        "acknowledges that all equipment installed remains property of " + Globals.COMPANY.getValue() + " until final payment has been received.", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + text_offset, line_pos, no_border, null);
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "CUSTOMER NAME: __________________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "CUSTOMER SIGNATURE: ____________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + 275 + text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "DESIGNATION: _____________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + 540 + text_offset, line_pos, no_border, null);
+                line_pos -= LINE_HEIGHT;//next line
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "TECHNICIAN SIGNATURE: ____________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "DATE: ____________________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + 540 + text_offset, line_pos, no_border, null);
+
+                //line_pos -= LINE_HEIGHT*2;//next 2nd line
                 //render quote materials
-                if(job.getQuote().getResources()!=null)
+                /*if(job.getQuote().getResources()!=null)
                 {
                     for (QuoteItem item : job.getQuote().getResources())
                     {
-                        addTextToPageStream(document, item.getResource().getResource_description(), 14, 20, line_pos);
+                        /*addTextToPageStream(document, item.getResource().getResource_description(), 14, 20, line_pos);
                         addTextToPageStream(document, item.getResource().getResource_code(), 14, (int) (w / 2) + 20, line_pos);
-                        addTextToPageStream(document, item.getQuantity(), 14, (int) w - 80, line_pos);
+                        addTextToPageStream(document, item.getQuantity(), 14, (int) w - 80, line_pos);*
+                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), item.getResource().getResource_description(), PDType1Font.HELVETICA, 11, (int) (w / 2) + PAGE_MARGINS.left-PAGE_MARGINS.right, PAGE_MARGINS.left+text_offset, line_pos, no_border, col_positions);
+                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), item.getResource().getResource_code(), PDType1Font.HELVETICA, 11, (int) w - 80 - (int) (w / 2) + PAGE_MARGINS.left + text_offset, col_positions[0] + text_offset, line_pos, no_border, col_positions);
+                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), item.getQuantity(), PDType1Font.HELVETICA, 11, (int) (w - 80), col_positions[1] + text_offset, line_pos, no_border, col_positions);
                         line_pos -= LINE_HEIGHT;//next line
                     }
-                }
+                }*/
 
                 //render quote services
-                if(job.getQuote().getServices()!=null)
+                /*if(job.getQuote().getServices()!=null)
                 {
                     for (QuoteService service : job.getQuote().getServices())
                     {
-                        addTextToPageStream(document, service.getService().getService_title(), 14, 20, line_pos);
-                        addTextToPageStream(document, service.getService().getService_description()!=null?service.getService().getService_description():"N/A", 14, (int) (w / 2) + 20, line_pos);
+                        addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), service.getService().getService_title(), 14, 20, line_pos);
+                        addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), service.getService().getService_description()!=null?service.getService().getService_description():"N/A", 14, (int) (w / 2) + 20, line_pos);
                         int service_qty = 0;
                         if(service.getService().getServiceItemsMap()!=null)
                             for(ServiceItem serviceItem : service.getService().getServiceItemsMap().values())
                                 service_qty+=serviceItem.getQuantity();
-                        addTextToPageStream(document, String.valueOf(service_qty), 14, (int) w - 80, line_pos);
+                        addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), String.valueOf(service_qty), 14, (int) w - 80, line_pos);
                         line_pos -= LINE_HEIGHT;//next line
                     }
-                }
-                //contents.endText();
-                createBordersOnPage(contents_stream, new Insets(BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.left, BORDER_START-LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
-                createBordersOnPage(contents_stream, new Insets(BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.left, line_pos+BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
+                }*/
+                //createBordersOnPage(contents_stream, new Insets(BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.left, BORDER_START-LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
+                //createBordersOnPage(contents_stream, new Insets(BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.left, line_pos+BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
 
                 //contents.close();
             }
-        }else
+        } else
         {
             IO.logAndAlert(TAG, "job " + job.get_id() + " has no assigned employees.", IO.TAG_ERROR);
             return null;
         }
+
+        //draw page numbers & footer text
+        for(int i=0;i<document.getNumberOfPages();i++)
+        {
+            float w = document.getPage(i).getBBox().getWidth();
+            PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(i), PDPageContentStream.AppendMode.APPEND, true);
+            contentStream.beginText();
+            contentStream.setFont(font, 10);
+
+            /* draw footer text */
+            //company info
+            contentStream.setTextMatrix(new Matrix(1, 0, 0, 1, PAGE_MARGINS.left + 5, 27));
+            contentStream.showText(Globals.COMPANY.getValue() + " " + Globals.COMPANY_SECTOR.getValue());
+            //center text
+            contentStream.setTextMatrix(new Matrix(1, 0, 0, 1, centerText("Form 20: Job Card", 10, (int) w, font), 27));
+            contentStream.showText("Form 20: Job Card");
+            //date & revision
+            String str = "Revision 1.0 : " + formatter.format(new Date(System.currentTimeMillis()));
+            contentStream.setTextMatrix(new Matrix(1, 0, 0, 1, (int) (w - PAGE_MARGINS.right - 5 - (PDType1Font.HELVETICA.getStringWidth(str)/1000)*11), 27));
+            contentStream.showText(str);
+
+            //draw page number
+            str = "Page " + (i+1) + " of " + document.getNumberOfPages();
+            contentStream.setTextMatrix(new Matrix(1, 0, 0, 1, centerText(str, 10, (int) w, font), 10));
+            contentStream.showText(str);
+
+            contentStream.endText();
+
+            createBordersOnPage(contentStream, new Insets(30+LINE_HEIGHT/2, PAGE_MARGINS.left, 30+LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
+
+            //close current page's stream writer
+            contentStream.close();
+        }
+
 
         //create PDF output directory
         if(new File("out/pdf/").mkdirs())
@@ -2899,6 +3015,16 @@ public class PDF
         contentStream.stroke();
     }
 
+    public static int centerText(String text, int font_size, int page_w, PDFont font) throws IOException
+    {
+        float str_w = (font.getStringWidth(text)/1000)*font_size;
+        return (int) ((page_w/2)-(str_w/2));
+    }
+
+    public static int addTextToPageStream(PDDocument document, String text, PDFont font, int font_size, int text_block_width, int x, int y, Border border, int[] col_positions) throws IOException
+    {
+        return addTextToPageStream(document, PDRectangle.A4, text, font, font_size, text_block_width, x, y, border, col_positions);
+    }
     /**
      * Adds text to a page with text-wrapping
      * @param text
@@ -2909,7 +3035,7 @@ public class PDF
      * @param y
      * @throws IOException
      */
-    public static int addTextToPageStream(PDDocument document, String text, PDFont font, int font_size, int text_block_width, int x, int y, Border border, int[] col_positions) throws IOException
+    public static int addTextToPageStream(PDDocument document, PDRectangle page_size, String text, PDFont font, int font_size, int text_block_width, int x, int y, Border border, int[] col_positions) throws IOException
     {
         IO.log(PDF.class.getName(), IO.TAG_VERBOSE, "\n\n::::::::::::::::::::Processing Text: [" + text + "]::::::::::::::::::::");
 
@@ -2956,7 +3082,8 @@ public class PDF
             contentStream.close();
 
             //create new page
-            PDPage new_page = new PDPage(PDRectangle.A4);
+            PDPage new_page = new PDPage(page_size);
+            IO.log(PDF.class.getName(), IO.TAG_INFO, "new page size w: " + page_size.getWidth() + ", h: " + page_size.getHeight());
             //add new page to document
             document.addPage(new_page);
             //create new stream writer using new page
@@ -2965,7 +3092,8 @@ public class PDF
             y = (int)new_page.getBBox().getHeight()-LINE_HEIGHT-LINE_HEIGHT/2;
 
             //draw lines and borders on new page
-            createLinesAndBordersOnPage(contentStream, new Insets(y, PAGE_MARGINS.left, 35, PAGE_MARGINS.right), (int)new_page.getBBox().getWidth());
+            //createLinesAndBordersOnPage(contentStream, new Insets(y, PAGE_MARGINS.left, 35, PAGE_MARGINS.right), (int)new_page.getBBox().getWidth());
+            createLinesAndBordersOnPage(contentStream, new Insets(y, PAGE_MARGINS.left, PAGE_MARGINS.bottom+35, (int)new_page.getBBox().getWidth()-PAGE_MARGINS.right), (int)w);
             //return addTextToPageStream(new_document, contentStream, text, font, font_size, text_block_width, x, (int)new_page.getBBox().getHeight()-100);
             y-=LINE_HEIGHT/2;
         }
@@ -2974,7 +3102,7 @@ public class PDF
         switch (border.border)
         {
             case Border.BORDER_LEFT:
-                drawLine(contentStream, border.border_colour, x+border.insets.left, (y+LINE_HEIGHT/2)+border.insets.top, x+border.insets.left, (y-LINE_HEIGHT+LINE_HEIGHT/2)-border.insets.bottom);
+                drawLine(contentStream, border.border_colour, x-border.insets.left, (y+LINE_HEIGHT/2)+border.insets.top, x-border.insets.left, (y-LINE_HEIGHT+LINE_HEIGHT/2)-border.insets.bottom);
                 break;
             case Border.BORDER_TOP:
                 drawLine(contentStream, border.border_colour, x+border.insets.left, y+LINE_HEIGHT/2+border.insets.top, x+border.insets.right+text_block_width, y+LINE_HEIGHT/2+border.insets.top);
@@ -2987,7 +3115,7 @@ public class PDF
                 break;
             case Border.BORDER_ALL:
                 //left
-                drawLine(contentStream, border.border_colour, x+border.insets.left, (y+LINE_HEIGHT/2)+border.insets.top, x+border.insets.left, (y-LINE_HEIGHT+LINE_HEIGHT/2)-border.insets.bottom);
+                drawLine(contentStream, border.border_colour, x-border.insets.left, (y+LINE_HEIGHT/2)+border.insets.top, x-border.insets.left, (y-LINE_HEIGHT+LINE_HEIGHT/2)-border.insets.bottom);
                 //top
                 drawLine(contentStream, border.border_colour, x+border.insets.left, y+LINE_HEIGHT/2+border.insets.top, x+border.insets.right+text_block_width, y+LINE_HEIGHT/2+border.insets.top);
                 //right

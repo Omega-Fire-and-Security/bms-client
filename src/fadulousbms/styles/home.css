@@ -142,6 +142,27 @@
     /*-fx-border-radius: 15;*/
 }
 
+.calendarButton
+{
+    -fx-background-color: rgba(0, 0, 0, .2);
+    -fx-border-width: 0 0 0 0;
+    -fx-border-color: rgba(0, 0, 0, 1);
+    -fx-background-radius: 5;
+    -fx-border-radius:5;
+}
+
+.calendarButtonActive
+{
+    -fx-background-color: rgba(2, 3, 20, .4);
+}
+
+.calendarButton:hover
+{
+    -fx-border-width: 1 1 1 1;
+    -fx-background-color: rgba(10, 15, 150, .3);
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.7) , 7, 0.0 , 0 , 4 );
+}
+
 .btnDisabled
 {
     -fx-background-color: rgba(0,0,0,.5);

@@ -240,7 +240,7 @@ public class Quote extends BusinessObject
         if(getParent_id()!=null)
         {
             siblings.put(getParent().getRevision(), getParent());//make parent be second child of requested siblings
-            
+
             if (QuoteManager.getInstance().getDataset() != null)
             {
                 for (Quote quote : QuoteManager.getInstance().getDataset().values())
@@ -248,6 +248,7 @@ public class Quote extends BusinessObject
                         siblings.put(quote.getRevision(), quote);
             } else IO.log(getClass().getName(), IO.TAG_WARN, "no quotes in database.");
         } else IO.log(getClass().getName(), IO.TAG_WARN, "quote ["+get_id()+"] has no parent_id.");
+
         return siblings;
     }
 
@@ -258,7 +259,7 @@ public class Quote extends BusinessObject
     public Quote[] getSortedSiblings(String comparator)
     {
         HashMap<Double, Quote> siblings = getSiblingsMap();
-        System.out.println("##############quote["+get_id()+"] sibling count: " + siblings.size());
+        //System.out.println("##############quote["+get_id()+"] sibling count: " + siblings.size());
         Quote[] siblings_arr = new Quote[siblings.size()];
         siblings.values().toArray(siblings_arr);
         if(siblings_arr!=null)

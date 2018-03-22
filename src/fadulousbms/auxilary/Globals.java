@@ -5,8 +5,9 @@ package fadulousbms.auxilary;
  */
 public enum Globals
 {
-    COMPANY("Omega Fire and Security"),
     APP_NAME("Enterprise Resource Engine"),
+    COMPANY("Omega Fire & Security"),
+    COMPANY_SECTOR("(Pty) Ltd"),
     DEBUG_WARNINGS("on"),
     DEBUG_INFO("on"),
     DEBUG_VERBOSE("on"),

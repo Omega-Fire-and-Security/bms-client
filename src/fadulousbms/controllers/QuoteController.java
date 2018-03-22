@@ -1083,144 +1083,6 @@ public abstract class QuoteController extends ScreenController implements Initia
     }
 
     @FXML
-    public void newService()
-    {
-        TextField txt_service_title = new TextField("");
-        txt_service_title.setMinWidth(120);
-        Label lbl_title = new Label("Service Title*: ");
-        lbl_title.setMinWidth(160);
-
-        TextField txt_service_description = new TextField("");
-        txt_service_description.setMinWidth(120);
-        Label lbl_desc = new Label("Service Description[optional]: ");
-        lbl_desc.setMinWidth(160);
-
-        Button btnSubmit = new Button("Create & Add Service");
-        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-        btnSubmit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-        btnSubmit.getStyleClass().add("btnAdd");
-        btnSubmit.setMinWidth(140);
-        btnSubmit.setMinHeight(35);
-        HBox.setMargin(btnSubmit, new Insets(15, 0, 0, 10));
-
-        GridPane page = new GridPane();
-        page.setAlignment(Pos.CENTER_LEFT);
-        page.setHgap(20);
-        page.setVgap(20);
-        page.add(lbl_title, 0, 0);
-        page.add(txt_service_title, 1, 0);
-        page.add(lbl_desc, 0, 1);
-        page.add(txt_service_description, 1, 1);
-        page.add(btnSubmit, 0, 2);
-
-        PopOver popover = new PopOver(page);
-        popover.setTitle("Add Service");
-        popover.show(btnNewService);
-
-        TextFields.bindAutoCompletion(txt_service_title, ServiceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
-        {
-            if(event!=null)
-            {
-                if(event.getCompletion()!=null)
-                {
-                    IO.log(getClass().getName(), IO.TAG_INFO, "auto-completed service: " + event.getCompletion().getService_title());
-                    txt_service_description.setText(event.getCompletion().getService_description());
-
-                    String res = IO.showConfirm("Copy service items?", "Create new service with the title \""+event.getCompletion().getService_title()+"\" \n" +
-                            "And copy ["+event.getCompletion().getServiceItemsMap().size()+"] service items to the new service?");
-                    if(res.equals(IO.OK))
-                    {
-                        //create service
-                        Service service = new Service();
-                        service.setService_title(txt_service_title.getText());
-                        service.setCreator(SessionManager.getInstance().getActive().getUsr());
-                        if(txt_service_description.getText()!=null)
-                            service.setService_description(txt_service_description.getText());
-
-                        try
-                        {
-                            ServiceManager.getInstance().createService(service, service_id ->
-                            {
-                                if(service_id!=null)
-                                {
-                                    //copy service items from completion to new service
-                                    for (ServiceItem serviceItem : event.getCompletion().getServiceItemsMap().values()) {
-                                        //update service_id to match current service
-                                        serviceItem.setService_id(service.get_id());
-                                        //create ServiceItem on database
-                                        try {
-                                            ServiceManager.getInstance().createServiceItem(serviceItem, null);
-                                        } catch (IOException e) {
-                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
-                                        }
-                                    }
-
-                                    //add new service to table and refresh
-                                    QuoteService quoteService = new QuoteService();
-                                    quoteService.setService_id((String) service_id);
-                                    //Quote_id will be set on creation
-                                    tblQuoteServices.getItems().add(quoteService);
-                                    tblQuoteServices.refresh();
-                                }
-                                return null;
-                            });
-                        } catch (IOException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                        }
-                        itemsModified = true;
-                    } else {
-                        txt_service_title.setText(event.getCompletion().getService_title());
-                        txt_service_description.setText(event.getCompletion().getService_description());
-                        if(!popover.isShowing())
-                            popover.show(btnNewService);
-                    }
-                }
-            }
-        });
-
-        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent event)
-            {
-                if(txt_service_title.getText()==null)
-                {
-                    IO.logAndAlert("Error", "Invalid service title.\nPlease enter a valid value.", IO.TAG_WARN);
-                    return;
-                }
-
-                Service service = new Service();
-                service.setService_title(txt_service_title.getText());
-                service.setCreator(SessionManager.getInstance().getActive().getUsr());
-                if(txt_service_description.getText()!=null)
-                    service.setService_description(txt_service_description.getText());
-
-                try
-                {
-                    //create new service
-                    ServiceManager.getInstance().createService(service, service_id ->
-                    {
-                        if(service_id!=null)
-                        {
-                            //add new service to table and refresh
-                            QuoteService quoteService = new QuoteService();
-                            quoteService.setService_id((String) service_id);
-                            //Quote_id will be set on creation
-                            tblQuoteServices.getItems().add(quoteService);
-                            tblQuoteServices.refresh();
-                        }
-                        return null;
-                    });
-                } catch (IOException e)
-                {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                }
-            }
-        });
-    }
-
-    @FXML
     public void addMaterial()
     {
         File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
@@ -1238,12 +1100,7 @@ public abstract class QuoteController extends ScreenController implements Initia
             quoteItem.setUnit_cost(selected_material.getResource_value());
             quoteItem.setMarkup(0);
             quoteItem.setResource_id(selected_material.get_id());
-            //quoteItem.setEquipment_description(resourceComboBox.getValue().getResource_description());
-            //quoteItem.setUnit(resourceComboBox.getValue().getUnit());
-            //quoteItem.setRate(resourceComboBox.getValue().getResource_value());
-            //quoteItem.setValue(resourceComboBox.getValue().getResource_value());
-            //quoteItem.setResource(resourceComboBox.getValue());
-            //quoteItem.setEquipment_name(resourceComboBox.getValue().getResource_name());
+            quoteItem.setCategory(selected_material.getResourceType());
 
             tblQuoteItems.getItems().add(quoteItem);
             tblQuoteItems.refresh();
@@ -1699,22 +1556,13 @@ public abstract class QuoteController extends ScreenController implements Initia
             QuoteManager.getInstance().createQuote(quote, quoteItems, quoteServices, new Callback()
             {
                 @Override
-                public Object call(Object quote_id)
+                public Object call(Object new_quote_id)
                 {
-                    /*if(quote_id!=null)
-                    {
-                        Platform.runLater(() ->
-                        {
-                            //clear fields on successful quote creation
-                            tblQuoteItems.setItems(null);
-                            tblQuoteItems.refresh();
-                            tblQuoteServices.setItems(null);
-                            tblQuoteServices.refresh();
-                            txtRequest.setText("");
-                            txtSite.setText("");
-                            txtNotes.setText("");
-                        });
-                    }*/
+                    if(QuoteManager.getInstance().getDataset()!=null)
+                        QuoteManager.getInstance().setSelected(QuoteManager.getInstance().getDataset().get(new_quote_id));
+                    else IO.log(getClass().getName(), IO.TAG_ERROR, "no quotes in database.");
+
+                    //txtQuoteId.setText(new_quote_id.toString());
 
                     ScreenManager.getInstance().showLoadingScreen(param ->
                     {
@@ -1739,7 +1587,6 @@ public abstract class QuoteController extends ScreenController implements Initia
                         }).start();
                         return null;
                     });
-                    txtQuoteId.setText(quote_id.toString());
                     return null;
                 }
             });

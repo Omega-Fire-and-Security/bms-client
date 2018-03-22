@@ -63,7 +63,7 @@ public class Resource extends BusinessObject implements Serializable
     {
         if(ResourceManager.getInstance().getResource_types()!=null && getResource_type()!=null)
             return ResourceManager.getInstance().getResource_types().get(getResource_type()).getType_name();
-        else return null;
+        else return getResource_type();
     }
 
     public void setResource_type(String resource_type)

@@ -5,6 +5,7 @@
  */
 package fadulousbms.controllers;
 
+import fadulousbms.BMSPreloader;
 import fadulousbms.FadulousBMS;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
@@ -12,22 +13,30 @@ import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.textfield.TextFields;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.time.*;
 import java.util.*;
 
 /**
@@ -105,6 +114,7 @@ public class JobsController extends ScreenController implements Initializable
                         final TableCell<Job, String> cell = new TableCell<Job, String>()
                         {
                             final Button btnView = new Button("View Job");
+                            final Button btnCalendar = new Button("View Tasks");
                             final Button btnUpload = new Button("Upload Signed");
                             final Button btnApprove = new Button("Approve");
                             final Button btnViewSigned = new Button("View Signed Document");
@@ -124,6 +134,12 @@ public class JobsController extends ScreenController implements Initializable
                                 btnView.setMinWidth(100);
                                 btnView.setMinHeight(35);
                                 HBox.setHgrow(btnView, Priority.ALWAYS);
+
+                                btnView.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnCalendar.getStyleClass().add("btnDefault");
+                                btnCalendar.setMinWidth(100);
+                                btnCalendar.setMinHeight(35);
+                                HBox.setHgrow(btnCalendar, Priority.ALWAYS);
 
                                 btnUpload.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
                                 btnUpload.getStyleClass().add("btnDefault");
@@ -217,7 +233,7 @@ public class JobsController extends ScreenController implements Initializable
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnView, btnUpload, btnApprove, btnViewSigned, btnInvoice, btnPDF, btnEmail, btnEmailSigned, btnRemove);
+                                    HBox hBox = new HBox(btnView, btnCalendar, btnUpload, btnApprove, btnViewSigned, btnInvoice, btnPDF, btnEmail, btnEmailSigned, btnRemove);
                                     hBox.setMaxWidth(Double.MAX_VALUE);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
                                     Job job = getTableView().getItems().get(getIndex());
@@ -234,6 +250,8 @@ public class JobsController extends ScreenController implements Initializable
                                         JobManager.getInstance().setSelected(JobManager.getInstance().getDataset().get(job.get_id()));
                                         viewJob((Job)JobManager.getInstance().getSelected());
                                     });
+
+                                    btnCalendar.setOnAction(event -> showProjectOnCalendar(getTableView().getItems().get(getIndex()), btnCalendar));
 
                                     btnUpload.setOnAction(event ->
                                     {
@@ -320,6 +338,7 @@ public class JobsController extends ScreenController implements Initializable
         ClientManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
         JobManager.getInstance().initialize();
+        TaskManager.getInstance().initialize();
         //synchronise model data set
         JobManager.getInstance().initialize();
 
@@ -333,6 +352,246 @@ public class JobsController extends ScreenController implements Initializable
     {
         JobManager.getInstance().forceSynchronise();
         Platform.runLater(() -> refreshView());
+    }
+
+    public void showProjectOnCalendar(Job job, Node parent)
+    {
+        if(job==null)
+        {
+            IO.logAndAlert("Invalid Job", "Selected Job is invalid.", IO.TAG_ERROR);
+            return;
+        }
+        if(job.getQuote()==null)
+        {
+            IO.logAndAlert("Invalid Job", "Selected Job has no valid Quote associated with it.", IO.TAG_ERROR);
+            return;
+        }
+
+        //LocalDateTime date = LocalDateTime.ofEpochSecond(System.currentTimeMillis()/1000, 0, ZoneOffset.of(ZoneId.systemDefault().getId()));
+        //int days = date.toLocalDate().lengthOfMonth();
+        int year = 2018, month = 3, day = 1;
+
+        YearMonth yearMonth = YearMonth.of(year, month);
+        DayOfWeek dayOfWeek = yearMonth.atDay(day).getDayOfWeek();
+        IO.log(getClass().getName(), IO.TAG_INFO, "Num days: " + yearMonth.lengthOfMonth() + ", day of week: " + dayOfWeek.name() + "[" + dayOfWeek.getValue()+"]");
+
+        TabPane tabPane = new TabPane();
+        //tabPane.getStylesheets().add(FadulousBMS.class.getResource("styles/tabs.css").toExternalForm());
+        //tabPane.getStyleClass().add("projectCalendarTabs");
+
+        Tab tasks_tab = new Tab("All Project Tasks");
+        Tab calendar_tab = new Tab("Project Calendar");
+
+        tabPane.getTabs().addAll(tasks_tab, calendar_tab);
+
+        TableView<Task> tblTasks = new TableView<>();
+
+        TableColumn col_description = new TableColumn("Description");
+        col_description.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        TableColumn col_location = new TableColumn("Location");
+        col_location.setCellValueFactory(new PropertyValueFactory<>("location"));
+
+        TableColumn col_date_scheduled = new TableColumn("Date Scheduled");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_scheduled, "date_scheduled", false);
+
+        TableColumn col_date_assigned = new TableColumn("Date Assigned");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_assigned, "date_assigned", false);
+
+        TableColumn col_date_started = new TableColumn("Date Started");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_started, "date_started", false);
+
+        TableColumn col_date_completed = new TableColumn("Date Completed");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_completed, "date_completed", false);
+
+        TableColumn col_date_logged = new TableColumn("Date Logged");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_logged, "date_logged", false);
+
+        TableColumn col_status = new TableColumn("Status");
+        col_status.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        tblTasks.getColumns().addAll(col_description, col_location, col_date_scheduled, col_date_assigned, col_date_started, col_date_completed, col_date_logged, col_status);
+
+        if(TaskManager.getInstance().getDataset()!=null)
+        {
+            tblTasks.setItems(FXCollections.observableArrayList(TaskManager.getInstance().getDataset().values()));
+            tblTasks.refresh();
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "no tasks were found in the database");
+
+        tasks_tab.setContent(tblTasks);
+
+        GridPane page = new GridPane();
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.setStyle("-fx-background-color: #fff");
+        //page.setGridLinesVisible(true);
+        page.setHgap(2);
+        page.setVgap(2);
+
+        int row=0;
+
+        //render month
+        Label lbl_month = new Label(yearMonth.getMonth().name());
+        GridPane.setColumnSpan(lbl_month, GridPane.REMAINING);
+        page.add(lbl_month, 3, row);
+
+        row++;
+        //render weekday names
+        for(int i=0;i<DayOfWeek.values().length;i++)
+            page.add(new Label(DayOfWeek.of(i+1).name()), i, row);
+        row++;
+        int col = dayOfWeek.getValue()-1;
+        //render days of the month
+        for(int current_day=1;current_day<yearMonth.lengthOfMonth();current_day++)
+        {
+            BorderPane calendarCell = new CalendarCell(year, month, current_day);//new BorderPane();
+            calendarCell.setPrefWidth(120);
+            calendarCell.setPrefHeight(90);
+            calendarCell.setCenter(new Label(String.valueOf(current_day)));
+
+            calendarCell.getStylesheets().add(FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+            calendarCell.getStyleClass().add("calendarButton");
+
+            if(LocalDate.now().equals(LocalDate.of(year, month, current_day)))
+                calendarCell.getStyleClass().add("calendarButtonActive");
+
+            calendarCell.setOnMouseClicked(evt->
+            {
+                //new SimpleDateFormat("yyyy-MM-dd").format(((CalendarCell)calendarCell).getDate())
+                Button btnNewTask = new Button("New Task for Job #" + job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
+
+                btnNewTask.setOnAction(ev->
+                {
+                    TextField txt_description = new TextField("");
+                    txt_description.setMinWidth(120);
+                    txt_description.setPromptText("Summary of the task to be done");
+                    Label lbl_des = new Label("Task Description*: ");
+                    lbl_des.setMinWidth(160);
+
+                    TextField txt_location = new TextField(job.getQuote().getSitename());
+                    txt_location.setMinWidth(120);
+                    txt_location.setPromptText("Location the task is to be done at");
+                    Label lbl_loc = new Label("Location*: ");
+                    lbl_loc.setMinWidth(160);
+
+                    DatePicker date_scheduled = new DatePicker(((CalendarCell) calendarCell).getDate());
+                    date_scheduled.setMinWidth(200);
+                    date_scheduled.setMaxWidth(Double.MAX_VALUE);
+
+                    Button submit = new Button("Create Task");
+
+                    submit.setOnAction(event ->
+                    {
+                        if(SessionManager.getInstance().getActive()==null)
+                        {
+                            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                            return;
+                        }
+                        if(SessionManager.getInstance().getActive().isExpired())
+                        {
+                            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                            return;
+                        }
+
+                        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+                        if(!Validators.isValidNode(txt_description, txt_description.getText(), 1, ".+"))
+                        {
+                            txt_description.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                            return;
+                        }
+                        if(!Validators.isValidNode(txt_location, txt_location.getText(), 1, ".+"))
+                        {
+                            txt_location.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                            return;
+                        }
+                        if(!Validators.isValidNode(date_scheduled, (date_scheduled.getValue()==null?"":String.valueOf(date_scheduled.getValue())), "^.*(?=.{1,}).*"))
+                            return;
+
+                        Task task = new Task();
+                        task.setJob_id(job.get_id());
+                        task.setDescription(txt_description.getText());
+                        task.setLocation(txt_location.getText());
+                        task.setStatus(0);
+                        task.setDate_scheduled(date_scheduled.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
+                        task.setCreator(SessionManager.getInstance().getActive().getUsr());
+
+                        //create Task on database
+                        try
+                        {
+                            TaskManager.getInstance().createBusinessObject(task, new Callback()
+                            {
+                                @Override
+                                public Object call(Object task_id)
+                                {
+                                    if(task_id!=null)
+                                    {
+                                        //TaskManager.getInstance().forceSynchronise();
+                                        Task new_task = TaskManager.getInstance().getDataset().get(task_id);
+                                        if(new_task!=null)
+                                            TaskManager.getInstance().setSelected(new_task);
+                                        else
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_WARN, "could not update selected task - not found in data-set.");
+                                            //fallback to manually setting the _id of the created Task then make it the selected Task
+                                            task.set_id((String) task_id);
+                                            TaskManager.getInstance().setSelected(task);
+                                        }
+                                        IO.logAndAlert("Success", "Successfully created task: " + task.getDescription(), IO.TAG_INFO);
+                                    } else IO.logAndAlert("Error", "Could not create new task.", IO.TAG_ERROR);
+                                    return null;
+                                }
+                            });
+                        } catch (IOException e)
+                        {
+                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                        }
+                    });
+
+                    GridPane new_task_grid = new GridPane();
+                    new_task_grid.setAlignment(Pos.CENTER_LEFT);
+                    new_task_grid.setHgap(10);
+                    new_task_grid.setVgap(10);
+
+                    //description
+                    new_task_grid.add(lbl_des, 0, 0);
+                    new_task_grid.add(txt_description, 1, 0);
+
+                    //location
+                    new_task_grid.add(lbl_loc, 0, 1);
+                    new_task_grid.add(txt_location, 1, 1);
+
+                    //date scheduled
+                    new_task_grid.add(new Label("Date Scheduled: "), 0, 2);
+                    new_task_grid.add(date_scheduled, 1, 2);
+
+                    new_task_grid.add(submit, 1, 3);
+
+                    PopOver new_task = new PopOver(new_task_grid);
+                    new_task.setMinWidth(200);
+                    new_task.setMinHeight(300);
+                    new_task.show(btnNewTask);
+                });
+
+                PopOver tasks = new PopOver(btnNewTask);
+                tasks.setMinWidth(200);
+                tasks.setMinHeight(300);
+                tasks.show(calendarCell);
+            });
+
+            page.add(calendarCell, col, row);
+
+            if(col+1>6)
+            {
+                col = 0;//reset to beginning of week
+                row++;//go to next row
+            } else col++;//go to next day of week
+        }
+
+        calendar_tab.setContent(page);
+
+        PopOver popover = new PopOver(tabPane);
+        popover.setTitle("Project Calendar");
+        popover.setDetached(true);
+        popover.show(tblJobs);
     }
 
     /**

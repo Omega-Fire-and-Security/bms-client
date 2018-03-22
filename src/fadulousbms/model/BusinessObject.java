@@ -221,6 +221,8 @@ public abstract class BusinessObject implements Serializable
     @Override
     public int hashCode()
     {
+        if(get_id()==null)
+            return 0;
         return get_id().hashCode();
     }
 }

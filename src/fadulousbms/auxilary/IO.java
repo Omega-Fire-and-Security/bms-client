@@ -308,7 +308,6 @@ public class IO<T extends BusinessObject>
         }
     }
 
-
     public static void logAndAlert(String title, String msg, String type)
     {
         log(title, type, msg);

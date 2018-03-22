@@ -24,6 +24,16 @@ import java.util.HashMap;
  */
 public class Invoice extends BusinessObject implements Serializable
 {
+    public void setQuote_revision_numbers(String quote_revision_numbers)
+    {
+        this.quote_revision_numbers = quote_revision_numbers;
+    }
+
+    public double getReceivable()
+    {
+        return receivable;
+    }
+
     private String job_id;
     private String quote_revision_numbers;//semi-colon separated array of Quote revision numbers associated with Invoice.
     private double receivable;
@@ -78,11 +88,6 @@ public class Invoice extends BusinessObject implements Serializable
         return quote_revision_numbers;
     }
 
-    public void setQuote_revision_numbers(String quote_revision_numbers)
-    {
-        this.quote_revision_numbers = quote_revision_numbers;
-    }
-
     public String getAccount()
     {
         /*HashMap<String, Job> jobs_map = JobManager.getInstance().getJobs();
@@ -95,11 +100,6 @@ public class Invoice extends BusinessObject implements Serializable
         if(job.getQuote()==null)
             return "N/A";
         return job.getQuote().getAccount_name();
-    }
-
-    public double getReceivable()
-    {
-        return receivable;
     }
 
     public void setReceivable(double receivable)

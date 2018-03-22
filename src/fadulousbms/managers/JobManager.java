@@ -120,7 +120,8 @@ public class JobManager extends BusinessObjectManager
                                         for (Job job : jobs_arr)
                                             jobs.put(job.get_id(), job);
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Jobs in the database.");
-                                }
+                                } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Jobs in the database.");
+
                                 if (jobs != null)
                                 {
                                     for (Job job : jobs.values())
