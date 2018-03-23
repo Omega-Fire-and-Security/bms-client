@@ -3,9 +3,6 @@ package fadulousbms.model;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.JobManager;
 import fadulousbms.managers.SessionManager;
-import fadulousbms.model.BusinessObject;
-import fadulousbms.model.ComboBoxTableCell;
-import fadulousbms.model.DatePickerCell;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -29,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/11.
@@ -37,43 +33,6 @@ import java.util.HashMap;
 public class CustomTableViewControls
 {
     public static final String TAG = "CustomTableViewControls";
-
-    /*public static void makeComboBoxTableColumn(TableColumn<BusinessObject, String> comboBox_col, HashMap<String, BusinessObject> combo_box_items, String property, String label_property, String api_method, int pref_width)
-    {
-        comboBox_col.setMinWidth(120);
-        comboBox_col.setPrefWidth(pref_width);
-        comboBox_col.setCellValueFactory(new PropertyValueFactory<>(property));
-        comboBox_col.setCellFactory(col -> new ComboBoxTableCell(combo_box_items, property, label_property, api_method));
-        //comboBox_col.setEditable(true);
-        comboBox_col.setOnEditCommit(event ->
-        {
-            event.getRowValue().parse(property, event.getNewValue());
-            System.out.println("ComboBox edit commit!");
-        });
-    }
-
-    public static void makeComboBoxTableColumn(TableColumn<BusinessObject, String> comboBox_col, HashMap<String, BusinessObject> combo_box_items, String property, String label_property, String api_method, int pref_width, boolean is_multi_types)
-    {
-        comboBox_col.setMinWidth(120);
-        comboBox_col.setPrefWidth(pref_width);
-        comboBox_col.setCellValueFactory(new PropertyValueFactory<>(property));
-        comboBox_col.setCellFactory(col -> new ComboBoxTableCell(combo_box_items, property, label_property, api_method));
-        //comboBox_col.setEditable(true);
-        comboBox_col.setOnEditCommit(event ->
-        {
-            event.getRowValue().parse(property, event.getNewValue());
-        });
-    }*/
-
-    /*public static void makeComboBoxTableColumn(TableColumn<BusinessObject, String> comboBox_col, String[] combo_box_items, String property, String label_var, String api_method)
-    {
-        comboBox_col.setMinWidth(120);
-        comboBox_col.setPrefWidth(220);
-        comboBox_col.setCellValueFactory(new PropertyValueFactory<>(property));
-        comboBox_col.setCellFactory(col -> new ComboBoxTableCell(combo_box_items, property, api_method));
-        comboBox_col.setEditable(true);
-        comboBox_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
-    }*/
 
     public static void makeDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property, String api_method)
     {
@@ -98,34 +57,6 @@ public class CustomTableViewControls
         date_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
     }
 
-    public static void makeDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property, boolean editable)
-    {
-        date_col.setMinWidth(130);
-        date_col.setCellValueFactory(new PropertyValueFactory<>(property));
-        date_col.setCellFactory(col -> new DatePickerCell(property, editable));
-        date_col.setEditable(false);
-        date_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
-    }
-
-    /*public static void makeEditableNumberTableColumn(TableColumn<BusinessObject, Double> col, Callback<TableColumn<BusinessObject, Double>, TableCell<BusinessObject, Double>> editable_control_callback, int min_width, String property, String api_call)
-    {
-        if(col!=null)
-        {
-            col.setMinWidth(min_width);
-            col.setCellValueFactory(new PropertyValueFactory<>(property));
-            col.setCellFactory(editable_control_callback);
-            col.setOnEditCommit(event ->
-            {
-                BusinessObject bo = event.getRowValue();
-                bo.parse(property, event.getNewValue());
-
-                RemoteComms.updateBusinessObjectOnServer(bo, api_call, property);
-            });
-        }else{
-            System.err.println("Null table column!");//TODO: logging
-        }
-    }*/
-
     public static void makeEditableTableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, String api_call)
     {
         if(col!=null)
@@ -141,41 +72,6 @@ public class CustomTableViewControls
                     bo.parse(property, event.getNewValue());
                     RemoteComms.updateBusinessObjectOnServer(bo, property);
                 }
-            });
-        } else IO.log(TAG, IO.TAG_WARN, "null table column!");
-    }
-
-    public static void makeEditableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, String api_call)
-    {
-        if(col!=null)
-        {
-            col.setMinWidth(min_width);
-            col.setCellValueFactory(new PropertyValueFactory<>(property));
-            col.setCellFactory(editable_control_callback);
-            col.setOnEditCommit(event ->
-            {
-                BusinessObject bo = event.getRowValue();
-                if(bo!=null)
-                {
-                    bo.parse(property, event.getNewValue());
-                    RemoteComms.updateBusinessObjectOnServer(bo, property);
-                }
-            });
-        } else IO.log(TAG, IO.TAG_WARN, "null table column!");
-    }
-
-    public static void createEditableTableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, String api_call)
-    {
-        if(col!=null)
-        {
-            col.setMinWidth(min_width);
-            col.setCellValueFactory(new PropertyValueFactory<>(property));
-            col.setCellFactory(editable_control_callback);
-            col.setOnEditCommit(event ->
-            {
-                BusinessObject bo = event.getRowValue();
-                if(bo!=null)
-                    bo.parse(property, event.getNewValue());
             });
         } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
@@ -358,64 +254,6 @@ public class CustomTableViewControls
                     RemoteComms.updateBusinessObjectOnServer(bo, property);
                 });
                 return new SimpleObjectProperty<>(grid);
-            });
-        } else
-        {
-            IO.log(TAG, IO.TAG_WARN, "null table column!");
-        }
-    }
-
-    public static void makeToggleButtonTableColumn(TableColumn<BusinessObject, ToggleButton> col, Callback<TableColumn<BusinessObject, ToggleButton>, TableCell<BusinessObject,ToggleButton>> editable_control_callback, int min_width, String property, String[] props, String api_call)
-    {
-        if(props==null){
-            IO.log(TAG, IO.TAG_ERROR, "makeToggleButtonTableColumn()> props[] is null.");
-            return;
-        }
-        if(props.length>3){
-            IO.log(TAG, IO.TAG_ERROR, "makeToggleButtonTableColumn()> props[] is incomplete.");
-            return;
-        }
-        if (col != null)
-        {
-            col.setMinWidth(min_width);
-            col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, ToggleButton> param) ->
-            {
-                BusinessObject bo = param.getValue();
-
-                //Make toggle button and set button state from data from database.
-                ToggleButton toggleButton;
-
-                if(bo.get(property).equals(props[0]))
-                {
-                    toggleButton = new ToggleButton(props[1]);
-                    toggleButton.setSelected(true);
-                }else if(bo.get(property).equals(props[2]))
-                {
-                    toggleButton = new ToggleButton(props[3]);
-                    toggleButton.setSelected(false);
-                }else {
-                    toggleButton = new ToggleButton("UNKNOWN");
-                }
-                GridPane grid = new GridPane();
-                grid.setAlignment(Pos.CENTER);
-
-                toggleButton.setAlignment(Pos.CENTER);
-                grid.add(toggleButton, 0, 0);
-
-                toggleButton.selectedProperty().addListener((observable, oldValue, newValue) ->
-                {
-                    if(newValue)//toggle button selected
-                    {
-                        bo.parse(property, props[0]);
-                        toggleButton.setText(props[1]);
-                    }
-                    else{
-                        bo.parse(property, props[2]);
-                        toggleButton.setText(props[3]);
-                    }
-                    RemoteComms.updateBusinessObjectOnServer(bo, property);
-                });
-                return new SimpleObjectProperty<>(toggleButton);
             });
         } else
         {

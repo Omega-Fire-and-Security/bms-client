@@ -1,13 +1,10 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
  * Created by ghost on 2017/02/01.
@@ -23,6 +20,18 @@ public class Asset extends BusinessObject
     private long date_exhausted;
     private long quantity;
     private String unit;
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     public StringProperty asset_nameProperty(){return new SimpleStringProperty(asset_name);}
 

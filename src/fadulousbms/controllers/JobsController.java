@@ -5,7 +5,6 @@
  */
 package fadulousbms.controllers;
 
-import fadulousbms.BMSPreloader;
 import fadulousbms.FadulousBMS;
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.*;
@@ -13,13 +12,11 @@ import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
@@ -27,15 +24,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.textfield.TextFields;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -63,7 +60,29 @@ public class JobsController extends ScreenController implements Initializable
     protected Resource selected_material = null;
     protected ResourceType selected_material_type = null;
 
+    private GridPane calendar;
+    private Label lbl_date;
+    private int year = 0, month = 0;
+
     public static final String TAB_ID = "jobsTab";
+
+    /**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb)
+    {
+        OperationsController.registerTabController(jobsTab.getId(),this);
+        new Thread(() ->
+        {
+            /*ResourceManager.getInstance().initialize();
+            SupplierManager.getInstance().initialize();
+            ClientManager.getInstance().initialize();
+            QuoteManager.getInstance().initialize();
+            JobManager.getInstance().initialize();*/
+            refreshModel(cb->{Platform.runLater(() -> refreshView());return null;});
+        }).start();
+    }
 
     @Override
     public void refreshView()
@@ -165,7 +184,7 @@ public class JobsController extends ScreenController implements Initializable
                                 if(SessionManager.getInstance().getActiveEmployee()!=null)
                                 {
                                     //disable [Approve] button if not authorised
-                                    if (SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=AccessLevels.SUPERUSER.getLevel())
+                                    if (SessionManager.getInstance().getActiveEmployee().getAccessLevel()>= AccessLevel.SUPERUSER.getLevel())
                                     {
                                         btnApprove.getStyleClass().add("btnAdd");
                                         btnApprove.setDisable(false);
@@ -247,7 +266,7 @@ public class JobsController extends ScreenController implements Initializable
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
                                     Job job = getTableView().getItems().get(getIndex());
 
-                                    btnView.setOnAction(event ->
+                                    btnView.setOnMouseClicked(event ->
                                     {
                                         JobManager.getInstance().initialize();
                                         if (job == null)
@@ -260,9 +279,9 @@ public class JobsController extends ScreenController implements Initializable
                                         viewJob((Job)JobManager.getInstance().getSelected());
                                     });
 
-                                    btnCalendar.setOnAction(event -> showProjectOnCalendar(getTableView().getItems().get(getIndex()), btnCalendar));
+                                    btnCalendar.setOnMouseClicked(event -> showProjectOnCalendar(getTableView().getItems().get(getIndex())));
 
-                                    btnUpload.setOnAction(event ->
+                                    btnUpload.setOnMouseClicked(event ->
                                     {
                                         if (job == null)
                                         {
@@ -273,7 +292,7 @@ public class JobsController extends ScreenController implements Initializable
                                         JobManager.getInstance().uploadSigned(job.get_id());
                                     });
 
-                                    btnApprove.setOnAction(event ->
+                                    btnApprove.setOnMouseClicked(event ->
                                             JobManager.approveJob(job, param1 ->
                                             {
                                                 //Refresh UI
@@ -282,13 +301,13 @@ public class JobsController extends ScreenController implements Initializable
                                                 return null;
                                             }));
 
-                                    btnViewSigned.setOnAction(event ->
+                                    btnViewSigned.setOnMouseClicked(event ->
                                             viewSignedJob(job));
 
-                                    btnInvoice.setOnAction(event ->
+                                    btnInvoice.setOnMouseClicked(event ->
                                             generateQuoteInvoice(job));
 
-                                    btnEmail.setOnAction(event ->
+                                    btnEmail.setOnMouseClicked(event ->
                                     {
                                         try
                                         {
@@ -304,7 +323,7 @@ public class JobsController extends ScreenController implements Initializable
                                     btnEmailSigned.setOnAction(event ->
                                             JobManager.getInstance().emailSignedJobCard(job, null));
 
-                                    btnRemove.setOnAction(event ->
+                                    btnRemove.setOnMouseClicked(event ->
                                     {
                                         //197.242.144.30
                                         //Quote quote = getTableView().getItems().get(getIndex());
@@ -314,7 +333,7 @@ public class JobsController extends ScreenController implements Initializable
                                         //IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
                                     });
 
-                                    btnPDF.setOnAction(event -> JobManager.showJobCard(job));
+                                    btnPDF.setOnMouseClicked(event -> JobManager.showJobCard(job));
 
                                     hBox.setFillHeight(true);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -363,7 +382,7 @@ public class JobsController extends ScreenController implements Initializable
         Platform.runLater(() -> refreshView());
     }
 
-    public void showProjectOnCalendar(Job job, Node parent)
+    public void showProjectOnCalendar(Job job)
     {
         if(job==null)
         {
@@ -378,15 +397,10 @@ public class JobsController extends ScreenController implements Initializable
 
         //LocalDateTime date = LocalDateTime.ofEpochSecond(System.currentTimeMillis()/1000, 0, ZoneOffset.of(ZoneId.systemDefault().getId()));
         //int days = date.toLocalDate().lengthOfMonth();
-        int year = 2018, month = 3, day = 1;
-
-        YearMonth yearMonth = YearMonth.of(year, month);
-        DayOfWeek dayOfWeek = yearMonth.atDay(day).getDayOfWeek();
-        IO.log(getClass().getName(), IO.TAG_INFO, "Num days: " + yearMonth.lengthOfMonth() + ", day of week: " + dayOfWeek.name() + "[" + dayOfWeek.getValue()+"]");
+        year = YearMonth.now().getYear();
+        month = YearMonth.now().getMonth().getValue();
 
         TabPane tabPane = new TabPane();
-        //tabPane.getStylesheets().add(FadulousBMS.class.getResource("styles/tabs.css").toExternalForm());
-        //tabPane.getStyleClass().add("projectCalendarTabs");
 
         Tab tasks_tab = new Tab("All Project Tasks");
         Tab calendar_tab = new Tab("Project Calendar");
@@ -431,325 +445,39 @@ public class JobsController extends ScreenController implements Initializable
 
         tasks_tab.setContent(tblTasks);
 
-        GridPane page = new GridPane();
-        page.setAlignment(Pos.CENTER_LEFT);
-        page.setStyle("-fx-background-color: #fff");
-        //page.setGridLinesVisible(true);
-        page.setHgap(2);
-        page.setVgap(2);
+        calendar = getProjectMonthCalendar(job, job_tasks, year, month);
 
-        int row=0;
+        BorderPane header_container = new BorderPane();
+        ComboBox cbx_months = new ComboBox();
+        cbx_months.setItems(FXCollections.observableArrayList(Month.values()));
+        cbx_months.getSelectionModel().select(month-1);
+        lbl_date = new Label(Month.of(month).name() + ", " + year);
+        lbl_date.setFont(Font.font(30));
 
-        //render month
-        Label lbl_month = new Label(yearMonth.getMonth().name());
-        GridPane.setColumnSpan(lbl_month, GridPane.REMAINING);
-        page.add(lbl_month, 3, row);
+        header_container.setLeft(lbl_date);
+        header_container.setRight(cbx_months);
 
-        row++;
-        //render weekday names
-        for(int i=0;i<DayOfWeek.values().length;i++)
-            page.add(new Label(DayOfWeek.of(i+1).name()), i, row);
-        row++;
-        int col = dayOfWeek.getValue()-1;
-        //render days of the month
-        for(int current_day=1;current_day<yearMonth.lengthOfMonth();current_day++)
+        VBox calendar_container = new VBox(header_container, calendar);
+        calendar_container.setStyle("-fx-background-color: #fff;");
+        calendar_tab.setContent(calendar_container);
+
+        cbx_months.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
         {
-            BorderPane calendarCell = new CalendarCell(year, month, current_day);//new BorderPane();
-            calendarCell.setPrefWidth(120);
-            calendarCell.setPrefHeight(90);
-            calendarCell.setCenter(new Label(String.valueOf(current_day)));
-
-            //count number of tasks on this day
-            int task_count=0;
-            for(Task task: job.getTasks().values())
-                if(task.getDate_scheduled() == ((CalendarCell)calendarCell).getDate().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000)
-                    task_count++;
-
-            if(task_count>0)
-                calendarCell.setBottom(new Label("*" + task_count + " task" + (task_count>1?"s":"")));
-
-            calendarCell.getStylesheets().add(FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-            calendarCell.getStyleClass().add("calendarButton");
-
-            if(LocalDate.now().equals(LocalDate.of(year, month, current_day)))
-                calendarCell.getStyleClass().add("calendarButtonActive");
-
-            calendarCell.setOnMouseClicked(evt->
+            month = (int) newValue + 1;
+            Platform.runLater(() ->
             {
-                //new SimpleDateFormat("yyyy-MM-dd").format(((CalendarCell)calendarCell).getDate())
-                TableView<Task> tblDayTasks = new TableView<>();
-                tblDayTasks.setPrefWidth(420);
-                tblDayTasks.setPrefHeight(200);
-                tblDayTasks.setTableMenuButtonVisible(true);
-                tblDayTasks.setEditable(true);
+                //update month and year label
+                if(lbl_date==null)
+                    lbl_date = new Label();
+                lbl_date.setText(Month.of(month).name() + ", " + year);
 
-                TableColumn col_day_task_description = new TableColumn("Description");
-                CustomTableViewControls.makeEditableTableColumn(col_day_task_description, TextFieldTableCell.forTableColumn(), 80, "description", "/tasks");
+                //update calendar
+                calendar = getProjectMonthCalendar(job, job_tasks, year, month);
+                calendar_container.getChildren().setAll(header_container, calendar);
 
-                TableColumn col_day_task_location = new TableColumn("Location");
-                CustomTableViewControls.makeEditableTableColumn(col_day_task_location, TextFieldTableCell.forTableColumn(), 50, "location", "/tasks");
-
-                TableColumn col_day_task_date_scheduled = new TableColumn("Date Scheduled");
-                col_day_task_date_scheduled.setVisible(false);
-                col_day_task_date_scheduled.setPrefWidth(70);
-                CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_scheduled, "date_scheduled", true);
-
-                TableColumn col_day_task_date_assigned = new TableColumn("Date Assigned");
-                col_day_task_date_scheduled.setVisible(false);
-                col_day_task_date_assigned.setPrefWidth(70);
-                CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_assigned, "date_assigned", false);
-
-                TableColumn col_day_task_date_started = new TableColumn("Date Started");
-                col_day_task_date_started.setPrefWidth(70);
-                CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_started, "date_started", true);
-
-                TableColumn col_day_task_date_completed = new TableColumn("Date Completed");
-                col_day_task_date_completed.setPrefWidth(70);
-                CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_completed, "date_completed", true);
-
-                TableColumn col_day_task_date_logged = new TableColumn("Date Logged");
-                col_day_task_date_logged.setVisible(false);
-                col_day_task_date_logged.setPrefWidth(70);
-                CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_logged, "date_logged", false);
-
-                TableColumn col_day_task_status = new TableColumn("Status");
-                col_day_task_status.setPrefWidth(50);
-                col_day_task_status.setCellValueFactory(new PropertyValueFactory<>("status"));
-
-                TableColumn col_action = new TableColumn("Action");
-                Callback<TableColumn<Task, String>, TableCell<Task, String>> cellFactory
-                        =
-                        new Callback<TableColumn<Task, String>, TableCell<Task, String>>()
-                        {
-                            @Override
-                            public TableCell call(final TableColumn<Task, String> param)
-                            {
-                                final TableCell<Task, String> cell = new TableCell<Task, String>()
-                                {
-                                    final Button btnNewMat = new Button("New Material");
-                                    final Button btnShowMat = new Button("Show Materials");
-                                    final Button btnRemove = new Button("Delete");
-
-                                    @Override
-                                    public void updateItem(String item, boolean empty)
-                                    {
-                                        super.updateItem(item, empty);
-                                        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-
-                                        btnNewMat.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                                        btnNewMat.getStyleClass().add("btnAdd");
-                                        btnNewMat.setMinWidth(100);
-                                        btnNewMat.setMinHeight(35);
-                                        HBox.setHgrow(btnNewMat, Priority.ALWAYS);
-
-                                        btnShowMat.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                                        btnShowMat.getStyleClass().add("btnDefault");
-                                        btnShowMat.setMinWidth(100);
-                                        btnShowMat.setMinHeight(35);
-                                        HBox.setHgrow(btnShowMat, Priority.ALWAYS);
-
-                                        btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                                        btnRemove.getStyleClass().add("btnBack");
-                                        btnRemove.setMinWidth(100);
-                                        btnRemove.setMinHeight(35);
-                                        HBox.setHgrow(btnRemove, Priority.ALWAYS);
-
-                                        if (empty)
-                                        {
-                                            setGraphic(null);
-                                            setText(null);
-                                        } else
-                                        {
-                                            HBox hBox = new HBox(btnNewMat, btnShowMat, btnRemove);
-
-                                            btnNewMat.setOnAction(evt->newTaskMaterial(getTableView().getItems().get(getIndex()), btnNewMat));
-
-                                            btnShowMat.setOnAction(evt->showTaskItems(getTableView().getItems().get(getIndex())));
-
-                                            hBox.setFillHeight(true);
-                                            HBox.setHgrow(hBox, Priority.ALWAYS);
-                                            hBox.setSpacing(5);
-                                            setGraphic(hBox);
-                                            setText(null);
-                                        }
-                                    }
-                                };
-                                return cell;
-                            }
-                        };
-                col_action.setCellFactory(cellFactory);
-
-                tblDayTasks.getColumns().addAll(col_day_task_description, col_day_task_location, col_day_task_date_scheduled, col_day_task_date_assigned, col_day_task_date_started, col_day_task_date_completed, col_day_task_date_logged, col_day_task_status, col_action);
-                HashMap<String, Task> day_tasks = new HashMap<>();
-                if(job_tasks!=null)
-                    for(Task task: job_tasks.values())
-                    {
-                        //System.out.print("######### comparing " + new Date(task.getDate_scheduled()) + " with " + ((CalendarCell) calendarCell).getDate());
-                        //System.out.println("\n\t######### comparing " + task.getDate_scheduled() + " with " + ((((CalendarCell) calendarCell).getDate()).atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000));
-                        //if (new Date(task.getDate_scheduled()).compareTo(((CalendarCell) calendarCell).getDate()))
-                        if (task.getDate_scheduled() == (((CalendarCell) calendarCell).getDate()).atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000)
-                            day_tasks.put(task.get_id(), task);
-                    }
-
-                //populate day tasks table
-                tblDayTasks.setItems(FXCollections.observableArrayList(day_tasks.values()));
-                tblDayTasks.refresh();
-
-                Button btnNewTask = new Button("New Task for Job #" + job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
-                btnNewTask.getStylesheets().add(FadulousBMS.class.getResource("styles/home.css").toExternalForm());
-                btnNewTask.getStyleClass().add("btnAdd");
-                btnNewTask.setMinWidth(90);
-                btnNewTask.setMinHeight(45);
-                btnNewTask.setAlignment(Pos.CENTER);
-
-                btnNewTask.setOnAction(ev->
-                {
-                    TextField txt_description = new TextField("");
-                    txt_description.setMinWidth(120);
-                    txt_description.setPromptText("Summary of the task to be done");
-                    Label lbl_des = new Label("Task Description*: ");
-                    lbl_des.setMinWidth(160);
-
-                    TextField txt_location = new TextField(job.getQuote().getSitename());
-                    txt_location.setMinWidth(120);
-                    txt_location.setPromptText("Location the task is to be done at");
-                    Label lbl_loc = new Label("Location*: ");
-                    lbl_loc.setMinWidth(160);
-
-                    DatePicker date_scheduled = new DatePicker(((CalendarCell) calendarCell).getDate());
-                    date_scheduled.setMinWidth(200);
-                    date_scheduled.setMaxWidth(Double.MAX_VALUE);
-
-                    Button submit = new Button("Create Task");
-
-                    submit.setOnAction(event ->
-                    {
-                        if(SessionManager.getInstance().getActive()==null)
-                        {
-                            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                            return;
-                        }
-                        if(SessionManager.getInstance().getActive().isExpired())
-                        {
-                            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                            return;
-                        }
-
-                        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-                        if(!Validators.isValidNode(txt_description, txt_description.getText(), 1, ".+"))
-                        {
-                            txt_description.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                            return;
-                        }
-                        if(!Validators.isValidNode(txt_location, txt_location.getText(), 1, ".+"))
-                        {
-                            txt_location.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                            return;
-                        }
-                        if(!Validators.isValidNode(date_scheduled, (date_scheduled.getValue()==null?"":String.valueOf(date_scheduled.getValue())), "^.*(?=.{1,}).*"))
-                            return;
-
-                        Task task = new Task();
-                        task.setJob_id(job.get_id());
-                        task.setDescription(txt_description.getText());
-                        task.setLocation(txt_location.getText());
-                        task.setStatus(0);
-                        task.setDate_scheduled(date_scheduled.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);
-                        task.setCreator(SessionManager.getInstance().getActive().getUsr());
-
-                        //create Task on database
-                        try
-                        {
-                            TaskManager.getInstance().createBusinessObject(task, new Callback()
-                            {
-                                @Override
-                                public Object call(Object task_id)
-                                {
-                                    if(task_id!=null)
-                                    {
-                                        //TaskManager.getInstance().forceSynchronise();
-                                        Task new_task = TaskManager.getInstance().getDataset().get(task_id);
-                                        if(new_task!=null)
-                                            TaskManager.getInstance().setSelected(new_task);
-                                        else
-                                        {
-                                            IO.log(getClass().getName(), IO.TAG_WARN, "could not update selected task - not found in data-set.");
-                                            //fallback to manually setting the _id of the created Task then make it the selected Task
-                                            task.set_id((String) task_id);
-                                            TaskManager.getInstance().setSelected(task);
-                                        }
-                                        //refresh day tasks table
-                                        //TODO: fix this - will keep making new day task maps every time a new task is created
-                                        //HashMap day_tasks = new HashMap<>();
-                                        /*if(job!=null)
-                                            if(job.getTasks()!=null)
-                                                for(Task task: job.getTasks().values())
-                                                    if (task.getDate_scheduled() == (((CalendarCell) calendarCell).getDate()).atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000)
-                                                        day_tasks.put(task.get_id(), task);*/
-
-                                        day_tasks.put(TaskManager.getInstance().getSelected().get_id(), (Task) TaskManager.getInstance().getSelected());
-                                        //populate day tasks table
-                                        //tblDayTasks.setItems(FXCollections.observableArrayList(day_tasks.values()));
-                                        tblDayTasks.getItems().add((Task) TaskManager.getInstance().getSelected());
-                                        tblDayTasks.refresh();
-
-                                        IO.logAndAlert("Success", "Successfully created task: " + task.getDescription(), IO.TAG_INFO);
-                                    } else IO.logAndAlert("Error", "Could not create new task.", IO.TAG_ERROR);
-                                    return null;
-                                }
-                            });
-                        } catch (IOException e)
-                        {
-                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                        }
-                    });
-
-                    GridPane new_task_grid = new GridPane();
-                    new_task_grid.setAlignment(Pos.CENTER_LEFT);
-                    new_task_grid.setHgap(10);
-                    new_task_grid.setVgap(10);
-
-                    //description
-                    new_task_grid.add(lbl_des, 0, 0);
-                    new_task_grid.add(txt_description, 1, 0);
-
-                    //location
-                    new_task_grid.add(lbl_loc, 0, 1);
-                    new_task_grid.add(txt_location, 1, 1);
-
-                    //date scheduled
-                    new_task_grid.add(new Label("Date Scheduled: "), 0, 2);
-                    new_task_grid.add(date_scheduled, 1, 2);
-
-                    new_task_grid.add(submit, 1, 3);
-
-                    PopOver new_task = new PopOver(new_task_grid);
-                    new_task.setMinWidth(200);
-                    new_task.setMinHeight(300);
-                    new_task.show(calendarCell);
-                });
-
-                BorderPane btn_container = new BorderPane();
-                btn_container.setCenter(btnNewTask);
-
-                PopOver tasks = new PopOver(new VBox(new Label(day_tasks.size() + " Tasks for Job #"+ job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate()), tblDayTasks, btn_container));
-                tasks.setTitle(day_tasks.size() + " Tasks for Job #"+ job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
-                tasks.setDetached(true);
-                tasks.setMinWidth(200);
-                tasks.setMinHeight(300);
-                tasks.show(calendarCell);
+                calendar.requestFocus();
             });
-
-            page.add(calendarCell, col, row);
-
-            if(col+1>6)
-            {
-                col = 0;//reset to beginning of week
-                row++;//go to next row
-            } else col++;//go to next day of week
-        }
-
-        calendar_tab.setContent(page);
+        });
 
         PopOver popover = new PopOver(tabPane);
         popover.setTitle("Project Calendar");
@@ -760,71 +488,331 @@ public class JobsController extends ScreenController implements Initializable
         popover.show(tblJobs);
     }
 
-    private void showTaskItems(Task task)
+    private GridPane getProjectMonthCalendar(Job job, HashMap<String, Task> job_tasks, int year, int month)
     {
-        if(task==null)
+        YearMonth yearMonth = YearMonth.of(year, month);
+        DayOfWeek dayOfWeek = yearMonth.atDay(1).getDayOfWeek();
+        IO.log(getClass().getName(), IO.TAG_INFO, "Num days: " + yearMonth.lengthOfMonth() + ", day of week: " + dayOfWeek.name() + "[" + dayOfWeek.getValue()+"]");
+
+        GridPane calendar = new GridPane();
+        calendar.setAlignment(Pos.CENTER);
+        calendar.setStyle("-fx-background-color: #fff");
+        //page.setGridLinesVisible(true);
+        calendar.setHgap(2);
+        calendar.setVgap(2);
+
+        int row=0;
+
+        row++;
+        //render weekday names
+        for(int i=0;i<DayOfWeek.values().length;i++)
+            calendar.add(new Label(DayOfWeek.of(i+1).name()), i, row);
+        row++;
+        int col = dayOfWeek.getValue()-1;
+
+        //render days of the month
+        for(int current_day=1;current_day<yearMonth.lengthOfMonth()+1;current_day++)
         {
-            IO.logAndAlert("Error", "Selected task is invalid", IO.TAG_ERROR);
-            return;
+            //create calendar cell
+            BorderPane calendarCell = new CalendarCell(year, month, current_day);//new BorderPane();
+            calendarCell.setPrefWidth(120);
+            calendarCell.setPrefHeight(90);
+            calendarCell.setCenter(new Label(String.valueOf(current_day)));
+
+            //count number of Tasks on this day
+            int task_count=0;
+            if(job.getTasks()!=null)
+                for(Task task: job.getTasks().values())
+                    if(task.getDate_scheduled() == ((CalendarCell)calendarCell).getDate().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000)
+                        task_count++;
+
+            //render Task count
+            if(task_count>0)
+                calendarCell.setBottom(new Label("*" + task_count + " task" + (task_count>1?"s":"")));
+
+            //style CalendarCell differently if is current day
+            if(LocalDate.now().equals(LocalDate.of(year, month, current_day)))
+                ((CalendarCell)calendarCell).styleAsCurrentDay();
+
+            //when the CalendarCell is clicked show its Tasks
+            calendarCell.setOnMouseClicked(evt->
+                    showDayTasks((CalendarCell) calendarCell, job, job_tasks));
+
+            //add CalendarCell to calendar
+            calendar.add(calendarCell, col, row);
+
+            //check if should go to next row & col
+            if(col+1>6)
+            {
+                col = 0;//reset to beginning of week
+                row++;//go to next row
+            } else col++;//go to next day of week
         }
-        TableView<TaskItem> tblTaskItems = new TableView<>();
-        tblTaskItems.setPrefWidth(450);
-        tblTaskItems.setPrefHeight(180);
-        tblTaskItems.setTableMenuButtonVisible(true);
-        tblTaskItems.setEditable(true);
 
-        TableColumn col_description = new TableColumn("Description");
-        col_description.setCellValueFactory(new PropertyValueFactory<>("description"));
-
-        TableColumn col_serial = new TableColumn("Serial/Model");
-        CustomTableViewControls.makeEditableTableColumn(col_serial, TextFieldTableCell.forTableColumn(), 50, "serial", "/tasks/resources");
-
-        TableColumn col_cat = new TableColumn("Category");
-        CustomTableViewControls.makeEditableTableColumn(col_cat, TextFieldTableCell.forTableColumn(), 50, "category", "/tasks/resources");
-
-        TableColumn col_item_cost = new TableColumn("Cost");
-        col_item_cost.setPrefWidth(60);
-        CustomTableViewControls.makeEditableTableColumn(col_item_cost, TextFieldTableCell.forTableColumn(), 50, "unit_cost", "/tasks/resources");
-
-        TableColumn col_item_qty = new TableColumn("Qty");
-        col_item_qty.setPrefWidth(50);
-        CustomTableViewControls.makeEditableTableColumn(col_item_qty, TextFieldTableCell.forTableColumn(), 50, "quantity", "/tasks/resources");
-
-        TableColumn col_unit = new TableColumn("Unit");
-        col_unit.setPrefWidth(50);
-        col_unit.setVisible(false);
-        col_unit.setCellValueFactory(new PropertyValueFactory<>("unit"));
-
-        TableColumn col_rate = new TableColumn("Rate");
-        col_rate.setPrefWidth(50);
-        col_rate.setVisible(false);
-        col_rate.setCellValueFactory(new PropertyValueFactory<>("rate"));
-
-        TableColumn col_total = new TableColumn("Total");
-        col_total.setPrefWidth(80);
-        col_total.setCellValueFactory(new PropertyValueFactory<>("total"));
-
-        TableColumn col_date_logged = new TableColumn("Date Logged");
-        col_date_logged.setVisible(false);
-        col_date_logged.setPrefWidth(70);
-        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_logged, "date_logged", false);
-
-        tblTaskItems.getColumns().addAll(col_description, col_cat, col_item_cost, col_serial, col_item_qty, col_unit, col_rate, col_total, col_date_logged);
-
-        HashMap task_items = TaskManager.getInstance().getTaskItems(task.get_id());
-        if(task_items!=null)
-            if(task_items.values()!=null)
-                tblTaskItems.setItems(FXCollections.observableArrayList(task_items.values()));
-            else IO.log(getClass().getName(), IO.TAG_WARN, "task [" + task.get_id() + "] has no items.");
-        else IO.log(getClass().getName(), IO.TAG_WARN, "task [" + task.get_id() + "] has no items/materials.");
-
-        PopOver popOver = new PopOver(tblTaskItems);
-        popOver.setTitle("Materials for Task #" + task.getObject_number());
-        popOver.setDetached(true);
-        popOver.show(ScreenManager.getInstance());
+        return calendar;
     }
 
-    private void newTaskMaterial(Task task, Node parent)
+    private void showDayTasks(CalendarCell calendarCell, Job job, HashMap<String, Task> job_tasks)
+    {
+        //new SimpleDateFormat("yyyy-MM-dd").format(((CalendarCell)calendarCell).getDate())
+        TableView<Task> tblDayTasks = new TableView<>();
+        tblDayTasks.setPrefWidth(420);
+        tblDayTasks.setPrefHeight(200);
+        tblDayTasks.setTableMenuButtonVisible(true);
+        tblDayTasks.setEditable(true);
+
+        TableColumn col_day_task_description = new TableColumn("Description");
+        CustomTableViewControls.makeEditableTableColumn(col_day_task_description, TextFieldTableCell.forTableColumn(), 80, "description", "/tasks");
+
+        TableColumn col_day_task_location = new TableColumn("Location");
+        CustomTableViewControls.makeEditableTableColumn(col_day_task_location, TextFieldTableCell.forTableColumn(), 50, "location", "/tasks");
+
+        TableColumn col_day_task_date_scheduled = new TableColumn("Date Scheduled");
+        col_day_task_date_scheduled.setVisible(false);
+        col_day_task_date_scheduled.setPrefWidth(70);
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_scheduled, "date_scheduled", true);
+
+        TableColumn col_day_task_date_assigned = new TableColumn("Date Assigned");
+        col_day_task_date_scheduled.setVisible(false);
+        col_day_task_date_assigned.setPrefWidth(70);
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_assigned, "date_assigned", false);
+
+        TableColumn col_day_task_date_started = new TableColumn("Date Started");
+        col_day_task_date_started.setPrefWidth(70);
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_started, "date_started", true);
+
+        TableColumn col_day_task_date_completed = new TableColumn("Date Completed");
+        col_day_task_date_completed.setPrefWidth(70);
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_completed, "date_completed", true);
+
+        TableColumn col_day_task_date_logged = new TableColumn("Date Logged");
+        col_day_task_date_logged.setVisible(false);
+        col_day_task_date_logged.setPrefWidth(70);
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_day_task_date_logged, "date_logged", false);
+
+        TableColumn col_day_task_status = new TableColumn("Status");
+        col_day_task_status.setPrefWidth(50);
+        col_day_task_status.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        TableColumn col_action = new TableColumn("Action");
+        Callback<TableColumn<Task, String>, TableCell<Task, String>> cellFactory
+                =
+                new Callback<TableColumn<Task, String>, TableCell<Task, String>>()
+                {
+                    @Override
+                    public TableCell call(final TableColumn<Task, String> param)
+                    {
+                        final TableCell<Task, String> cell = new TableCell<Task, String>()
+                        {
+                            final Button btnNewMat = new Button("New Material");
+                            final Button btnShowMat = new Button("Show Materials");
+                            final Button btnRemove = new Button("Delete");
+
+                            @Override
+                            public void updateItem(String item, boolean empty)
+                            {
+                                super.updateItem(item, empty);
+                                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+                                btnNewMat.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnNewMat.getStyleClass().add("btnAdd");
+                                btnNewMat.setMinWidth(100);
+                                btnNewMat.setMinHeight(35);
+                                HBox.setHgrow(btnNewMat, Priority.ALWAYS);
+
+                                btnShowMat.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnShowMat.getStyleClass().add("btnDefault");
+                                btnShowMat.setMinWidth(100);
+                                btnShowMat.setMinHeight(35);
+                                HBox.setHgrow(btnShowMat, Priority.ALWAYS);
+
+                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                                btnRemove.getStyleClass().add("btnBack");
+                                btnRemove.setMinWidth(100);
+                                btnRemove.setMinHeight(35);
+                                HBox.setHgrow(btnRemove, Priority.ALWAYS);
+
+                                if (empty)
+                                {
+                                    setGraphic(null);
+                                    setText(null);
+                                } else
+                                {
+                                    HBox hBox = new HBox(btnNewMat, btnShowMat, btnRemove);
+
+                                    btnNewMat.setOnMouseClicked(evt->newTaskItemWindow(getTableView().getItems().get(getIndex())));
+
+                                    btnShowMat.setOnMouseClicked(evt->showTaskItems(getTableView().getItems().get(getIndex())));
+
+                                    hBox.setFillHeight(true);
+                                    HBox.setHgrow(hBox, Priority.ALWAYS);
+                                    hBox.setSpacing(5);
+                                    setGraphic(hBox);
+                                    setText(null);
+                                }
+                            }
+                        };
+                        return cell;
+                    }
+                };
+        col_action.setCellFactory(cellFactory);
+
+        tblDayTasks.getColumns().addAll(col_day_task_description, col_day_task_location, col_day_task_date_scheduled, col_day_task_date_assigned, col_day_task_date_started, col_day_task_date_completed, col_day_task_date_logged, col_day_task_status, col_action);
+        HashMap<String, Task> day_tasks = new HashMap<>();
+        if(job_tasks!=null)
+            for(Task task: job_tasks.values())
+                if (task.getDate_scheduled() == calendarCell.getDate().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000)
+                    day_tasks.put(task.get_id(), task);
+
+        //populate day tasks table
+        tblDayTasks.setItems(FXCollections.observableArrayList(day_tasks.values()));
+        tblDayTasks.refresh();
+
+        Button btnNewTask = new Button("New Task for Job #" + job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
+        btnNewTask.getStylesheets().add(FadulousBMS.class.getResource("styles/home.css").toExternalForm());
+        btnNewTask.getStyleClass().add("btnAdd");
+        btnNewTask.setMinWidth(90);
+        btnNewTask.setMinHeight(45);
+        btnNewTask.setAlignment(Pos.CENTER);
+
+        btnNewTask.setOnMouseClicked(ev->
+                newTaskWindow(calendarCell, job, new Callback()
+                {
+                    @Override
+                    public Object call(Object task_id)
+                    {
+                        if(task_id!=null)
+                        {
+                            //TaskManager.getInstance().forceSynchronise();
+                            Task new_task = TaskManager.getInstance().getDataset().get(task_id);
+                            if(new_task!=null)
+                                TaskManager.getInstance().setSelected(new_task);
+                            else
+                            {
+                                IO.log(getClass().getName(), IO.TAG_WARN, "could not update selected task - not found in data-set.");
+                                //fallback to manually setting the _id of the created Task then make it the selected Task
+                                if(TaskManager.getInstance().getSelected()!=null)
+                                    TaskManager.getInstance().getSelected().set_id((String) task_id);
+                            }
+                            //refresh day tasks table
+                            day_tasks.put(TaskManager.getInstance().getSelected().get_id(), (Task) TaskManager.getInstance().getSelected());
+                            //populate day tasks table
+                            //tblDayTasks.setItems(FXCollections.observableArrayList(day_tasks.values()));
+                            tblDayTasks.getItems().add((Task) TaskManager.getInstance().getSelected());
+                            tblDayTasks.refresh();
+
+                            if(TaskManager.getInstance().getSelected()!=null)
+                                IO.logAndAlert("Success", "Successfully created task: " + ((Task)TaskManager.getInstance().getSelected()).getDescription(), IO.TAG_INFO);
+                        } else IO.logAndAlert("Error", "Could not create new task.", IO.TAG_ERROR);
+                        return null;
+                    }
+                }));
+
+        BorderPane btn_container = new BorderPane();
+        btn_container.setCenter(btnNewTask);
+
+        PopOver tasks = new PopOver(new VBox(tblDayTasks, btn_container));
+        tasks.setTitle("Showing " + day_tasks.size() + " task"+(day_tasks.size()>1?"s":"")+" for job #"+ job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
+        tasks.setDetached(true);
+        tasks.setMinWidth(200);
+        tasks.setMinHeight(300);
+        tasks.show(calendarCell);
+    }
+
+    private void newTaskWindow(CalendarCell calendarCell, Job job, Callback post_creation_callback)
+    {
+        TextField txt_description = new TextField("");
+        txt_description.setMinWidth(120);
+        txt_description.setPromptText("Summary of the task to be done");
+        Label lbl_des = new Label("Task Description*: ");
+        lbl_des.setMinWidth(160);
+
+        TextField txt_location = new TextField(job.getQuote().getSitename());
+        txt_location.setMinWidth(120);
+        txt_location.setPromptText("Location the task is to be done at");
+        Label lbl_loc = new Label("Location*: ");
+        lbl_loc.setMinWidth(160);
+
+        DatePicker date_scheduled = new DatePicker(((CalendarCell) calendarCell).getDate());
+        date_scheduled.setMinWidth(200);
+        date_scheduled.setMaxWidth(Double.MAX_VALUE);
+
+        Button submit = new Button("Create Task");
+
+        submit.setOnMouseClicked(event ->
+        {
+            if(SessionManager.getInstance().getActive()==null)
+            {
+                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                return;
+            }
+            if(SessionManager.getInstance().getActive().isExpired())
+            {
+                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                return;
+            }
+
+            File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+            if(!Validators.isValidNode(txt_description, txt_description.getText(), 1, ".+"))
+            {
+                txt_description.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                return;
+            }
+            if(!Validators.isValidNode(txt_location, txt_location.getText(), 1, ".+"))
+            {
+                txt_location.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                return;
+            }
+            if(!Validators.isValidNode(date_scheduled, (date_scheduled.getValue()==null?"":String.valueOf(date_scheduled.getValue())), "^.*(?=.{1,}).*"))
+                return;
+
+            Task task = new Task();
+            task.setJob_id(job.get_id());
+            task.setDescription(txt_description.getText());
+            task.setLocation(txt_location.getText());
+            task.setStatus(0);
+            task.setDate_scheduled(date_scheduled.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);
+            task.setCreator(SessionManager.getInstance().getActive().getUsr());
+
+            TaskManager.getInstance().setSelected(task);
+
+            //create Task on database
+            try
+            {
+                TaskManager.getInstance().createBusinessObject(task, post_creation_callback);
+            } catch (IOException e)
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            }
+        });
+
+        GridPane new_task_grid = new GridPane();
+        new_task_grid.setAlignment(Pos.CENTER_LEFT);
+        new_task_grid.setHgap(10);
+        new_task_grid.setVgap(10);
+
+        //description
+        new_task_grid.add(lbl_des, 0, 0);
+        new_task_grid.add(txt_description, 1, 0);
+
+        //location
+        new_task_grid.add(lbl_loc, 0, 1);
+        new_task_grid.add(txt_location, 1, 1);
+
+        //date scheduled
+        new_task_grid.add(new Label("Date Scheduled: "), 0, 2);
+        new_task_grid.add(date_scheduled, 1, 2);
+
+        new_task_grid.add(submit, 1, 3);
+
+        PopOver new_task = new PopOver(new_task_grid);
+        new_task.setTitle("Create new task for job #"  + job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
+        new_task.setMinWidth(200);
+        new_task.setMinHeight(300);
+        new_task.show(calendarCell);
+    }
+
+    private void newTaskItemWindow(Task task)
     {
         if(task==null)
         {
@@ -942,10 +930,10 @@ public class JobsController extends ScreenController implements Initializable
             }
         });
 
-        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
+        btnSubmit.setOnMouseClicked(new EventHandler<MouseEvent>()
         {
             @Override
-            public void handle(ActionEvent event)
+            public void handle(MouseEvent event)
             {
                 if(SessionManager.getInstance().getActive()==null)
                 {
@@ -1099,67 +1087,68 @@ public class JobsController extends ScreenController implements Initializable
         });
     }
 
-    public void createMaterial(Resource resource, Callback callback)
+    private void showTaskItems(Task task)
     {
-        if(resource==null)
+        if(task==null)
         {
-            IO.logAndAlert("Error: Invalid Resource", "Resource to be created is invalid.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "Selected task is invalid", IO.TAG_ERROR);
             return;
         }
-        try
-        {
-            String proceed = IO.OK;
-            if(selected_material!=null)
-                if(resource.getResource_description().equals(selected_material.getResource_description()))
-                    proceed = IO.showConfirm("Duplicate material found, proceed?", "New material's description is the same as an existing material, continue with creation of material?");
+        TableView<TaskItem> tblTaskItems = new TableView<>();
+        tblTaskItems.setPrefWidth(450);
+        tblTaskItems.setPrefHeight(180);
+        tblTaskItems.setTableMenuButtonVisible(true);
+        tblTaskItems.setEditable(true);
 
-            if(proceed.equals(IO.OK))
-            {
-                ResourceManager.getInstance().createBusinessObject(resource, new_res_id ->
-                {
-                    //update selected material
-                    selected_material = ResourceManager.getInstance().getDataset().get(new_res_id);
+        TableColumn col_description = new TableColumn("Description");
+        col_description.setCellValueFactory(new PropertyValueFactory<>("description"));
 
-                    //execute callback w/ args
-                    if(callback!=null)
-                        callback.call(new_res_id);
-                    //refresh materials combobox
-                    /*Platform.runLater(() ->
-                    {
-                        if (ResourceManager.getInstance().getDataset().values() != null)
-                        {
-                            TextFields.bindAutoCompletion(txtMaterials, FXCollections.observableArrayList());
-                            TextFields.bindAutoCompletion(txtMaterials, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(evt ->
-                            {
-                                if (evt != null)
-                                {
-                                    if (evt.getCompletion() != null)
-                                    {
-                                        //update selected material
-                                        selected_material = evt.getCompletion();
+        TableColumn col_serial = new TableColumn("Serial/Model");
+        CustomTableViewControls.makeEditableTableColumn(col_serial, TextFieldTableCell.forTableColumn(), 50, "serial", "/tasks/resources");
 
-                                        IO.log(getClass().getName(), IO.TAG_INFO, "selected material: " + selected_material.getResource_description());
-                                        itemsModified = true;
-                                    }
-                                }
-                            });
-                        }
-                    });*/
-                    return null;
-                });
-            } else {
-                IO.log(getClass().getName(), IO.TAG_ERROR, "aborted material creation procedure.");
-                //execute callback w/o args
-                if(callback!=null)
-                    callback.call(null);
-            }
-        } catch (IOException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            //execute callback w/o args
-            if(callback!=null)
-                callback.call(null);
-        }
+        TableColumn col_cat = new TableColumn("Category");
+        CustomTableViewControls.makeEditableTableColumn(col_cat, TextFieldTableCell.forTableColumn(), 50, "category", "/tasks/resources");
+
+        TableColumn col_item_cost = new TableColumn("Cost");
+        col_item_cost.setPrefWidth(60);
+        CustomTableViewControls.makeEditableTableColumn(col_item_cost, TextFieldTableCell.forTableColumn(), 50, "unit_cost", "/tasks/resources");
+
+        TableColumn col_item_qty = new TableColumn("Qty");
+        col_item_qty.setPrefWidth(50);
+        CustomTableViewControls.makeEditableTableColumn(col_item_qty, TextFieldTableCell.forTableColumn(), 50, "quantity", "/tasks/resources");
+
+        TableColumn col_unit = new TableColumn("Unit");
+        col_unit.setPrefWidth(50);
+        col_unit.setVisible(false);
+        col_unit.setCellValueFactory(new PropertyValueFactory<>("unit"));
+
+        TableColumn col_rate = new TableColumn("Rate");
+        col_rate.setPrefWidth(50);
+        col_rate.setVisible(false);
+        col_rate.setCellValueFactory(new PropertyValueFactory<>("rate"));
+
+        TableColumn col_total = new TableColumn("Total");
+        col_total.setPrefWidth(80);
+        col_total.setCellValueFactory(new PropertyValueFactory<>("total"));
+
+        TableColumn col_date_logged = new TableColumn("Date Logged");
+        col_date_logged.setVisible(false);
+        col_date_logged.setPrefWidth(70);
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_logged, "date_logged", false);
+
+        tblTaskItems.getColumns().addAll(col_description, col_cat, col_item_cost, col_serial, col_item_qty, col_unit, col_rate, col_total, col_date_logged);
+
+        HashMap task_items = TaskManager.getInstance().getTaskItems(task.get_id());
+        if(task_items!=null)
+            if(task_items.values()!=null)
+                tblTaskItems.setItems(FXCollections.observableArrayList(task_items.values()));
+            else IO.log(getClass().getName(), IO.TAG_WARN, "task [" + task.get_id() + "] has no items.");
+        else IO.log(getClass().getName(), IO.TAG_WARN, "task [" + task.get_id() + "] has no items/materials.");
+
+        PopOver popOver = new PopOver(tblTaskItems);
+        popOver.setTitle("Materials for Task #" + task.getObject_number());
+        popOver.setDetached(true);
+        popOver.show(ScreenManager.getInstance());
     }
 
     public void createTaskItem(TaskItem taskItem, Callback callback)
@@ -1189,22 +1178,45 @@ public class JobsController extends ScreenController implements Initializable
         }
     }
 
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) 
+    public void createMaterial(Resource resource, Callback callback)
     {
-        OperationsController.registerTabController(jobsTab.getId(),this);
-        new Thread(() ->
+        if(resource==null)
         {
-            /*ResourceManager.getInstance().initialize();
-            SupplierManager.getInstance().initialize();
-            ClientManager.getInstance().initialize();
-            QuoteManager.getInstance().initialize();
-            JobManager.getInstance().initialize();*/
-            refreshModel(cb->{Platform.runLater(() -> refreshView());return null;});
-        }).start();
+            IO.logAndAlert("Error: Invalid Resource", "Resource to be created is invalid.", IO.TAG_ERROR);
+            return;
+        }
+        try
+        {
+            String proceed = IO.OK;
+            if(selected_material!=null)
+                if(resource.getResource_description().equals(selected_material.getResource_description()))
+                    proceed = IO.showConfirm("Duplicate material found, proceed?", "New material's description is the same as an existing material, continue with creation of material?");
+
+            if(proceed.equals(IO.OK))
+            {
+                ResourceManager.getInstance().createBusinessObject(resource, new_res_id ->
+                {
+                    //update selected material
+                    selected_material = ResourceManager.getInstance().getDataset().get(new_res_id);
+
+                    //execute callback w/ args
+                    if(callback!=null)
+                        callback.call(new_res_id);
+                    return null;
+                });
+            } else {
+                IO.log(getClass().getName(), IO.TAG_ERROR, "aborted material creation procedure.");
+                //execute callback w/o args
+                if(callback!=null)
+                    callback.call(null);
+            }
+        } catch (IOException e)
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+            //execute callback w/o args
+            if(callback!=null)
+                callback.call(null);
+        }
     }
 
     private static void generateQuoteInvoice(Job job)
@@ -1252,7 +1264,7 @@ public class JobsController extends ScreenController implements Initializable
                             }
 
                             Button btnSubmit = new Button("Submit");
-                            btnSubmit.setOnAction(event1 ->
+                            btnSubmit.setOnMouseClicked(event1 ->
                             {
                                 ScreenManager.getInstance().showLoadingScreen(param ->
                                 {

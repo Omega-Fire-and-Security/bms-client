@@ -5,26 +5,16 @@
  */
 package fadulousbms.model;
 
-import fadulousbms.auxilary.Globals;
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.JobManager;
-import fadulousbms.managers.QuoteManager;
 import fadulousbms.managers.TaskManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import jfxtras.scene.control.agenda.Agenda;
-
-import java.time.LocalDateTime;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalField;
-import java.time.temporal.TemporalUnit;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
 /**
- *
+ * Created by ghost on 2018/03/22.
  * @author ghost
  */
 public class Task extends BusinessObject
@@ -38,7 +28,18 @@ public class Task extends BusinessObject
     private String location;
     private int status;
     private String assignees;
-    private HashMap<String, TaskItem> taskItems;
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
 
     //Getters and setters
 
@@ -134,12 +135,7 @@ public class Task extends BusinessObject
 
     public HashMap<String, TaskItem> getTaskItems()
     {
-        return taskItems;
-    }
-
-    public void setTaskItems(HashMap<String, TaskItem> taskItems)
-    {
-        this.taskItems = taskItems;
+        return TaskManager.getInstance().getTaskItems(get_id());
     }
 
     /**

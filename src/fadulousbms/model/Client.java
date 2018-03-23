@@ -5,13 +5,12 @@
  */
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
  *
@@ -32,6 +31,22 @@ public class Client extends BusinessObject implements Serializable
     private String website;
     private boolean active;
     private Job[] jobs;
+
+    //Read/Write permissions
+    //public static final int READ_MIN_ACCESS_LEVEL = AccessLevel.STANDARD.getLevel();
+    //public static final int WRITE_MIN_ACCESS_LEVEL = AccessLevel.ADMIN.getLevel();
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     public StringProperty client_nameProperty(){return new SimpleStringProperty(client_name);}
 

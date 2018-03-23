@@ -5,18 +5,15 @@
  */
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.QuoteManager;
 import fadulousbms.managers.TaskManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import jfxtras.scene.control.agenda.Agenda;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalField;
@@ -27,7 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 /**
- *
+ * Created by ghost on 2017/01/01.
  * @author ghost
  */
 public class Job extends BusinessObject implements Agenda.Appointment, Temporal
@@ -41,6 +38,18 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
     private int status;
     private Employee[] assigned_employees;
     private FileMetadata[] safety_catalogue;
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     //Getters and setters
 

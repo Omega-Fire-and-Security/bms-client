@@ -5,15 +5,13 @@
  */
 package fadulousbms.controllers;
 
-import fadulousbms.auxilary.AccessLevels;
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -125,7 +123,7 @@ public class ViewJobController extends ScreenController implements Initializable
         tblEmployees.getItems().clear();
 
         //Hide [Approve] button if not authorized
-        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()< AccessLevels.SUPERUSER.getLevel())
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()< AccessLevel.SUPERUSER.getLevel())
         {
             btnApprove.setVisible(false);
             btnApprove.setDisable(true);

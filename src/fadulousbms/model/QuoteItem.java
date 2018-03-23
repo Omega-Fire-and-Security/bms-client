@@ -1,5 +1,6 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ResourceManager;
@@ -25,6 +26,18 @@ public class QuoteItem extends BusinessObject implements Serializable
     private String resource_id;
     private String category;
     public static final String TAG = "QuoteItem";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     public String getItem_number()
     {

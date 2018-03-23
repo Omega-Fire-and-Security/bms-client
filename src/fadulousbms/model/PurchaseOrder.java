@@ -1,14 +1,12 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 
 /**
@@ -23,6 +21,18 @@ public class PurchaseOrder extends BusinessObject
     private int status;
     public static final String TAG = "PurchaseOrder";
     public PurchaseOrderItem[] items;
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     public String getVat()
     {

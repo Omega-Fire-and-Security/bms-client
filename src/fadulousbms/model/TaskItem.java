@@ -1,5 +1,6 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ResourceManager;
@@ -11,7 +12,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by ghost on 2018/03/22.
+ * @author ghost
  */
 public class TaskItem extends BusinessObject implements Serializable
 {
@@ -23,6 +25,18 @@ public class TaskItem extends BusinessObject implements Serializable
     private String category;
     private String serial;
     public static final String TAG = "TaskItem";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
 
     public String getTask_id()
     {

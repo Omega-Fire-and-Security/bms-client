@@ -5,17 +5,14 @@
  */
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.JobManager;
-import fadulousbms.managers.QuoteManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 
 /**
@@ -24,6 +21,18 @@ import java.util.HashMap;
  */
 public class Invoice extends BusinessObject implements Serializable
 {
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
+
     public void setQuote_revision_numbers(String quote_revision_numbers)
     {
         this.quote_revision_numbers = quote_revision_numbers;

@@ -1,13 +1,12 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.EmployeeManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 
 /**
@@ -31,6 +30,18 @@ public class Leave extends BusinessObject implements Serializable
         setEnd_date(end_date);
         setType(type);
         setStatus(this.STATUS_PENDING);
+    }
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
     }
 
     public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}

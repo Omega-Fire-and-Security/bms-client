@@ -3,7 +3,7 @@ package fadulousbms.auxilary;
 /**
  * Created by ghost on 2017/04/06.
  */
-public enum AccessLevels
+public enum AccessLevel
 {
     NO_ACCESS(0),
     STANDARD(1),
@@ -12,7 +12,7 @@ public enum AccessLevels
 
     private int level;
 
-    private AccessLevels(int level)
+    private AccessLevel(int level)
     {
         this.level=level;
     }

@@ -5,16 +5,15 @@
  */
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
- *
+ * Created by ghost on 2017/01/01.
  * @author ghost
  */
 public class Employee extends BusinessObject implements Serializable
@@ -30,6 +29,21 @@ public class Employee extends BusinessObject implements Serializable
     private int access_level;
     private boolean active;
     public static final String TAG = "Employee";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        //if Employee to be created has access rights > standard then user signed in must have superuser access rights
+        if(getAccessLevel()>AccessLevel.STANDARD.getLevel())
+            return AccessLevel.SUPERUSER;
+        else return AccessLevel.STANDARD;
+    }
 
     public String getUsr()
     {

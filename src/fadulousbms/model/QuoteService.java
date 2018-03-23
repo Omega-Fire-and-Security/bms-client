@@ -1,9 +1,9 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.QuoteManager;
-import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.ServiceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -18,6 +18,18 @@ public class QuoteService extends BusinessObject
     private String quote_id;
     private String service_id;
     public static final String TAG = "QuoteService";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     private StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
 

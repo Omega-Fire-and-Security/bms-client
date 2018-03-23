@@ -5,6 +5,7 @@
  */
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.SupplierManager;
@@ -33,6 +34,18 @@ public class Resource extends BusinessObject implements Serializable
     private String supplier_id;
     private String part_number;
     public static final String TAG = "Resource";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
 
     public String getResource_description()
     {

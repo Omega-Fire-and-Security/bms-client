@@ -1,5 +1,6 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,9 +21,20 @@ public abstract class PurchaseOrderItem extends BusinessObject
     private int quantity;
     private double discount;
     private double cost;
-    private BusinessObject item;
     private String type;
     public static final String TAG = "PurchaseOrderItem";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
 

@@ -6,7 +6,6 @@ import fadulousbms.auxilary.*;
 import fadulousbms.controllers.JobsController;
 import fadulousbms.model.*;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -343,7 +342,7 @@ public class JobManager extends BusinessObjectManager
         {
             if (active != null)
             {
-                if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=AccessLevels.SUPERUSER.getLevel())
+                if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()>= AccessLevel.SUPERUSER.getLevel())
                 {
                     if (!active.isExpired())
                     {

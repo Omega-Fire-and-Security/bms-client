@@ -154,7 +154,7 @@ public class AccountCreationController extends ScreenController implements Initi
 
             switch (access_level_index)//access_levels[access_level_index].toLowerCase()
             {
-                case 0://none//AccessLevels.NO_ACCESS.getLevel()
+                case 0://none//AccessLevel.NO_ACCESS.getLevel()
                     employee.setAccessLevel(0);
                     break;
                 case 1://normal

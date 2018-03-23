@@ -106,7 +106,7 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                 if(SessionManager.getInstance().getActiveEmployee()!=null)
                                 {
                                     //disable approve button if not authorised
-                                    if (SessionManager.getInstance().getActiveEmployee().getAccessLevel()>=AccessLevels.SUPERUSER.getLevel())
+                                    if (SessionManager.getInstance().getActiveEmployee().getAccessLevel()>= AccessLevel.SUPERUSER.getLevel())
                                     {
                                         btnApprove.getStyleClass().add("btnDefault");
                                         btnApprove.setDisable(false);

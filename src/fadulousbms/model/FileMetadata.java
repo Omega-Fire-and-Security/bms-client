@@ -1,12 +1,11 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
  * Created by ghost on 2017/02/24.
@@ -20,6 +19,18 @@ public class FileMetadata extends BusinessObject implements Serializable
     private String file;//Base64 String representation of file
     //private String extra;//{"logo_options":{}, "required":false}
     public static final String TAG = "FileMetadata";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
 
     public FileMetadata(String filename, String content_type)
     {

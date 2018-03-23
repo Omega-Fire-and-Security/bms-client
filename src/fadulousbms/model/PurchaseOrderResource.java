@@ -1,14 +1,7 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.AssetManager;
 import fadulousbms.managers.ResourceManager;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
  * Created by ghost on 2017/01/21.
@@ -31,18 +24,8 @@ public class PurchaseOrderResource extends PurchaseOrderItem
         return "N/A";
     }
 
-    /*public double getCostValue()
-    {
-        if(getItem()!=null)
-            return getItem().getResource_value();
-        return 0;
-    }*/
-
     public Resource getItem()
     {
-        //if(super.getItem()!=null)
-        //    return (Resource) super.getItem();
-
         ResourceManager.getInstance().initialize();
         if (ResourceManager.getInstance().getDataset() != null)
         {

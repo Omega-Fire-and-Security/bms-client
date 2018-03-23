@@ -1,8 +1,10 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.Link;
 import fadulousbms.managers.EmployeeManager;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -11,6 +13,7 @@ import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/04.
+ * @author ghost
  */
 public abstract class BusinessObject implements Serializable
 {
@@ -24,6 +27,14 @@ public abstract class BusinessObject implements Serializable
     public static final int STATUS_PENDING =0;
     public static final int STATUS_APPROVED =1;
     public static final int STATUS_ARCHIVED =2;
+
+    //Read/Write permissions
+    //public static final int READ_MIN_ACCESS_LEVEL = AccessLevel.STANDARD.getLevel();
+    //public static final int WRITE_MIN_ACCESS_LEVEL = AccessLevel.STANDARD.getLevel();
+
+    public abstract AccessLevel getReadMinRequiredAccessLevel();
+
+    public abstract AccessLevel getWriteMinRequiredAccessLevel();
 
     public StringProperty idProperty(){return new SimpleStringProperty(_id);}
 
@@ -106,9 +117,11 @@ public abstract class BusinessObject implements Serializable
         this.other = other;
     }
 
+    public SimpleLongProperty object_numberProperty(){return new SimpleLongProperty(object_number);}
+
     /**
      * Function to get a shortened identifier of this object.
-     * @return The shortened identifier.
+     * @return The shortened identifier
      */
     public StringProperty short_idProperty(){return new SimpleStringProperty(_id.substring(0, 8));}
 

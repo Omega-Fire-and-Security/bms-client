@@ -1,18 +1,13 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ClientManager;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.QuoteManager;
-import fadulousbms.managers.ServiceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -34,6 +29,18 @@ public class Quote extends BusinessObject
     private QuoteService[] services;
     private int rev_cursor = -1;
     public static final String TAG = "Quote";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     public String getRequisition_id()
     {

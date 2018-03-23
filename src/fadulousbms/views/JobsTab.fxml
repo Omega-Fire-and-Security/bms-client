@@ -3,11 +3,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.control.cell.PropertyValueFactory?>
 <Tab fx:id="jobsTab" text="Job Log Sheet" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="fadulousbms.controllers.JobsController">
     <content>
         <TableView fx:id="tblJobs" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colJobNum" minWidth="80.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Job Number" visible="false"/>
+                <TableColumn fx:id="colJobNum" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Job Number" visible="false">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="object_number"/>
+                    </cellValueFactory>
+                </TableColumn>
                 <TableColumn fx:id="colClient" minWidth="80.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Client"/>
                 <TableColumn fx:id="colRequest" minWidth="120.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Description"/>
                 <TableColumn fx:id="colSitename" minWidth="120.0" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="Sitename" visible="false"/>

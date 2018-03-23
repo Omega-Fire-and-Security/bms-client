@@ -2082,20 +2082,35 @@ public class PDF
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Model/Serial", PDType1Font.HELVETICA_BOLD, 11, col_positions[5] - col_positions[4] - text_offset, col_positions[4] + text_offset, line_pos, no_border, col_positions);
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Quantity", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - col_positions[5] - text_offset), col_positions[5] + text_offset, line_pos, no_border, col_positions);
 
+                line_pos -= LINE_HEIGHT;//next line
+
                 //render 5 blank lines
-                for(int i=0;i<5;i++)
+                //for(int i=0;i<5;i++)
+                if(job.getTasks()!=null)
                 {
-                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[0] - PAGE_MARGINS.left - text_offset, PAGE_MARGINS.left + text_offset, line_pos, no_border, col_positions);
-                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[1] - col_positions[0] - text_offset, col_positions[0] + text_offset, line_pos, no_border, col_positions);
-                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[2] - col_positions[1] - text_offset, col_positions[1] + text_offset, line_pos, no_border, col_positions);
-                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 10, col_positions[3] - col_positions[2] - text_offset, col_positions[2] + text_offset, line_pos, no_border, col_positions);
-                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[4] - col_positions[3] - text_offset, col_positions[3] + text_offset, line_pos, no_border, col_positions);
-                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, col_positions[5] - col_positions[4] - text_offset, col_positions[4] + text_offset, line_pos, no_border, col_positions);
-                    line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), " ", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - col_positions[5] - text_offset), col_positions[5] + text_offset, line_pos, no_border, col_positions);
-                    line_pos -= LINE_HEIGHT;//next line
-                }
-                //line_pos = LINE_END - LINE_HEIGHT/2;//(int) h - logo_h - LINE_HEIGHT - (LINE_HEIGHT*30) - LINE_HEIGHT/2;
-                //line_pos -= LINE_HEIGHT*10;//skip 10 lines
+                    for (Task task : job.getTasks().values())
+                    {
+                        //list job tasks
+                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), new SimpleDateFormat("yyyy-MM-dd").format(new Date(task.getDate_scheduled())), PDType1Font.HELVETICA, 11, col_positions[0] - PAGE_MARGINS.left - text_offset, PAGE_MARGINS.left + text_offset, line_pos, no_border, col_positions);
+                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), new SimpleDateFormat("HH:mm").format(new Date(task.getDate_started())), PDType1Font.HELVETICA, 11, col_positions[1] - col_positions[0] - text_offset, col_positions[0] + text_offset, line_pos, no_border, col_positions);
+                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), new SimpleDateFormat("HH:mm").format(new Date(task.getDate_completed())), PDType1Font.HELVETICA, 11, col_positions[2] - col_positions[1] - text_offset, col_positions[1] + text_offset, line_pos, no_border, col_positions);
+                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), task.getDescription(), PDType1Font.HELVETICA, 10, col_positions[3] - col_positions[2] - text_offset, col_positions[2] + text_offset, line_pos, no_border, col_positions);
+                        if(task.getTaskItems()!=null)
+                        {
+                            //list task items
+                            for (TaskItem taskItem : task.getTaskItems().values())
+                            {
+                                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), taskItem.getEquipment_description(), PDType1Font.HELVETICA, 11, col_positions[4] - col_positions[3] - text_offset, col_positions[3] + text_offset, line_pos, no_border, col_positions);
+                                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), taskItem.getSerial()!=null?taskItem.getSerial():"", PDType1Font.HELVETICA, 11, col_positions[5] - col_positions[4] - text_offset, col_positions[4] + text_offset, line_pos, no_border, col_positions);
+                                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), taskItem.getQuantity(), PDType1Font.HELVETICA, 11, (int) (w - PAGE_MARGINS.right - col_positions[5] - text_offset), col_positions[5] + text_offset, line_pos, no_border, col_positions);
+                                line_pos -= LINE_HEIGHT;//next line - each task item goes in a new line
+                            }
+                        }
+                        line_pos -= LINE_HEIGHT;//next line
+                    }
+                } else IO.log(PDF.class.getName(), IO.TAG_WARN, "Job #" + job.getObject_number() + " has no Tasks.");
+
+                line_pos -= LINE_HEIGHT;//next line
 
                 //render PnGs
                 int[] png_col_positions = new int[]
@@ -2114,7 +2129,7 @@ public class PDF
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Other Staff ", PDType1Font.HELVETICA_BOLD, 10, png_col_positions[3] - png_col_positions[2] - text_offset, png_col_positions[2] + text_offset, line_pos, no_border, png_col_positions);
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "PO", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - png_col_positions[3] - text_offset), png_col_positions[3] + text_offset, line_pos, no_border, png_col_positions);
                 line_pos -= LINE_HEIGHT;//next line
-                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Quote", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - png_col_positions[3] - text_offset), png_col_positions[3] + text_offset, line_pos, no_border, png_col_positions);
+                line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Quote: #" + job.getQuote().getObject_number(), PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - png_col_positions[3] - text_offset), png_col_positions[3] + text_offset, line_pos, no_border, png_col_positions);
                 line_pos -= LINE_HEIGHT;//next line
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "Client PO", PDType1Font.HELVETICA_BOLD, 11, (int) (w - PAGE_MARGINS.right - png_col_positions[3] - text_offset), png_col_positions[3] + text_offset, line_pos, no_border, png_col_positions);
                 line_pos -= LINE_HEIGHT;//next line
@@ -2137,42 +2152,6 @@ public class PDF
                 line_pos -= LINE_HEIGHT;//next line
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "TECHNICIAN SIGNATURE: ____________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + text_offset, line_pos, no_border, null);
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "DATE: ____________________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + 540 + text_offset, line_pos, no_border, null);
-
-                //line_pos -= LINE_HEIGHT*2;//next 2nd line
-                //render quote materials
-                /*if(job.getQuote().getResources()!=null)
-                {
-                    for (QuoteItem item : job.getQuote().getResources())
-                    {
-                        /*addTextToPageStream(document, item.getResource().getResource_description(), 14, 20, line_pos);
-                        addTextToPageStream(document, item.getResource().getResource_code(), 14, (int) (w / 2) + 20, line_pos);
-                        addTextToPageStream(document, item.getQuantity(), 14, (int) w - 80, line_pos);*
-                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), item.getResource().getResource_description(), PDType1Font.HELVETICA, 11, (int) (w / 2) + PAGE_MARGINS.left-PAGE_MARGINS.right, PAGE_MARGINS.left+text_offset, line_pos, no_border, col_positions);
-                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), item.getResource().getResource_code(), PDType1Font.HELVETICA, 11, (int) w - 80 - (int) (w / 2) + PAGE_MARGINS.left + text_offset, col_positions[0] + text_offset, line_pos, no_border, col_positions);
-                        line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), item.getQuantity(), PDType1Font.HELVETICA, 11, (int) (w - 80), col_positions[1] + text_offset, line_pos, no_border, col_positions);
-                        line_pos -= LINE_HEIGHT;//next line
-                    }
-                }*/
-
-                //render quote services
-                /*if(job.getQuote().getServices()!=null)
-                {
-                    for (QuoteService service : job.getQuote().getServices())
-                    {
-                        addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), service.getService().getService_title(), 14, 20, line_pos);
-                        addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), service.getService().getService_description()!=null?service.getService().getService_description():"N/A", 14, (int) (w / 2) + 20, line_pos);
-                        int service_qty = 0;
-                        if(service.getService().getServiceItemsMap()!=null)
-                            for(ServiceItem serviceItem : service.getService().getServiceItemsMap().values())
-                                service_qty+=serviceItem.getQuantity();
-                        addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), String.valueOf(service_qty), 14, (int) w - 80, line_pos);
-                        line_pos -= LINE_HEIGHT;//next line
-                    }
-                }*/
-                //createBordersOnPage(contents_stream, new Insets(BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.left, BORDER_START-LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
-                //createBordersOnPage(contents_stream, new Insets(BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.left, line_pos+BORDER_START+LINE_HEIGHT/2, PAGE_MARGINS.right), (int)w);
-
-                //contents.close();
             }
         } else
         {

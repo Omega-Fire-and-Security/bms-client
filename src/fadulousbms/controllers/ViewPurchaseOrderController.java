@@ -5,15 +5,12 @@
  */
 package fadulousbms.controllers;
 
-import fadulousbms.auxilary.AccessLevels;
-import fadulousbms.auxilary.Globals;
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.*;
-import fadulousbms.model.Employee;
 import fadulousbms.model.PurchaseOrder;
 import javafx.collections.FXCollections;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
-import java.text.DecimalFormat;
 
 /**
  * views Controller class
@@ -39,7 +36,7 @@ public class ViewPurchaseOrderController extends PurchaseOrderController
             else IO.log(getClass().getName(), IO.TAG_ERROR, "selected po has no valid contact person.");
 
             //Hide [Approve] button if not authorized
-            if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()< AccessLevels.SUPERUSER.getLevel())
+            if(SessionManager.getInstance().getActiveEmployee().getAccessLevel()< AccessLevel.SUPERUSER.getLevel())
             {
                 btnApprove.setVisible(false);
                 btnApprove.setDisable(true);

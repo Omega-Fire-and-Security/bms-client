@@ -22,13 +22,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 
 /**
  * Created by ghost on 2017/01/11.
+ * @author ghost
  */
 public abstract class BusinessObjectManager implements HSSFListener
 {
@@ -140,14 +139,22 @@ public abstract class BusinessObjectManager implements HSSFListener
 
     public void createBusinessObject(BusinessObject businessObject, Callback callback) throws IOException
     {
+        //check if active user session is valid
         if(SessionManager.getInstance().getActive()==null)
         {
             IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
             return;
         }
+        //check if user's session hasn't expired
         if(SessionManager.getInstance().getActive().isExpired())
         {
             IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+        //check if user is allowed to create this type of object
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < businessObject.getWriteMinRequiredAccessLevel().getLevel())
+        {
+            IO.logAndAlert("Error", "You're not authorised to create " + businessObject.getClass().getSimpleName() + " objects.\nPlease ask your administrator for more info.", IO.TAG_ERROR);
             return;
         }
 

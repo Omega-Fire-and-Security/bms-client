@@ -14,7 +14,6 @@ import com.mailjet.client.errors.MailjetException;
 import com.mailjet.client.errors.MailjetSocketTimeoutException;
 import com.mailjet.client.resource.Email;
 import com.mailjet.client.resource.Emailv31;
-import fadulousbms.exceptions.LoginException;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.BusinessObject;
 import fadulousbms.model.Employee;
@@ -25,7 +24,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 
@@ -39,7 +37,7 @@ public class RemoteComms
     public static final String TAG = "RemoteComms";
     public static String MAIL_SERVER_IP = "localhost";
     public static int MAIL_SERVER_PORT = 9000;
-    public static int TTL = 60*60*2;//2 hours in sec
+    public static int TTL = 60*60*2;//2 hours in seconds
 
     public static Session auth(String usr, String pwd) throws Exception
     {

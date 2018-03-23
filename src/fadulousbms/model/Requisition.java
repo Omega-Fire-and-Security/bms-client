@@ -1,15 +1,11 @@
 package fadulousbms.model;
 
-import fadulousbms.auxilary.Globals;
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ClientManager;
 import fadulousbms.managers.EmployeeManager;
-import fadulousbms.managers.QuoteManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 
 /**
@@ -23,6 +19,18 @@ public class Requisition extends BusinessObject
     private String type;
     private int status;
     public static final String TAG = "Requisition";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
 
     public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
 

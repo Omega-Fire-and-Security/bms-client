@@ -29,8 +29,6 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
 
         formatter = new SimpleDateFormat("yyyy-MM-dd");
         datePicker = new DatePicker();
-        //datePicker = new DateTimePicker();
-        //datePicker.setEditable(editable);
         datePicker.setDisable(!editable);
 
         datePicker.valueProperty().addListener((observable, oldVal, newVal)->

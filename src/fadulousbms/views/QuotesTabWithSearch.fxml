@@ -5,6 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.control.cell.PropertyValueFactory?>
 <Tab fx:id="quotesTab" text="Quotes" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fadulousbms.controllers.QuotesController">
    <graphic>
       <VBox prefHeight="200.0" prefWidth="100.0">
@@ -27,6 +28,11 @@
               <TableView fx:id="tblQuotes" editable="true" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
                   <columns>
                       <TableColumn fx:id="colId" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Quote ID" visible="false" />
+                      <TableColumn fx:id="colNum" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Quote Number">
+                          <cellValueFactory>
+                              <PropertyValueFactory property="object_number"/>
+                          </cellValueFactory>
+                      </TableColumn>
                       <TableColumn fx:id="colClient" maxWidth="1.7976931348623157E308" minWidth="60.0" prefWidth="-1.0" text="Client" />
                       <TableColumn fx:id="colRequest" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Request" />
                       <TableColumn fx:id="colSitename" maxWidth="1.7976931348623157E308" minWidth="150.0" prefWidth="-1.0" text="Sitename" />

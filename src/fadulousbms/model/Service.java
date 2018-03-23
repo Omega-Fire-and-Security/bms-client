@@ -5,6 +5,7 @@
  */
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ServiceManager;
@@ -24,6 +25,18 @@ public class Service extends BusinessObject implements Serializable
     private String service_description;
     private HashMap<String, ServiceItem> serviceItems = new HashMap<>();
     public static final String TAG = "Service";
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.ADMIN;
+    }
 
     public String getService_title()
     {

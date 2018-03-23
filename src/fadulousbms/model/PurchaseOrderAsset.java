@@ -2,11 +2,6 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.ResourceManager;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-
-import java.io.Serializable;
 
 /**
  * Created by ghost on 2017/01/21.

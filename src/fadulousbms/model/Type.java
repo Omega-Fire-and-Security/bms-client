@@ -1,15 +1,15 @@
 package fadulousbms.model;
 
+import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
  * Created by ghost on 2017/01/13.
+ * @author ghost
  */
 public class Type extends BusinessObject implements Serializable
 {
@@ -20,6 +20,18 @@ public class Type extends BusinessObject implements Serializable
     {
         setType_name(type_name);
         setType_description(type_description);
+    }
+
+    @Override
+    public AccessLevel getReadMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public AccessLevel getWriteMinRequiredAccessLevel()
+    {
+        return AccessLevel.STANDARD;
     }
 
     public StringProperty type_nameProperty(){return new SimpleStringProperty(type_name);}
