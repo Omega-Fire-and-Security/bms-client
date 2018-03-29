@@ -27,7 +27,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/02/01.
  */
-public class AssetManager extends BusinessObjectManager
+public class AssetManager extends ApplicationObjectManager
 {
     private HashMap<String, Asset> assets;//assets that have been approved/acquired/delivered
     private HashMap<String, Asset> all_assets;

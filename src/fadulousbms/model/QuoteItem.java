@@ -4,7 +4,7 @@ import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.QuoteManager;
 import fadulousbms.managers.ResourceManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,9 +14,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public class QuoteItem extends BusinessObject implements Serializable
+public class QuoteItem extends ApplicationObject implements Serializable
 {
     private int item_number;
     private int quantity;
@@ -41,7 +42,7 @@ public class QuoteItem extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return QuoteManager.getInstance();
     }
@@ -241,7 +242,8 @@ public class QuoteItem extends BusinessObject implements Serializable
         return null;
     }
 
-    //Properties
+    // QuoteItem Model Properties
+
     public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
     public StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
     public StringProperty resource_idProperty(){return new SimpleStringProperty(resource_id);}
@@ -370,6 +372,9 @@ public class QuoteItem extends BusinessObject implements Serializable
         return str;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

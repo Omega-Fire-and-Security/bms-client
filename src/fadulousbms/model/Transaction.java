@@ -3,24 +3,23 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.BusinessObjectManager;
-import fadulousbms.managers.TaskManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
- * Created by ghost on 2017/01/13.
- * @author ghost
+ * Created by th3gh0st on 2017/01/13.
+ * @author th3gh0st
  */
-public class Transaction extends BusinessObject
+public class Transaction extends ApplicationObject
 {
     private long date;
-    private BusinessObject businessObject;
+    private ApplicationObject applicationObject;
 
-    public Transaction(String id, long date, BusinessObject businessObject)
+    public Transaction(String id, long date, ApplicationObject applicationObject)
     {
         super.set_id(id);
         this.date = date;
-        this.businessObject = businessObject;
+        this.applicationObject = applicationObject;
     }
 
     @Override
@@ -36,7 +35,7 @@ public class Transaction extends BusinessObject
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         throw new NotImplementedException();
     }
@@ -59,7 +58,7 @@ public class Transaction extends BusinessObject
                 break;
             case "business_object":
             case "businessobject":
-                setBusinessObject((BusinessObject)businessObject);
+                setApplicationObject(applicationObject);
                 break;
             default:
                 IO.log(getClass().getName(), IO.TAG_WARN, "unknown " +getClass().getName()+ " attribute ["+var+"], ignoring.");
@@ -67,14 +66,14 @@ public class Transaction extends BusinessObject
         }
     }
 
-    public BusinessObject getBusinessObject()
+    public ApplicationObject getApplicationObject()
     {
-        return businessObject;
+        return applicationObject;
     }
 
-    public void setBusinessObject(BusinessObject businessObject)
+    public void setApplicationObject(ApplicationObject applicationObject)
     {
-        this.businessObject = businessObject;
+        this.applicationObject = applicationObject;
     }
 
     /*@Override
@@ -98,7 +97,7 @@ public class Transaction extends BusinessObject
                 break;
             case "business_object":
             case "businessobject":
-                getBusinessObject();
+                getApplicationObject();
                 break;
             default:
                 IO.log(getClass().getName(), IO.TAG_WARN, "unknown " +getClass().getName()+ " attribute ["+var+"], ignoring.");

@@ -1,7 +1,6 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.exceptions.ParseException;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -14,9 +13,10 @@ import java.time.ZoneId;
 import java.util.Date;
 
 /**
- * Created by ghost on 2017/01/07.
+ * Created by th3gh0st on 2017/01/07.
+ * @author th3gh0st
  */
-public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
+public class LabelledDatePickerCell extends TableCell<ApplicationObject, Long>
 {
     private final SimpleDateFormat formatter;
     private final DatePicker datePicker;
@@ -83,7 +83,7 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
     public void commitEdit(Long newValue)
     {
         super.commitEdit(newValue);
-        BusinessObject bo = (BusinessObject) getTableRow().getItem();
+        ApplicationObject bo = (ApplicationObject) getTableRow().getItem();
         if(bo!=null)
         {
             try
@@ -102,7 +102,7 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
                 IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                 e.printStackTrace();
             }
-        } else IO.log(getClass().getName(), IO.TAG_WARN, "TableRow BusinessObject is null.");
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "TableRow ApplicationObject is null.");
     }
 
     @Override

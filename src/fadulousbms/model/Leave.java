@@ -3,8 +3,7 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.LeaveManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,9 +13,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public class Leave extends BusinessObject implements Serializable
+public class Leave extends ApplicationObject implements Serializable
 {
     private String usr;
     private long start_date;
@@ -49,7 +49,7 @@ public class Leave extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return LeaveManager.getInstance();
     }
@@ -239,6 +239,9 @@ public class Leave extends BusinessObject implements Serializable
         return " application for " + getEmployee();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

@@ -6,8 +6,8 @@
 package fadulousbms.model;
 
 /**
- * Created by ghost on 2017/01/05.
- * @author ghost
+ * Created by th3gh0st on 2017/01/05.
+ * @author th3gh0st
  */
 public enum Screens 
 {

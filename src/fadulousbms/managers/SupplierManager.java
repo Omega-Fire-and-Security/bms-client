@@ -25,7 +25,7 @@ import java.util.HashMap;
  * Created by ghost on 2017/01/11.
  * @author ghost
  */
-public class SupplierManager extends BusinessObjectManager
+public class SupplierManager extends ApplicationObjectManager
 {
     private Gson gson;
     private HashMap<String, Supplier> suppliers;

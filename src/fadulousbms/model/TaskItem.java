@@ -4,8 +4,7 @@ import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.TaskManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,9 +15,9 @@ import java.util.HashMap;
 
 /**
  * Created by ghost on 2018/03/22.
- * @author ghost
+ * @author th3gh0st
  */
-public class TaskItem extends BusinessObject implements Serializable
+public class TaskItem extends ApplicationObject implements Serializable
 {
     private long quantity;
     private double unit_cost;
@@ -42,7 +41,7 @@ public class TaskItem extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return TaskManager.getInstance();
     }
@@ -178,7 +177,8 @@ public class TaskItem extends BusinessObject implements Serializable
         return getRate()*getQuantityValue();
     }
 
-    //Properties
+    // TaskItem Model Properties
+
     public StringProperty task_idProperty(){return new SimpleStringProperty(task_id);}
     public StringProperty resource_idProperty(){return new SimpleStringProperty(resource_id);}
     public StringProperty descriptionProperty(){return new SimpleStringProperty(getEquipment_description());}
@@ -305,6 +305,9 @@ public class TaskItem extends BusinessObject implements Serializable
         return str;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

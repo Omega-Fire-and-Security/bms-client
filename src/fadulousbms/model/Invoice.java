@@ -9,8 +9,7 @@ import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.InvoiceManager;
 import fadulousbms.managers.JobManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,10 +19,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /**
- *
- * @author ghost
+ * Created by th3gh0st on 2017/01/01.
+ * @author th3gh0st
  */
-public class Invoice extends BusinessObject implements Serializable
+public class Invoice extends ApplicationObject implements Serializable
 {
     private String job_id;
     private String quote_revision_numbers;//semi-colon separated array of Quote revision numbers associated with Invoice.
@@ -43,7 +42,7 @@ public class Invoice extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return InvoiceManager.getInstance();
     }
@@ -179,7 +178,7 @@ public class Invoice extends BusinessObject implements Serializable
         return null;
     }
 
-    //Properties
+    // Invoice Model Properties
 
     public StringProperty accountProperty(){return new SimpleStringProperty(getAccount());}
 
@@ -286,6 +285,9 @@ public class Invoice extends BusinessObject implements Serializable
         return str;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

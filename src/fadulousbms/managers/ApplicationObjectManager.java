@@ -32,9 +32,9 @@ import java.util.regex.Matcher;
  * Created by ghost on 2017/01/11.
  * @author ghost
  */
-public abstract class BusinessObjectManager implements HSSFListener
+public abstract class ApplicationObjectManager implements HSSFListener
 {
-    private BusinessObject selected;
+    private ApplicationObject selected;
     private long refresh_lock = 0;
     private SSTRecord sstrec;
     private static boolean found_match = false;
@@ -93,14 +93,14 @@ public abstract class BusinessObjectManager implements HSSFListener
 
     abstract Callback getSynchronisationCallback();
 
-    public abstract HashMap<String, ? extends BusinessObject> getDataset();
+    public abstract HashMap<String, ? extends ApplicationObject> getDataset();
 
-    public void setSelected(BusinessObject selected)
+    public void setSelected(ApplicationObject selected)
     {
         this.selected=selected;
     }
 
-    public BusinessObject getSelected()
+    public ApplicationObject getSelected()
     {
         return this.selected;
     }
@@ -155,14 +155,14 @@ public abstract class BusinessObjectManager implements HSSFListener
 
     /**
      * Method to create new ApplicationObject's on the database server.
-     * @param businessObject ApplicationObject to be created.
+     * @param applicationObject ApplicationObject to be created.
      * @param callback Callback to be executed after completion of request
      *                 - Server will pass ApplicationObject _id to callback on execution.
      */
-    public void putObject(BusinessObject businessObject, Callback callback) throws IOException
+    public void putObject(ApplicationObject applicationObject, Callback callback) throws IOException
     {
         //check if object is valid
-        if(businessObject==null)
+        if(applicationObject ==null)
         {
             IO.logAndAlert("Error", "Object to be created is invalid.", IO.TAG_ERROR);
             return;
@@ -180,22 +180,22 @@ public abstract class BusinessObjectManager implements HSSFListener
             return;
         }
         //check if user is allowed to create this type of object
-        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < businessObject.getWriteMinRequiredAccessLevel().getLevel())
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < applicationObject.getWriteMinRequiredAccessLevel().getLevel())
         {
-            IO.logAndAlert("Error", "You're not authorised to create " + businessObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "You're not authorised to create " + applicationObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
             return;
         }
 
         //if model's manager is not the same as this instance then ask if that's the user's true intention
-        if(businessObject.getManager() != this)
+        if(applicationObject.getManager() != this)
         {
-            String proceed = IO.showConfirm("Model manager miss-match", "Object of type " + businessObject.getClass().getName() + "'s manager does not match the current manager " +
+            String proceed = IO.showConfirm("Model manager miss-match", "Object of type " + applicationObject.getClass().getName() + "'s manager does not match the current manager " +
                     "in use ("+this.getClass().getName()+"), do you want to proceed with this action?");
 
             //did they choose to continue with the creation or cancel?
             if(!proceed.equals(IO.OK))
             {
-                IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + businessObject.getClass().getName() + " creation.");
+                IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + applicationObject.getClass().getName() + " creation.");
                 return;
             }
         }
@@ -204,12 +204,12 @@ public abstract class BusinessObjectManager implements HSSFListener
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
         headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
-        HttpURLConnection connection = RemoteComms.put(businessObject.apiEndpoint(), businessObject.getJSONString(), headers);
+        HttpURLConnection connection = RemoteComms.put(applicationObject.apiEndpoint(), applicationObject.getJSONString(), headers);
         if(connection!=null)
         {
             if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
             {
-                IO.log("Success", IO.TAG_INFO, "successfully created new BusinessObject("+businessObject.getClass().getName()+"): " +businessObject.toString()+"!");
+                IO.log("Success", IO.TAG_INFO, "successfully created new ApplicationObject("+ applicationObject.getClass().getName()+"): " + applicationObject.toString()+"!");
 
                 String response = IO.readStream(connection.getInputStream());
 
@@ -232,8 +232,8 @@ public abstract class BusinessObjectManager implements HSSFListener
                         if(getDataset().containsKey(new_obj_id))
                             setSelected(getDataset().get(new_obj_id));
 
-                    //IO.logAndAlert("Success", "Successfully created "+businessObject.getClass().getSimpleName()+"["+new_obj_id+"].", IO.TAG_INFO);
-                } else IO.logAndAlert("Error", businessObject.getClass().getSimpleName() + " not created.\nCould not get a valid response from server on post " + businessObject.getClass().getSimpleName() + " creation.", IO.TAG_ERROR);
+                    //IO.logAndAlert("Success", "Successfully created "+applicationObject.getClass().getSimpleName()+"["+new_obj_id+"].", IO.TAG_INFO);
+                } else IO.logAndAlert("Error", applicationObject.getClass().getSimpleName() + " not created.\nCould not get a valid response from server on post " + applicationObject.getClass().getSimpleName() + " creation.", IO.TAG_ERROR);
 
                 //execute callback
                 if(callback!=null)
@@ -254,14 +254,14 @@ public abstract class BusinessObjectManager implements HSSFListener
 
     /**
      * Method to patch/update ApplicationObject's on the database server.
-     * @param businessObject ApplicationObject to be patched.
+     * @param applicationObject ApplicationObject to be patched.
      * @param callback Callback to be executed after completion of request
      *                 - Server will pass ApplicationObject _id to callback on execution.
      */
-    public void patchObject(BusinessObject businessObject, Callback callback) throws IOException
+    public void patchObject(ApplicationObject applicationObject, Callback callback) throws IOException
     {
         //check if object is valid
-        if(businessObject==null)
+        if(applicationObject ==null)
         {
             IO.logAndAlert("Error", "Object to be updated is invalid.", IO.TAG_ERROR);
             return;
@@ -279,21 +279,21 @@ public abstract class BusinessObjectManager implements HSSFListener
             return;
         }
         //check if user is allowed to update this type of object
-        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < businessObject.getWriteMinRequiredAccessLevel().getLevel())
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < applicationObject.getWriteMinRequiredAccessLevel().getLevel())
         {
-            IO.logAndAlert("Error", "You're not authorised to edit " + businessObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "You're not authorised to edit " + applicationObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
             return;
         }
 
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
         headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
-        HttpURLConnection connection = RemoteComms.post(businessObject.apiEndpoint(), businessObject.getJSONString(), headers);
+        HttpURLConnection connection = RemoteComms.post(applicationObject.apiEndpoint(), applicationObject.getJSONString(), headers);
         if(connection!=null)
         {
             if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
             {
-                IO.log("Success", IO.TAG_INFO, "Successfully updated BusinessObject("+businessObject.getClass().getName()+"): " +businessObject.toString()+"!");
+                IO.log("Success", IO.TAG_INFO, "Successfully updated ApplicationObject("+ applicationObject.getClass().getName()+"): " + applicationObject.toString()+"!");
 
                 String response = IO.readStream(connection.getInputStream());
 
@@ -303,7 +303,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                 //refresh model & view after object has been created.
                 forceSynchronise();
 
-                String new_obj_id = businessObject.get_id();
+                String new_obj_id = applicationObject.get_id();
                 if(response!=null)
                 {
                     //server will return message object in format "object_id"
@@ -315,7 +315,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                     if(getDataset()!=null)
                         setSelected(getDataset().get(new_obj_id));
 
-                    IO.log(getClass().getName(), IO.TAG_INFO, "Successfully updated BusinessObject("+businessObject.getClass().getName()+")["+new_obj_id+"].");
+                    IO.log(getClass().getName(), IO.TAG_INFO, "Successfully updated ApplicationObject("+ applicationObject.getClass().getName()+")["+new_obj_id+"].");
                 }
                 //execute callback w/ args
                 if(callback!=null)
@@ -336,14 +336,14 @@ public abstract class BusinessObjectManager implements HSSFListener
 
     /**
      * Method to delete ApplicationObject's from the database server.
-     * @param businessObject ApplicationObject to be deleted.
+     * @param applicationObject ApplicationObject to be deleted.
      * @param callback Callback to be executed after completion of request
      *                 - Server will pass ApplicationObject _id to callback on execution.
      */
-    public void deleteObject(BusinessObject businessObject, Callback callback) throws IOException
+    public void deleteObject(ApplicationObject applicationObject, Callback callback) throws IOException
     {
         //check if object is valid
-        if(businessObject==null)
+        if(applicationObject ==null)
         {
             IO.logAndAlert("Error", "Object to be deleted is invalid.", IO.TAG_ERROR);
             return;
@@ -361,32 +361,32 @@ public abstract class BusinessObjectManager implements HSSFListener
             return;
         }
         //check if user is allowed to delete this type of object
-        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < businessObject.getWriteMinRequiredAccessLevel().getLevel())
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < applicationObject.getWriteMinRequiredAccessLevel().getLevel())
         {
-            IO.logAndAlert("Error", "You're not authorised to delete " + businessObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "You're not authorised to delete " + applicationObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
             return;
         }
 
         //if model's manager is not the same as this instance then ask if that's the user's true intention
-        if(businessObject.getManager() != this)
+        if(applicationObject.getManager() != this)
         {
-            String proceed = IO.showConfirm("Model manager miss-match", "Object of type " + businessObject.getClass().getName() + "'s manager does not match the current manager " +
+            String proceed = IO.showConfirm("Model manager miss-match", "Object of type " + applicationObject.getClass().getName() + "'s manager does not match the current manager " +
                     "in use ("+this.getClass().getName()+"), do you want to proceed with this action?");
 
             //did they choose to continue with the creation or cancel?
             if(!proceed.equals(IO.OK))
             {
-                IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + businessObject.getClass().getName() + " deletion.");
+                IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + applicationObject.getClass().getName() + " deletion.");
                 return;
             }
         }
 
-        String proceed = IO.showConfirm("Confirm Deletion", "Are you sure you want to DELETE [" + businessObject.getClass().getSimpleName()+ " "+businessObject.toString()+"] FOREVER.");
+        String proceed = IO.showConfirm("Confirm Deletion", "Are you sure you want to DELETE [" + applicationObject.getClass().getSimpleName()+ " "+ applicationObject.toString()+"] FOREVER.");
 
         //did they choose to continue with the deletion or cancel?
         if(!proceed.equals(IO.OK))
         {
-            IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + businessObject.getClass().getName() + " deletion.");
+            IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + applicationObject.getClass().getName() + " deletion.");
             return;
         }
 
@@ -394,12 +394,12 @@ public abstract class BusinessObjectManager implements HSSFListener
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
         headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
-        HttpURLConnection connection = RemoteComms.delete(businessObject.apiEndpoint(), businessObject.get_id(), headers);
+        HttpURLConnection connection = RemoteComms.delete(applicationObject.apiEndpoint(), applicationObject.get_id(), headers);
         if(connection!=null)
         {
             if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
             {
-                IO.log("Success", IO.TAG_INFO, "successfully deleted BusinessObject("+businessObject.getClass().getName()+"): " +businessObject.toString()+"!");
+                IO.log("Success", IO.TAG_INFO, "successfully deleted ApplicationObject("+ applicationObject.getClass().getName()+"): " + applicationObject.toString()+"!");
 
                 String response = IO.readStream(connection.getInputStream());
 
@@ -417,15 +417,15 @@ public abstract class BusinessObjectManager implements HSSFListener
                     new_obj_id = new_obj_id.replaceAll("\n","");//strip new line chars
                     new_obj_id = new_obj_id.replaceAll(" ","");//strip whitespace chars
 
-                    //IO.logAndAlert("Success", "Successfully deleted "+businessObject.getClass().getSimpleName()+"["+new_obj_id+"].", IO.TAG_INFO);
-                } else IO.logAndAlert("Error", businessObject.getClass().getSimpleName() + " not deleted.\nCould not get a valid response from server on post " + businessObject.getClass().getSimpleName() + " deletion.", IO.TAG_ERROR);
+                    //IO.logAndAlert("Success", "Successfully deleted "+applicationObject.getClass().getSimpleName()+"["+new_obj_id+"].", IO.TAG_INFO);
+                } else IO.logAndAlert("Error", applicationObject.getClass().getSimpleName() + " not deleted.\nCould not get a valid response from server on post " + applicationObject.getClass().getSimpleName() + " deletion.", IO.TAG_ERROR);
 
                 //execute callback w/ args
                 if(callback!=null)
                     callback.call(new_obj_id);
                 return;
             } else
-                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                IO.logAndAlert("ERROR_" + connection.getResponseCode(), connection.getResponseMessage(), IO.TAG_ERROR);
             //close connection to server
             connection.disconnect();
         } else IO.log(getClass().getName(), IO.TAG_ERROR, "deleteObject()> Could not get a valid response from the server.");
@@ -450,15 +450,16 @@ public abstract class BusinessObjectManager implements HSSFListener
         }catch (JsonSyntaxException e)
         {
             IO.log(getClass().getName()+">parseJSONobject()", IO.TAG_WARN, "Invalid JSON object: " + json_object);
+            IO.logAndAlert("Error", json_object, IO.TAG_WARN);
             return null;
         }
     }
 
-    public void emailBusinessObject(BusinessObject businessObject, String pdf_path, Callback callback) throws IOException
+    public void emailApplicationObject(ApplicationObject applicationObject, String pdf_path, Callback callback) throws IOException
     {
-        if(businessObject==null)
+        if(applicationObject ==null)
         {
-            IO.logAndAlert("Error", "Invalid "+businessObject.getClass().getName(), IO.TAG_ERROR);
+            IO.logAndAlert("Error", "Invalid "+ applicationObject.getClass().getName(), IO.TAG_ERROR);
             return;
         }
         if(EmployeeManager.getInstance().getDataset()==null)
@@ -502,11 +503,11 @@ public abstract class BusinessObjectManager implements HSSFListener
             {
                 IO.log(QuoteManager.class.getName(), "File [" + pdf_path + "] object is null.", IO.TAG_ERROR);
             }
-        } else IO.log(QuoteManager.class.getName(), "Could not get valid path for created "+businessObject.getClass().getName()+" pdf.", IO.TAG_ERROR);
+        } else IO.log(QuoteManager.class.getName(), "Could not get valid path for created "+ applicationObject.getClass().getName()+" pdf.", IO.TAG_ERROR);
         final String finalBase64_obj = base64_obj;
 
         Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail "+businessObject.getClass().getSimpleName()+" ["+businessObject.get_id()+"]");
+        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail "+ applicationObject.getClass().getSimpleName()+" ["+ applicationObject.get_id()+"]");
         stage.setMinWidth(320);
         stage.setHeight(350);
         stage.setAlwaysOnTop(true);
@@ -523,7 +524,7 @@ public abstract class BusinessObjectManager implements HSSFListener
         txt_subject.setMinWidth(200);
         txt_subject.setMaxWidth(Double.MAX_VALUE);
         txt_subject.setPromptText("Type in an eMail subject");
-        txt_subject.setText(businessObject.getClass().getSimpleName()+" ["+businessObject.get_id()+"]");
+        txt_subject.setText(applicationObject.getClass().getSimpleName()+" ["+ applicationObject.get_id()+"]");
         HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
 
         final TextArea txt_message = new TextArea();
@@ -558,7 +559,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                 //send email
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));//multipart/form-data
-                headers.add(new AbstractMap.SimpleEntry<>("_id", businessObject.get_id()));
+                headers.add(new AbstractMap.SimpleEntry<>("_id", applicationObject.get_id()));
                 headers.add(new AbstractMap.SimpleEntry<>("destination", txt_destination.getText()));
                 headers.add(new AbstractMap.SimpleEntry<>("message", msg));
                 headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
@@ -571,16 +572,16 @@ public abstract class BusinessObjectManager implements HSSFListener
                     return;
                 }
 
-                Metafile metafile = new Metafile(businessObject.getClass().getSimpleName().toLowerCase()+"_"+businessObject.get_id()+".pdf","application/pdf");
+                Metafile metafile = new Metafile(applicationObject.getClass().getSimpleName().toLowerCase()+"_"+ applicationObject.get_id()+".pdf", "application/pdf");
                 metafile.setCreator(SessionManager.getInstance().getActive().getUsr());
                 metafile.setFile(finalBase64_obj);
-                HttpURLConnection connection = RemoteComms.post(businessObject.apiEndpoint()+"/mailto", metafile.getJSONString(), headers);
+                HttpURLConnection connection = RemoteComms.post(applicationObject.apiEndpoint()+"/mailto", metafile.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         //TODO: CC self
-                        IO.logAndAlert("Success", "Successfully emailed "+businessObject.getClass().getSimpleName()+"!", IO.TAG_INFO);
+                        IO.logAndAlert("Success", "Successfully emailed "+ applicationObject.getClass().getSimpleName()+"!", IO.TAG_INFO);
                         //execute callback w/ args
                         if(callback!=null)
                             callback.call(true);
@@ -681,7 +682,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                                         break;
                             }
 
-                            IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource with attributes:"
+                            IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource with attributes:"
                                     +"\n\tADI part-number: " + adi_part_num
                                     +"\n\tVendor part-number: " + vendor_part_num
                                     +"\n\tType: " + type
@@ -806,7 +807,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                                         resource.setResource_value(Double.parseDouble(price.trim()));//try to convert to double
                                     } catch (NumberFormatException e)
                                     {
-                                        IO.log(BusinessObjectManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+                                        IO.log(ApplicationObjectManager.class.getName(), IO.TAG_ERROR, e.getMessage());
                                     }
 
                                     //String response = IO.showConfirm("Continue?", "Create new material ["+(i+1)+" of "+lines.length+"]: ["+ resource.getJSONString()+"]?", IO.YES, IO.NO, IO.CANCEL);
@@ -820,19 +821,19 @@ public abstract class BusinessObjectManager implements HSSFListener
                                         continue;
                                     else if(response.equals(IO.CANCEL))return;
                                     other = "";
-                                } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_ERROR, "WTF is this ["+line+"] mate?");
+                                } else IO.log(ApplicationObjectManager.class.getName(), IO.TAG_ERROR, "WTF is this ["+line+"] mate?");
 
                             } else //check if is category
                             {
                                 if(line.split(" ").length<=2)//if has less than 3 spaces then is category
                                 {
-                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource category: " + line);
+                                    IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource category: " + line);
                                     resource_category = line;
                                     other = "";
                                 } else other+=" "+line;//else just store the line in the "other" field
                             }
-                        } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "empty line detected");
-                    } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "invalid line detected");
+                        } else IO.log(ApplicationObjectManager.class.getName(), IO.TAG_WARN, "empty line detected");
+                    } else IO.log(ApplicationObjectManager.class.getName(), IO.TAG_WARN, "invalid line detected");
                 }
             }
             doc.close();
@@ -908,7 +909,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                                     resource.setResource_value(Double.parseDouble(price.replaceAll(" ", "")));
                                 }catch (NumberFormatException e)
                                 {
-                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+                                    IO.log(ApplicationObjectManager.class.getName(), IO.TAG_ERROR, e.getMessage());
                                 }
 
                                 other = "";
@@ -927,14 +928,14 @@ public abstract class BusinessObjectManager implements HSSFListener
                                 matcher = Validators.matchRegex(resource_type_regex, line.trim());
                                 if(matcher.find())
                                 {
-                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource category: " + matcher.group());
+                                    IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "Found new resource category: " + matcher.group());
                                     resource_category = line;
                                     other = "";
                                 } else if(!line.equals("Our Code Item Description Prices Excl VAT") && !lines.equals("Trade Price List"))
                                     other+=" "+line;//else just store the line in the other field
                             }
-                        } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "empty line detected");
-                    } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "invalid line detected");
+                        } else IO.log(ApplicationObjectManager.class.getName(), IO.TAG_WARN, "empty line detected");
+                    } else IO.log(ApplicationObjectManager.class.getName(), IO.TAG_WARN, "invalid line detected");
                 }
             }
             doc.close();
@@ -1131,7 +1132,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                     Cell currentCell = cellIterator.next();
                     if (currentCell.getCellTypeEnum() == CellType.STRING)
                     {
-                        IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "processing line: [" + currentCell.getStringCellValue()+"].");
+                        IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "processing line: [" + currentCell.getStringCellValue()+"].");
                         //final Employee curr_consultant = current_consultant;
                         found_match = false;
                         regular_expressions.forEach((key, regex) ->
@@ -1153,7 +1154,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                                         //if(curr_consultant.getCell()==null)//if current consultant's cell if not set, set it
                                         current_consultant.setCell(matcher.group(1).split("\\:")[1].trim());
                                     }
-                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
+                                    IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
                                 }
                                 //parse email addresses
                                 if(key.toLowerCase().equals("email")||key.toLowerCase().equals("e-mail"))
@@ -1170,7 +1171,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                                         quote_info.put("eMail", matcher.group(1).split("\\:")[1].trim());
                                     else current_consultant.setEmail(matcher.group(1).split("\\:")[1].trim());
 
-                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
+                                    IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
                                 }
                                 //parse consultant names
                                 if(key.toLowerCase().equals("sales consultant"))
@@ -1185,7 +1186,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                                         current_consultant.setFirstname(full_name);
                                         current_consultant.setLastname("");
                                     }
-                                    IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
+                                    IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString()+"].");
                                 }
                             }
                         });
@@ -1201,7 +1202,7 @@ public abstract class BusinessObjectManager implements HSSFListener
                                     if(consult_info!=null) {
                                         if (consult_info.length > 1) {
                                             if (!consult_info[0].trim().isEmpty() && !consult_info[1].trim().isEmpty()) {
-                                                IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "found additional sale consultant: [" + matcher.group(1) + "].");
+                                                IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "found additional sale consultant: [" + matcher.group(1) + "].");
 
                                                 String full_name = matcher.group(1).split("\\:")[0].trim();
                                                 String cell = matcher.group(1).split("\\:")[1].trim();
@@ -1215,11 +1216,11 @@ public abstract class BusinessObjectManager implements HSSFListener
                                                 }
                                             }
                                         }
-                                        IO.log(BusinessObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString() + "].");
+                                        IO.log(ApplicationObjectManager.class.getName(), IO.TAG_VERBOSE, "current sale consultant: [" + current_consultant.getJSONString() + "].");
                                     }
                                 }
                             }
-                        } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "no usable fields were found on line: " +currentCell.getStringCellValue());
+                        } else IO.log(ApplicationObjectManager.class.getName(), IO.TAG_WARN, "no usable fields were found on line: " +currentCell.getStringCellValue());
                     } else if (currentCell.getCellTypeEnum() == CellType.NUMERIC)
                     {
                         IO.logAndAlert("Error", "Unexpected data-type found [Numeric]: " + currentCell.getNumericCellValue(), IO.TAG_WARN);
@@ -1232,10 +1233,10 @@ public abstract class BusinessObjectManager implements HSSFListener
                         //got all the data for the current consultant
                         sale_consultants.putIfAbsent(current_consultant.getName(), current_consultant);
 
-                        IO.log(BusinessObjectManager.class.getName(), IO.TAG_INFO, "committed current sale consultant: [" + current_consultant.getJSONString()+"] to map.");
+                        IO.log(ApplicationObjectManager.class.getName(), IO.TAG_INFO, "committed current sale consultant: [" + current_consultant.getJSONString()+"] to map.");
 
                         current_consultant = new Employee();
-                    } else IO.log(BusinessObjectManager.class.getName(), IO.TAG_WARN, "current sale consultant: [" + current_consultant.getJSONString()+"] is not yet complete.");
+                    } else IO.log(ApplicationObjectManager.class.getName(), IO.TAG_WARN, "current sale consultant: [" + current_consultant.getJSONString()+"] is not yet complete.");
 
                 }
                 System.out.println();//print new line

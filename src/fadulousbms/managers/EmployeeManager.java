@@ -31,7 +31,7 @@ import java.util.HashMap;
  * Created by ghost on 2017/01/11.
  * @author ghost
  */
-public class EmployeeManager extends BusinessObjectManager
+public class EmployeeManager extends ApplicationObjectManager
 {
     private HashMap<String, Employee> employees;
     private Gson gson;

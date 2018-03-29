@@ -4,7 +4,8 @@ import fadulousbms.auxilary.IO;
 import fadulousbms.managers.AssetManager;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
 public class PurchaseOrderAsset extends PurchaseOrderItem
 {
@@ -55,6 +56,9 @@ public class PurchaseOrderAsset extends PurchaseOrderItem
         return null;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

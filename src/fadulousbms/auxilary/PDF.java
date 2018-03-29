@@ -28,6 +28,7 @@ import java.util.*;
 
 /**
  * Created by ghost on 2017/02/10.
+ * @author ghost
  */
 public class PDF
 {
@@ -334,13 +335,13 @@ public class PDF
         String status = "N/A";
         switch (requisition.getStatus())
         {
-            case BusinessObject.STATUS_PENDING:
+            case ApplicationObject.STATUS_PENDING:
                 status="PENDING";
                 break;
-            case BusinessObject.STATUS_FINALISED:
+            case ApplicationObject.STATUS_FINALISED:
                 status="GRANTED";
                 break;
-            case BusinessObject.STATUS_ARCHIVED:
+            case ApplicationObject.STATUS_ARCHIVED:
                 status="ARCHIVED";
                 break;
         }
@@ -1907,7 +1908,7 @@ public class PDF
 
                 /*line_pos = addTextToPageStream(document, "START DATE: " + (job.getDate_started()>0?LocalDate.parse(formatter.format(new Date(job.getDate_started()))):"N/A"), PDType1Font.HELVETICA, 11, page_content_max_width, (int)(w/2)-70, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
                 line_pos = addTextToPageStream(document, "COMP DATE: " + (job.isJob_completed()?LocalDate.parse(formatter.format(new Date(job.getDate_completed()))):"N/A"), PDType1Font.HELVETICA, 11, page_content_max_width, (int)w-170, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);*/
-                line_pos = addTextToPageStream(document, "TECHNICIAN: ", PDType1Font.HELVETICA, 11, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
+                line_pos = addTextToPageStream(document, "TECHNICIAN: " + job_employee.getEmployee(), PDType1Font.HELVETICA, 11, page_content_max_width, PAGE_MARGINS.left+text_offset, line_pos, no_border, null);
                 line_pos = addTextToPageStream(document, "START DATE: ", PDType1Font.HELVETICA, 11, page_content_max_width, (int)(w/2)-70, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
                 line_pos = addTextToPageStream(document, "COMP DATE: ", PDType1Font.HELVETICA, 11, page_content_max_width, (int)w-170, line_pos, new Border(Border.BORDER_LEFT, Color.BLACK, 1, new Insets(0,text_offset,0,0)), null);
 
@@ -2223,10 +2224,10 @@ public class PDF
                                 new Date(t.getDate() * 1000))),
                         PDType1Font.HELVETICA, 15, 10, line_pos);
 
-                if (t.getBusinessObject() instanceof Invoice)
+                if (t.getApplicationObject() instanceof Invoice)
                 {
                     //title
-                    String title = ((Invoice) t.getBusinessObject()).getAccount();
+                    String title = ((Invoice) t.getApplicationObject()).getAccount();
                     if (title.length() <= 50)
                         addTextToPageStream(document, title, PDType1Font.HELVETICA, 12, 105, line_pos);
                     if (title.length() > 50 && title.length() <= 60)
@@ -2235,24 +2236,24 @@ public class PDF
                         addTextToPageStream(document, title, PDType1Font.HELVETICA, 8, 105, line_pos);
                     //debit
                     double difference = 0;
-                    if (((Invoice) t.getBusinessObject()).getJob() != null)
-                        if (((Invoice) t.getBusinessObject()).getJob().getQuote() != null)
-                            difference = ((Invoice) t.getBusinessObject()).getJob().getQuote().getTotal() - ((Invoice) t.getBusinessObject()).getReceivable();
+                    if (((Invoice) t.getApplicationObject()).getJob() != null)
+                        if (((Invoice) t.getApplicationObject()).getJob().getQuote() != null)
+                            difference = ((Invoice) t.getApplicationObject()).getJob().getQuote().getTotal() - ((Invoice) t.getApplicationObject()).getReceivable();
                     addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(difference), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
                     addTextToPageStream(document, "Accounts Receivable", PDType1Font.HELVETICA, 15, 105, line_pos);
                     //debit
-                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Invoice) t.getBusinessObject()).getReceivable()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Invoice) t.getApplicationObject()).getReceivable()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
                     addTextToPageStream(document, "Service Revenue", PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
-                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Invoice) t.getBusinessObject()).getTotal()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
-                } else if (t.getBusinessObject() instanceof Expense)
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Invoice) t.getApplicationObject()).getTotal()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                } else if (t.getApplicationObject() instanceof Expense)
                 {
                     //title
-                    String title = ((Expense) t.getBusinessObject()).getExpense_title();
+                    String title = ((Expense) t.getApplicationObject()).getExpense_title();
                     if (title.length() <= 50)
                         addTextToPageStream(document, title, PDType1Font.HELVETICA, 12, 105, line_pos);
                     if (title.length() > 50 && title.length() <= 60)
@@ -2260,16 +2261,16 @@ public class PDF
                     if (title.length() > 60)
                         addTextToPageStream(document, title, PDType1Font.HELVETICA, 8, 105, line_pos);
                     //debit
-                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) t.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) t.getApplicationObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
-                    addTextToPageStream(document, ((Expense) t.getBusinessObject()).getAccount(), PDType1Font.HELVETICA, 15, 150, line_pos);
+                    addTextToPageStream(document, ((Expense) t.getApplicationObject()).getAccount(), PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
-                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) t.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
-                } else if (t.getBusinessObject() instanceof Asset)
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) t.getApplicationObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                } else if (t.getApplicationObject() instanceof Asset)
                 {
                     //title
-                    String title = ((Asset) t.getBusinessObject()).getAsset_name();
+                    String title = ((Asset) t.getApplicationObject()).getAsset_name();
                     if (title.length() <= 50)
                         addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
                     if (title.length() > 50 && title.length() <= 60)
@@ -2277,16 +2278,16 @@ public class PDF
                     if (title.length() > 60)
                         addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
                     //debit
-                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getApplicationObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
-                    //addTextToPageStream(contents, ((Asset) t.getBusinessObject()).getAccount_name(), PDType1Font.HELVETICA, 15, 150, line_pos);
+                    //addTextToPageStream(contents, ((Asset) t.getApplicationObject()).getAccount_name(), PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
-                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
-                } else if (t.getBusinessObject() instanceof Resource)
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) t.getApplicationObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                } else if (t.getApplicationObject() instanceof Resource)
                 {
                     //title
-                    String title = ((Resource) t.getBusinessObject()).getResource_description();
+                    String title = ((Resource) t.getApplicationObject()).getResource_description();
                     if (title.length() <= 50)
                         addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
                     if (title.length() > 50 && title.length() <= 60)
@@ -2294,12 +2295,12 @@ public class PDF
                     if (title.length() > 60)
                         addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
                     //debit
-                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getApplicationObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                     line_pos -= LINE_HEIGHT;//next line
                     //account
-                    //addTextToPageStream(contents, ((Resource) t.getBusinessObject()).getAccount_name(), PDType1Font.HELVETICA, 15, 150, line_pos);
+                    //addTextToPageStream(contents, ((Resource) t.getApplicationObject()).getAccount_name(), PDType1Font.HELVETICA, 15, 150, line_pos);
                     //credit
-                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                    addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) t.getApplicationObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                 }
                 //addTextToPageStream(contents,"Account", PDType1Font.COURIER_BOLD_OBLIQUE, 15,100, line_pos);
                 //addTextToPageStream(contents,"Credit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-100, line_pos);
@@ -2443,9 +2444,9 @@ public class PDF
         HashMap<String, Account> accounts_map = new HashMap<>();
         for(Transaction t : transactions_arr)
         {
-            if(t.getBusinessObject() instanceof Expense)
+            if(t.getApplicationObject() instanceof Expense)
             {
-                Expense expense = ((Expense)t.getBusinessObject());
+                Expense expense = ((Expense)t.getApplicationObject());
                 String str_acc = expense.getAccount();
                 Account acc = accounts_map.get(str_acc.toLowerCase());
                 if(acc==null)
@@ -2459,9 +2460,9 @@ public class PDF
                     acc.setDebit(acc.getDebit()+expense.getExpense_value());
                     acc.addTransaction(t);
                 }
-            }else if(t.getBusinessObject() instanceof Asset)
+            }else if(t.getApplicationObject() instanceof Asset)
             {
-                Asset asset = ((Asset)t.getBusinessObject());
+                Asset asset = ((Asset)t.getApplicationObject());
                 String str_acc = "%ACCOUNT";//asset.getAccount_name();
                 Account acc = accounts_map.get(str_acc.toLowerCase());
                 if(acc==null)
@@ -2475,9 +2476,9 @@ public class PDF
                     acc.setDebit(acc.getDebit()+asset.getAsset_value());
                     acc.addTransaction(t);
                 }
-            }else if(t.getBusinessObject() instanceof Resource)
+            }else if(t.getApplicationObject() instanceof Resource)
             {
-                Resource resource = ((Resource)t.getBusinessObject());
+                Resource resource = ((Resource)t.getApplicationObject());
                 String str_acc = "%ACCOUNT";//resource.getAccount_name();
                 Account acc = accounts_map.get(str_acc.toLowerCase());
                 if(acc==null)
@@ -2491,9 +2492,9 @@ public class PDF
                     acc.setDebit(acc.getDebit()+resource.getResource_value());
                     acc.addTransaction(t);
                 }
-            }else if(t.getBusinessObject() instanceof Invoice)
+            }else if(t.getApplicationObject() instanceof Invoice)
             {
-                Invoice invoice = ((Invoice)t.getBusinessObject());
+                Invoice invoice = ((Invoice)t.getApplicationObject());
                 String str_acc = invoice.getAccount();
                 Account acc = accounts_map.get(str_acc.toLowerCase());
                 if(acc==null)
@@ -2522,9 +2523,9 @@ public class PDF
                 }
                 //check difference between received and sale total
                 double difference = 0;
-                if (((Invoice) t.getBusinessObject()).getJob() != null)
-                    if (((Invoice) t.getBusinessObject()).getJob().getQuote() != null)
-                        difference = ((Invoice) t.getBusinessObject()).getJob().getQuote().getTotal() - ((Invoice) t.getBusinessObject()).getReceivable();
+                if (((Invoice) t.getApplicationObject()).getJob() != null)
+                    if (((Invoice) t.getApplicationObject()).getJob().getQuote() != null)
+                        difference = ((Invoice) t.getApplicationObject()).getJob().getQuote().getTotal() - ((Invoice) t.getApplicationObject()).getReceivable();
                 if(difference>0)
                 {
                     //customer paid on credit, add to accounts receivable
@@ -2542,9 +2543,9 @@ public class PDF
                         acc.addTransaction(t);
                     }
                 }
-            }else if(t.getBusinessObject() instanceof Revenue)
+            }else if(t.getApplicationObject() instanceof Revenue)
             {
-                Revenue revenue = ((Revenue)t.getBusinessObject());
+                Revenue revenue = ((Revenue)t.getApplicationObject());
                 String str_acc = revenue.getAccount();
                 Account acc = accounts_map.get(str_acc.toLowerCase());
                 if(acc==null)
@@ -2619,30 +2620,30 @@ public class PDF
                                     new Date(transaction.getDate() * 1000))),
                             PDType1Font.HELVETICA, 15, 10, line_pos);
 
-                    if (transaction.getBusinessObject() instanceof Revenue)
+                    if (transaction.getApplicationObject() instanceof Revenue)
                     {
-                        System.out.println(((Revenue) transaction.getBusinessObject()).getRevenue_title() + " in Account: " + account.getAccount_name());
+                        System.out.println(((Revenue) transaction.getApplicationObject()).getRevenue_title() + " in Account: " + account.getAccount_name());
                         //title
-                        String title = ((Revenue) transaction.getBusinessObject()).getRevenue_title();
+                        String title = ((Revenue) transaction.getApplicationObject()).getRevenue_title();
                         //TODO: add to Additional Revenue account
                         addTextToPageStream(document, title, PDType1Font.HELVETICA, 15, 105, line_pos);
                         //debit
                         /*double difference = 0;
-                        if (((Invoice) transaction.getBusinessObject()).getJob() != null)
-                            if (((Invoice) transaction.getBusinessObject()).getJob().getQuote() != null)
-                                difference = ((Invoice) transaction.getBusinessObject()).getJob().getQuote().getTotal() - ((Invoice) t.getBusinessObject()).getReceivable();*/
+                        if (((Invoice) transaction.getApplicationObject()).getJob() != null)
+                            if (((Invoice) transaction.getApplicationObject()).getJob().getQuote() != null)
+                                difference = ((Invoice) transaction.getApplicationObject()).getJob().getQuote().getTotal() - ((Invoice) t.getApplicationObject()).getReceivable();*/
                         if(!account.getAccount_name().toLowerCase().equals("additional revenue") && !account.getAccount_name().toLowerCase().equals("accounts receivable"))
                         {
                             //debit
-                            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Revenue) transaction.getBusinessObject()).getRevenue_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
-                            debit += ((Revenue) transaction.getBusinessObject()).getRevenue_value();
+                            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Revenue) transaction.getApplicationObject()).getRevenue_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
+                            debit += ((Revenue) transaction.getApplicationObject()).getRevenue_value();
                         }else
                         {
                             //credit
-                            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Revenue) transaction.getBusinessObject()).getRevenue_value()), PDType1Font.HELVETICA, 15, w - 100, line_pos);
-                            credit += ((Revenue) transaction.getBusinessObject()).getRevenue_value();
+                            addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Revenue) transaction.getApplicationObject()).getRevenue_value()), PDType1Font.HELVETICA, 15, w - 100, line_pos);
+                            credit += ((Revenue) transaction.getApplicationObject()).getRevenue_value();
                         }
-                    } else if (transaction.getBusinessObject() instanceof Invoice)
+                    } else if (transaction.getApplicationObject() instanceof Invoice)
                     {
                         //title
                         String title = "Service Revenue";
@@ -2650,10 +2651,10 @@ public class PDF
                         addTextToPageStream(document, title, PDType1Font.HELVETICA, 15, 105, line_pos);
                         //debit
                         double difference = 0;
-                        if (((Invoice) transaction.getBusinessObject()).getJob() != null)
-                            if (((Invoice) transaction.getBusinessObject()).getJob().getQuote() != null)
-                                difference = ((Invoice) transaction.getBusinessObject()).getJob().getQuote().getTotal() - ((Invoice) transaction.getBusinessObject()).getReceivable();
-                        double invoice_total = ((Invoice) transaction.getBusinessObject()).getJob().getQuote().getTotal();
+                        if (((Invoice) transaction.getApplicationObject()).getJob() != null)
+                            if (((Invoice) transaction.getApplicationObject()).getJob().getQuote() != null)
+                                difference = ((Invoice) transaction.getApplicationObject()).getJob().getQuote().getTotal() - ((Invoice) transaction.getApplicationObject()).getReceivable();
+                        double invoice_total = ((Invoice) transaction.getApplicationObject()).getJob().getQuote().getTotal();
                         if(!account.getAccount_name().toLowerCase().equals("service revenue"))
                         {
                             if(!account.getAccount_name().toLowerCase().equals("accounts receivable"))
@@ -2672,10 +2673,10 @@ public class PDF
                             addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(invoice_total), PDType1Font.HELVETICA, 15, w - 100, line_pos);
                             credit += invoice_total;
                         }
-                    } else if (transaction.getBusinessObject() instanceof Expense)
+                    } else if (transaction.getApplicationObject() instanceof Expense)
                     {
                         //title
-                        String title = ((Expense) transaction.getBusinessObject()).getExpense_title();
+                        String title = ((Expense) transaction.getApplicationObject()).getExpense_title();
                         if (title.length() <= 50)
                             addTextToPageStream(document, title, PDType1Font.HELVETICA, 14, 105, line_pos);
                         if (title.length() > 50 && title.length() <= 60)
@@ -2683,14 +2684,14 @@ public class PDF
                         if (title.length() > 60)
                             addTextToPageStream(document, title, PDType1Font.HELVETICA, 8, 105, line_pos);
                         //debit
-                        //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) transaction.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
+                        //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) transaction.getApplicationObject()).getExpense_value()), PDType1Font.HELVETICA, 15, (int) w - 180, line_pos);
                         //credit
-                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) transaction.getBusinessObject()).getExpense_value()), PDType1Font.HELVETICA, 15,  w - 100, line_pos);
-                        credit+=((Expense) transaction.getBusinessObject()).getExpense_value();
-                    } else if (transaction.getBusinessObject() instanceof Asset)
+                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Expense) transaction.getApplicationObject()).getExpense_value()), PDType1Font.HELVETICA, 15, w - 100, line_pos);
+                        credit+=((Expense) transaction.getApplicationObject()).getExpense_value();
+                    } else if (transaction.getApplicationObject() instanceof Asset)
                     {
                         //title
-                        String title = ((Asset) transaction.getBusinessObject()).getAsset_name();
+                        String title = ((Asset) transaction.getApplicationObject()).getAsset_name();
                         if (title.length() <= 50)
                             addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
                         if (title.length() > 50 && title.length() <= 60)
@@ -2698,14 +2699,14 @@ public class PDF
                         if (title.length() > 60)
                             addTextToPageStream(document, "Purchased asset: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
                         //debit
-                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) transaction.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15,w - 180, line_pos);
-                        debit+=((Asset) transaction.getBusinessObject()).getAsset_value();
+                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) transaction.getApplicationObject()).getAsset_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
+                        debit+=((Asset) transaction.getApplicationObject()).getAsset_value();
                         //credit
-                        //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) transaction.getBusinessObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
-                    } else if (transaction.getBusinessObject() instanceof Resource)
+                        //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Asset) transaction.getApplicationObject()).getAsset_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                    } else if (transaction.getApplicationObject() instanceof Resource)
                     {
                         //title
-                        String title = ((Resource) transaction.getBusinessObject()).getResource_description();
+                        String title = ((Resource) transaction.getApplicationObject()).getResource_description();
                         if (title.length() <= 50)
                             addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 12, 105, line_pos);
                         if (title.length() > 50 && title.length() <= 60)
@@ -2713,10 +2714,10 @@ public class PDF
                         if (title.length() > 60)
                             addTextToPageStream(document, "Purchased stock: " + title, PDType1Font.HELVETICA, 8, 105, line_pos);
                         //debit
-                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) transaction.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
-                        debit+=((Resource) transaction.getBusinessObject()).getResource_value();
+                        addTextToPageStream(document, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) transaction.getApplicationObject()).getResource_value()), PDType1Font.HELVETICA, 15, w - 180, line_pos);
+                        debit+=((Resource) transaction.getApplicationObject()).getResource_value();
                         //credit
-                        //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) transaction.getBusinessObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
+                        //addTextToPageStream(contents, Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(((Resource) transaction.getApplicationObject()).getResource_value()), PDType1Font.HELVETICA, 15, (int) w - 100, line_pos);
                     }
                     //addTextToPageStream(contents,"Account", PDType1Font.COURIER_BOLD_OBLIQUE, 15,100, line_pos);
                     //addTextToPageStream(contents,"Credit", PDType1Font.COURIER_BOLD_OBLIQUE, 15,(int)w-100, line_pos);

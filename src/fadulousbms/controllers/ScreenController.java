@@ -332,7 +332,7 @@ public abstract class ScreenController
                     }
                 }));
 
-        RadialMenuItem regal_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Regal Price-list PDF", null, null, event -> BusinessObjectManager
+        RadialMenuItem regal_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Regal Price-list PDF", null, null, event -> ApplicationObjectManager
                 .parseRegalPDF("parser/regal_pricelist_01-02-2018.pdf", new Callback()
                 {
                     @Override
@@ -402,7 +402,7 @@ public abstract class ScreenController
                     }
                 }));
 
-        RadialMenuItem reditron_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Reditron Price-list PDF", null, null, event -> BusinessObjectManager
+        RadialMenuItem reditron_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse Reditron Price-list PDF", null, null, event -> ApplicationObjectManager
                 .parseReditronPDF("parser/reditron_June2017Pricelist.pdf", new Callback()
                 {
                     @Override
@@ -472,7 +472,7 @@ public abstract class ScreenController
                     }
                 }));
 
-        RadialMenuItem adi_hikvision_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse ADI HikVision Price-list XLSX", null, null, event -> BusinessObjectManager
+        RadialMenuItem adi_hikvision_pricelist_parser = new RadialMenuItemCustom(ScreenManager.MENU_SIZE, "Parse ADI HikVision Price-list XLSX", null, null, event -> ApplicationObjectManager
                 .parseADIHikVisionPricelistXLSX("parser/ADI Hikvision  Peripheral Jan 2018 v25.xlsx", new Callback()
                 {
                     @Override

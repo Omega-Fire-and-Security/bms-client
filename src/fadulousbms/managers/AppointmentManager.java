@@ -7,7 +7,7 @@ import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
-import fadulousbms.model.BusinessObject;
+import fadulousbms.model.ApplicationObject;
 import fadulousbms.model.CustomTableViewControls;
 import fadulousbms.model.Metafile;
 import javafx.collections.FXCollections;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/02/24.
  */
-public class AppointmentManager extends BusinessObjectManager
+public class AppointmentManager extends ApplicationObjectManager
 {
     private TableView tblAppointment;
     private Metafile[] documents;
@@ -115,22 +115,22 @@ public class AppointmentManager extends BusinessObjectManager
                 tblAppointment = new TableView();
                 tblAppointment.setEditable(true);
 
-                TableColumn<BusinessObject, String> index = new TableColumn("Index");
+                TableColumn<ApplicationObject, String> index = new TableColumn("Index");
                 CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", AppointmentManager.getInstance());
 
-                TableColumn<BusinessObject, String> label = new TableColumn("Label");
+                TableColumn<ApplicationObject, String> label = new TableColumn("Label");
                 CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", AppointmentManager.getInstance());
 
-                TableColumn<BusinessObject, String> document = new TableColumn("Document Path");
+                TableColumn<ApplicationObject, String> document = new TableColumn("Document Path");
                 CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", AppointmentManager.getInstance());
 
-                TableColumn<BusinessObject, HBox> action = new TableColumn("Action");
+                TableColumn<ApplicationObject, HBox> action = new TableColumn("Action");
                 CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/appointment/index");
 
-                TableColumn<BusinessObject, GridPane> required = new TableColumn("Required?");
+                TableColumn<ApplicationObject, GridPane> required = new TableColumn("Required?");
                 CustomTableViewControls.makeToggleButtonTableColumn(required, null,100, "required", "/appointment/index");
 
-                TableColumn<BusinessObject, GridPane> mark = new TableColumn("Mark");
+                TableColumn<ApplicationObject, GridPane> mark = new TableColumn("Mark");
                 CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/appointment/index");
 
                 ObservableList<Metafile> lst_inspection = FXCollections.observableArrayList();

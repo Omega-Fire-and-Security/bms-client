@@ -20,7 +20,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class OvertimeManager extends BusinessObjectManager
+public class OvertimeManager extends ApplicationObjectManager
 {
     private HashMap<String, Overtime> overtime_records;
     private Gson gson;

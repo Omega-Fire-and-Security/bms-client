@@ -1,12 +1,13 @@
 package fadulousbms.model;
 
 import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 
 import java.io.Serializable;
 
 /**
- * Created by ghost on 2017/02/01.
+ * Created by th3gh0st on 2017/02/01.
+ * @author th3gh0st
  */
 public class AssetType extends Type implements Serializable
 {
@@ -16,11 +17,14 @@ public class AssetType extends Type implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return AssetManager.getInstance();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

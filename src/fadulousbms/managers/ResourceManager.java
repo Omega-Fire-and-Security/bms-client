@@ -34,7 +34,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/01/13.
  */
-public class ResourceManager extends BusinessObjectManager
+public class ResourceManager extends ApplicationObjectManager
 {
     private HashMap<String, Resource> resources;
     private HashMap<String, Resource> acquired_resources;//resources that have been approved/acquired/delivered

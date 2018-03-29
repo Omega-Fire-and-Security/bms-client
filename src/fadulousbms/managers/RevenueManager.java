@@ -18,7 +18,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/09/15.
  */
-public class RevenueManager extends BusinessObjectManager
+public class RevenueManager extends ApplicationObjectManager
 {
     private HashMap<String,Revenue> revenue_records = null;
     private static RevenueManager revenue_manager = new RevenueManager();

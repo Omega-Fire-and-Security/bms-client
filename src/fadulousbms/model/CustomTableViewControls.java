@@ -2,7 +2,7 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.*;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.JobManager;
 import fadulousbms.managers.SessionManager;
 import javafx.beans.property.SimpleObjectProperty;
@@ -31,18 +31,19 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 
 /**
- * Created by ghost on 2017/01/11.
+ * Created by th3gh0st on 2017/01/11.
+ * @author th3gh0st
  */
 public class CustomTableViewControls
 {
     public static final String TAG = "CustomTableViewControls";
 
-    public static void makeLabelledDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property)
+    public static void makeLabelledDatePickerTableColumn(TableColumn<ApplicationObject, Long> date_col, String property)
     {
         makeLabelledDatePickerTableColumn(date_col, property, false);
     }
 
-    public static void makeLabelledDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property, boolean editable)
+    public static void makeLabelledDatePickerTableColumn(TableColumn<ApplicationObject, Long> date_col, String property, boolean editable)
     {
         date_col.setMinWidth(130);
         date_col.setCellValueFactory(new PropertyValueFactory<>(property));
@@ -61,7 +62,7 @@ public class CustomTableViewControls
         });
     }
 
-    public static void makeEditableTableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, BusinessObjectManager manager)
+    public static void makeEditableTableColumn(TableColumn<ApplicationObject, String> col, Callback<TableColumn<ApplicationObject, String>, TableCell<ApplicationObject, String>> editable_control_callback, int min_width, String property, ApplicationObjectManager manager)
     {
         if(col!=null)
         {
@@ -70,7 +71,7 @@ public class CustomTableViewControls
             col.setCellFactory(editable_control_callback);
             col.setOnEditCommit(event ->
             {
-                BusinessObject bo = event.getRowValue();
+                ApplicationObject bo = event.getRowValue();
                 if(bo!=null)
                 {
                     //RemoteComms.post(bo, property);
@@ -94,15 +95,15 @@ public class CustomTableViewControls
         } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
 
-    public static void makeCheckboxedTableColumn(TableColumn<BusinessObject, GridPane> col, Callback<TableColumn<BusinessObject, GridPane>, TableCell<BusinessObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
+    public static void makeCheckboxedTableColumn(TableColumn<ApplicationObject, GridPane> col, Callback<TableColumn<ApplicationObject, GridPane>, TableCell<ApplicationObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
     {
         if (col != null)
         {
             col.setMinWidth(min_width);
             //col.setCellFactory(editable_control_callback);
-            col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, GridPane> param) ->
+            col.setCellValueFactory((TableColumn.CellDataFeatures<ApplicationObject, GridPane> param) ->
             {
-                BusinessObject bo = param.getValue();
+                ApplicationObject bo = param.getValue();
 
                 CheckBox cbx = new CheckBox();
                 GridPane grid = new GridPane();
@@ -121,18 +122,18 @@ public class CustomTableViewControls
         } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
 
-    public static void makeToggleButtonTypeTableColumn(TableColumn<BusinessObject, GridPane> col, Callback<TableColumn<BusinessObject, GridPane>, TableCell<BusinessObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
+    public static void makeToggleButtonTypeTableColumn(TableColumn<ApplicationObject, GridPane> col, Callback<TableColumn<ApplicationObject, GridPane>, TableCell<ApplicationObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
     {
         if (col != null)
         {
             col.setMinWidth(min_width);
             //col.setCellFactory(editable_control_callback);
-            col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, GridPane> param) ->
+            col.setCellValueFactory((TableColumn.CellDataFeatures<ApplicationObject, GridPane> param) ->
             {
-                BusinessObject bo = param.getValue();
+                ApplicationObject bo = param.getValue();
                 if(bo==null)
                 {
-                    IO.log(TAG, IO.TAG_ERROR, "invalid BusinessObject");
+                    IO.log(TAG, IO.TAG_ERROR, "invalid ApplicationObject");
                     return null;
                 }
 
@@ -196,7 +197,7 @@ public class CustomTableViewControls
                         if (newVal != null)
                             bo.parse(property, newVal);
                         else IO.log(TAG, IO.TAG_ERROR, "new value [meant to be either generic/custom/unknown] is null.");
-                    } else IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to BusinessObject{"+bo.getClass().getName()+"}'s " + property + " property.");
+                    } else IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to ApplicationObject{"+bo.getClass().getName()+"}'s " + property + " property.");
 
                     RemoteComms.updateBusinessObjectOnServer(bo, property);*/
                     //TODO: remove this
@@ -210,18 +211,18 @@ public class CustomTableViewControls
         }
     }
 
-    public static void makeToggleButtonTableColumn(TableColumn<BusinessObject, GridPane> col, Callback<TableColumn<BusinessObject, GridPane>, TableCell<BusinessObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
+    public static void makeToggleButtonTableColumn(TableColumn<ApplicationObject, GridPane> col, Callback<TableColumn<ApplicationObject, GridPane>, TableCell<ApplicationObject,GridPane>> editable_control_callback, int min_width, String property, String api_call)
     {
         if (col != null)
         {
             col.setMinWidth(min_width);
             //col.setCellFactory(editable_control_callback);
-            col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, GridPane> param) ->
+            col.setCellValueFactory((TableColumn.CellDataFeatures<ApplicationObject, GridPane> param) ->
             {
-                BusinessObject bo = param.getValue();
+                ApplicationObject bo = param.getValue();
                 if(bo==null)
                 {
-                    IO.log(TAG, IO.TAG_ERROR, "invalid BusinessObject.");
+                    IO.log(TAG, IO.TAG_ERROR, "invalid ApplicationObject.");
                     return null;
                 }
 
@@ -267,7 +268,7 @@ public class CustomTableViewControls
                         toggleButton.setText("No");
                     }
                     if(!(bo instanceof Metafile))
-                        IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to BusinessObject{"+bo.getClass().getName()+"}'s " + property + " property.");
+                        IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to ApplicationObject{"+bo.getClass().getName()+"}'s " + property + " property.");
                     else IO.log(TAG, IO.TAG_INFO, "attempting to set boolean value to Metafile's " + property + " property.");
 
                     try
@@ -289,14 +290,14 @@ public class CustomTableViewControls
         }
     }
 
-    public static void makeDynamicToggleButtonTableColumn(TableColumn<BusinessObject, GridPane> col, int min_width, String property, String[] props, boolean clickable, String api_call)
+    public static void makeDynamicToggleButtonTableColumn(TableColumn<ApplicationObject, GridPane> col, int min_width, String property, String[] props, boolean clickable, String api_call)
     {
         if (col != null)
         {
             col.setMinWidth(min_width);
-            col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, GridPane> param) ->
+            col.setCellValueFactory((TableColumn.CellDataFeatures<ApplicationObject, GridPane> param) ->
             {
-                BusinessObject bo = param.getValue();
+                ApplicationObject bo = param.getValue();
 
                 //Make toggle button and set button state from data from database.
                 ToggleButton toggleButton;
@@ -354,15 +355,15 @@ public class CustomTableViewControls
         } else IO.log(TAG, IO.TAG_WARN, "null table column!");
     }
 
-    public static void makeActionTableColumn(TableColumn<BusinessObject, HBox> col, int min_width, String property, String api_call)
+    public static void makeActionTableColumn(TableColumn<ApplicationObject, HBox> col, int min_width, String property, String api_call)
     {
         if (col != null)
         {
             col.setMinWidth(min_width);
             //col.setCellFactory(param -> null);
-            col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, HBox> param) ->
+            col.setCellValueFactory((TableColumn.CellDataFeatures<ApplicationObject, HBox> param) ->
             {
-                BusinessObject bo = param.getValue();
+                ApplicationObject bo = param.getValue();
 
                 Button btnView = new Button("View Document");
                 btnView.setOnAction(event ->
@@ -436,13 +437,13 @@ public class CustomTableViewControls
         }
     }
 
-    public static void makeJobManagerAction(TableColumn<BusinessObject, HBox> col, int min_width, String property)
+    public static void makeJobManagerAction(TableColumn<ApplicationObject, HBox> col, int min_width, String property)
     {
         if (col != null)
         {
             col.setMinWidth(min_width);
             //col.setCellFactory(editable_control_callback);
-            col.setCellValueFactory((TableColumn.CellDataFeatures<BusinessObject, HBox> param) ->
+            col.setCellValueFactory((TableColumn.CellDataFeatures<ApplicationObject, HBox> param) ->
             {
                 Job job = (Job)param.getValue();
 
@@ -474,7 +475,7 @@ public class CustomTableViewControls
         }
     }
 
-    public static void printDocument(BusinessObject bo, String property)
+    public static void printDocument(ApplicationObject bo, String property)
     {
         //Validate session - also done on server-side don't worry ;)
         SessionManager smgr = SessionManager.getInstance();

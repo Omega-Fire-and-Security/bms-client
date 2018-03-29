@@ -4,8 +4,8 @@ import fadulousbms.auxilary.IO;
 import fadulousbms.managers.ResourceManager;
 
 /**
- * Created by ghost on 2017/01/21.
- * @author ghost
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
 public class PurchaseOrderResource extends PurchaseOrderItem
 {
@@ -41,6 +41,9 @@ public class PurchaseOrderResource extends PurchaseOrderItem
         return null;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

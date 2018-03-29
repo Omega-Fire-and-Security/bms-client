@@ -3,17 +3,17 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.ExpenseManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public class Expense extends BusinessObject implements Serializable
+public class Expense extends ApplicationObject implements Serializable
 {
     private String expense_title;
     private String expense_description;
@@ -35,7 +35,7 @@ public class Expense extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return ExpenseManager.getInstance();
     }
@@ -50,8 +50,6 @@ public class Expense extends BusinessObject implements Serializable
         this.supplier = supplier;
     }
 
-    public StringProperty expense_titleProperty(){return new SimpleStringProperty(expense_title);}
-
     public String getExpense_title()
     {
         return expense_title;
@@ -61,8 +59,6 @@ public class Expense extends BusinessObject implements Serializable
     {
         this.expense_title = expense_title;
     }
-
-    public StringProperty expense_descriptionProperty(){return new SimpleStringProperty(expense_description);}
 
     public String getExpense_description()
     {
@@ -74,8 +70,6 @@ public class Expense extends BusinessObject implements Serializable
         this.expense_description = expense_description;
     }
 
-    public StringProperty expense_valueProperty(){return new SimpleStringProperty(String.valueOf(expense_value));}
-
     public double getExpense_value()
     {
         return expense_value;
@@ -86,8 +80,6 @@ public class Expense extends BusinessObject implements Serializable
         this.expense_value = expense_value;
     }
 
-    public StringProperty accountProperty(){return new SimpleStringProperty(account);}
-
     public String getAccount()
     {
         return account;
@@ -97,6 +89,16 @@ public class Expense extends BusinessObject implements Serializable
     {
         this.account = account;
     }
+
+    // Model Properties
+
+    public StringProperty expense_titleProperty(){return new SimpleStringProperty(expense_title);}
+
+    public StringProperty expense_descriptionProperty(){return new SimpleStringProperty(expense_description);}
+
+    public StringProperty expense_valueProperty(){return new SimpleStringProperty(String.valueOf(expense_value));}
+
+    public StringProperty accountProperty(){return new SimpleStringProperty(account);}
 
     @Override
     public void parse(String var, Object val) throws ParseException
@@ -165,6 +167,9 @@ public class Expense extends BusinessObject implements Serializable
         return json_obj;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

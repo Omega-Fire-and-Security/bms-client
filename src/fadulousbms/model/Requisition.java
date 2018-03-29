@@ -9,9 +9,10 @@ import javafx.beans.property.StringProperty;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public class Requisition extends BusinessObject
+public class Requisition extends ApplicationObject
 {
     private String client_id;
     private String responsible_person_id;
@@ -33,12 +34,10 @@ public class Requisition extends BusinessObject
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return RequisitionManager.getInstance();
     }
-
-    public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
 
     public String getClient_id()
     {
@@ -50,8 +49,6 @@ public class Requisition extends BusinessObject
         this.client_id = client_id;
     }
 
-    public StringProperty responsible_person_idProperty(){return new SimpleStringProperty(responsible_person_id);}
-
     public String getResponsible_person_id()
     {
         return responsible_person_id;
@@ -61,8 +58,6 @@ public class Requisition extends BusinessObject
     {
         this.responsible_person_id = responsible_person_id;
     }
-
-    public StringProperty typeProperty(){return new SimpleStringProperty(type);}
 
     public String getType()
     {
@@ -74,8 +69,6 @@ public class Requisition extends BusinessObject
         this.type = type;
     }
 
-    public StringProperty descriptionProperty(){return new SimpleStringProperty(description);}
-
     public String getDescription()
     {
         return description;
@@ -86,20 +79,15 @@ public class Requisition extends BusinessObject
         this.description = description;
     }
 
-    private StringProperty statusProperty()
-    {
-        return new SimpleStringProperty(getStatusName());
-    }
-
     private String getStatusName()
     {
         switch (status)
         {
-            case BusinessObject.STATUS_FINALISED:
+            case ApplicationObject.STATUS_FINALISED:
                 return "Approved";
-            case BusinessObject.STATUS_PENDING:
+            case ApplicationObject.STATUS_PENDING:
                 return "Pending";
-            case BusinessObject.STATUS_ARCHIVED:
+            case ApplicationObject.STATUS_ARCHIVED:
                 return "Archived";
             default:
                 return "Unknown " + getClass().getName() + " status: " + status;
@@ -118,7 +106,7 @@ public class Requisition extends BusinessObject
 
     public Client getClient()
     {
-        HashMap<String, Client> clients = (HashMap<String, Client>) ClientManager.getInstance().getDataset();
+        HashMap<String, Client> clients = ClientManager.getInstance().getDataset();
         if(clients!=null)
             return clients.get(client_id);
         else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in database.");
@@ -132,6 +120,21 @@ public class Requisition extends BusinessObject
         if(employees!=null)
             return employees.get(responsible_person_id);
         return null;
+    }
+
+    // Requisition Model Properties
+
+    public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
+
+    public StringProperty responsible_person_idProperty(){return new SimpleStringProperty(responsible_person_id);}
+
+    public StringProperty typeProperty(){return new SimpleStringProperty(type);}
+
+    public StringProperty descriptionProperty(){return new SimpleStringProperty(description);}
+
+    private StringProperty statusProperty()
+    {
+        return new SimpleStringProperty(getStatusName());
     }
 
     public SimpleStringProperty responsible_personProperty()
@@ -227,6 +230,9 @@ public class Requisition extends BusinessObject
         return str;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

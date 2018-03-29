@@ -186,7 +186,7 @@ public class ViewJobController extends ScreenController implements Initializable
             txtRequest.setText(selected.getQuote().getRequest());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                         String.valueOf(selected.getQuote().getTotal()));
-            txtStatus.setText(selected.getStatus()>=BusinessObject.STATUS_FINALISED ?"APPROVED":"PENDING");
+            txtStatus.setText(selected.getStatus()>= ApplicationObject.STATUS_FINALISED ? "APPROVED" : "PENDING");
             txtQuoteNumber.setText(String.valueOf(selected.getQuote().getObject_number()));
 
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");

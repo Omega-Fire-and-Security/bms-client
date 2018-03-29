@@ -147,7 +147,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                         IO.logAndAlert("Error " + getClass().getName(), "Invoice object is not set", IO.TAG_ERROR);
                                         return;
                                     }
-                                    if (getTableView().getItems().get(getIndex()).getStatus()==BusinessObject.STATUS_FINALISED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()== ApplicationObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -332,7 +332,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                     {
                                         try
                                         {
-                                            InvoiceManager.getInstance().emailBusinessObject(invoice, PDF.createInvoicePdf(invoice), null);
+                                            InvoiceManager.getInstance().emailApplicationObject(invoice, PDF.createInvoicePdf(invoice), null);
                                         } catch (IOException e)
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());

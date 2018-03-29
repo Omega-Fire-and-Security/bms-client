@@ -7,7 +7,7 @@ import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
-import fadulousbms.model.BusinessObject;
+import fadulousbms.model.ApplicationObject;
 import fadulousbms.model.CustomTableViewControls;
 import fadulousbms.model.Metafile;
 import javafx.collections.FXCollections;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/02/24.
  */
-public class InspectionManager extends BusinessObjectManager
+public class InspectionManager extends ApplicationObjectManager
 {
     private TableView tblInspection;
     private Metafile[] documents;
@@ -95,7 +95,7 @@ public class InspectionManager extends BusinessObjectManager
     }
 
     @Override
-    public HashMap<String, ? extends BusinessObject> getDataset()
+    public HashMap<String, ? extends ApplicationObject> getDataset()
     {
         return null;
     }
@@ -116,32 +116,32 @@ public class InspectionManager extends BusinessObjectManager
                 tblInspection = new TableView();
                 tblInspection.setEditable(true);
 
-                TableColumn<BusinessObject, String> index = new TableColumn("Index");
+                TableColumn<ApplicationObject, String> index = new TableColumn("Index");
                 CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", InspectionManager.getInstance());
 
-                TableColumn<BusinessObject, String> label = new TableColumn("Label");
+                TableColumn<ApplicationObject, String> label = new TableColumn("Label");
                 CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", InspectionManager.getInstance());
 
-                TableColumn<BusinessObject, String> document = new TableColumn("Document Path");
+                TableColumn<ApplicationObject, String> document = new TableColumn("Document Path");
                 CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", InspectionManager.getInstance());
 
-                TableColumn<BusinessObject, HBox> action = new TableColumn("Action");
+                TableColumn<ApplicationObject, HBox> action = new TableColumn("Action");
                 CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/api/inspection/index");
 
-                TableColumn<BusinessObject, GridPane> required = new TableColumn("Required?");
+                TableColumn<ApplicationObject, GridPane> required = new TableColumn("Required?");
                 CustomTableViewControls.makeToggleButtonTableColumn(required, null,100, "required", "/api/inspection/index");
 
-                TableColumn<BusinessObject, String> logo_options = new TableColumn("Logo Options");
+                TableColumn<ApplicationObject, String> logo_options = new TableColumn("Logo Options");
                 CustomTableViewControls.makeEditableTableColumn(logo_options, TextFieldTableCell.forTableColumn(), 250, "logo_options", InspectionManager.getInstance());
 
-                //TableColumn<BusinessObject, String> type = new TableColumn("Type");
+                //TableColumn<ApplicationObject, String> type = new TableColumn("Type");
                 //CustomTableViewControls.makeEditableTableColumn(type, TextFieldTableCellOld.forTableColumn(), 250, "type", "/api/safety/index");
 
-                TableColumn<BusinessObject, GridPane> type = new TableColumn("Type");
+                TableColumn<ApplicationObject, GridPane> type = new TableColumn("Type");
                 CustomTableViewControls.makeToggleButtonTypeTableColumn(type, null,80, "type", "/api/safety/index");
 
 
-                TableColumn<BusinessObject, GridPane> mark = new TableColumn("Select");
+                TableColumn<ApplicationObject, GridPane> mark = new TableColumn("Select");
                 CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/api/inspection/index");
 
                 ObservableList<Metafile> lst_inspection = FXCollections.observableArrayList();

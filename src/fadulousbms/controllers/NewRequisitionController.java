@@ -84,13 +84,13 @@ public class NewRequisitionController extends ScreenController implements Initia
         {
             switch (((Requisition)(RequisitionManager.getInstance().getSelected())).getStatus())
             {
-                case BusinessObject.STATUS_PENDING:
+                case ApplicationObject.STATUS_PENDING:
                     status = "PENDING";
                     break;
-                case BusinessObject.STATUS_FINALISED:
+                case ApplicationObject.STATUS_FINALISED:
                     status = "APPROVED";
                     break;
-                case BusinessObject.STATUS_ARCHIVED:
+                case ApplicationObject.STATUS_ARCHIVED:
                     status = "ARCHIVED";
                     break;
                 default:

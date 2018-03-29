@@ -43,7 +43,7 @@ import java.time.*;
 import java.util.*;
 
 /**
- * views Controller class
+ * Jobs Controller class
  * Created by ghost on 2017/01/11.
  * @author ghost
  */
@@ -108,8 +108,7 @@ public class JobsController extends ScreenController implements Initializable
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
         //TODO: contact_personProperty
         CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,90, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/job");
-        CustomTableViewControls
-                .makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", false);
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAssigned, "date_assigned");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateStarted, "date_started");
@@ -220,7 +219,7 @@ public class JobsController extends ScreenController implements Initializable
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()>=BusinessObject.STATUS_FINALISED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()>= ApplicationObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnDefault");
                                         btnEmail.setDisable(false);
@@ -237,7 +236,7 @@ public class JobsController extends ScreenController implements Initializable
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()>=BusinessObject.STATUS_FINALISED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()>= ApplicationObject.STATUS_FINALISED)
                                     {
                                         btnEmailSigned.getStyleClass().add("btnAdd");
                                         btnEmailSigned.setDisable(false);
@@ -358,7 +357,7 @@ public class JobsController extends ScreenController implements Initializable
 
                                         if(getTableView().getItems().get(getIndex()) instanceof Job)
                                             JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
-                                        generateQuoteInvoice(JobManager.getInstance().getSelected());
+                                        generateInvoice(JobManager.getInstance().getSelected());
                                     });
 
                                     btnEmail.setOnMouseClicked(event ->
@@ -374,8 +373,8 @@ public class JobsController extends ScreenController implements Initializable
                                         try
                                         {
                                             if(JobManager.getInstance().getSelected()!=null)
-                                                JobManager.getInstance().emailBusinessObject(JobManager.getInstance().getSelected(),
-                                                        PDF.createJobCardPdf(JobManager.getInstance().getSelected()), null);
+                                                JobManager.getInstance().emailApplicationObject(JobManager.getInstance().getSelected(),
+                                                                                                PDF.createJobCardPdf(JobManager.getInstance().getSelected()), null);
                                             else IO.logAndAlert("Error", "Job object is invalid.", IO.TAG_ERROR);
                                         } catch (IOException e)
                                         {
@@ -759,7 +758,7 @@ public class JobsController extends ScreenController implements Initializable
                             {
                                 if(getTableView().getItems().get(getIndex())!=null)
                                     if(getTableView().getItems().get(getIndex()) instanceof Task)
-                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+                                        TaskManager.getInstance().setSelected((ApplicationObject) getTableView().getItems().get(getIndex()));
 
                                 assignEmployeePopOver();
                             });
@@ -768,7 +767,7 @@ public class JobsController extends ScreenController implements Initializable
                             {
                                 if(getTableView().getItems().get(getIndex())!=null)
                                     if(getTableView().getItems().get(getIndex()) instanceof Task)
-                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+                                        TaskManager.getInstance().setSelected((ApplicationObject) getTableView().getItems().get(getIndex()));
 
                                 showAssigneesPopOver(TaskManager.getInstance().getSelected());
                             });
@@ -777,7 +776,7 @@ public class JobsController extends ScreenController implements Initializable
                             {
                                 if(getTableView().getItems().get(getIndex())!=null)
                                     if(getTableView().getItems().get(getIndex()) instanceof Task)
-                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+                                        TaskManager.getInstance().setSelected((ApplicationObject) getTableView().getItems().get(getIndex()));
 
                                 newTaskItemWindow(TaskManager.getInstance().getSelected());
                             });
@@ -786,7 +785,7 @@ public class JobsController extends ScreenController implements Initializable
                             {
                                 if(getTableView().getItems().get(getIndex())!=null)
                                     if(getTableView().getItems().get(getIndex()) instanceof Task)
-                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+                                        TaskManager.getInstance().setSelected((ApplicationObject) getTableView().getItems().get(getIndex()));
 
                                 showTaskItems(TaskManager.getInstance().getSelected());
                             });
@@ -795,7 +794,7 @@ public class JobsController extends ScreenController implements Initializable
                             {
                                 if(getTableView().getItems().get(getIndex())!=null)
                                     if(getTableView().getItems().get(getIndex()) instanceof Task)
-                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+                                        TaskManager.getInstance().setSelected((ApplicationObject) getTableView().getItems().get(getIndex()));
 
                                 try
                                 {
@@ -1703,11 +1702,6 @@ public class JobsController extends ScreenController implements Initializable
         }
     }
 
-    private static void generateQuoteInvoice(Job job)
-    {
-        generateInvoice(job);//, cbx_quote_revision.getValue().get_id()
-    }
-
     private static void generateInvoice(Job job)
     {
         SessionManager smgr = SessionManager.getInstance();
@@ -1719,7 +1713,7 @@ public class JobsController extends ScreenController implements Initializable
                 return;
             }
 
-            if(job.getStatus()>=BusinessObject.STATUS_FINALISED)
+            if(job.getStatus()>= ApplicationObject.STATUS_FINALISED)
             {
                 if (job.getAssigned_employees() != null)
                 {
@@ -1753,60 +1747,65 @@ public class JobsController extends ScreenController implements Initializable
                                 container.setSpacing(10);
                                 container.getChildren().add(checkBox);
                             }
-                            if(quote_revs.isEmpty())
-                            {
-                                IO.logAndAlert(JobsController.class.getName(), "Invoice's quote revisions object is empty.", IO.TAG_ERROR);
-                                return;
-                            }
 
                             Button btnSubmit = new Button("Submit");
                             btnSubmit.setOnMouseClicked(event1 ->
-                            {
-                                ScreenManager.getInstance().showLoadingScreen(param ->
-                                {
-                                    new Thread(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            try
-                                            {
-                                                String str_quote_revs="";
-                                                for(Quote quote: quote_revs.values())
-                                                    str_quote_revs+=(str_quote_revs==""?quote.getRevision():";"+quote.getRevision());//comma separated revision numbers
+                                                                ScreenManager.getInstance().showLoadingScreen(param ->
+                                                                {
+                                                                    new Thread(new Runnable()
+                                                                    {
+                                                                        @Override
+                                                                        public void run()
+                                                                        {
+                                                                            try
+                                                                            {
+                                                                                if(quote_revs.isEmpty())
+                                                                                {
+                                                                                    IO.logAndAlert(JobsController.class.getName(), "Invoice's quote revisions object is empty.", IO.TAG_ERROR);
+                                                                                    return;
+                                                                                }
 
-                                                Invoice invoice = new Invoice();
-                                                invoice.setCreator(smgr.getActiveEmployee().getUsr());
-                                                invoice.setJob_id(job.get_id());
-                                                invoice.setReceivable(Double.parseDouble(txt_receivable.getText()));
-                                                invoice.setQuote_revision_numbers(str_quote_revs);
+                                                                                String str_quote_revs="";
+                                                                                for(Quote quote: quote_revs.values())
+                                                                                    str_quote_revs+=(str_quote_revs==""?quote.getRevision():";"+quote.getRevision());//comma separated revision numbers
 
-                                                InvoiceManager.getInstance().putObject(invoice, callback -> null);
+                                                                                Invoice invoice = new Invoice();
+                                                                                invoice.setCreator(smgr.getActiveEmployee().getUsr());
+                                                                                invoice.setJob_id(job.get_id());
+                                                                                invoice.setReceivable(Double.parseDouble(txt_receivable.getText()));
+                                                                                invoice.setQuote_revision_numbers(str_quote_revs);
+
+                                                                                InvoiceManager.getInstance().putObject(invoice, invoice_id ->
+                                                                                {
+                                                                                    if(invoice_id!=null)
+                                                                                        IO.logAndAlert("Success", "Successfully created new invoice ["+invoice_id+"]", IO.TAG_INFO);
+                                                                                    else IO.logAndAlert("Error", "Could NOT create new invoice", IO.TAG_INFO);
+                                                                                    return null;
+                                                                                });
 
 
-                                                //TODO: show Invoices tab
-                                                if (ScreenManager.getInstance()
-                                                        .loadScreen(Screens.OPERATIONS
-                                                                .getScreen(), FadulousBMS.class.getResource("views/" + Screens.OPERATIONS
-                                                                .getScreen())))
-                                                {
-                                                    Platform.runLater(() -> ScreenManager
-                                                            .getInstance()
-                                                            .setScreen(Screens.OPERATIONS
-                                                                    .getScreen()));
-                                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load invoices list screen.");
-                                            } catch (NumberFormatException e)
-                                            {
-                                                IO.log(JobsController.class.getName(), IO.TAG_ERROR, "Invalid amount receivable: " + e.getMessage());
-                                            } catch (IOException e)
-                                            {
-                                                IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
-                                            }
-                                        }
-                                    }).start();
-                                    return null;
-                                });
-                            });
+                                                                                //TODO: show Invoices tab
+                                                                                if (ScreenManager.getInstance()
+                                                                                        .loadScreen(Screens.OPERATIONS
+                                                                                                .getScreen(), FadulousBMS.class.getResource("views/" + Screens.OPERATIONS
+                                                                                                .getScreen())))
+                                                                                {
+                                                                                    Platform.runLater(() -> ScreenManager
+                                                                                            .getInstance()
+                                                                                            .setScreen(Screens.OPERATIONS
+                                                                                                    .getScreen()));
+                                                                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not load invoices list screen.");
+                                                                            } catch (NumberFormatException e)
+                                                                            {
+                                                                                IO.log(JobsController.class.getName(), IO.TAG_ERROR, "Invalid amount receivable: " + e.getMessage());
+                                                                            } catch (IOException e)
+                                                                            {
+                                                                                IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());
+                                                                            }
+                                                                        }
+                                                                    }).start();
+                                                                    return null;
+                                                                }));
                             container.getChildren().add(btnSubmit);
                             stage.setScene(new Scene(container));
                             stage.show();
@@ -1998,7 +1997,7 @@ public class JobsController extends ScreenController implements Initializable
             }
             try
             {
-                JobManager.getInstance().emailBusinessObject(JobManager.getInstance().getSelected(), PDF.createJobCardPdf((Job) JobManager.getInstance().getSelected()), null);
+                JobManager.getInstance().emailApplicationObject(JobManager.getInstance().getSelected(), PDF.createJobCardPdf((Job) JobManager.getInstance().getSelected()), null);
             } catch (IOException e)
             {
                 IO.log(JobsController.class.getName(), IO.TAG_ERROR, e.getMessage());

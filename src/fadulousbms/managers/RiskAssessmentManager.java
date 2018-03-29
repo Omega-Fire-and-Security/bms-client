@@ -7,7 +7,7 @@ import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
-import fadulousbms.model.BusinessObject;
+import fadulousbms.model.ApplicationObject;
 import fadulousbms.model.CustomTableViewControls;
 import fadulousbms.model.Metafile;
 import javafx.collections.FXCollections;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/02/24.
  */
-public class RiskAssessmentManager extends BusinessObjectManager
+public class RiskAssessmentManager extends ApplicationObjectManager
 {
     private TableView tblRisk;
     private Metafile[] documents;
@@ -116,22 +116,22 @@ public class RiskAssessmentManager extends BusinessObjectManager
                 tblRisk = new TableView();
                 tblRisk.setEditable(true);
 
-                TableColumn<BusinessObject, String> index = new TableColumn("Index");
+                TableColumn<ApplicationObject, String> index = new TableColumn("Index");
                 CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", RiskAssessmentManager.getInstance());
 
-                TableColumn<BusinessObject, String> label = new TableColumn("Label");
+                TableColumn<ApplicationObject, String> label = new TableColumn("Label");
                 CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", RiskAssessmentManager.getInstance());
 
-                TableColumn<BusinessObject, String> document = new TableColumn("Document");
+                TableColumn<ApplicationObject, String> document = new TableColumn("Document");
                 CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", RiskAssessmentManager.getInstance());
 
-                TableColumn<BusinessObject, HBox> action = new TableColumn("Action");
+                TableColumn<ApplicationObject, HBox> action = new TableColumn("Action");
                 CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/api/risk/index");
 
-                TableColumn<BusinessObject, GridPane> required = new TableColumn("Required?");
+                TableColumn<ApplicationObject, GridPane> required = new TableColumn("Required?");
                 CustomTableViewControls.makeToggleButtonTableColumn(required, null,100, "required", "/api/risk/index");
 
-                TableColumn<BusinessObject, GridPane> mark = new TableColumn("Mark");
+                TableColumn<ApplicationObject, GridPane> mark = new TableColumn("Mark");
                 CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/api/risk/index");
 
                 ObservableList<Metafile> lst_inspection = FXCollections.observableArrayList();

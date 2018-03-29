@@ -3,8 +3,7 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -12,12 +11,13 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import java.io.Serializable;
 
 /**
- * Created by ghost on 2017/02/24.
+ * Created by th3gh0st on 2017/02/24.
+ * @author th3gh0st
  */
-public class Metafile extends BusinessObject implements Serializable
+public class Metafile extends ApplicationObject implements Serializable
 {
     private String filename;
-    private String label;
+    private String label;//TODO: scrap
     private String path;
     private String content_type;
     private String file;//Base64 String representation of file
@@ -37,7 +37,7 @@ public class Metafile extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         throw new NotImplementedException();
     }
@@ -68,8 +68,6 @@ public class Metafile extends BusinessObject implements Serializable
         this.filename = filename;
     }
 
-    public StringProperty labelProperty(){return new SimpleStringProperty(label);}
-
     public String getLabel()
     {
         return label;
@@ -80,8 +78,6 @@ public class Metafile extends BusinessObject implements Serializable
         this.label = label;
     }
 
-    public StringProperty pathProperty(){return new SimpleStringProperty(path);}
-
     public String getPath()
     {
         return path;
@@ -91,8 +87,6 @@ public class Metafile extends BusinessObject implements Serializable
     {
         this.path = path;
     }
-
-    public StringProperty content_typeProperty(){return new SimpleStringProperty(content_type);}
 
     public String getContent_type()
     {
@@ -113,6 +107,14 @@ public class Metafile extends BusinessObject implements Serializable
     {
         this.file = file;
     }
+
+    //Metafile Model Properties
+
+    public StringProperty labelProperty(){return new SimpleStringProperty(label);}
+
+    public StringProperty pathProperty(){return new SimpleStringProperty(path);}
+
+    public StringProperty content_typeProperty(){return new SimpleStringProperty(content_type);}
 
     @Override
     public void parse(String var, Object val) throws ParseException
@@ -180,6 +182,9 @@ public class Metafile extends BusinessObject implements Serializable
         return json_obj;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

@@ -16,7 +16,7 @@ import java.util.HashMap;
  * Created by ghost on 2017/01/11.
  * @author ghost
  */
-public class TaskManager extends BusinessObjectManager
+public class TaskManager extends ApplicationObjectManager
 {
     private HashMap<String, Task> tasks;
     private HashMap<String, HashMap<String, TaskItem>> task_items;

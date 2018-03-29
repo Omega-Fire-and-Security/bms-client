@@ -5,14 +5,15 @@ import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
 import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * Created by ghost on 2017/02/01.
+ * Created by th3gh0st on 2017/02/01.
+ * @author th3gh0st
  */
-public class Asset extends BusinessObject
+public class Asset extends ApplicationObject
 {
     private String asset_name;
     private String asset_description;
@@ -37,12 +38,10 @@ public class Asset extends BusinessObject
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return AssetManager.getInstance();
     }
-
-    public StringProperty asset_nameProperty(){return new SimpleStringProperty(asset_name);}
 
     public String getAsset_name()
     {
@@ -54,8 +53,6 @@ public class Asset extends BusinessObject
         this.asset_name = asset_name;
     }
 
-    public StringProperty asset_descriptionProperty(){return new SimpleStringProperty(asset_description);}
-
     public String getAsset_description()
     {
         return asset_description;
@@ -65,8 +62,6 @@ public class Asset extends BusinessObject
     {
         this.asset_description = asset_description;
     }
-
-    public StringProperty asset_serialProperty(){return new SimpleStringProperty(asset_serial);}
 
     public String getAsset_serial()
     {
@@ -78,8 +73,6 @@ public class Asset extends BusinessObject
         this.asset_serial = asset_serial;
     }
 
-    public StringProperty asset_typeProperty(){return new SimpleStringProperty(asset_type);}
-
     public String getAsset_type()
     {
         return asset_type;
@@ -89,8 +82,6 @@ public class Asset extends BusinessObject
     {
         this.asset_type = asset_type;
     }
-
-    public StringProperty asset_valueProperty(){return new SimpleStringProperty(String.valueOf(Globals.CURRENCY_SYMBOL.getValue() + " " + getAsset_value()));}
 
     public double getAsset_value()
     {
@@ -102,31 +93,20 @@ public class Asset extends BusinessObject
         this.asset_value = asset_value;
     }
 
-    //public StringProperty date_acquiredProperty(){return new SimpleStringProperty(String.valueOf(date_acquired));}
+    public void setDate_acquired(long date_acquired)
+    {
+        this.date_acquired = date_acquired;
+    }
 
     public long getDate_acquired()
     {
         return date_acquired;
     }
 
-    public void setDate_acquired(long date_acquired)
-    {
-        this.date_acquired = date_acquired;
-    }
-
-    //public StringProperty date_exhaustedProperty(){return new SimpleStringProperty(String.valueOf(date_exhausted));}
-
     public long getDate_exhausted()
     {
         return date_exhausted;
     }
-
-    public void setDate_exhausted(long date_exhausted)
-    {
-        this.date_exhausted = date_exhausted;
-    }
-
-    public StringProperty quantityProperty(){return new SimpleStringProperty(String.valueOf(quantity));}
 
     public long getQuantity()
     {
@@ -138,8 +118,6 @@ public class Asset extends BusinessObject
         this.quantity = quantity;
     }
 
-    public StringProperty unitProperty(){return new SimpleStringProperty(unit);}
-
     public String getUnit()
     {
         return unit;
@@ -149,6 +127,23 @@ public class Asset extends BusinessObject
     {
         this.unit = unit;
     }
+
+    public void setDate_exhausted(long date_exhausted)
+    {
+        this.date_exhausted = date_exhausted;
+    }
+
+    //model properties
+
+    public StringProperty asset_nameProperty(){return new SimpleStringProperty(asset_name);}
+    public StringProperty asset_descriptionProperty(){return new SimpleStringProperty(asset_description);}
+    public StringProperty asset_serialProperty(){return new SimpleStringProperty(asset_serial);}
+    public StringProperty asset_typeProperty(){return new SimpleStringProperty(asset_type);}
+    public StringProperty asset_valueProperty(){return new SimpleStringProperty(String.valueOf(Globals.CURRENCY_SYMBOL.getValue() + " " + getAsset_value()));}
+    //public StringProperty date_exhaustedProperty(){return new SimpleStringProperty(String.valueOf(date_exhausted));}
+    //public StringProperty date_acquiredProperty(){return new SimpleStringProperty(String.valueOf(date_acquired));}
+    public StringProperty quantityProperty(){return new SimpleStringProperty(String.valueOf(quantity));}
+    public StringProperty unitProperty(){return new SimpleStringProperty(unit);}
 
     @Override
     public void parse(String var, Object val) throws ParseException
@@ -221,12 +216,6 @@ public class Asset extends BusinessObject
     }
 
     @Override
-    public String apiEndpoint()
-    {
-        return "/asset";
-    }
-
-    @Override
     public String getJSONString()
     {
         String super_json = super.getJSONString();
@@ -246,5 +235,14 @@ public class Asset extends BusinessObject
 
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
+    }
+
+    /**
+     * @return this model's root endpoint URL.
+     */
+    @Override
+    public String apiEndpoint()
+    {
+        return "/asset";
     }
 }

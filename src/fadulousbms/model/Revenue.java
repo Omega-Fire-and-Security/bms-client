@@ -3,7 +3,7 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.RevenueManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -11,9 +11,10 @@ import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public class Revenue extends BusinessObject implements Serializable
+public class Revenue extends ApplicationObject implements Serializable
 {
     private String revenue_title;
     private String revenue_description;
@@ -34,14 +35,9 @@ public class Revenue extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return RevenueManager.getInstance();
-    }
-
-    public StringProperty revenue_titleProperty()
-    {
-        return new SimpleStringProperty(revenue_title);
     }
 
     public String getRevenue_title()
@@ -54,11 +50,6 @@ public class Revenue extends BusinessObject implements Serializable
         this.revenue_title = revenue_title;
     }
 
-    public StringProperty revenue_descriptionProperty()
-    {
-        return new SimpleStringProperty(revenue_description);
-    }
-
     public String getRevenue_description()
     {
         return revenue_description;
@@ -67,11 +58,6 @@ public class Revenue extends BusinessObject implements Serializable
     public void setRevenue_description(String revenue_description)
     {
         this.revenue_description = revenue_description;
-    }
-
-    public StringProperty revenue_valueProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(revenue_value));
     }
 
     public double getRevenue_value()
@@ -84,8 +70,6 @@ public class Revenue extends BusinessObject implements Serializable
         this.revenue_value = revenue_value;
     }
 
-    public StringProperty accountProperty(){return new SimpleStringProperty(account);}
-
     public String getAccount()
     {
         return account;
@@ -95,6 +79,25 @@ public class Revenue extends BusinessObject implements Serializable
     {
         this.account = account;
     }
+
+    // Revenue Model Properties
+
+    public StringProperty revenue_titleProperty()
+    {
+        return new SimpleStringProperty(revenue_title);
+    }
+
+    public StringProperty revenue_descriptionProperty()
+    {
+        return new SimpleStringProperty(revenue_description);
+    }
+
+    public StringProperty revenue_valueProperty()
+    {
+        return new SimpleStringProperty(String.valueOf(revenue_value));
+    }
+
+    public StringProperty accountProperty(){return new SimpleStringProperty(account);}
 
     @Override
     public void parse(String var, Object val) throws ParseException
@@ -163,6 +166,9 @@ public class Revenue extends BusinessObject implements Serializable
         return getRevenue_title();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

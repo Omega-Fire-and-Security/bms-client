@@ -4,7 +4,7 @@ import fadulousbms.FadulousBMS;
 import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
-import fadulousbms.model.BusinessObject;
+import fadulousbms.model.ApplicationObject;
 import fadulousbms.model.Metafile;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -37,7 +37,7 @@ import java.util.Optional;
 /**
  * Created by ghost on 2017/01/28.
  */
-public class IO<T extends BusinessObject>
+public class IO<T extends ApplicationObject>
 {
     public static final String TAG_VERBOSE = "verbose";
     public static final String TAG_INFO = "info";

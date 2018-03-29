@@ -22,7 +22,7 @@ import java.util.*;
 /**
  * Created by ghost on 2017/01/13.
  */
-public class PurchaseOrderManager extends BusinessObjectManager
+public class PurchaseOrderManager extends ApplicationObjectManager
 {
     private HashMap<String, PurchaseOrder> purchase_orders;
     private Gson gson;

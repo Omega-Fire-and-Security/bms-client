@@ -8,7 +8,7 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -17,10 +17,10 @@ import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 
 /**
- *
- * @author ghost
+ * Created by th3gh0st on 2017/01/01.
+ * @author th3gh0st
  */
-public class Resource extends BusinessObject implements Serializable
+public class Resource extends ApplicationObject implements Serializable
 {
     //private String brand_name;
     private String resource_description;
@@ -48,7 +48,7 @@ public class Resource extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return ResourceManager.getInstance();
     }
@@ -160,7 +160,7 @@ public class Resource extends BusinessObject implements Serializable
         this.part_number = part_number;
     }
 
-    //Properties
+    //Resource Model Properties
 
     public StringProperty resource_descriptionProperty(){return new SimpleStringProperty(resource_description);}
     public StringProperty resource_codeProperty(){return new SimpleStringProperty(resource_code);}
@@ -288,6 +288,9 @@ public class Resource extends BusinessObject implements Serializable
         return getResource_description();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

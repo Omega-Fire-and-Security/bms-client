@@ -3,18 +3,17 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
 
 /**
- * Created by ghost on 2017/01/13.
- * @author ghost
+ * Created by th3gh0st on 2017/01/13.
+ * @author th3gh0st
  */
-public abstract class Type extends BusinessObject implements Serializable
+public abstract class Type extends ApplicationObject implements Serializable
 {
     private String type_name;
     private String type_description;
@@ -38,9 +37,7 @@ public abstract class Type extends BusinessObject implements Serializable
     }
 
     @Override
-    public abstract BusinessObjectManager getManager();
-
-    public StringProperty type_nameProperty(){return new SimpleStringProperty(type_name);}
+    public abstract ApplicationObjectManager getManager();
 
     public String getType_name()
     {
@@ -52,8 +49,6 @@ public abstract class Type extends BusinessObject implements Serializable
         this.type_name = type_name;
     }
 
-    public StringProperty type_descriptionProperty(){return new SimpleStringProperty(type_description);}
-
     public String getType_description()
     {
         return type_description;
@@ -63,6 +58,12 @@ public abstract class Type extends BusinessObject implements Serializable
     {
         this.type_description = type_description;
     }
+
+    // Type Model Properties
+
+    public StringProperty type_nameProperty(){return new SimpleStringProperty(type_name);}
+
+    public StringProperty type_descriptionProperty(){return new SimpleStringProperty(type_description);}
 
     @Override
     public void parse(String var, Object val) throws ParseException

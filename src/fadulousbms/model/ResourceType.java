@@ -1,10 +1,11 @@
 package fadulousbms.model;
 
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.ResourceManager;
 
 /**
- * Created by ghost on 2017/01/13.
+ * Created by th3gh0st on 2017/01/13.
+ * @author th3gh0st
  */
 public class ResourceType extends Type
 {
@@ -14,11 +15,14 @@ public class ResourceType extends Type
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return ResourceManager.getInstance();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

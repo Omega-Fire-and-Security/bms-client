@@ -3,17 +3,17 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.JobManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * Created by ghost on 2017/02/03.
+ * Created by th3gh0st on 2017/02/03.
+ * @author th3gh0st
  */
-public class JobEmployee extends BusinessObject
+public class JobEmployee extends ApplicationObject
 {
     private String job_id;
     private String task_id;
@@ -33,7 +33,7 @@ public class JobEmployee extends BusinessObject
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return JobManager.getInstance();
     }
@@ -83,12 +83,14 @@ public class JobEmployee extends BusinessObject
     {
         if(getManager().getDataset()!=null)
         {
-            BusinessObject obj = getManager().getDataset().get(getJob_id());
+            ApplicationObject obj = getManager().getDataset().get(getJob_id());
             if(obj!=null)
                 return (Job) obj;
         }
         return null;
     }
+
+    //JobEmployee Model Properties
 
     private StringProperty job_idProperty(){return new SimpleStringProperty(getJob_id());}
     private StringProperty task_idProperty(){return new SimpleStringProperty(getTask_id());}
@@ -182,6 +184,9 @@ public class JobEmployee extends BusinessObject
         return str;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

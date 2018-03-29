@@ -18,7 +18,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/09/15.
  */
-public class ExpenseManager extends BusinessObjectManager
+public class ExpenseManager extends ApplicationObjectManager
 {
     private HashMap<String, Expense> expenses = null;
     private static ExpenseManager expense_manager = new ExpenseManager();

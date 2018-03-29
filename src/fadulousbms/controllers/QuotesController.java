@@ -45,7 +45,7 @@ public class QuotesController extends OperationsController implements Initializa
     @FXML
     private Tab quotesTab;
     @FXML
-    private TableColumn<BusinessObject, String> colVat;
+    private TableColumn<ApplicationObject, String> colVat;
 
     @Override
     public void refreshView()
@@ -138,7 +138,7 @@ public class QuotesController extends OperationsController implements Initializa
                                         IO.logAndAlert("Error " + getClass().getName(), "Quote object is not set", IO.TAG_ERROR);
                                         return;
                                     }
-                                    if (quote.getStatus()==BusinessObject.STATUS_FINALISED)
+                                    if (quote.getStatus()== ApplicationObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -258,7 +258,7 @@ public class QuotesController extends OperationsController implements Initializa
                                         try
                                         {
                                             if(quote!=null)
-                                                QuoteManager.getInstance().emailBusinessObject(quote, PDF.createQuotePdf(quote), null);
+                                                QuoteManager.getInstance().emailApplicationObject(quote, PDF.createQuotePdf(quote), null);
                                             else IO.logAndAlert("Error", "Quote object is null.", IO.TAG_ERROR);
                                         } catch (IOException e)
                                         {

@@ -4,7 +4,7 @@ import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.Link;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.EmployeeManager;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,10 +14,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/04.
- * @author ghost
+ * Created by th3gh0st on 2017/01/04.
+ * @author th3gh0st
  */
-public abstract class BusinessObject implements Serializable
+public abstract class ApplicationObject implements Serializable
 {
     private String _id;
     private long date_logged;
@@ -38,7 +38,7 @@ public abstract class BusinessObject implements Serializable
 
     public abstract AccessLevel getWriteMinRequiredAccessLevel();
 
-    public abstract BusinessObjectManager getManager();
+    public abstract ApplicationObjectManager getManager();
 
     /**
      * Function to get identifier of Quote object.
@@ -212,10 +212,10 @@ public abstract class BusinessObject implements Serializable
     @Override
     public boolean equals(Object o)
     {
-        if(o instanceof BusinessObject)
-            if(((BusinessObject)o).get_id()==null)
+        if(o instanceof ApplicationObject)
+            if(((ApplicationObject)o).get_id()==null)
                 return false;
-            else return ((BusinessObject)o).get_id().equals(get_id());
+            else return ((ApplicationObject)o).get_id().equals(get_id());
         else return false;
     }
 

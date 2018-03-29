@@ -84,15 +84,26 @@ public class NavController extends ScreenController implements Initializable
             {
                 if (!SessionManager.getInstance().getActive().isExpired())
                 {
-                    IO.log(getClass().getName(), IO.TAG_VERBOSE, "refreshing navbar, user currently signed in is ["+SessionManager.getInstance().getActive().getUsr()+"]");
-                    user_name.setText("");
-                    user_name.setManaged(true);
-                    user_name.setCache(false);
-                    //Render user name
-                    Employee e = EmployeeManager.getInstance().getDataset().get(SessionManager.getInstance().getActive().getUsr());//SessionManager.getInstance().getActiveEmployee();
-                    if (e != null)
-                        user_name.setText(e.getName());
-                    else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
+                    if(user_name!=null)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_VERBOSE, "refreshing navbar, user currently signed in is [" + SessionManager.getInstance().getActive().getUsr() + "]");
+                        user_name.setText("");
+                        user_name.setManaged(true);
+                        user_name.setCache(false);
+                        //Render user name
+                        if(EmployeeManager.getInstance().getDataset()!=null)
+                        {
+                            Employee e = EmployeeManager.getInstance().getDataset().get(SessionManager.getInstance().getActive().getUsr());//SessionManager.getInstance().getActiveEmployee();
+                            if (e != null)
+                                user_name.setText(e.getName());
+                            else
+                            {
+                                IO.log(getClass().getName(), IO.TAG_ERROR, "Could not find user [" + SessionManager.getInstance().getActive().getUsr() + "] on local data-set.");
+                                user_name.setText(SessionManager.getInstance().getActive().getUsr());
+                            }
+                        } else IO.log(getClass().getName(), IO.TAG_WARN, "no employees were found in the local data-set");
+                        //TODO: get User object directly from server
+                    } else IO.log(getClass().getName(), IO.TAG_WARN, "username label is invalid.");
                 }
                 else
                 {

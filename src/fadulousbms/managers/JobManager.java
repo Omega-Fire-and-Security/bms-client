@@ -28,7 +28,7 @@ import java.util.HashMap;
  * Created by ghost on 2017/01/11.
  * @author ghost
  */
-public class JobManager extends BusinessObjectManager
+public class JobManager extends ApplicationObjectManager
 {
     private HashMap<String, Job> jobs;
     private HashMap<String, HashMap<String, JobEmployee>> job_employees;//grouped by Job _id
@@ -299,7 +299,7 @@ public class JobManager extends BusinessObjectManager
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
         headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
-        job.setStatus(BusinessObject.STATUS_FINALISED);
+        job.setStatus(ApplicationObject.STATUS_FINALISED);
 
         JobManager.getInstance().patchObject(job, job_id->
         {

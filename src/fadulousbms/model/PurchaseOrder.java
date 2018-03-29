@@ -10,9 +10,10 @@ import javafx.beans.property.StringProperty;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public class PurchaseOrder extends BusinessObject
+public class PurchaseOrder extends ApplicationObject
 {
     private String supplier_id;
     private String contact_person_id;
@@ -35,7 +36,7 @@ public class PurchaseOrder extends BusinessObject
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return PurchaseOrderManager.getInstance();
     }
@@ -147,7 +148,7 @@ public class PurchaseOrder extends BusinessObject
         this.status = status;
     }
 
-    //Properties
+    //PurchaseOrder Model Properties
 
     public SimpleStringProperty supplier_nameProperty()
     {
@@ -251,6 +252,9 @@ public class PurchaseOrder extends BusinessObject
         return str;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

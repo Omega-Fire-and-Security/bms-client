@@ -23,10 +23,10 @@ import java.util.Date;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/01.
- * @author ghost
+ * Created by th3gh0st on 2017/01/01.
+ * @author th3gh0st
  */
-public class Job extends BusinessObject implements Agenda.Appointment, Temporal
+public class Job extends ApplicationObject implements Agenda.Appointment, Temporal
 {
     private long planned_start_date;
     private long date_assigned;
@@ -208,7 +208,7 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
         this.safety_catalogue=safety_catalogue;
     }
 
-    //Properties
+    //Job Model Properties
 
     public StringProperty invoice_idProperty()
     {

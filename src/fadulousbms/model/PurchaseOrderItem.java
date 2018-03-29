@@ -4,15 +4,16 @@ import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.PurchaseOrderManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public abstract class PurchaseOrderItem extends BusinessObject
+public abstract class PurchaseOrderItem extends ApplicationObject
 {
     private int item_number;
     private String purchase_order_id;
@@ -36,7 +37,7 @@ public abstract class PurchaseOrderItem extends BusinessObject
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return PurchaseOrderManager.getInstance();
     }
@@ -138,6 +139,8 @@ public abstract class PurchaseOrderItem extends BusinessObject
         return null;
     }
 
+    //PurchaseOrderItem Model Properties
+
     public StringProperty item_descriptionProperty(){return new SimpleStringProperty(getItem_description());}
     public StringProperty item_idProperty(){return new SimpleStringProperty(item_id);}
     public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
@@ -153,7 +156,7 @@ public abstract class PurchaseOrderItem extends BusinessObject
         return getCostValue()*getQuantityValue();
     }
 
-    public abstract BusinessObject getItem();
+    public abstract ApplicationObject getItem();
 
     @Override
     public void parse(String var, Object val) throws ParseException

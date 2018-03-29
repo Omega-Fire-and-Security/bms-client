@@ -10,9 +10,10 @@ import javafx.beans.property.StringProperty;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public class Quote extends BusinessObject
+public class Quote extends ApplicationObject
 {
     private String requisition_id;//optional
     private String client_id;
@@ -41,7 +42,7 @@ public class Quote extends BusinessObject
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return QuoteManager.getInstance();
     }
@@ -325,7 +326,7 @@ public class Quote extends BusinessObject
         return null;
     }
 
-    //Property handlers
+    // Quote Model Properties
 
     public SimpleStringProperty quoteProperty()
     {
@@ -501,6 +502,9 @@ public class Quote extends BusinessObject
         return str;
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

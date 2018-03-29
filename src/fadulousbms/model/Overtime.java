@@ -11,9 +11,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2017/01/21.
+ * Created by th3gh0st on 2017/01/21.
+ * @author th3gh0st
  */
-public class Overtime extends BusinessObject implements Serializable
+public class Overtime extends ApplicationObject implements Serializable
 {
     private String usr;
     private String job_id;
@@ -36,12 +37,10 @@ public class Overtime extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return OvertimeManager.getInstance();
     }
-
-    public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
 
     public String getUsr()
     {
@@ -52,16 +51,6 @@ public class Overtime extends BusinessObject implements Serializable
     {
         this.usr = usr;
     }
-
-    public StringProperty job_numberProperty()
-    {
-        if(getJob()!=null)
-            return new SimpleStringProperty(String.valueOf(getJob().getObject_number()));
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "Job object for Overtime record["+get_id()+"]{"+getObject_number()+"} is not set");
-        return new SimpleStringProperty("N/A");
-    }
-
-    public StringProperty job_idProperty(){return new SimpleStringProperty(getJob_id());}
 
     public String getJob_id()
     {
@@ -98,8 +87,6 @@ public class Overtime extends BusinessObject implements Serializable
         return time_in;
     }
 
-    public StringProperty time_inProperty(){return new SimpleStringProperty(String.valueOf(getTime_in()));}
-
     public void setTime_in(long time_in)
     {
         this.time_in = time_in;
@@ -110,26 +97,9 @@ public class Overtime extends BusinessObject implements Serializable
         return time_out;
     }
 
-    public StringProperty time_outProperty(){return new SimpleStringProperty(String.valueOf(getTime_out()));}
-
     public void setTime_out(long time_out)
     {
         this.time_out = time_out;
-    }
-
-    public StringProperty statusProperty()
-    {
-        switch (getStatus())
-        {
-            case STATUS_PENDING:
-                return new SimpleStringProperty("Pending");
-            case STATUS_FINALISED:
-                return new SimpleStringProperty("Approved");
-            case STATUS_ARCHIVED:
-                return new SimpleStringProperty("Archived");
-            default:
-                return new SimpleStringProperty("N/A");
-        }
     }
 
     public int getStatus()
@@ -158,6 +128,39 @@ public class Overtime extends BusinessObject implements Serializable
         if(employees!=null)
             return employees.get(usr);
         return null;
+    }
+
+    //Overtime Model Properties
+
+    public StringProperty job_idProperty(){return new SimpleStringProperty(getJob_id());}
+
+    public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
+
+    public StringProperty job_numberProperty()
+    {
+        if(getJob()!=null)
+            return new SimpleStringProperty(String.valueOf(getJob().getObject_number()));
+        else IO.log(getClass().getName(), IO.TAG_ERROR, "Job object for Overtime record["+get_id()+"]{"+getObject_number()+"} is not set");
+        return new SimpleStringProperty("N/A");
+    }
+
+    public StringProperty time_inProperty(){return new SimpleStringProperty(String.valueOf(getTime_in()));}
+
+    public StringProperty time_outProperty(){return new SimpleStringProperty(String.valueOf(getTime_out()));}
+
+    public StringProperty statusProperty()
+    {
+        switch (getStatus())
+        {
+            case STATUS_PENDING:
+                return new SimpleStringProperty("Pending");
+            case STATUS_FINALISED:
+                return new SimpleStringProperty("Approved");
+            case STATUS_ARCHIVED:
+                return new SimpleStringProperty("Archived");
+            default:
+                return new SimpleStringProperty("N/A");
+        }
     }
 
     @Override
@@ -252,6 +255,9 @@ public class Overtime extends BusinessObject implements Serializable
         return " application for " + getEmployee();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

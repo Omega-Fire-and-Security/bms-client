@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 
-public class LeaveManager extends BusinessObjectManager
+public class LeaveManager extends ApplicationObjectManager
 {
     private HashMap<String, Leave> leave_records;
     private Gson gson;

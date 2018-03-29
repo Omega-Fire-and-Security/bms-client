@@ -8,8 +8,7 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.ClientManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -17,10 +16,10 @@ import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 
 /**
- *
- * @author ghost
+ * Created by th3gh0st on 2017/01/01.
+ * @author th3gh0st
  */
-public class Client extends BusinessObject implements Serializable
+public class Client extends ApplicationObject implements Serializable
 {
     private String client_name;
     private String physical_address;
@@ -53,12 +52,10 @@ public class Client extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return ClientManager.getInstance();
     }
-
-    public StringProperty client_nameProperty(){return new SimpleStringProperty(client_name);}
 
     public String getClient_name()
     {
@@ -70,8 +67,6 @@ public class Client extends BusinessObject implements Serializable
         this.client_name = client_name;
     }
 
-    public StringProperty physical_addressProperty(){return new SimpleStringProperty(physical_address);}
-
     public String getPhysical_address()
     {
         return physical_address;
@@ -81,8 +76,6 @@ public class Client extends BusinessObject implements Serializable
     {
         this.physical_address = physical_address;
     }
-
-    public StringProperty postal_addressProperty(){return new SimpleStringProperty(postal_address);}
 
     public String getPostal_address()
     {
@@ -94,8 +87,6 @@ public class Client extends BusinessObject implements Serializable
         this.postal_address = postal_address;
     }
 
-    public StringProperty telProperty(){return new SimpleStringProperty(tel);}
-
     public String getTel()
     {
         return tel;
@@ -106,8 +97,6 @@ public class Client extends BusinessObject implements Serializable
         this.tel = tel;
     }
 
-    public StringProperty faxProperty(){return new SimpleStringProperty(fax);}
-
     public String getFax()
     {
         return fax;
@@ -117,8 +106,6 @@ public class Client extends BusinessObject implements Serializable
     {
         this.fax = fax;
     }
-
-    public StringProperty contact_emailProperty(){return new SimpleStringProperty(contact_email);}
 
     public String getContact_email()
     {
@@ -140,8 +127,6 @@ public class Client extends BusinessObject implements Serializable
         this.jobs = jobs;
     }
 
-    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
-
     public boolean isActive()
     {
         return active;
@@ -162,8 +147,6 @@ public class Client extends BusinessObject implements Serializable
         this.date_partnered = date_partnered;
     }
 
-    public StringProperty websiteProperty(){return new SimpleStringProperty(website);}
-
     public String getWebsite()
     {
         return website;
@@ -173,8 +156,6 @@ public class Client extends BusinessObject implements Serializable
     {
         this.website = website;
     }
-
-    public StringProperty registration_numberProperty(){return new SimpleStringProperty(getRegistration_number());}
 
     public String getRegistration_number()
     {
@@ -186,8 +167,6 @@ public class Client extends BusinessObject implements Serializable
         this.registration_number = registration_number;
     }
 
-    public StringProperty vat_numberProperty(){return new SimpleStringProperty(getVat_number());}
-
     public String getVat_number()
     {
         return vat_number;
@@ -198,8 +177,6 @@ public class Client extends BusinessObject implements Serializable
         this.vat_number = vat_number;
     }
 
-    public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
-
     public String getAccount_name()
     {
         return account_name;
@@ -209,6 +186,30 @@ public class Client extends BusinessObject implements Serializable
     {
         this.account_name = account_name;
     }
+
+    //model properties
+
+    public StringProperty client_nameProperty(){return new SimpleStringProperty(client_name);}
+
+    public StringProperty physical_addressProperty(){return new SimpleStringProperty(physical_address);}
+
+    public StringProperty postal_addressProperty(){return new SimpleStringProperty(postal_address);}
+
+    public StringProperty telProperty(){return new SimpleStringProperty(tel);}
+
+    public StringProperty faxProperty(){return new SimpleStringProperty(fax);}
+
+    public StringProperty contact_emailProperty(){return new SimpleStringProperty(contact_email);}
+
+    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
+
+    public StringProperty websiteProperty(){return new SimpleStringProperty(website);}
+
+    public StringProperty registration_numberProperty(){return new SimpleStringProperty(getRegistration_number());}
+
+    public StringProperty vat_numberProperty(){return new SimpleStringProperty(getVat_number());}
+
+    public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
 
     @Override
     public void parse(String var, Object val) throws ParseException
@@ -326,6 +327,9 @@ public class Client extends BusinessObject implements Serializable
         return getClient_name();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

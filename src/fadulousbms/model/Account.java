@@ -5,7 +5,8 @@ import fadulousbms.auxilary.IO;
 import java.util.ArrayList;
 
 /**
- * Created by ghost on 2017/09/28.
+ * Created by th3gh0st on 2017/09/28.
+ * @author th3gh0st
  */
 public class Account
 {

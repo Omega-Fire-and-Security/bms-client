@@ -46,7 +46,7 @@ public class RemoteComms
         //Write to server
         /*OutputStream os = httpConn.getOutputStream();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
-        writer.write(object);
+        writer.write(creds);
         writer.flush();
         writer.close();
         os.close();*/
@@ -59,6 +59,7 @@ public class RemoteComms
                 String session_str = IO.readStream(httpConn.getInputStream());
                 try
                 {
+                    IO.log(RemoteComms.class.getName(),IO.TAG_INFO, "auth() response> "+session_str);
                     Session session = new GsonBuilder().create().fromJson(session_str, Session.class);
                     if (session != null)
                     {

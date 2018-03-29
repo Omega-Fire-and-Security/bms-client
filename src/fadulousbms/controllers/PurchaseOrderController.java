@@ -24,7 +24,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
-import org.controlsfx.control.textfield.TextFields;
 
 import java.io.File;
 import java.io.IOException;
@@ -666,10 +665,10 @@ public class PurchaseOrderController extends ScreenController implements Initial
 
         if(PurchaseOrderManager.getInstance().getSelected()!=null)
         {
-            if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getStatus()!=BusinessObject.STATUS_FINALISED)
+            if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getStatus()!= ApplicationObject.STATUS_FINALISED)
             {
                 // set PO status and update it on server.
-                ((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).setStatus(BusinessObject.STATUS_FINALISED);
+                ((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).setStatus(ApplicationObject.STATUS_FINALISED);
                 //RemoteComms.updateBusinessObjectOnServer(PurchaseOrderManager.getInstance().getSelected(), "status");
                 try
                 {
@@ -689,7 +688,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
                 for(PurchaseOrderItem item: ((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getItems())
                 {
                     long date_acquired = System.currentTimeMillis()/1000;
-                    BusinessObject obj = item.getItem();
+                    ApplicationObject obj = item.getItem();
 
                     if(item instanceof PurchaseOrderResource)
                     {

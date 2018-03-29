@@ -24,7 +24,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/01/27.
  */
-public class InvoiceManager extends BusinessObjectManager
+public class InvoiceManager extends ApplicationObjectManager
 {
     private HashMap<String, Invoice> invoices;
     private static InvoiceManager invoice_manager = new InvoiceManager();

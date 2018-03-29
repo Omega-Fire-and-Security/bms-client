@@ -3,7 +3,7 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -11,10 +11,10 @@ import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 
 /**
- * Created by ghost on 2017/01/03.
- * @author ghost
+ * Created by th3gh0st on 2017/01/03.
+ * @author th3gh0st
  */
-public class Supplier extends BusinessObject implements Serializable
+public class Supplier extends ApplicationObject implements Serializable
 {
     private String supplier_name;
     private String physical_address;
@@ -43,12 +43,10 @@ public class Supplier extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return SupplierManager.getInstance();
     }
-
-    public StringProperty supplier_nameProperty(){return new SimpleStringProperty(supplier_name);}
 
     public String getSupplier_name()
     {
@@ -60,8 +58,6 @@ public class Supplier extends BusinessObject implements Serializable
         this.supplier_name = supplier_name;
     }
 
-    public StringProperty physical_addressProperty(){return new SimpleStringProperty(physical_address);}
-
     public String getPhysical_address()
     {
         return physical_address;
@@ -71,8 +67,6 @@ public class Supplier extends BusinessObject implements Serializable
     {
         this.physical_address = physical_address;
     }
-
-    public StringProperty postal_addressProperty(){return new SimpleStringProperty(postal_address);}
 
     public String getPostal_address()
     {
@@ -84,8 +78,6 @@ public class Supplier extends BusinessObject implements Serializable
         this.postal_address = postal_address;
     }
 
-    public StringProperty telProperty(){return new SimpleStringProperty(tel);}
-
     public String getTel()
     {
         return tel;
@@ -95,8 +87,6 @@ public class Supplier extends BusinessObject implements Serializable
     {
         this.tel = tel;
     }
-
-    public StringProperty faxProperty(){return new SimpleStringProperty(fax);}
 
     public String getFax()
     {
@@ -108,8 +98,6 @@ public class Supplier extends BusinessObject implements Serializable
         this.fax = fax;
     }
 
-    public StringProperty specialityProperty(){return new SimpleStringProperty(speciality);}
-
     public String getSpeciality()
     {
         return speciality;
@@ -119,8 +107,6 @@ public class Supplier extends BusinessObject implements Serializable
     {
         this.speciality = speciality;
     }
-
-    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
 
     public boolean isActive()
     {
@@ -132,12 +118,6 @@ public class Supplier extends BusinessObject implements Serializable
         this.active = active;
     }
 
-    //public StringProperty date_partneredProperty(){return new SimpleStringProperty(String.valueOf(date_partnered));}
-
-    public long getDate_partnered()
-    {
-        return date_partnered;
-    }
 
     public void setDate_partnered(long date_partnered)
     {
@@ -156,8 +136,6 @@ public class Supplier extends BusinessObject implements Serializable
         this.website = website;
     }
 
-    public StringProperty registration_numberProperty(){return new SimpleStringProperty(getRegistration_number());}
-
     public String getRegistration_number()
     {
         return registration_number;
@@ -168,11 +146,14 @@ public class Supplier extends BusinessObject implements Serializable
         this.registration_number = registration_number;
     }
 
-    public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
-
     public String getAccount_name()
     {
         return account_name;
+    }
+
+    public String getVat_number()
+    {
+        return vat_number;
     }
 
     public void setAccount_name(String account_name)
@@ -180,19 +161,10 @@ public class Supplier extends BusinessObject implements Serializable
         this.account_name = account_name;
     }
 
-    public StringProperty vat_numberProperty(){return new SimpleStringProperty(getVat_number());}
-
-    public String getVat_number()
-    {
-        return vat_number;
-    }
-
     public void setVat_number(String vat_number)
     {
         this.vat_number = vat_number;
     }
-
-    public StringProperty contact_emailProperty(){return new SimpleStringProperty(contact_email);}
 
     public String getContact_email()
     {
@@ -203,6 +175,37 @@ public class Supplier extends BusinessObject implements Serializable
     {
         this.contact_email = contact_email;
     }
+
+    public long getDate_partnered()
+    {
+        return date_partnered;
+    }
+
+    // Supplier Model Properties
+
+    public StringProperty supplier_nameProperty(){return new SimpleStringProperty(supplier_name);}
+
+    public StringProperty physical_addressProperty(){return new SimpleStringProperty(physical_address);}
+
+    public StringProperty postal_addressProperty(){return new SimpleStringProperty(postal_address);}
+
+    public StringProperty telProperty(){return new SimpleStringProperty(tel);}
+
+    public StringProperty faxProperty(){return new SimpleStringProperty(fax);}
+
+    public StringProperty specialityProperty(){return new SimpleStringProperty(speciality);}
+
+    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
+
+    public StringProperty registration_numberProperty(){return new SimpleStringProperty(getRegistration_number());}
+
+    public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
+
+    public StringProperty vat_numberProperty(){return new SimpleStringProperty(getVat_number());}
+
+    public StringProperty contact_emailProperty(){return new SimpleStringProperty(contact_email);}
+
+    //public StringProperty date_partneredProperty(){return new SimpleStringProperty(String.valueOf(date_partnered));}
 
     @Override
     public void parse(String var, Object val) throws ParseException
@@ -326,6 +329,9 @@ public class Supplier extends BusinessObject implements Serializable
         return getSupplier_name();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {

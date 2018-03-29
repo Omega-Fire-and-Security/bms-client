@@ -410,51 +410,54 @@ public abstract class QuoteController extends ScreenController implements Initia
 
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
-        TextFields.bindAutoCompletion(txtClient, ClientManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
-        {
-            if(event!=null)
+        if(ClientManager.getInstance().getDataset()!=null)
+            TextFields.bindAutoCompletion(txtClient, ClientManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
             {
-                if(event.getCompletion()!=null)
+                if(event!=null)
                 {
-                    ClientManager.getInstance().setSelected(event.getCompletion());
+                    if(event.getCompletion()!=null)
+                    {
+                        ClientManager.getInstance().setSelected(event.getCompletion());
 
-                    IO.log(getClass().getName(), IO.TAG_INFO, "selected client id: " + ClientManager.getInstance().getSelected().get_id());
-                    cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", ClientManager.getInstance().getSelected().getAccount_name()}));
-                    //txtFax.setText(selected_client.getFax());
-                    itemsModified = true;
+                        IO.log(getClass().getName(), IO.TAG_INFO, "selected client id: " + ClientManager.getInstance().getSelected().get_id());
+                        cbxAccount.setItems(FXCollections.observableArrayList(new String[]{"Cash", ClientManager.getInstance().getSelected().getAccount_name()}));
+                        //txtFax.setText(selected_client.getFax());
+                        itemsModified = true;
+                    }
                 }
-            }
-        });
+            });
 
-        TextFields.bindAutoCompletion(txtMaterials, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
-        {
-            if(event!=null)
+        if(ResourceManager.getInstance().getDataset()!=null)
+            TextFields.bindAutoCompletion(txtMaterials, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
             {
-                if(event.getCompletion()!=null)
+                if(event!=null)
                 {
-                    //update selected material
-                    ResourceManager.getInstance().setSelected(event.getCompletion());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "selected resource: " + ResourceManager.getInstance().getSelected().getResource_description());
-                    itemsModified = true;
+                    if(event.getCompletion()!=null)
+                    {
+                        //update selected material
+                        ResourceManager.getInstance().setSelected(event.getCompletion());
+                        IO.log(getClass().getName(), IO.TAG_INFO, "selected resource: " + ResourceManager.getInstance().getSelected().getResource_description());
+                        itemsModified = true;
+                    }
                 }
-            }
-        });
+            });
 
-        TextFields.bindAutoCompletion(txtContactPerson, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
-        {
-            if(event!=null)
+        if(EmployeeManager.getInstance().getDataset()!=null)
+            TextFields.bindAutoCompletion(txtContactPerson, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
             {
-                if(event.getCompletion()!=null)
+                if(event!=null)
                 {
-                    EmployeeManager.getInstance().setSelected(event.getCompletion());
-                    IO.log(getClass().getName(), IO.TAG_INFO, "selected contact person: " + EmployeeManager.getInstance().getSelected().getName());
-                    txtCell.setText(EmployeeManager.getInstance().getSelected().getCell());
-                    txtTel.setText(EmployeeManager.getInstance().getSelected().getTel());
-                    txtEmail.setText(EmployeeManager.getInstance().getSelected().getEmail());
-                    itemsModified = true;
-                } else IO.logAndAlert("Invalid Employee", "Selected contact person is invalid", IO.TAG_ERROR);
-            }
-        });
+                    if(event.getCompletion()!=null)
+                    {
+                        EmployeeManager.getInstance().setSelected(event.getCompletion());
+                        IO.log(getClass().getName(), IO.TAG_INFO, "selected contact person: " + EmployeeManager.getInstance().getSelected().getName());
+                        txtCell.setText(EmployeeManager.getInstance().getSelected().getCell());
+                        txtTel.setText(EmployeeManager.getInstance().getSelected().getTel());
+                        txtEmail.setText(EmployeeManager.getInstance().getSelected().getEmail());
+                        itemsModified = true;
+                    } else IO.logAndAlert("Invalid Employee", "Selected contact person is invalid", IO.TAG_ERROR);
+                }
+            });
 
         if(default_cols==null)
             default_cols=tblQuoteItems.getColumns();

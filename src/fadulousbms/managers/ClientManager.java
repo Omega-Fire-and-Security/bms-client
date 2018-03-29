@@ -27,7 +27,7 @@ import java.util.HashMap;
  * Created by ghost on 2017/01/11.
  * @author ghost
  */
-public class ClientManager extends BusinessObjectManager
+public class ClientManager extends ApplicationObjectManager
 {
     private HashMap<String, Client> clients;
     private Gson gson;

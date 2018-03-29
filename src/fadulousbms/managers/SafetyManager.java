@@ -30,7 +30,7 @@ import java.util.HashMap;
 /**
  * Created by ghost on 2017/02/24.
  */
-public class SafetyManager extends BusinessObjectManager
+public class SafetyManager extends ApplicationObjectManager
 {
     private static HashMap<String, Metafile> documents;
     private static SafetyManager safety_manager = new SafetyManager();
@@ -140,31 +140,31 @@ public class SafetyManager extends BusinessObjectManager
                 tblSafety.setEditable(true);
 
                 //Some Safety columns
-                TableColumn<BusinessObject, String> index = new TableColumn("Index");
+                TableColumn<ApplicationObject, String> index = new TableColumn("Index");
                 CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", SafetyManager.getInstance());
 
-                TableColumn<BusinessObject, String> label = new TableColumn("Label");
+                TableColumn<ApplicationObject, String> label = new TableColumn("Label");
                 CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", SafetyManager.getInstance());
 
-                TableColumn<BusinessObject, String> document = new TableColumn("Document Path");
+                TableColumn<ApplicationObject, String> document = new TableColumn("Document Path");
                 CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", SafetyManager.getInstance());
 
-                //TableColumn<BusinessObject, HBox> action = new TableColumn("Quick Action");
+                //TableColumn<ApplicationObject, HBox> action = new TableColumn("Quick Action");
                 //CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/api/safety/index");
 
-                TableColumn<BusinessObject, GridPane> required = new TableColumn("Required?");
+                TableColumn<ApplicationObject, GridPane> required = new TableColumn("Required?");
                 CustomTableViewControls.makeToggleButtonTableColumn(required, null,100, "required", "/safety");
 
-                TableColumn<BusinessObject, String> logo_options = new TableColumn("Logo Options");
+                TableColumn<ApplicationObject, String> logo_options = new TableColumn("Logo Options");
                 CustomTableViewControls.makeEditableTableColumn(logo_options, TextFieldTableCell.forTableColumn(), 250, "logo_options", SafetyManager.getInstance());
 
-                //TableColumn<BusinessObject, String> type = new TableColumn("Type");
+                //TableColumn<ApplicationObject, String> type = new TableColumn("Type");
                 //CustomTableViewControls.makeEditableTableColumn(type, TextFieldTableCellOld.forTableColumn(), 250, "type", "/api/safety/index");
 
-                TableColumn<BusinessObject, GridPane> type = new TableColumn("Type");
+                TableColumn<ApplicationObject, GridPane> type = new TableColumn("Type");
                 CustomTableViewControls.makeToggleButtonTypeTableColumn(type, null,80, "type", "/safety");
 
-                TableColumn<BusinessObject, GridPane> mark = new TableColumn("Select");
+                TableColumn<ApplicationObject, GridPane> mark = new TableColumn("Select");
                 CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/safety");
 
                 ObservableList<Metafile> lst_safety = FXCollections.observableArrayList();

@@ -130,7 +130,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()==BusinessObject.STATUS_FINALISED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()== ApplicationObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -241,7 +241,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                         }
                                         try
                                         {
-                                            PurchaseOrderManager.getInstance().emailBusinessObject(po, PDF.createPurchaseOrderPdf(po, null), null);
+                                            PurchaseOrderManager.getInstance().emailApplicationObject(po, PDF.createPurchaseOrderPdf(po, null), null);
                                         } catch (IOException e)
                                         {
                                             IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());

@@ -1,46 +1,45 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.exceptions.ParseException;
 import javafx.collections.FXCollections;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.util.Callback;
 
 import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by ghost on 2017/01/09.
+ * Created by th3gh0st on 2017/01/09.
+ * @author th3gh0st
  */
 
-public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, String>
+public class ComboBoxTableCell<T extends ApplicationObject> extends TableCell<T, String>
 {
-    private ComboBox<BusinessObject> comboBox;
+    private ComboBox<ApplicationObject> comboBox;
     private String update_property;
-    private HashMap<String, T> business_objects;
+    private HashMap<String, T> app_objects;
     public static final String TAG = "ComboBoxTableCell";
 
-    public ComboBoxTableCell(HashMap<String, T> business_objects, String update_property, String comparator_property)
+    public ComboBoxTableCell(HashMap<String, T> app_objects, String update_property, String comparator_property)
     {
         super();
         this.update_property = update_property;
-        this.business_objects=business_objects;
+        this.app_objects = app_objects;
 
-        if(business_objects==null)
+        if(app_objects ==null)
         {
             IO.log(TAG, IO.TAG_WARN, "business objects list for the combo box cannot be null!");
             return;
         }
-        if(business_objects.size()<=0)
+        if(app_objects.size()<=0)
         {
             IO.log(TAG, IO.TAG_WARN, "business objects list for the combo box cannot be empty!");
             return;
         }
 
-        comboBox = new ComboBox<>(FXCollections.observableArrayList(business_objects.values()));
+        comboBox = new ComboBox<>(FXCollections.observableArrayList(app_objects.values()));
         HBox.setHgrow(comboBox, Priority.ALWAYS);
 
         comboBox.valueProperty().addListener((observable, oldValue, newValue) ->
@@ -63,9 +62,9 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
         {
             if (getTableRow() != null)
             {
-                if (getTableRow().getItem() instanceof BusinessObject)
+                if (getTableRow().getItem() instanceof ApplicationObject)
                 {
-                    BusinessObject row_item = (BusinessObject) getTableRow().getItem();
+                    ApplicationObject row_item = (ApplicationObject) getTableRow().getItem();
 
                     if (row_item != null)
                     {
@@ -98,16 +97,16 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
         super.updateItem(selected_id, empty);
         if (getTableRow() != null)
         {
-            if (getTableRow().getItem() instanceof BusinessObject)
+            if (getTableRow().getItem() instanceof ApplicationObject)
             {
-                BusinessObject row_item = (BusinessObject) getTableRow().getItem();
+                ApplicationObject row_item = (ApplicationObject) getTableRow().getItem();
                 //get the property value of the table row item, i.e client_id, supplier_id etc.
                 String upd_id = (String)row_item.get(update_property);
 
                 //use the property value to get selected object for combo box
-                if(business_objects!=null && upd_id!=null)
+                if(app_objects !=null && upd_id!=null)
                 {
-                    BusinessObject selected_cbx_item = business_objects.get(upd_id);
+                    ApplicationObject selected_cbx_item = app_objects.get(upd_id);
                     if (selected_cbx_item != null)
                         comboBox.setValue(selected_cbx_item);
                     setGraphic(comboBox);

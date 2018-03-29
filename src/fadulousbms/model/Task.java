@@ -8,8 +8,7 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.JobManager;
 import fadulousbms.managers.TaskManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -17,10 +16,10 @@ import javafx.beans.property.StringProperty;
 import java.util.HashMap;
 
 /**
- * Created by ghost on 2018/03/22.
- * @author ghost
+ * Created by th3gh0st on 2018/03/22.
+ * @author th3gh0st
  */
-public class Task extends BusinessObject
+public class Task extends ApplicationObject
 {
     private long date_assigned;
     private long date_started;
@@ -44,7 +43,7 @@ public class Task extends BusinessObject
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return TaskManager.getInstance();
     }
@@ -166,7 +165,7 @@ public class Task extends BusinessObject
         return null;
     }
 
-    //Properties
+    //Task Model Properties
 
     public StringProperty job_idProperty()
     {

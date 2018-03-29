@@ -22,7 +22,7 @@ import java.util.*;
 /**
  * Created by ghost on 2017/01/13.
  */
-public class RequisitionManager extends BusinessObjectManager
+public class RequisitionManager extends ApplicationObjectManager
 {
     private HashMap<String, Requisition> requisitions;
     private Gson gson;

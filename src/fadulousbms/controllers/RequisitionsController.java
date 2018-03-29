@@ -127,7 +127,7 @@ public class RequisitionsController extends OperationsController implements Init
                                         IO.logAndAlert("Error " + getClass().getName(), "Requisition object is not set", IO.TAG_ERROR);
                                         return;
                                     }
-                                    if (requisition.getStatus()==BusinessObject.STATUS_FINALISED)
+                                    if (requisition.getStatus()== ApplicationObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -259,7 +259,7 @@ public class RequisitionsController extends OperationsController implements Init
                                         try
                                         {
                                             if(requisition!=null)
-                                                RequisitionManager.getInstance().emailBusinessObject(requisition, PDF.createRequisitionPDF(requisition), null);
+                                                RequisitionManager.getInstance().emailApplicationObject(requisition, PDF.createRequisitionPDF(requisition), null);
                                             else IO.logAndAlert("Error", "Quote object is null.", IO.TAG_ERROR);
                                         } catch (IOException e)
                                         {

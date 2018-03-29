@@ -8,8 +8,7 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
-import fadulousbms.managers.AssetManager;
-import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ApplicationObjectManager;
 import fadulousbms.managers.EmployeeManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -17,10 +16,10 @@ import javafx.beans.property.StringProperty;
 import java.io.Serializable;
 
 /**
- * Created by ghost on 2017/01/01.
- * @author ghost
+ * Created by th3gh0st on 2017/01/01.
+ * @author th3gh0st
  */
-public class Employee extends BusinessObject implements Serializable
+public class Employee extends ApplicationObject implements Serializable
 {
     private String usr;
     private String pwd;//hashed
@@ -50,7 +49,7 @@ public class Employee extends BusinessObject implements Serializable
     }
 
     @Override
-    public BusinessObjectManager getManager()
+    public ApplicationObjectManager getManager()
     {
         return EmployeeManager.getInstance();
     }
@@ -164,7 +163,7 @@ public class Employee extends BusinessObject implements Serializable
 
     public String getInitials(){return new String(firstname.substring(0,1) + lastname.substring(0,1));}
 
-    //Properties
+    // Model Properties
     public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
 
     //public StringProperty pwdProperty(){return new SimpleStringProperty(pwd);}
@@ -286,9 +285,12 @@ public class Employee extends BusinessObject implements Serializable
         return getName();
     }
 
+    /**
+     * @return this model's root endpoint URL.
+     */
     @Override
     public String apiEndpoint()
     {
-        return "/user";
+        return "/usr";
     }
 }

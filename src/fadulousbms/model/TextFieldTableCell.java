@@ -11,10 +11,11 @@ import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 
 /**
- * Created by ghost on 2017/01/09.
+ * Created by th3gh0st on 2017/01/09.
+ * @author th3gh0st
  */
 
-public class TextFieldTableCell extends TableCell<BusinessObject, String>
+public class TextFieldTableCell extends TableCell<ApplicationObject, String>
 {
     private TextField txt;
     private Label lbl;
@@ -34,7 +35,7 @@ public class TextFieldTableCell extends TableCell<BusinessObject, String>
         {
             if(event.getCode()== KeyCode.ENTER)
             {
-                BusinessObject obj = (BusinessObject)getTableRow().getItem();
+                ApplicationObject obj = (ApplicationObject)getTableRow().getItem();
                 try
                 {
                     obj.parse(property,txt.getText());
@@ -61,9 +62,9 @@ public class TextFieldTableCell extends TableCell<BusinessObject, String>
 
         if(selected_id!=null)
         {
-            if (getTableRow().getItem() instanceof BusinessObject)
+            if (getTableRow().getItem() instanceof ApplicationObject)
             {
-                BusinessObject bo = (BusinessObject) getTableRow().getItem();
+                ApplicationObject bo = (ApplicationObject) getTableRow().getItem();
                 try
                 {
                     bo.parse(property, selected_id);
@@ -81,9 +82,9 @@ public class TextFieldTableCell extends TableCell<BusinessObject, String>
     {
         super.updateItem(selected_id, empty);
 
-        if (getTableRow().getItem() instanceof BusinessObject)
+        if (getTableRow().getItem() instanceof ApplicationObject)
         {
-            BusinessObject bo = (BusinessObject) getTableRow().getItem();
+            ApplicationObject bo = (ApplicationObject) getTableRow().getItem();
             Object val = bo.get(property);
             if(val!=null)
                 txt.setText(val.toString());
