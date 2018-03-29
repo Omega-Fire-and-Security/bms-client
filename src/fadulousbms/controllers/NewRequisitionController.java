@@ -10,30 +10,15 @@ import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import javafx.util.Callback;
-import org.bouncycastle.cert.ocsp.Req;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -102,7 +87,7 @@ public class NewRequisitionController extends ScreenController implements Initia
                 case BusinessObject.STATUS_PENDING:
                     status = "PENDING";
                     break;
-                case BusinessObject.STATUS_APPROVED:
+                case BusinessObject.STATUS_FINALISED:
                     status = "APPROVED";
                     break;
                 case BusinessObject.STATUS_ARCHIVED:
@@ -195,7 +180,7 @@ public class NewRequisitionController extends ScreenController implements Initia
 
         try
         {
-            RequisitionManager.getInstance().createRequisition(requisition, null);
+            RequisitionManager.getInstance().putObject(requisition, null);
         } catch (IOException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
@@ -205,7 +190,7 @@ public class NewRequisitionController extends ScreenController implements Initia
     @FXML
     public void newClient()
     {
-        ClientManager.newClientWindow("Create a new Client for this Requisition", param ->
+        ClientManager.getInstance().newClientPopOver(ScreenManager.getInstance(), param ->
         {
             new Thread(() ->
                     refreshModel(param1 ->

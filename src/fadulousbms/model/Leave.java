@@ -2,7 +2,11 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
 import fadulousbms.managers.EmployeeManager;
+import fadulousbms.managers.LeaveManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -42,6 +46,12 @@ public class Leave extends BusinessObject implements Serializable
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return LeaveManager.getInstance();
     }
 
     public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
@@ -92,7 +102,7 @@ public class Leave extends BusinessObject implements Serializable
         {
             case STATUS_PENDING:
                 return new SimpleStringProperty("Pending");
-            case STATUS_APPROVED:
+            case STATUS_FINALISED:
                 return new SimpleStringProperty("Approved");
             case STATUS_ARCHIVED:
                 return new SimpleStringProperty("Archived");
@@ -142,7 +152,7 @@ public class Leave extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -224,9 +234,15 @@ public class Leave extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        return " application for " + getEmployee();
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/leave_records";
+        return "/leave_application";
     }
 
 }

@@ -77,15 +77,15 @@ public class QuotesController extends OperationsController implements Initializa
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
         //colContactPerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "contact_person_id", "usr"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", false);
-        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", "/quotes");
-        CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", "/quotes");
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/quotes");
+        CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 100, "request", QuoteManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSitename, TextFieldTableCell.forTableColumn(), 100, "sitename", QuoteManager.getInstance());
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/quote");
         colCreator.setMinWidth(100);
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colRevision.setCellValueFactory(new PropertyValueFactory<>("revision"));
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
-        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 100, "other", "/quotes");
+        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 100, "other", QuoteManager.getInstance());
 
         Callback<TableColumn<Quote, String>, TableCell<Quote, String>> cellFactory
                 =
@@ -138,7 +138,7 @@ public class QuotesController extends OperationsController implements Initializa
                                         IO.logAndAlert("Error " + getClass().getName(), "Quote object is not set", IO.TAG_ERROR);
                                         return;
                                     }
-                                    if (quote.getStatus()==BusinessObject.STATUS_APPROVED)
+                                    if (quote.getStatus()==BusinessObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -183,7 +183,7 @@ public class QuotesController extends OperationsController implements Initializa
                                         {
                                             RemoteComms.emailAttachment("Email with attachment", "test",
                                                     new Employee[]{SessionManager.getInstance().getActiveEmployee()},
-                                                    new FileMetadata[]{new FileMetadata("some-file.txt", "Some File", "/files", "text/plain")});
+                                                    new Metafile[]{new Metafile("some-file.txt", "Some File", "/files", "text/plain")});
                                         } catch (MailjetSocketTimeoutException e)
                                         {
                                             e.printStackTrace();
@@ -268,10 +268,35 @@ public class QuotesController extends OperationsController implements Initializa
 
                                     btnRemove.setOnAction(event ->
                                     {
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Quote)
+                                                QuoteManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove Quote from remote server
+                                            QuoteManager.getInstance().deleteObject(QuoteManager.getInstance().getSelected(), quote_id->
+                                            {
+                                                if(quote_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted quote [#" + QuoteManager.getInstance().getSelected().getObject_number() + "]", IO.TAG_INFO);
+                                                    //remove Quote from memory
+                                                    QuoteManager.getInstance().getDataset().remove(QuoteManager.getInstance().getSelected());
+                                                    //remove Quote from table
+                                                    tblQuotes.getItems().remove(QuoteManager.getInstance().getSelected());
+                                                    tblQuotes.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not delete quote [#"+QuoteManager.getInstance().getSelected().getObject_number()+"]", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
+
                                         Quote quote = getTableView().getItems().get(getIndex());
                                         getTableView().getItems().remove(quote);
                                         getTableView().refresh();
-                                        //TODO: remove from server
                                         IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
                                     });
 
@@ -308,7 +333,6 @@ public class QuotesController extends OperationsController implements Initializa
         EmployeeManager.getInstance().initialize();
         ClientManager.getInstance().initialize();
         ResourceManager.getInstance().initialize();
-        ServiceManager.getInstance().initialize();
         QuoteManager.getInstance().initialize();
 
         //execute callback

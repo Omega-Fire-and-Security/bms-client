@@ -159,11 +159,10 @@ public class NewResourceController extends ScreenController implements Initializ
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.putJSON("/resources", resource.getJSONString(), headers);
+            HttpURLConnection connection = RemoteComms.put("/resource", resource.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -172,17 +171,19 @@ public class NewResourceController extends ScreenController implements Initializ
 
                     if(resource_id==null)
                     {
-                        IO.logAndAlert("New Resource Creation Failure", "Invalid response.", IO.TAG_ERROR);
+                        IO.logAndAlert("Resource Creation Failure", "Invalid server response.", IO.TAG_ERROR);
                         return;
                     }
                     if(resource_id.isEmpty())
                     {
-                        IO.logAndAlert("New Resource Creation Failure", "Invalid response.", IO.TAG_ERROR);
+                        IO.logAndAlert("Resource Creation Failure", "Invalid server response.", IO.TAG_ERROR);
                         return;
                     }
                     ResourceManager.getInstance().setSelected(resource);
+                    //TODO: sanitise resource_id & resource.set_id(resource_id)
                     IO.log(getClass().getName(), IO.TAG_INFO, "Successfully created a new Resource ["+resource_id+"]");
                     IO.logAndAlert("New Resource Creation Success", "Successfully created a new Resource ["+resource.getResource_description()+"]", IO.TAG_INFO);
+
                     itemsModified = false;
                 }else
                 {

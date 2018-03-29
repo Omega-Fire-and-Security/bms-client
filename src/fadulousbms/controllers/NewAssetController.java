@@ -175,11 +175,10 @@ public class NewAssetController extends ScreenController implements Initializabl
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.putJSON("/assets", asset.getJSONString(), headers);
+            HttpURLConnection connection = RemoteComms.put("/asset", asset.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -188,12 +187,12 @@ public class NewAssetController extends ScreenController implements Initializabl
 
                     if(response==null)
                     {
-                        IO.logAndAlert("New Asset Creation Failure", "Invalid response.", IO.TAG_ERROR);
+                        IO.logAndAlert("Asset Creation Failure", "Invalid server response.", IO.TAG_ERROR);
                         return;
                     }
                     if(response.isEmpty())
                     {
-                        IO.logAndAlert("New Asset Creation Failure", "Invalid response.", IO.TAG_ERROR);
+                        IO.logAndAlert("Asset Creation Failure", "Invalid server response.", IO.TAG_ERROR);
                         return;
                     }
 
@@ -202,7 +201,7 @@ public class NewAssetController extends ScreenController implements Initializabl
                     new_asset_id = new_asset_id.replaceAll(" ","");//strip whitespace chars
 
                     AssetManager.getInstance().setSelected(asset);
-                    IO.logAndAlert("New Asset Creation Success", "Successfully created new Asset ["+new_asset_id+"]", IO.TAG_INFO);
+                    IO.logAndAlert("Asset Creation Success", "Successfully created new Asset ["+new_asset_id+"]", IO.TAG_INFO);
                     itemsModified = false;
                 }else
                 {
@@ -212,10 +211,11 @@ public class NewAssetController extends ScreenController implements Initializabl
                 }
                 if(connection!=null)
                     connection.disconnect();
-            } else IO.logAndAlert("New Asset Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Asset Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
         } catch (IOException e)
         {
             IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
+            e.printStackTrace();
         }
     }
 

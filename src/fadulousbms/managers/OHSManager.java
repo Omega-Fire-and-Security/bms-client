@@ -9,7 +9,7 @@ import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.model.BusinessObject;
 import fadulousbms.model.CustomTableViewControls;
-import fadulousbms.model.FileMetadata;
+import fadulousbms.model.Metafile;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -21,11 +21,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import java.util.HashMap;
 public class OHSManager extends BusinessObjectManager
 {
     private TableView tblOHS;
-    private FileMetadata[] documents;
+    private Metafile[] documents;
     private static OHSManager ohs_manager = new OHSManager();
 
     public static OHSManager getInstance()
@@ -62,13 +62,13 @@ public class OHSManager extends BusinessObjectManager
                 {
                     Gson gson = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                    headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
-                    String index_json = RemoteComms.sendGetRequest("/api/ohs/indices", headers);
-                    documents = gson.fromJson(index_json, FileMetadata[].class);
+                    String index_json = RemoteComms.get("/ohs/indices", headers);
+                    documents = gson.fromJson(index_json, Metafile[].class);
 
                     //Sort array in ascending order
-                    //TODO:FileMetadata.quickSort(documents, 0, documents.length-1);
+                    //TODO:Metafile.quickSort(documents, 0, documents.length-1);
                 } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
             } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
         }catch (JsonSyntaxException ex)
@@ -84,7 +84,7 @@ public class OHSManager extends BusinessObjectManager
     }
 
     @Override
-    public HashMap<String, FileMetadata> getDataset()
+    public HashMap<String, Metafile> getDataset()
     {
         return null;
     }
@@ -112,13 +112,13 @@ public class OHSManager extends BusinessObjectManager
                 tblOHS.setEditable(true);
 
                 TableColumn<BusinessObject, String> index = new TableColumn("Index");
-                CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", "/api/ohs/index");
+                CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", OHSManager.getInstance());
 
                 TableColumn<BusinessObject, String> label = new TableColumn("Label");
-                CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", "/api/ohs/index");
+                CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", OHSManager.getInstance());
 
                 TableColumn<BusinessObject, String> document = new TableColumn("Document Path");
-                CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", "/api/ohs/index");
+                CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", OHSManager.getInstance());
 
                 TableColumn<BusinessObject, HBox> action = new TableColumn("Action");
                 CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/api/ohs/index");
@@ -129,7 +129,7 @@ public class OHSManager extends BusinessObjectManager
                 TableColumn<BusinessObject, GridPane> mark = new TableColumn("Mark");
                 CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/api/ohs/index");
 
-                ObservableList<FileMetadata> lst_inspection = FXCollections.observableArrayList();
+                ObservableList<Metafile> lst_inspection = FXCollections.observableArrayList();
                 lst_inspection.addAll(documents);
 
                 tblOHS.setItems(lst_inspection);
@@ -253,7 +253,7 @@ public class OHSManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/ohs/index/add", params, headers);
+                /*HttpURLConnection connection = RemoteComms.post("/api/ohs/index/add", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -264,8 +264,9 @@ public class OHSManager extends BusinessObjectManager
                         JOptionPane.showMessageDialog(null, msg, "Error " + connection.getResponseCode(), JOptionPane.ERROR_MESSAGE);
                     }
                     connection.disconnect();
-                }
-            } catch (IOException e)
+                }*/
+                throw new NotImplementedException();
+            } catch (Exception e)
             {
                 IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);
             }

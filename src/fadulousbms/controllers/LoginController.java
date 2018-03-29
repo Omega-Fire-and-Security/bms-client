@@ -17,28 +17,18 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import org.controlsfx.control.MaskerPane;
-import org.controlsfx.control.textfield.CustomPasswordField;
-import org.controlsfx.control.textfield.CustomTextField;
-
-import javax.swing.JOptionPane;
-import javax.xml.soap.Text;
 
 /**
- * views Controller class
- *
+ * Login Controller class
+ * Created by th3gh0st 2016/12/14
  * @author ghost
  */
 public class LoginController extends ScreenController implements Initializable
@@ -207,11 +197,11 @@ public class LoginController extends ScreenController implements Initializable
                         ex.printStackTrace();
                     } catch (IOException e)
                     {
-                        IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
+                        IO.logAndAlert("IO Error", e.getMessage(), IO.TAG_ERROR);
                         e.printStackTrace();
                     } catch (Exception e)
                     {
-                        IO.logAndAlert("Login failure", e.getMessage(), IO.TAG_ERROR);
+                        IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                         e.printStackTrace();
                     }
                     //hide loading pane

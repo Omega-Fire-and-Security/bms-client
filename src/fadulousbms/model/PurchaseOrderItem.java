@@ -3,12 +3,11 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.PurchaseOrderManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
  * Created by ghost on 2017/01/21.
@@ -36,7 +35,11 @@ public abstract class PurchaseOrderItem extends BusinessObject
         return AccessLevel.ADMIN;
     }
 
-    public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return PurchaseOrderManager.getInstance();
+    }
 
     public String getItem_number()
     {
@@ -52,8 +55,6 @@ public abstract class PurchaseOrderItem extends BusinessObject
     {
         this.item_number = item_number;
     }
-
-    public StringProperty purchase_order_idProperty(){return new SimpleStringProperty(purchase_order_id);}
 
     public String getPurchase_order_id()
     {
@@ -75,8 +76,6 @@ public abstract class PurchaseOrderItem extends BusinessObject
         this.type = type;
     }
 
-    public StringProperty item_idProperty(){return new SimpleStringProperty(item_id);}
-
     public String getItem_id()
     {
         return item_id;
@@ -87,15 +86,9 @@ public abstract class PurchaseOrderItem extends BusinessObject
         this.item_id = item_id;
     }
 
-    public StringProperty item_descriptionProperty(){return new SimpleStringProperty(getItem_description());}
-
     public abstract String getItem_description();
 
-    private StringProperty unitProperty(){return new SimpleStringProperty(getUnit());}
-
     public abstract String getUnit();
-
-    private StringProperty quantityProperty(){return new SimpleStringProperty(getQuantity());}
 
     public String getQuantity()
     {
@@ -111,8 +104,6 @@ public abstract class PurchaseOrderItem extends BusinessObject
     {
         this.quantity = quantity;
     }
-
-    private StringProperty costProperty(){return new SimpleStringProperty(getCost());}
 
     public String getCost()
     {
@@ -130,8 +121,6 @@ public abstract class PurchaseOrderItem extends BusinessObject
         this.cost=cost;
     }
 
-    private StringProperty discountProperty(){return new SimpleStringProperty(String.valueOf(discount));}
-
     public String getDiscount(){return String.valueOf(this.discount) + "%";}
 
     public double getDiscountValue(){return this.discount;}
@@ -141,29 +130,33 @@ public abstract class PurchaseOrderItem extends BusinessObject
         this.discount = discount;
     }
 
+    public PurchaseOrder getPurchaseOrder()
+    {
+        if(getManager().getDataset()!=null)
+            if(getManager().getDataset().get(getPurchase_order_id())!=null)
+                return (PurchaseOrder) getManager().getDataset().get(getPurchase_order_id());
+        return null;
+    }
+
+    public StringProperty item_descriptionProperty(){return new SimpleStringProperty(getItem_description());}
+    public StringProperty item_idProperty(){return new SimpleStringProperty(item_id);}
+    public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
+    public StringProperty purchase_order_idProperty(){return new SimpleStringProperty(purchase_order_id);}
+    private StringProperty unitProperty(){return new SimpleStringProperty(getUnit());}
+    private StringProperty quantityProperty(){return new SimpleStringProperty(getQuantity());}
+    private StringProperty costProperty(){return new SimpleStringProperty(getCost());}
+    private StringProperty discountProperty(){return new SimpleStringProperty(String.valueOf(discount));}
     private StringProperty totalProperty(){return new SimpleStringProperty(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(getTotal()));}
 
     public double getTotal()
     {
-        //return (getCostValue()-(getCostValue()*(getDiscountValue()/100)))*getQuantityValue(); //discounted value * qty
         return getCostValue()*getQuantityValue();
     }
 
     public abstract BusinessObject getItem();
 
-    //public abstract BusinessObject getItem();
-   /* public BusinessObject getItem()
-    {
-        return this.item;
-    }
-
-    public void setItem(BusinessObject item)
-    {
-        this.item=item;
-    }*/
-
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -241,4 +234,16 @@ public abstract class PurchaseOrderItem extends BusinessObject
         IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
     }
+
+    @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number();
+        if(getPurchaseOrder()!=null)
+            str += ", for purchase order " + getPurchaseOrder().toString();
+        else str+= ", for purchase order [" + getPurchase_order_id() + "]";
+        return str;
+    }
+
+    //TODO: apiEndpoint() pointing to /purchaseorder/item that searches from all PurchaseOrderItem collections?
 }

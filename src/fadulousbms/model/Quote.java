@@ -3,9 +3,8 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.ClientManager;
-import fadulousbms.managers.EmployeeManager;
-import fadulousbms.managers.QuoteManager;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import java.util.HashMap;
@@ -26,7 +25,6 @@ public class Quote extends BusinessObject
     private int status;
     private String parent_id;
     private QuoteItem[] resources;
-    private QuoteService[] services;
     private int rev_cursor = -1;
     public static final String TAG = "Quote";
 
@@ -40,6 +38,12 @@ public class Quote extends BusinessObject
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.ADMIN;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return QuoteManager.getInstance();
     }
 
     public String getRequisition_id()
@@ -172,25 +176,7 @@ public class Quote extends BusinessObject
                 total += item.getTotal();
             }
         }
-        //account for services
-        if(this.getServices()!=null)
-        {
-            for (QuoteService quoteService : this.getServices())
-            {
-                total += quoteService.getTotal();
-            }
-        }
         return total * (getVat()/100) + total;
-    }
-
-    public QuoteService[] getServices()
-    {
-        return services;
-    }
-
-    public void setServices(QuoteService[] services)
-    {
-        this.services=services;
     }
 
     public QuoteItem[] getResources()
@@ -207,7 +193,7 @@ public class Quote extends BusinessObject
     {
         if(ClientManager.getInstance().getDataset()!=null)
         {
-            return (Client) ClientManager.getInstance().getDataset().get(client_id);
+            return ClientManager.getInstance().getDataset().get(client_id);
         } else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in database.");
         return null;
     }
@@ -405,7 +391,7 @@ public class Quote extends BusinessObject
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -507,8 +493,17 @@ public class Quote extends BusinessObject
     }
 
     @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number();
+        if(getClient()!=null)
+            str += ", for client " + getClient().toString();
+        return str;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/quotes";
+        return "/quote";
     }
 }

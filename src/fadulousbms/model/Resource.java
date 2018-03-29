@@ -7,14 +7,14 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.BusinessObjectManager;
 import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.SupplierManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
  *
@@ -45,6 +45,12 @@ public class Resource extends BusinessObject implements Serializable
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return ResourceManager.getInstance();
     }
 
     public String getResource_description()
@@ -172,7 +178,7 @@ public class Resource extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -285,6 +291,6 @@ public class Resource extends BusinessObject implements Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/resources";
+        return "/resource";
     }
 }

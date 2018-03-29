@@ -62,9 +62,9 @@ public class ExpenseManager extends BusinessObjectManager
 
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/expenses_timestamp", headers);
+                            String timestamp_json = RemoteComms.get("/timestamp/expenses_timestamp", headers);
                             Counters cnt_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cnt_timestamp != null)
                             {
@@ -80,8 +80,8 @@ public class ExpenseManager extends BusinessObjectManager
                             if (!isSerialized(ROOT_PATH + filename))
                             {
                                 //Load Expenses
-                                String expenses_json = RemoteComms.sendGetRequest("/expenses", headers);
-                                ExpenseServerObject expenseServerObject = gson.fromJson(expenses_json, ExpenseServerObject.class);
+                                String expenses_json = RemoteComms.get("/expenses", headers);
+                                ExpenseServerObject expenseServerObject = (ExpenseServerObject) ExpenseManager.getInstance().parseJSONobject(expenses_json, new ExpenseServerObject());
 
                                 if (expenseServerObject != null)
                                 {

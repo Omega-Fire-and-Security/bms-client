@@ -5,6 +5,7 @@ import fadulousbms.managers.ResourceManager;
 
 /**
  * Created by ghost on 2017/01/21.
+ * @author ghost
  */
 public class PurchaseOrderResource extends PurchaseOrderItem
 {
@@ -43,6 +44,6 @@ public class PurchaseOrderResource extends PurchaseOrderItem
     @Override
     public String apiEndpoint()
     {
-        return "/purchaseorders/resources";
+        return "/purchaseorder/resource";
     }
 }

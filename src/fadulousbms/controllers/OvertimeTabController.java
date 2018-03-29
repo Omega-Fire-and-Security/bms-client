@@ -63,11 +63,11 @@ public class OvertimeTabController extends ScreenController implements Initializ
         colJobNumber.setMinWidth(100);
         colJobNumber.setCellValueFactory(new PropertyValueFactory<>("job_number"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        CustomTableViewControls.makeEditableTableColumn(colTimeIn, TextFieldTableCell.forTableColumn(), 120, "time_in", "/overtime_records");
-        CustomTableViewControls.makeEditableTableColumn(colTimeOut, TextFieldTableCell.forTableColumn(), 120, "time_out", "/overtime_records");
+        CustomTableViewControls.makeEditableTableColumn(colTimeIn, TextFieldTableCell.forTableColumn(), 120, "time_in", OvertimeManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colTimeOut, TextFieldTableCell.forTableColumn(), 120, "time_out", OvertimeManager.getInstance());
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDate, "date");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "");
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", OvertimeManager.getInstance());
 
         if(OvertimeManager.getInstance().getDataset()!=null)
         {

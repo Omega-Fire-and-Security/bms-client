@@ -4,17 +4,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
-import javafx.scene.Scene;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.textfield.TextFields;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/11.
+ * @author ghost
  */
 public class ClientManager extends BusinessObjectManager
 {
@@ -43,77 +47,19 @@ public class ClientManager extends BusinessObjectManager
         synchroniseDataset();
     }
 
-    public static BusinessObjectManager getInstance()
+    public static ClientManager getInstance()
     {
         return clientManager;
     }
 
     @Override
-    public HashMap<String, Client> getDataset(){return clients;}
-
-    public static String createNewClient(Client client, Callback callback)
+    public Client getSelected()
     {
-        if(SessionManager.getInstance().getActive()==null)
-        {
-            IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
-            return null;
-        }
-        if(SessionManager.getInstance().getActive().isExpired())
-        {
-            IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log in.", IO.TAG_ERROR);
-            return null;
-        }
-
-        try
-        {
-            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-
-            //create new client on database
-            HttpURLConnection connection = RemoteComms.putJSON("/clients", client.getJSONString(), headers);
-            if(connection!=null)
-            {
-                if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                {
-                    String response = IO.readStream(connection.getInputStream());
-
-                    //server will return message object in format "<client_id>"
-                    String new_client_id = response.replaceAll("\"","");//strip inverted commas around client_id
-                    new_client_id = new_client_id.replaceAll("\n","");//strip new line chars
-                    new_client_id = new_client_id.replaceAll(" ","");//strip whitespace chars
-
-                    IO.log(ClientManager.class.getName(), IO.TAG_INFO, "successfully created a new client: " + new_client_id);
-
-                    SupplierManager.getInstance().forceSynchronise();
-
-                    if(callback!=null)
-                        callback.call(new_client_id);
-
-                    if(connection!=null)
-                        connection.disconnect();
-                    return new_client_id;
-                } else
-                {
-                    //Get error message
-                    String msg = IO.readStream(connection.getErrorStream());
-                    IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
-
-                    if(callback!=null)
-                        callback.call(null);
-
-                    if(connection!=null)
-                        connection.disconnect();
-                    return null;
-                }
-
-            } else IO.logAndAlert("Client Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
-        } catch (IOException e)
-        {
-            IO.log(ClientManager.class.getName(), IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
+        return (Client) super.getSelected();
     }
+
+    @Override
+    public HashMap<String, Client> getDataset(){return clients;}
 
     @Override
     Callback getSynchronisationCallback()
@@ -132,12 +78,10 @@ public class ClientManager extends BusinessObjectManager
                         {
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
-                            String timestamp_json = null;
-
-                            timestamp_json = RemoteComms.sendGetRequest("/timestamp/clients_timestamp", headers);
+                            String timestamp_json = RemoteComms.get("/timestamp/clients_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
@@ -152,8 +96,8 @@ public class ClientManager extends BusinessObjectManager
 
                             if (!isSerialized(ROOT_PATH + filename))
                             {
-                                String clients_json_object = RemoteComms.sendGetRequest("/clients", headers);
-                                ClientServerObject clientServerObject = gson.fromJson(clients_json_object, ClientServerObject.class);
+                                String clients_json_object = RemoteComms.get("/clients", headers);
+                                ClientServerObject clientServerObject = (ClientServerObject) ClientManager.getInstance().parseJSONobject(clients_json_object, new ClientServerObject());
                                 if(clientServerObject!=null)
                                 {
                                     if(clientServerObject.get_embedded()!=null)
@@ -191,191 +135,242 @@ public class ClientManager extends BusinessObjectManager
         };
     }
 
-    public static void newClientWindow(String title, Callback callback)
+    public void newClientPopOver(Node parent, Callback callback)
     {
-        Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - " + title);
-        stage.setMinWidth(320);
-        stage.setHeight(500);
-        stage.setAlwaysOnTop(true);
-
-        VBox vbox = new VBox(1);
+        setSelected(null);
 
         final TextField txt_client_name = new TextField();
         txt_client_name.setMinWidth(200);
         txt_client_name.setMaxWidth(Double.MAX_VALUE);
-        HBox client_name = CustomTableViewControls.getLabelledNode("Client Name", 200, txt_client_name);
+        //HBox client_name = CustomTableViewControls.getLabelledNode("Client Name", 200, txt_client_name);
 
         final TextArea txt_physical_address = new TextArea();
         txt_physical_address.setMinWidth(200);
         txt_physical_address.setMaxWidth(Double.MAX_VALUE);
-        HBox physical_address = CustomTableViewControls.getLabelledNode("Physical Address", 200, txt_physical_address);
+        txt_physical_address.setPrefHeight(70);
+        //HBox physical_address = CustomTableViewControls.getLabelledNode("Physical Address", 200, txt_physical_address);
 
         final TextArea txt_postal_address = new TextArea();
         txt_postal_address.setMinWidth(200);
         txt_postal_address.setMaxWidth(Double.MAX_VALUE);
-        HBox postal_address = CustomTableViewControls.getLabelledNode("Postal Address", 200, txt_postal_address);
+        txt_postal_address.setPrefHeight(70);
+        //HBox postal_address = CustomTableViewControls.getLabelledNode("Postal Address", 200, txt_postal_address);
 
         final TextField txt_tel = new TextField();
         txt_tel.setMinWidth(200);
         txt_tel.setMaxWidth(Double.MAX_VALUE);
-        HBox tel = CustomTableViewControls.getLabelledNode("Tel Number", 200, txt_tel);
+        //HBox tel = CustomTableViewControls.getLabelledNode("Tel Number", 200, txt_tel);
 
         final TextField txt_contact_email = new TextField();
         txt_contact_email.setMinWidth(200);
         txt_contact_email.setMaxWidth(Double.MAX_VALUE);
-        HBox contact_email = CustomTableViewControls.getLabelledNode("eMail Address", 200, txt_contact_email);
+        //HBox contact_email = CustomTableViewControls.getLabelledNode("eMail Address", 200, txt_contact_email);
 
-        final TextField txt_client_reg = new TextField();
+        final TextField txt_client_reg = new TextField("N/A");
         txt_client_reg.setMinWidth(200);
         txt_client_reg.setMaxWidth(Double.MAX_VALUE);
-        HBox client_reg = CustomTableViewControls.getLabelledNode("Registration Number", 200, txt_client_reg);
+        //HBox client_reg = CustomTableViewControls.getLabelledNode("Registration Number", 200, txt_client_reg);
 
-        final TextField txt_client_vat = new TextField();
+        final TextField txt_client_vat = new TextField("N/A");
         txt_client_vat.setMinWidth(200);
         txt_client_vat.setMaxWidth(Double.MAX_VALUE);
-        HBox client_vat = CustomTableViewControls.getLabelledNode("VAT Number", 200, txt_client_vat);
+        //HBox client_vat = CustomTableViewControls.getLabelledNode("VAT Number", 200, txt_client_vat);
 
         final TextField txt_client_account = new TextField();
         txt_client_account.setMinWidth(200);
         txt_client_account.setMaxWidth(Double.MAX_VALUE);
-        HBox client_account = CustomTableViewControls.getLabelledNode("Account Name", 200, txt_client_account);
+        //HBox client_account = CustomTableViewControls.getLabelledNode("Account Name", 200, txt_client_account);
+
+        txt_client_name.textProperty().addListener((observable, oldValue, newValue) ->
+        {
+            if(txt_client_name.getText()!=null)
+                txt_client_account.setText(txt_client_name.getText().toLowerCase().replaceAll(" ", "-"));
+        });
 
         final DatePicker dpk_date_partnered = new DatePicker();
         dpk_date_partnered.setMinWidth(200);
         dpk_date_partnered.setMaxWidth(Double.MAX_VALUE);
-        HBox date_partnered = CustomTableViewControls.getLabelledNode("Date Partnered", 200, dpk_date_partnered);
+        //HBox date_partnered = CustomTableViewControls.getLabelledNode("Date Partnered", 200, dpk_date_partnered);
 
         final TextField txt_website = new TextField();
         txt_website.setMinWidth(200);
         txt_website.setMaxWidth(Double.MAX_VALUE);
-        HBox website = CustomTableViewControls.getLabelledNode("Website", 200, txt_website);
-
-        final CheckBox chbx_active = new CheckBox();
-        chbx_active.setMinWidth(200);
-        chbx_active.setMaxWidth(Double.MAX_VALUE);
-        chbx_active.setSelected(true);
-        HBox active = CustomTableViewControls.getLabelledNode("Active", 200, chbx_active);
+        //HBox website = CustomTableViewControls.getLabelledNode("Website", 200, txt_website);
 
         final TextArea txt_other = new TextArea();
         txt_other.setMinWidth(200);
         txt_other.setMaxWidth(Double.MAX_VALUE);
-        HBox other = CustomTableViewControls.getLabelledNode("Other", 200, txt_other);
+        txt_other.setPrefHeight(70);
+        //HBox other = CustomTableViewControls.getLabelledNode("Other", 200, txt_other);
 
-        HBox submit;
-        submit = CustomTableViewControls.getSpacedButton("Submit", event ->
+        Button btnSubmit = new Button("Create New Client");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnSubmit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        btnSubmit.getStyleClass().add("btnAdd");
+        btnSubmit.setMinWidth(140);
+        btnSubmit.setMinHeight(45);
+        HBox.setMargin(btnSubmit, new Insets(15, 0, 0, 10));
+
+        GridPane page = new GridPane();
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.setHgap(20);
+        page.setVgap(20);
+
+        page.add(new Label("Client Name: "), 0, 0);
+        page.add(txt_client_name, 1, 0);
+
+        page.add(new Label("Physical Address: "), 0, 1);
+        page.add(txt_physical_address, 1, 1);
+
+        page.add(new Label("Postal Address: "), 0, 2);
+        page.add(txt_postal_address, 1, 2);
+
+        page.add(new Label("Tel No.: "), 0, 3);
+        page.add(txt_tel, 1, 3);
+
+        page.add(new Label("eMail address: "), 0, 4);
+        page.add(txt_contact_email, 1, 4);
+
+        page.add(new Label("Registration Number: "), 0, 5);
+        page.add(txt_client_reg, 1, 5);
+
+        page.add(new Label("Tax Number"), 0, 6);
+        page.add(txt_client_vat, 1, 6);
+
+        page.add(new Label("Credit account name: "), 0, 7);
+        page.add(txt_client_account, 1, 7);
+
+        page.add(new Label("Website: "), 0, 8);
+        page.add(txt_website, 1, 8);
+
+        page.add(new Label("Other Info: "), 0, 9);
+        page.add(txt_other, 1, 9);
+
+        page.add(btnSubmit, 1, 10);
+
+        PopOver popover = new PopOver(page);
+        popover.setTitle("Create new Client");
+        popover.setDetached(true);
+        popover.show(parent);
+
+        TextFields.bindAutoCompletion(txt_client_name, ClientManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
         {
-            if (SessionManager.getInstance().getActive() == null)
+            if(event!=null)
             {
-                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                return;
-            }
-            if (SessionManager.getInstance().getActive().isExpired())
-            {
-                IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-                return;
-            }
-            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
-
-            if(!Validators.isValidNode(txt_client_name, txt_client_name.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_physical_address, txt_physical_address.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_postal_address, txt_postal_address.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_tel, txt_tel.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_contact_email, txt_contact_email.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_client_reg, txt_client_reg.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_client_vat, txt_client_vat.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_client_account, txt_client_account.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(dpk_date_partnered, dpk_date_partnered.getValue()==null?"":dpk_date_partnered.getValue().toString(), 4, date_regex))
-                return;
-            if(!Validators.isValidNode(txt_website, txt_website.getText(), 1, ".+"))
-                return;
-
-            long date_partnered_in_sec = dpk_date_partnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-
-            Client client = new Client();
-            client.setClient_name(txt_client_name.getText());
-            client.setPhysical_address(txt_physical_address.getText());
-            client.setPostal_address(txt_postal_address.getText());
-            client.setTel(txt_tel.getText());
-            client.setContact_email(txt_contact_email.getText());
-            client.setRegistration_number(txt_client_reg.getText());
-            client.setVat_number(txt_client_vat.getText());
-            client.setAccount_name(txt_client_account.getText());
-            client.setDate_partnered(date_partnered_in_sec);
-            client.setWebsite(txt_website.getText());
-            client.setActive(chbx_active.isSelected());
-            client.setCreator(SessionManager.getInstance().getActive().getUsr());
-            if(txt_other.getText()!=null)
-                client.setOther(txt_other.getText());
-
-            try
-            {
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-
-                HttpURLConnection connection = RemoteComms.putJSON("/clients", client.getJSONString(), headers);
-                if(connection!=null)
+                if(event.getCompletion()!=null)
                 {
-                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                    {
-                        IO.logAndAlert("Success", "Successfully created a new client!", IO.TAG_INFO);
+                    setSelected(event.getCompletion());
 
-                        ClientManager.getInstance().forceSynchronise();
-
-                        //execute callback w/ args
-                        if(callback!=null)
-                            callback.call(IO.readStream(connection.getInputStream()));
-                    } else{
-                        IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                        //execute callback w/o args
-                        if(callback!=null)
-                            callback.call(null);
-                    }
-                    connection.disconnect();
+                    if(((Client)getSelected()).getPhysical_address()!=null)
+                        txt_physical_address.setText(((Client)getSelected()).getPhysical_address());
+                    if(((Client)getSelected()).getPostal_address()!=null)
+                        txt_postal_address.setText(((Client)getSelected()).getRegistration_number());
+                    if(((Client)getSelected()).getRegistration_number()!=null)
+                        txt_client_reg.setText(((Client)getSelected()).getRegistration_number());
+                    if(((Client)getSelected()).getVat_number()!=null)
+                        txt_client_vat.setText(((Client)getSelected()).getRegistration_number());
+                    if(((Client)getSelected()).getAccount_name()!=null)
+                        txt_client_account.setText(((Client)getSelected()).getAccount_name());
+                    if(((Client)getSelected()).getTel()!=null)
+                        txt_tel.setText(((Client)getSelected()).getTel());
+                    if(((Client)getSelected()).getWebsite()!=null)
+                        txt_website.setText(((Client)getSelected()).getWebsite());
+                    if(((Client)getSelected()).getContact_email()!=null)
+                        txt_contact_email.setText(((Client)getSelected()).getContact_email());
+                    if((getSelected()).getOther()!=null)
+                        txt_other.setText(getSelected().getOther());
                 }
-            } catch (IOException e)
-            {
-                IO.log(TAG, IO.TAG_ERROR, e.getMessage());
             }
         });
 
-        //Add form controls vertically on the stage
-        vbox.getChildren().add(client_name);
-        vbox.getChildren().add(physical_address);
-        vbox.getChildren().add(postal_address);
-        vbox.getChildren().add(tel);
-        vbox.getChildren().add(contact_email);
-        vbox.getChildren().add(client_reg);
-        vbox.getChildren().add(client_vat);
-        vbox.getChildren().add(client_account);
-        vbox.getChildren().add(date_partnered);
-        vbox.getChildren().add(website);
-        vbox.getChildren().add(active);
-        vbox.getChildren().add(other);
-        vbox.getChildren().add(submit);
+        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                if(SessionManager.getInstance().getActive()==null)
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+                if(SessionManager.getInstance().getActive().isExpired())
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
 
-        //Setup scene and display stage
-        Scene scene = new Scene(vbox);
-        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-        scene.getStylesheets().clear();
-        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
 
-        /*stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                synchroniseDataset());*/
+                String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
 
-        stage.setScene(scene);
-        stage.show();
-        stage.centerOnScreen();
-        stage.setResizable(true);
+                if(!Validators.isValidNode(txt_client_name, txt_client_name.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_physical_address, txt_physical_address.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_postal_address, txt_postal_address.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_tel, txt_tel.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_contact_email, txt_contact_email.getText(), 1, ".+"))
+                    return;
+                /*if(!Validators.isValidNode(txt_client_reg, txt_client_reg.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txt_client_vat, txt_client_vat.getText(), 1, ".+"))
+                    return;*/
+                if(!Validators.isValidNode(txt_client_account, txt_client_account.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(dpk_date_partnered, dpk_date_partnered.getValue()==null?"":dpk_date_partnered.getValue().toString(), 4, date_regex))
+                    return;
+                /*if(!Validators.isValidNode(txt_website, txt_website.getText(), 1, ".+"))
+                    return;*/
+
+                //if txt_client_name matches selected_client's client_name ask if they want to make a duplicate record
+                String proceed = IO.OK;
+                if(((Client)getSelected())!=null)
+                    if(txt_client_name.getText().equals(((Client)getSelected()).getClient_name()))
+                        proceed = IO.showConfirm("Found duplicate client, continue?", "Found client with the name ["+txt_client_name.getText()+"], add another record?");
+
+                //did they choose to continue with the creation or cancel?
+                if(!proceed.equals(IO.OK))
+                {
+                    IO.log(getClass().getName(), "aborting new Client creation.", IO.TAG_VERBOSE);
+                    return;
+                }
+
+                long date_partnered_in_sec = dpk_date_partnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
+
+                Client client = new Client();
+                client.setClient_name(txt_client_name.getText());
+                client.setPhysical_address(txt_physical_address.getText());
+                client.setPostal_address(txt_postal_address.getText());
+                client.setTel(txt_tel.getText());
+                client.setContact_email(txt_contact_email.getText());
+                client.setRegistration_number(txt_client_reg.getText());
+                client.setVat_number(txt_client_vat.getText());
+                client.setAccount_name(txt_client_account.getText());
+                client.setDate_partnered(date_partnered_in_sec);
+                client.setWebsite(txt_website.getText());
+                client.setActive(true);
+                client.setCreator(SessionManager.getInstance().getActive().getUsr());
+                if(txt_other.getText()!=null)
+                    client.setOther(txt_other.getText());
+
+                try
+                {
+                    ClientManager.getInstance().putObject(client, new_client_id ->
+                    {
+                        if(new_client_id!=null)
+                        {
+                            setSelected(ClientManager.getInstance().getDataset().get(new_client_id));
+                        } else IO.logAndAlert("Error", "Could not create new client ["+txt_client_name.getText()+"]", IO.TAG_ERROR);
+                        return null;
+                    });
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+            }
+        });
     }
 
     class ClientServerObject extends ServerObject

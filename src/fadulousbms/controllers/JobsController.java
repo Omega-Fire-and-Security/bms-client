@@ -32,6 +32,7 @@ import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.textfield.TextFields;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,7 +44,7 @@ import java.util.*;
 
 /**
  * views Controller class
- *
+ * Created by ghost on 2017/01/11.
  * @author ghost
  */
 public class JobsController extends ScreenController implements Initializable
@@ -53,7 +54,7 @@ public class JobsController extends ScreenController implements Initializable
     @FXML
     private TableColumn colJobNum, colClient, colSitename, colRequest, colTotal,
             colContactPerson, colDateGenerated, colPlannedStartDate,
-            colDateAssigned, colDateStarted, colDateEnded, colCreator, colExtra, colStatus, colAction;
+            colDateAssigned, colDateStarted, colDateEnded, colCreator, colStatus, colAction;
     @FXML
     private Tab jobsTab;
 
@@ -101,13 +102,12 @@ public class JobsController extends ScreenController implements Initializable
         }
         colJobNum.setMinWidth(100);
         colJobNum.setCellValueFactory(new PropertyValueFactory<>("object_number"));
-        //CustomTableViewControls.makeEditableTableColumn(colRequest, TextFieldTableCell.forTableColumn(), 215, "job_description", "/jobs");
         colRequest.setCellValueFactory(new PropertyValueFactory<>("job_description"));
         colClient.setCellValueFactory(new PropertyValueFactory<>("client_name"));
         colSitename.setCellValueFactory(new PropertyValueFactory<>("sitename"));
         colContactPerson.setCellValueFactory(new PropertyValueFactory<>("contact_person"));
         //TODO: contact_personProperty
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,90, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/jobs");
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,90, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/job");
         CustomTableViewControls
                 .makeLabelledDatePickerTableColumn(colPlannedStartDate, "planned_start_date");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", false);
@@ -220,7 +220,7 @@ public class JobsController extends ScreenController implements Initializable
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()>=BusinessObject.STATUS_APPROVED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()>=BusinessObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnDefault");
                                         btnEmail.setDisable(false);
@@ -237,7 +237,7 @@ public class JobsController extends ScreenController implements Initializable
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()>=BusinessObject.STATUS_APPROVED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()>=BusinessObject.STATUS_FINALISED)
                                     {
                                         btnEmailSigned.getStyleClass().add("btnAdd");
                                         btnEmailSigned.setDisable(false);
@@ -264,55 +264,118 @@ public class JobsController extends ScreenController implements Initializable
                                     HBox hBox = new HBox(btnView, btnCalendar, btnUpload, btnApprove, btnViewSigned, btnInvoice, btnPDF, btnEmail, btnEmailSigned, btnRemove);
                                     hBox.setMaxWidth(Double.MAX_VALUE);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
-                                    Job job = getTableView().getItems().get(getIndex());
 
                                     btnView.setOnMouseClicked(event ->
                                     {
                                         JobManager.getInstance().initialize();
-                                        if (job == null)
+                                        if (getTableView().getItems().get(getIndex()) == null)
                                         {
                                             IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
                                             return;
                                         }
                                         //set selected Job
-                                        JobManager.getInstance().setSelected(JobManager.getInstance().getDataset().get(job.get_id()));
-                                        viewJob((Job)JobManager.getInstance().getSelected());
+                                        if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                            JobManager.getInstance().setSelected(JobManager.getInstance().getDataset().get(getTableView().getItems().get(getIndex()).get_id()));
+                                        viewJob(JobManager.getInstance().getSelected());
                                     });
 
-                                    btnCalendar.setOnMouseClicked(event -> showProjectOnCalendar(getTableView().getItems().get(getIndex())));
+                                    btnCalendar.setOnMouseClicked(event ->
+                                    {
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                                JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+                                        showProjectOnCalendar(getTableView().getItems().get(getIndex()));
+                                    });
 
                                     btnUpload.setOnMouseClicked(event ->
                                     {
-                                        if (job == null)
+                                        if (getTableView().getItems().get(getIndex()) == null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+
+                                        if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                            JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        if (JobManager.getInstance().getSelected() == null)
                                         {
                                             IO.logAndAlert("Error " + getClass()
                                                     .getName(), "Job object is not set", IO.TAG_ERROR);
                                             return;
                                         }
-                                        JobManager.getInstance().uploadSigned(job.get_id());
+                                        JobManager.getInstance().uploadSigned(JobManager.getInstance().getSelected().get_id());
                                     });
 
                                     btnApprove.setOnMouseClicked(event ->
-                                            JobManager.approveJob(job, param1 ->
-                                            {
-                                                //Refresh UI
-                                                new Thread(() ->
-                                                        refreshModel(cb->{Platform.runLater(() -> refreshView());return null;})).start();
-                                                return null;
-                                            }));
-
-                                    btnViewSigned.setOnMouseClicked(event ->
-                                            viewSignedJob(job));
-
-                                    btnInvoice.setOnMouseClicked(event ->
-                                            generateQuoteInvoice(job));
-
-                                    btnEmail.setOnMouseClicked(event ->
                                     {
                                         try
                                         {
-                                            if(job!=null)
-                                                JobManager.getInstance().emailBusinessObject(job, PDF.createJobCardPdf(job), null);
+                                            if(getTableView().getItems().get(getIndex()) != null)
+                                            {
+                                                if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                                    JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                                JobManager.approveJob(JobManager.getInstance().getSelected(), param1 ->
+                                                {
+                                                    //Refresh UI
+                                                    new Thread(() ->
+                                                            refreshModel(cb -> {
+                                                                Platform.runLater(() -> refreshView());
+                                                                return null;
+                                                            })).start();
+                                                    return null;
+                                                });
+                                            } else IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                        } catch (IOException e)
+                                        {
+                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                                            e.printStackTrace();
+                                        }
+                                    });
+
+                                    btnViewSigned.setOnMouseClicked(event ->
+                                    {
+                                        if (getTableView().getItems().get(getIndex()) == null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+
+                                        if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                            JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        viewSignedJob(JobManager.getInstance().getSelected());
+                                    });
+
+                                    btnInvoice.setOnMouseClicked(event ->
+                                    {
+                                        if (getTableView().getItems().get(getIndex()) == null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+
+                                        if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                            JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+                                        generateQuoteInvoice(JobManager.getInstance().getSelected());
+                                    });
+
+                                    btnEmail.setOnMouseClicked(event ->
+                                    {
+                                        if (getTableView().getItems().get(getIndex()) == null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+
+                                        if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                            JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+                                        try
+                                        {
+                                            if(JobManager.getInstance().getSelected()!=null)
+                                                JobManager.getInstance().emailBusinessObject(JobManager.getInstance().getSelected(),
+                                                        PDF.createJobCardPdf(JobManager.getInstance().getSelected()), null);
                                             else IO.logAndAlert("Error", "Job object is invalid.", IO.TAG_ERROR);
                                         } catch (IOException e)
                                         {
@@ -321,19 +384,63 @@ public class JobsController extends ScreenController implements Initializable
                                     });
 
                                     btnEmailSigned.setOnAction(event ->
-                                            JobManager.getInstance().emailSignedJobCard(job, null));
+                                    {
+                                        if (getTableView().getItems().get(getIndex()) == null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+
+                                        if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                            JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        throw new NotImplementedException();
+                                    });
 
                                     btnRemove.setOnMouseClicked(event ->
                                     {
-                                        //197.242.144.30
-                                        //Quote quote = getTableView().getItems().get(getIndex());
-                                        //getTableView().getItems().remove(quote);
-                                        //getTableView().refresh();
-                                        //TODO: remove from server
-                                        //IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                                JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove Job on remote server
+                                            JobManager.getInstance().deleteObject(JobManager.getInstance().getSelected(), job_id->
+                                            {
+                                                if(job_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted job [#" + JobManager.getInstance().getSelected().getObject_number() + "]", IO.TAG_INFO);
+                                                    //remove Job from memory
+                                                    JobManager.getInstance().getDataset().remove(JobManager.getInstance().getSelected().get_id());
+                                                    //remove Job from table
+                                                    tblJobs.getItems().remove(JobManager.getInstance().getSelected());
+                                                    tblJobs.refresh();//update table
+                                                    //nullify selected Job
+                                                    JobManager.getInstance().setSelected(null);
+                                                } else IO.logAndAlert("Error", "Could not delete job [#"+JobManager.getInstance().getSelected().getObject_number()+"]", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
 
-                                    btnPDF.setOnMouseClicked(event -> JobManager.showJobCard(job));
+                                    btnPDF.setOnMouseClicked(event ->
+                                    {
+                                        if (getTableView().getItems().get(getIndex()) == null)
+                                        {
+                                            IO.logAndAlert("Error " + getClass().getName(), "Job object is not set", IO.TAG_ERROR);
+                                            return;
+                                        }
+
+                                        if(getTableView().getItems().get(getIndex()) instanceof Job)
+                                            JobManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        JobManager.showJobCard(JobManager.getInstance().getSelected());
+                                    });
 
                                     hBox.setFillHeight(true);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -382,6 +489,165 @@ public class JobsController extends ScreenController implements Initializable
         Platform.runLater(() -> refreshView());
     }
 
+    private void assignEmployeePopOver()
+    {
+        ComboBox<Employee> cbxEmployees = new ComboBox<>();
+        cbxEmployees.setItems(FXCollections.observableArrayList(EmployeeManager.getInstance().getDataset().values()));
+
+        Button btnSubmit = new Button("Assign");
+
+        File fCss = new File(IO.STYLES_ROOT_PATH + "home.css");
+        btnSubmit.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
+        btnSubmit.getStyleClass().add("btnAdd");
+        btnSubmit.setMinWidth(100);
+        btnSubmit.setMinHeight(45);
+        HBox.setHgrow(btnSubmit, Priority.ALWAYS);
+
+        btnSubmit.setOnMouseClicked(event ->
+        {
+            if(TaskManager.getInstance().getSelected()==null)
+            {
+                IO.logAndAlert("Error", "Selected Task is invalid.", IO.TAG_ERROR);
+                return;
+            }
+            if(JobManager.getInstance().getSelected()==null)
+            {
+                IO.logAndAlert("Error", "Selected Job is invalid.", IO.TAG_ERROR);
+                return;
+            }
+            if(EmployeeManager.getInstance().getDataset()==null)
+            {
+                IO.logAndAlert("Error", "No Employees were found in the data-set.", IO.TAG_ERROR);
+                return;
+            }
+
+            if(cbxEmployees.getValue() == null)
+            {
+                IO.logAndAlert("Error", "Selected Employee is invalid.\nPlease select a valid value", IO.TAG_ERROR);
+                return;
+            }
+            if(SessionManager.getInstance().getActive() == null)
+            {
+                IO.logAndAlert("Error", "Active session is invalid.\nPlease login.", IO.TAG_ERROR);
+                return;
+            }
+            if(SessionManager.getInstance().getActive().isExpired())
+            {
+                IO.logAndAlert("Error", "Active session has expired.\nPlease sign in.", IO.TAG_ERROR);
+                return;
+            }
+
+            JobEmployee jobEmployee = new JobEmployee();
+            jobEmployee.setJob_id(JobManager.getInstance().getSelected().get_id());
+            jobEmployee.setTask_id(TaskManager.getInstance().getSelected().get_id());
+            jobEmployee.setUsr(cbxEmployees.getValue().getUsr());
+            jobEmployee.setCreator(SessionManager.getInstance().getActive().getUsr());
+
+            try
+            {
+                jobEmployee.getManager().putObject(jobEmployee, job_emp_id ->
+                {
+                    if(job_emp_id!=null)
+                    {
+                        IO.logAndAlert("Success", "Successfully assigned " + jobEmployee.getEmployee()
+                                + " to task #" + TaskManager.getInstance().getSelected().getObject_number()
+                                + " job #" + JobManager.getInstance().getDataset().get(jobEmployee.getJob_id()).getObject_number(), IO.TAG_INFO);
+                        try
+                        {
+                            //update task's date_assigned
+                            TaskManager.getInstance().getSelected().setDate_assigned(System.currentTimeMillis());
+                            TaskManager.getInstance().patchObject(TaskManager.getInstance().getSelected(), task_id->
+                            {
+                                if(task_id !=null)
+                                {
+                                    IO.log(getClass().getName(), IO.TAG_VERBOSE, "updated task #" + TaskManager.getInstance().getSelected().getObject_number()
+                                            + "[" + task_id + "]'s date_assigned attribute.");
+
+                                    //if task update successful, update jobs's date_assigned if it needs to
+                                    if (JobManager.getInstance().getSelected().getDate_assigned() <= 0)
+                                    {
+                                        JobManager.getInstance().getSelected().setDate_assigned(System.currentTimeMillis());
+                                        try
+                                        {
+                                            JobManager.getInstance().patchObject(JobManager.getInstance().getSelected(), job_id ->
+                                            {
+                                                if (job_id != null)
+                                                    IO.log(getClass().getName(), IO.TAG_VERBOSE, "updated job #" + JobManager.getInstance().getSelected().getObject_number()
+                                                            + "[" + job_id + "]'s date_assigned attribute.");
+                                                else
+                                                    IO.log(getClass().getName(), IO.TAG_WARN, "could NOT update job #" + JobManager.getInstance().getSelected().getObject_number()
+                                                            + "'s date_assigned attribute.");
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
+                                    } else IO.log(getClass().getName(), IO.TAG_VERBOSE, "job #" + JobManager.getInstance().getSelected().getObject_number() + " already has a valid date_assigned, skipping PATCH.");
+                                } else IO.log(getClass().getName(), IO.TAG_VERBOSE, "could NOT update task #" + TaskManager.getInstance().getSelected().getObject_number()
+                                        + "'s date_assigned");
+                                return null;
+                            });
+                        } catch (IOException e)
+                        {
+                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                            e.printStackTrace();
+                        }
+                    } else IO.logAndAlert("Error","Could NOT assign " + jobEmployee.getEmployee()
+                            + " to task #" + TaskManager.getInstance().getSelected().getObject_number()
+                            + " job #" + JobManager.getInstance().getDataset().get(jobEmployee.getJob_id()).getObject_number(), IO.TAG_ERROR);
+
+                    return null;
+                });
+            } catch (IOException e)
+            {
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
+            }
+        });
+
+        PopOver popOver = new PopOver(new VBox(cbxEmployees, new BorderPane(btnSubmit)));
+        popOver.setTitle("Assign Employees to Task #"
+                + TaskManager.getInstance().getSelected().getObject_number()
+                + "/Job #" + JobManager.getInstance().getSelected().getObject_number());
+        popOver.setDetached(true);
+        popOver.show(ScreenManager.getInstance());
+    }
+
+    private void showAssigneesPopOver(Task task)
+    {
+        TableView<Employee> tblAssignees = new TableView<>();
+
+        TableColumn col_name = new TableColumn("Name");
+        col_name.setMinWidth(120);
+        col_name.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn col_email = new TableColumn("eMail");
+        col_email.setMinWidth(150);
+        col_email.setCellValueFactory(new PropertyValueFactory<>("email"));
+
+        tblAssignees.getColumns().addAll(col_name, col_email);
+
+        HashMap<String, Employee> assignees_map = task.getAssignees();
+
+        if(assignees_map==null)
+            assignees_map=new HashMap<>();
+
+        tblAssignees.setItems(FXCollections.observableArrayList(assignees_map.values()));
+
+        PopOver popOver = new PopOver(new VBox(new BorderPane(new Label("Showing " + assignees_map.size()
+                + " assignee"+(assignees_map.size()>1||assignees_map.size()==0?"s":"")+" for task #" + task.getObject_number()
+                + ", job #" +task.getJob().getObject_number())),
+                tblAssignees));
+        popOver.setPrefSize(300, 200);
+        popOver.setTitle("Showing Task #"
+                + task.getObject_number() + "'s Assignees");
+
+        popOver.setDetached(true);
+        popOver.show(ScreenManager.getInstance());
+    }
+
     public void showProjectOnCalendar(Job job)
     {
         if(job==null)
@@ -408,18 +674,20 @@ public class JobsController extends ScreenController implements Initializable
         tabPane.getTabs().addAll(tasks_tab, calendar_tab);
 
         TableView<Task> tblTasks = new TableView<>();
+        tblTasks.setTableMenuButtonVisible(true);
         tblTasks.setEditable(true);
 
         TableColumn col_description = new TableColumn("Description");
-        CustomTableViewControls.makeEditableTableColumn(col_description, TextFieldTableCell.forTableColumn(), 120, "description", "/tasks");
+        CustomTableViewControls.makeEditableTableColumn(col_description, TextFieldTableCell.forTableColumn(), 150, "description", TaskManager.getInstance());
 
         TableColumn col_location = new TableColumn("Location");
-        CustomTableViewControls.makeEditableTableColumn(col_location, TextFieldTableCell.forTableColumn(), 100, "location", "/tasks");
+        CustomTableViewControls.makeEditableTableColumn(col_location, TextFieldTableCell.forTableColumn(), 100, "location", TaskManager.getInstance());
 
         TableColumn col_date_scheduled = new TableColumn("Date Scheduled");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_scheduled, "date_scheduled", true);
 
         TableColumn col_date_assigned = new TableColumn("Date Assigned");
+        col_date_assigned.setVisible(false);
         CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_assigned, "date_assigned", false);
 
         TableColumn col_date_started = new TableColumn("Date Started");
@@ -429,12 +697,139 @@ public class JobsController extends ScreenController implements Initializable
         CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_completed, "date_completed", true);
 
         TableColumn col_date_logged = new TableColumn("Date Logged");
+        col_date_logged.setVisible(false);
         CustomTableViewControls.makeLabelledDatePickerTableColumn(col_date_logged, "date_logged", false);
 
         TableColumn col_status = new TableColumn("Status");
         col_status.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        tblTasks.getColumns().addAll(col_description, col_location, col_date_scheduled, col_date_assigned, col_date_started, col_date_completed, col_date_logged, col_status);
+        TableColumn col_action = new TableColumn("Action");
+        col_action.setCellFactory(new Callback<TableColumn, TableCell>()
+        {
+            @Override
+            public TableCell call(TableColumn param)
+            {
+                final Button btnAssign = new Button("Assign"),
+                             btnAssignees = new Button("Show Assignees"),
+                             btnNewMat = new Button("New Material"),
+                             btnShowMat = new Button("Show Materials"),
+                             btnDelete = new Button("Delete");
+
+                return new TableCell()
+                {
+                    @Override
+                    protected void updateItem(Object item, boolean empty)
+                    {
+                        super.updateItem(item, empty);
+                        if(!empty)
+                        {
+                            File fCss = new File(IO.STYLES_ROOT_PATH + "home.css");
+
+                            btnAssign.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
+                            btnAssign.getStyleClass().add("btnAdd");
+                            btnAssign.setMinWidth(100);
+                            btnAssign.setMinHeight(35);
+                            HBox.setHgrow(btnAssign, Priority.ALWAYS);
+
+                            btnAssignees.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
+                            btnAssignees.getStyleClass().add("btnDefault");
+                            btnAssignees.setMinWidth(100);
+                            btnAssignees.setMinHeight(35);
+                            HBox.setHgrow(btnAssignees, Priority.ALWAYS);
+
+                            btnNewMat.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                            btnNewMat.getStyleClass().add("btnAdd");
+                            btnNewMat.setMinWidth(100);
+                            btnNewMat.setMinHeight(35);
+                            HBox.setHgrow(btnNewMat, Priority.ALWAYS);
+
+                            btnShowMat.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                            btnShowMat.getStyleClass().add("btnDefault");
+                            btnShowMat.setMinWidth(100);
+                            btnShowMat.setMinHeight(35);
+                            HBox.setHgrow(btnShowMat, Priority.ALWAYS);
+
+                            btnDelete.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
+                            btnDelete.getStyleClass().add("btnBack");
+                            btnDelete.setMinWidth(100);
+                            btnDelete.setMinHeight(35);
+                            HBox.setHgrow(btnDelete, Priority.ALWAYS);
+
+                            btnAssign.setOnMouseClicked(evt ->
+                            {
+                                if(getTableView().getItems().get(getIndex())!=null)
+                                    if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+
+                                assignEmployeePopOver();
+                            });
+
+                            btnAssignees.setOnMouseClicked(evt ->
+                            {
+                                if(getTableView().getItems().get(getIndex())!=null)
+                                    if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+
+                                showAssigneesPopOver(TaskManager.getInstance().getSelected());
+                            });
+
+                            btnNewMat.setOnMouseClicked(evt->
+                            {
+                                if(getTableView().getItems().get(getIndex())!=null)
+                                    if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+
+                                newTaskItemWindow(TaskManager.getInstance().getSelected());
+                            });
+
+                            btnShowMat.setOnMouseClicked(evt->
+                            {
+                                if(getTableView().getItems().get(getIndex())!=null)
+                                    if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+
+                                showTaskItems(TaskManager.getInstance().getSelected());
+                            });
+
+                            btnDelete.setOnMouseClicked(evt ->
+                            {
+                                if(getTableView().getItems().get(getIndex())!=null)
+                                    if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                        TaskManager.getInstance().setSelected((BusinessObject) getTableView().getItems().get(getIndex()));
+
+                                try
+                                {
+                                    //remove Task on remote server
+                                    TaskManager.getInstance().deleteObject(TaskManager.getInstance().getSelected(), task_id->
+                                    {
+                                        if(task_id != null)
+                                        {
+                                            IO.logAndAlert("Success", "Successfully deleted task [#" + TaskManager.getInstance().getSelected().getObject_number() + "]", IO.TAG_INFO);
+                                            //remove Task from memory
+                                            TaskManager.getInstance().getDataset().remove(TaskManager.getInstance().getSelected().get_id());
+                                            //remove Task from table
+                                            tblTasks.getItems().remove(TaskManager.getInstance().getSelected());
+                                            tblTasks.refresh();//update table
+                                            //nullify selected Task
+                                            TaskManager.getInstance().setSelected(null);
+                                        } else IO.logAndAlert("Error", "Could not delete task [#"+TaskManager.getInstance().getSelected().getObject_number()+"]", IO.TAG_ERROR);
+                                        return null;
+                                    });
+                                } catch (IOException e)
+                                {
+                                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                    e.printStackTrace();
+                                }
+                            });
+
+                            setGraphic(new HBox(btnAssign, btnAssignees, btnNewMat, btnShowMat, btnDelete));
+                        } else setGraphic(null);
+                    }
+                };
+            }
+        });
+
+        tblTasks.getColumns().addAll(col_description, col_location, col_date_scheduled, col_date_assigned, col_date_started, col_date_completed, col_date_logged, col_status, col_action);
 
         HashMap<String, Task> job_tasks = job.getTasks();
         if(job_tasks!=null)
@@ -485,7 +880,7 @@ public class JobsController extends ScreenController implements Initializable
             if(job.getQuote()!=null)
                 popover.setTitle("Project Calendar for job #" + job.getObject_number() + " at " + job.getQuote().getSitename());
         popover.setDetached(true);
-        popover.show(tblJobs);
+        popover.show(ScreenManager.getInstance());
     }
 
     private GridPane getProjectMonthCalendar(Job job, HashMap<String, Task> job_tasks, int year, int month)
@@ -562,10 +957,10 @@ public class JobsController extends ScreenController implements Initializable
         tblDayTasks.setEditable(true);
 
         TableColumn col_day_task_description = new TableColumn("Description");
-        CustomTableViewControls.makeEditableTableColumn(col_day_task_description, TextFieldTableCell.forTableColumn(), 80, "description", "/tasks");
+        CustomTableViewControls.makeEditableTableColumn(col_day_task_description, TextFieldTableCell.forTableColumn(), 80, "description", TaskManager.getInstance());
 
         TableColumn col_day_task_location = new TableColumn("Location");
-        CustomTableViewControls.makeEditableTableColumn(col_day_task_location, TextFieldTableCell.forTableColumn(), 50, "location", "/tasks");
+        CustomTableViewControls.makeEditableTableColumn(col_day_task_location, TextFieldTableCell.forTableColumn(), 50, "location", TaskManager.getInstance());
 
         TableColumn col_day_task_date_scheduled = new TableColumn("Date Scheduled");
         col_day_task_date_scheduled.setVisible(false);
@@ -604,9 +999,11 @@ public class JobsController extends ScreenController implements Initializable
                     {
                         final TableCell<Task, String> cell = new TableCell<Task, String>()
                         {
-                            final Button btnNewMat = new Button("New Material");
-                            final Button btnShowMat = new Button("Show Materials");
-                            final Button btnRemove = new Button("Delete");
+                            final Button btnNewMat = new Button("New Material"),
+                                         btnShowMat = new Button("Show Materials"),
+                                         btnDelete = new Button("Delete"),
+                                         btnAssign = new Button("Assign"),
+                                         btnAssignees = new Button("Show Assignees");
 
                             @Override
                             public void updateItem(String item, boolean empty)
@@ -626,11 +1023,23 @@ public class JobsController extends ScreenController implements Initializable
                                 btnShowMat.setMinHeight(35);
                                 HBox.setHgrow(btnShowMat, Priority.ALWAYS);
 
-                                btnRemove.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-                                btnRemove.getStyleClass().add("btnBack");
-                                btnRemove.setMinWidth(100);
-                                btnRemove.setMinHeight(35);
-                                HBox.setHgrow(btnRemove, Priority.ALWAYS);
+                                btnAssign.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
+                                btnAssign.getStyleClass().add("btnAdd");
+                                btnAssign.setMinWidth(100);
+                                btnAssign.setMinHeight(35);
+                                HBox.setHgrow(btnAssign, Priority.ALWAYS);
+
+                                btnAssignees.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
+                                btnAssignees.getStyleClass().add("btnDefault");
+                                btnAssignees.setMinWidth(100);
+                                btnAssignees.setMinHeight(35);
+                                HBox.setHgrow(btnAssignees, Priority.ALWAYS);
+
+                                btnDelete.getStylesheets().add("file:///" + fCss.getAbsolutePath().replace("\\", "/"));
+                                btnDelete.getStyleClass().add("btnBack");
+                                btnDelete.setMinWidth(100);
+                                btnDelete.setMinHeight(35);
+                                HBox.setHgrow(btnDelete, Priority.ALWAYS);
 
                                 if (empty)
                                 {
@@ -638,11 +1047,74 @@ public class JobsController extends ScreenController implements Initializable
                                     setText(null);
                                 } else
                                 {
-                                    HBox hBox = new HBox(btnNewMat, btnShowMat, btnRemove);
+                                    HBox hBox = new HBox(btnNewMat, btnShowMat, btnAssign, btnAssignees, btnDelete);
 
-                                    btnNewMat.setOnMouseClicked(evt->newTaskItemWindow(getTableView().getItems().get(getIndex())));
+                                    btnNewMat.setOnMouseClicked(evt->
+                                    {
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                                TaskManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
 
-                                    btnShowMat.setOnMouseClicked(evt->showTaskItems(getTableView().getItems().get(getIndex())));
+                                        newTaskItemWindow(TaskManager.getInstance().getSelected());
+                                    });
+
+                                    btnShowMat.setOnMouseClicked(evt->
+                                    {
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                                TaskManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        showTaskItems(TaskManager.getInstance().getSelected());
+                                    });
+
+                                    btnAssign.setOnMouseClicked(evt ->
+                                    {
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                                TaskManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        assignEmployeePopOver();
+                                    });
+
+                                    btnAssignees.setOnMouseClicked(evt ->
+                                    {
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                                TaskManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        showAssigneesPopOver(TaskManager.getInstance().getSelected());
+                                    });
+
+                                    btnDelete.setOnMouseClicked(evt ->
+                                    {
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Task)
+                                                TaskManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove Task from remote server
+                                            TaskManager.getInstance().deleteObject(TaskManager.getInstance().getSelected(), task_id->
+                                            {
+                                                if(task_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted task [#" + TaskManager.getInstance().getSelected().getObject_number() + "]", IO.TAG_INFO);
+                                                    //remove Task from memory
+                                                    TaskManager.getInstance().getDataset().remove(TaskManager.getInstance().getSelected().get_id());
+                                                    //remove Task from table
+                                                    tblDayTasks.getItems().remove(TaskManager.getInstance().getSelected());
+                                                    tblDayTasks.refresh();//update table
+                                                    //nullify selected Task
+                                                    TaskManager.getInstance().setSelected(null);
+                                                } else IO.logAndAlert("Error", "Could not delete task [#"+TaskManager.getInstance().getSelected().getObject_number()+"]", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
+                                    });
 
                                     hBox.setFillHeight(true);
                                     HBox.setHgrow(hBox, Priority.ALWAYS);
@@ -668,7 +1140,7 @@ public class JobsController extends ScreenController implements Initializable
         tblDayTasks.setItems(FXCollections.observableArrayList(day_tasks.values()));
         tblDayTasks.refresh();
 
-        Button btnNewTask = new Button("New Task for Job #" + job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
+        Button btnNewTask = new Button("New Task for Job #" + job.getObject_number() + " on " + calendarCell.getDate());
         btnNewTask.getStylesheets().add(FadulousBMS.class.getResource("styles/home.css").toExternalForm());
         btnNewTask.getStyleClass().add("btnAdd");
         btnNewTask.setMinWidth(90);
@@ -695,14 +1167,14 @@ public class JobsController extends ScreenController implements Initializable
                                     TaskManager.getInstance().getSelected().set_id((String) task_id);
                             }
                             //refresh day tasks table
-                            day_tasks.put(TaskManager.getInstance().getSelected().get_id(), (Task) TaskManager.getInstance().getSelected());
+                            day_tasks.put(TaskManager.getInstance().getSelected().get_id(), TaskManager.getInstance().getSelected());
                             //populate day tasks table
                             //tblDayTasks.setItems(FXCollections.observableArrayList(day_tasks.values()));
-                            tblDayTasks.getItems().add((Task) TaskManager.getInstance().getSelected());
+                            tblDayTasks.getItems().add(TaskManager.getInstance().getSelected());
                             tblDayTasks.refresh();
 
                             if(TaskManager.getInstance().getSelected()!=null)
-                                IO.logAndAlert("Success", "Successfully created task: " + ((Task)TaskManager.getInstance().getSelected()).getDescription(), IO.TAG_INFO);
+                                IO.logAndAlert("Success", "Successfully created task: " + (TaskManager.getInstance().getSelected()).getDescription(), IO.TAG_INFO);
                         } else IO.logAndAlert("Error", "Could not create new task.", IO.TAG_ERROR);
                         return null;
                     }
@@ -712,11 +1184,11 @@ public class JobsController extends ScreenController implements Initializable
         btn_container.setCenter(btnNewTask);
 
         PopOver tasks = new PopOver(new VBox(tblDayTasks, btn_container));
-        tasks.setTitle("Showing " + day_tasks.size() + " task"+(day_tasks.size()>1?"s":"")+" for job #"+ job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
+        tasks.setTitle("Showing " + day_tasks.size() + " task"+(day_tasks.size()>1?"s":"")+" for job #"+ job.getObject_number() + " on " + calendarCell.getDate());
         tasks.setDetached(true);
         tasks.setMinWidth(200);
         tasks.setMinHeight(300);
-        tasks.show(calendarCell);
+        tasks.show(ScreenManager.getInstance());
     }
 
     private void newTaskWindow(CalendarCell calendarCell, Job job, Callback post_creation_callback)
@@ -733,7 +1205,7 @@ public class JobsController extends ScreenController implements Initializable
         Label lbl_loc = new Label("Location*: ");
         lbl_loc.setMinWidth(160);
 
-        DatePicker date_scheduled = new DatePicker(((CalendarCell) calendarCell).getDate());
+        DatePicker date_scheduled = new DatePicker(calendarCell.getDate());
         date_scheduled.setMinWidth(200);
         date_scheduled.setMaxWidth(Double.MAX_VALUE);
 
@@ -779,7 +1251,7 @@ public class JobsController extends ScreenController implements Initializable
             //create Task on database
             try
             {
-                TaskManager.getInstance().createBusinessObject(task, post_creation_callback);
+                TaskManager.getInstance().putObject(task, post_creation_callback);
             } catch (IOException e)
             {
                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
@@ -806,7 +1278,8 @@ public class JobsController extends ScreenController implements Initializable
         new_task_grid.add(submit, 1, 3);
 
         PopOver new_task = new PopOver(new_task_grid);
-        new_task.setTitle("Create new task for job #"  + job.getObject_number() + " on " + ((CalendarCell)calendarCell).getDate());
+        new_task.setTitle("Create new task for job #"  + job.getObject_number() + " on " + calendarCell.getDate());
+        new_task.setDetached(true);
         new_task.setMinWidth(200);
         new_task.setMinHeight(300);
         new_task.show(calendarCell);
@@ -1039,7 +1512,7 @@ public class JobsController extends ScreenController implements Initializable
                         resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
                         try
                         {
-                            ResourceManager.getInstance().createBusinessObject(resourceType, material_category_id ->
+                            ResourceManager.getInstance().putObject(resourceType, material_category_id ->
                             {
                                 if (material_category_id != null) {
                                     selected_material_type = ResourceManager.getInstance().getResource_types().get(material_category_id);
@@ -1051,6 +1524,17 @@ public class JobsController extends ScreenController implements Initializable
                                     {
                                         if(new_mat_id!=null)
                                         {
+                                            taskItem.setResource_id((String) new_mat_id);
+                                            createTaskItem(taskItem, cb->{IO.logAndAlert("Success", "Successfully created task material [" + txt_mat_description.getText() + "] for task #" + task.getObject_number() + ", job #" + task.getJob().getObject_number(), IO.TAG_INFO);return null;});
+                                        }
+                                        return null;
+                                    });
+
+                                    createMaterial(resource, new_mat_id ->
+                                    {
+                                        if(new_mat_id!=null)
+                                        {
+                                            //create task item with new material
                                             taskItem.setResource_id((String) new_mat_id);
                                             createTaskItem(taskItem, cb->{IO.logAndAlert("Success", "Successfully created task material [" + txt_mat_description.getText() + "] for task #" + task.getObject_number() + ", job #" + task.getJob().getObject_number(), IO.TAG_INFO);return null;});
                                         }
@@ -1104,18 +1588,18 @@ public class JobsController extends ScreenController implements Initializable
         col_description.setCellValueFactory(new PropertyValueFactory<>("description"));
 
         TableColumn col_serial = new TableColumn("Serial/Model");
-        CustomTableViewControls.makeEditableTableColumn(col_serial, TextFieldTableCell.forTableColumn(), 50, "serial", "/tasks/resources");
+        CustomTableViewControls.makeEditableTableColumn(col_serial, TextFieldTableCell.forTableColumn(), 50, "serial", TaskManager.getInstance());
 
         TableColumn col_cat = new TableColumn("Category");
-        CustomTableViewControls.makeEditableTableColumn(col_cat, TextFieldTableCell.forTableColumn(), 50, "category", "/tasks/resources");
+        CustomTableViewControls.makeEditableTableColumn(col_cat, TextFieldTableCell.forTableColumn(), 50, "category", TaskManager.getInstance());
 
         TableColumn col_item_cost = new TableColumn("Cost");
         col_item_cost.setPrefWidth(60);
-        CustomTableViewControls.makeEditableTableColumn(col_item_cost, TextFieldTableCell.forTableColumn(), 50, "unit_cost", "/tasks/resources");
+        CustomTableViewControls.makeEditableTableColumn(col_item_cost, TextFieldTableCell.forTableColumn(), 50, "unit_cost", TaskManager.getInstance());
 
         TableColumn col_item_qty = new TableColumn("Qty");
         col_item_qty.setPrefWidth(50);
-        CustomTableViewControls.makeEditableTableColumn(col_item_qty, TextFieldTableCell.forTableColumn(), 50, "quantity", "/tasks/resources");
+        CustomTableViewControls.makeEditableTableColumn(col_item_qty, TextFieldTableCell.forTableColumn(), 50, "quantity", TaskManager.getInstance());
 
         TableColumn col_unit = new TableColumn("Unit");
         col_unit.setPrefWidth(50);
@@ -1160,7 +1644,7 @@ public class JobsController extends ScreenController implements Initializable
         }
         try
         {
-            TaskManager.getInstance().createBusinessObject(taskItem, new_task_id ->
+            TaskManager.getInstance().putObject(taskItem, new_task_id ->
             {
                 TaskManager.getInstance().forceSynchronise();
 
@@ -1194,9 +1678,9 @@ public class JobsController extends ScreenController implements Initializable
 
             if(proceed.equals(IO.OK))
             {
-                ResourceManager.getInstance().createBusinessObject(resource, new_res_id ->
+                ResourceManager.getInstance().putObject(resource, new_res_id ->
                 {
-                    //update selected material
+                    //update local selected material
                     selected_material = ResourceManager.getInstance().getDataset().get(new_res_id);
 
                     //execute callback w/ args
@@ -1226,9 +1710,16 @@ public class JobsController extends ScreenController implements Initializable
 
     private static void generateInvoice(Job job)
     {
+        SessionManager smgr = SessionManager.getInstance();
         if (job != null)
         {
-            if(job.getStatus()>=BusinessObject.STATUS_APPROVED)
+            if(job.getQuote()==null)
+            {
+                IO.logAndAlert(JobsController.class.getName(), "Job->Quote object is not set.", IO.TAG_ERROR);
+                return;
+            }
+
+            if(job.getStatus()>=BusinessObject.STATUS_FINALISED)
             {
                 if (job.getAssigned_employees() != null)
                 {
@@ -1262,6 +1753,11 @@ public class JobsController extends ScreenController implements Initializable
                                 container.setSpacing(10);
                                 container.getChildren().add(checkBox);
                             }
+                            if(quote_revs.isEmpty())
+                            {
+                                IO.logAndAlert(JobsController.class.getName(), "Invoice's quote revisions object is empty.", IO.TAG_ERROR);
+                                return;
+                            }
 
                             Button btnSubmit = new Button("Submit");
                             btnSubmit.setOnMouseClicked(event1 ->
@@ -1278,7 +1774,15 @@ public class JobsController extends ScreenController implements Initializable
                                                 String str_quote_revs="";
                                                 for(Quote quote: quote_revs.values())
                                                     str_quote_revs+=(str_quote_revs==""?quote.getRevision():";"+quote.getRevision());//comma separated revision numbers
-                                                InvoiceManager.getInstance().createInvoice(job, str_quote_revs, Double.parseDouble(txt_receivable.getText()), callback -> null);
+
+                                                Invoice invoice = new Invoice();
+                                                invoice.setCreator(smgr.getActiveEmployee().getUsr());
+                                                invoice.setJob_id(job.get_id());
+                                                invoice.setReceivable(Double.parseDouble(txt_receivable.getText()));
+                                                invoice.setQuote_revision_numbers(str_quote_revs);
+
+                                                InvoiceManager.getInstance().putObject(invoice, callback -> null);
+
 
                                                 //TODO: show Invoices tab
                                                 if (ScreenManager.getInstance()
@@ -1330,6 +1834,9 @@ public class JobsController extends ScreenController implements Initializable
             return;
         }
 
+        //make this Job be the focused Job
+        JobManager.getInstance().setSelected(job);
+
         ScreenManager.getInstance().showLoadingScreen(param ->
         {
             new Thread(new Runnable()
@@ -1375,7 +1882,7 @@ public class JobsController extends ScreenController implements Initializable
 
                     //String filename = String.valueOf(bo.get(property));
                     long start = System.currentTimeMillis();
-                    byte[] file = RemoteComms.sendFileRequest("/api/job/signed/" + job.get_id(), headers);
+                    byte[] file = RemoteComms.sendFileRequest("/job/signed/" + job.get_id(), headers);
 
                     if (file != null)
                     {
@@ -1449,7 +1956,14 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            JobManager.approveJob((Job)JobManager.getInstance().getSelected(), null);
+            try
+            {
+                JobManager.approveJob((Job)JobManager.getInstance().getSelected(), null);
+            } catch (IOException e)
+            {
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
+            }
         });
 
         //View signed Job menu item
@@ -1499,7 +2013,7 @@ public class JobsController extends ScreenController implements Initializable
                 IO.logAndAlert("Error", "Selected Job object is not set.", IO.TAG_ERROR);
                 return;
             }
-            JobManager.getInstance().emailSignedJobCard((Job) JobManager.getInstance().getSelected(), null);
+            throw new NotImplementedException();
         });
 
         //View Job PDF menu item

@@ -72,10 +72,10 @@ public class InvoiceManager extends BusinessObjectManager
                         {
                             gson  = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/invoices_timestamp", headers);
+                            String timestamp_json = RemoteComms.get("/timestamp/invoices_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if(cntr_timestamp!=null)
                             {
@@ -89,8 +89,8 @@ public class InvoiceManager extends BusinessObjectManager
 
                             if(!isSerialized(ROOT_PATH+filename))
                             {
-                                String invoices_json = RemoteComms.sendGetRequest("/invoices", headers);
-                                InvoiceServerObject invoiceServerObject= gson.fromJson(invoices_json, InvoiceServerObject.class);
+                                String invoices_json = RemoteComms.get("/invoices", headers);
+                                InvoiceServerObject invoiceServerObject = (InvoiceServerObject) InvoiceManager.getInstance().parseJSONobject(invoices_json, new InvoiceServerObject());
                                 if(invoiceServerObject!=null)
                                 {
                                     if(invoiceServerObject.get_embedded()!=null)
@@ -243,38 +243,42 @@ public class InvoiceManager extends BusinessObjectManager
                 headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
 
                 if(SessionManager.getInstance().getActive()!=null)
-                {
-                    headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
                     headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
-                } else
+                else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
                 //String data = "{\"file\":\""+finalBase64_quote+"\"}";
-                FileMetadata fileMetadata = new FileMetadata("invoice_"+invoice.get_id()+".pdf","application/pdf");
-                fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
-                fileMetadata.setFile(finalBase64_invoice);
-                HttpURLConnection connection = RemoteComms.postJSON("/invoices/approval_request", fileMetadata.getJSONString(), headers);
+                Metafile metafile = new Metafile("invoice_"+invoice.get_id()+".pdf","application/pdf");
+                metafile.setCreator(SessionManager.getInstance().getActive().getUsr());
+                metafile.setFile(finalBase64_invoice);
+                HttpURLConnection connection = RemoteComms.post("/invoice/approval_request", metafile.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         //TODO: CC self
                         IO.logAndAlert("Success", "Successfully requested Invoice approval!", IO.TAG_INFO);
+                        //execute callback with args
                         if(callback!=null)
                             callback.call(IO.readStream(connection.getInputStream()));
+                        return;
                     } else {
                         IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                        //execute callback w/o args
                         if(callback!=null)
                             callback.call(null);
                     }
                     connection.disconnect();
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                //execute callback w/o args
+                if(callback!=null)
+                    callback.call(null);
             }
         });
 
@@ -295,58 +299,6 @@ public class InvoiceManager extends BusinessObjectManager
         stage.show();
         stage.centerOnScreen();
         stage.setResizable(true);
-    }
-
-    public void createInvoice(Job job, String quote_revs, double amount_receivable, Callback callback) throws IOException
-    {
-        if(job.getQuote()==null)
-        {
-            IO.logAndAlert(getClass().getName(), "Job->Quote object is not set.", IO.TAG_ERROR);
-            return;
-        }
-        if(quote_revs==null)
-        {
-            IO.logAndAlert(getClass().getName(), "Please select valid quote revisions for the new invoice.", IO.TAG_ERROR);
-            return;
-        }
-        if(quote_revs.isEmpty())
-        {
-            IO.logAndAlert(getClass().getName(), "Invoice Quote revisions object is empty.", IO.TAG_ERROR);
-            return;
-        }
-        SessionManager smgr = SessionManager.getInstance();
-        if(smgr.getActive()!=null)
-        {
-            if(!smgr.getActive().isExpired())
-            {
-                gson  = new GsonBuilder().create();
-                ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
-                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-
-                Invoice invoice = new Invoice();
-                invoice.setCreator(smgr.getActiveEmployee().getUsr());
-                invoice.setJob_id(job.get_id());
-                invoice.setReceivable(amount_receivable);
-                invoice.setQuote_revision_numbers(quote_revs);
-
-                HttpURLConnection response = RemoteComms.putJSON("/invoices", invoice.getJSONString(), headers);
-                if(response!=null)
-                {
-                    if(response.getResponseCode()==HttpURLConnection.HTTP_OK)
-                    {
-                        String inv_id = IO.readStream(response.getInputStream());
-                        IO.logAndAlert("Success", "Successfully created new Invoice: " + inv_id, IO.TAG_INFO);
-                        if(callback!=null)
-                            callback.call(inv_id);
-                    } else {
-                        IO.logAndAlert("Error", IO.readStream(response.getErrorStream()), IO.TAG_ERROR);
-                        if(callback!=null)
-                            callback.call(null);
-                    }
-                } else IO.logAndAlert("Error", "Response object is null.", IO.TAG_ERROR);
-            } else IO.logAndAlert("Error: Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        } else IO.logAndAlert("Error: Invalid Session", "No valid active sessions.", IO.TAG_ERROR);
     }
 
     class InvoiceServerObject extends ServerObject

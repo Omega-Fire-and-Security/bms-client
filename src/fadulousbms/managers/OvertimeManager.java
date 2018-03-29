@@ -67,10 +67,10 @@ public class OvertimeManager extends BusinessObjectManager
                         {
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/overtime_records_timestamp", headers);
+                            String timestamp_json = RemoteComms.get("/timestamp/overtime_applications_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
@@ -86,14 +86,13 @@ public class OvertimeManager extends BusinessObjectManager
 
                             if (!isSerialized(ROOT_PATH + filename))
                             {
-                                String overtime_records_json = RemoteComms.sendGetRequest("/overtime_records", headers);
-                                OvertimeServerObject overtimeServerObject = gson.fromJson(overtime_records_json, OvertimeServerObject.class);
+                                String overtime_records_json = RemoteComms.get("/overtime_applications", headers);
+                                OvertimeServerObject overtimeServerObject = (OvertimeServerObject) OvertimeManager.getInstance().parseJSONobject(overtime_records_json, new OvertimeServerObject());
                                 if (overtimeServerObject != null)
                                 {
                                     if(overtimeServerObject.get_embedded()!=null)
                                     {
-                                        Overtime[] overtime_records_arr = overtimeServerObject.get_embedded()
-                                                .getOvertime_records();
+                                        Overtime[] overtime_records_arr = overtimeServerObject.get_embedded().getOvertime_records();
 
                                         if(overtime_records_arr!=null)
                                         {
@@ -253,38 +252,35 @@ public class OvertimeManager extends BusinessObjectManager
 
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-                if (SessionManager.getInstance().getActive() != null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSession_id()));
-                else
-                {
-                    IO.logAndAlert("Error: Session expired", "No active sessions.", IO.TAG_INFO);
-                    return;
-                }
 
-                HttpURLConnection connection = RemoteComms.postJSON(overtime.apiEndpoint(), overtime.getJSONString(), headers);
+                HttpURLConnection connection = RemoteComms.post(overtime.apiEndpoint(), overtime.getJSONString(), headers);
                 if (connection != null)
                 {
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                     {
                         IO.logAndAlert("Success", "Successfully logged overtime record.", IO.TAG_INFO);
+                        //execute callback w/ args
                         if (callback != null)
-                            callback.call(null);
-                    }
-                    else
+                            callback.call(IO.readStream(connection.getInputStream()));
+                        return;
+                    } else
                     {
                         IO.logAndAlert("ERROR_" + connection.getResponseCode(), IO
                                 .readStream(connection.getErrorStream()), IO.TAG_ERROR);
                     }
                     connection.disconnect();
-                }
+                } else IO.log(OvertimeManager.class.getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (NumberFormatException e)
             {
                 IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
             } catch (IOException e)
             {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
             }
+            ///execute callback w/o args
+            if(callback!=null)
+                callback.call(null);
         });
 
         //populate clients combobox
@@ -319,7 +315,7 @@ public class OvertimeManager extends BusinessObjectManager
             IO.logAndAlert("Error", "Invalid overtime record.", IO.TAG_ERROR);
             return;
         }
-        if (overtime.getStatus() == Overtime.STATUS_APPROVED)
+        if (overtime.getStatus() == Overtime.STATUS_FINALISED)
         {
             IO.logAndAlert("Error", "Overtime record has already been approved.", IO.TAG_ERROR);
             return;
@@ -331,30 +327,34 @@ public class OvertimeManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
-                overtime.setStatus(Overtime.STATUS_APPROVED);
+                overtime.setStatus(Overtime.STATUS_FINALISED);
                 try
                 {
-                    HttpURLConnection connection = RemoteComms.postJSON( overtime.apiEndpoint(), overtime.getJSONString(), headers);
+                    HttpURLConnection connection = RemoteComms.post( overtime.apiEndpoint(), overtime.getJSONString(), headers);
                     if(connection!=null)
                     {
                         if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                         {
                             IO.logAndAlert("Success", overtime.getEmployee().getName()+"'s overtime request has been successfully approved.", IO.TAG_INFO);
+                            //execute callback w/ args
                             if(callback!=null)
-                                callback.call(null);
-                        }else{
-                            IO.logAndAlert("Error", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                        }
+                                callback.call(IO.readStream(connection.getInputStream()));
+                            return;
+                        } else IO.logAndAlert("Error", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+
                         connection.disconnect();
-                    }
+                    } else IO.log(OvertimeManager.class.getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
                 } catch (IOException e)
                 {
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                     e.printStackTrace();
                 }
             } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+        //execute callback w/o args
+        if(callback!=null)
+            callback.call(null);
     }
 
     class OvertimeServerObject extends ServerObject

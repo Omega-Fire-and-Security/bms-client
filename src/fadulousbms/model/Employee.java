@@ -7,6 +7,10 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.EmployeeManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -43,6 +47,12 @@ public class Employee extends BusinessObject implements Serializable
         if(getAccessLevel()>AccessLevel.STANDARD.getLevel())
             return AccessLevel.SUPERUSER;
         else return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return EmployeeManager.getInstance();
     }
 
     public String getUsr()
@@ -155,28 +165,30 @@ public class Employee extends BusinessObject implements Serializable
     public String getInitials(){return new String(firstname.substring(0,1) + lastname.substring(0,1));}
 
     //Properties
-    public StringProperty usrProperty(){return new SimpleStringProperty(usr);}
+    public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
 
-    public StringProperty pwdProperty(){return new SimpleStringProperty(pwd);}
+    //public StringProperty pwdProperty(){return new SimpleStringProperty(pwd);}
 
-    public StringProperty access_levelProperty(){return new SimpleStringProperty(String.valueOf(access_level));}
+    public StringProperty access_levelProperty(){return new SimpleStringProperty(String.valueOf(getAccessLevel()));}
 
-    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(active));}
+    public StringProperty activeProperty(){return new SimpleStringProperty(String.valueOf(isActive()));}
 
-    public StringProperty firstnameProperty(){return new SimpleStringProperty(firstname);}
+    public StringProperty firstnameProperty(){return new SimpleStringProperty(getFirstname());}
 
-    public StringProperty lastnameProperty(){return new SimpleStringProperty(lastname);}
+    public StringProperty lastnameProperty(){return new SimpleStringProperty(getLastname());}
 
-    public StringProperty emailProperty(){return new SimpleStringProperty(email);}
+    public StringProperty nameProperty(){return new SimpleStringProperty(getName());}
 
-    public StringProperty telProperty(){return new SimpleStringProperty(usr);}
+    public StringProperty emailProperty(){return new SimpleStringProperty(getEmail());}
 
-    public StringProperty cellProperty(){return new SimpleStringProperty(usr);}
+    public StringProperty telProperty(){return new SimpleStringProperty(getTel());}
 
-    public StringProperty genderProperty(){return new SimpleStringProperty(usr);}
+    public StringProperty cellProperty(){return new SimpleStringProperty(getCell());}
+
+    public StringProperty genderProperty(){return new SimpleStringProperty(getGender());}
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -265,7 +277,6 @@ public class Employee extends BusinessObject implements Serializable
                 +",\"tel\":\""+getTel()+"\""
                 +",\"access_level\":\""+getAccessLevel()+"\"}";
 
-        //IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
         return json_obj;
     }
 
@@ -278,6 +289,6 @@ public class Employee extends BusinessObject implements Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/employees";
+        return "/user";
     }
 }

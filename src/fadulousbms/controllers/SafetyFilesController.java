@@ -6,32 +6,25 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.managers.EmployeeManager;
 import fadulousbms.managers.SafetyManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.CustomTableViewControls;
-import fadulousbms.model.Employee;
-import fadulousbms.model.FileMetadata;
+import fadulousbms.model.Metafile;
 import fadulousbms.model.Screens;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -71,21 +64,21 @@ public class SafetyFilesController extends ScreenController implements Initializ
     {
         IO.log(getClass().getName(), IO.TAG_INFO, "reloading safety files view..");
 
-        CustomTableViewControls.makeEditableTableColumn(colIndex, TextFieldTableCell.forTableColumn(), 215, "index", "/api/safety/index");
-        CustomTableViewControls.makeEditableTableColumn(colLabel, TextFieldTableCell.forTableColumn(), 215, "label", "/api/safety/index");
-        CustomTableViewControls.makeEditableTableColumn(colPath, TextFieldTableCell.forTableColumn(), 215, "pdf_path", "/api/safety/index");
-        CustomTableViewControls.makeToggleButtonTableColumn(colRequired, null,60, "required", "/api/safety/index");
-        CustomTableViewControls.makeEditableTableColumn(colOptions, TextFieldTableCell.forTableColumn(), 215, "logo_options", "/api/safety/index");
-        CustomTableViewControls.makeCheckboxedTableColumn(colSelect, null, 60, "marked", "/api/safety/index");
-        CustomTableViewControls.makeEditableTableColumn(colType, TextFieldTableCell.forTableColumn(), 60, "type", "/api/safety/index");
-        CustomTableViewControls.makeActionTableColumn(colAction, 270, "pdf_path", "/api/ safety/index");
+        CustomTableViewControls.makeEditableTableColumn(colIndex, TextFieldTableCell.forTableColumn(), 215, "index", SafetyManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colLabel, TextFieldTableCell.forTableColumn(), 215, "label", SafetyManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colPath, TextFieldTableCell.forTableColumn(), 215, "pdf_path", SafetyManager.getInstance());
+        CustomTableViewControls.makeToggleButtonTableColumn(colRequired, null,60, "required", "/safety");
+        CustomTableViewControls.makeEditableTableColumn(colOptions, TextFieldTableCell.forTableColumn(), 215, "logo_options", SafetyManager.getInstance());
+        CustomTableViewControls.makeCheckboxedTableColumn(colSelect, null, 60, "marked", "/safety");
+        CustomTableViewControls.makeEditableTableColumn(colType, TextFieldTableCell.forTableColumn(), 60, "type", SafetyManager.getInstance());
+        CustomTableViewControls.makeActionTableColumn(colAction, 270, "pdf_path", "/safety");
 
         if(SafetyManager.getInstance().getDataset()!=null)
         {
-            FileMetadata[] files_arr = new FileMetadata[SafetyManager.getInstance().getDataset().size()];
+            Metafile[] files_arr = new Metafile[SafetyManager.getInstance().getDataset().size()];
             SafetyManager.getInstance().getDataset().values().toArray(files_arr);
 
-            ObservableList<FileMetadata> lst_safety = FXCollections.observableArrayList();
+            ObservableList<Metafile> lst_safety = FXCollections.observableArrayList();
             lst_safety.addAll(files_arr);
             tblSafety.setItems(lst_safety);
         }
@@ -125,7 +118,7 @@ public class SafetyFilesController extends ScreenController implements Initializ
     {
         if(SafetyManager.getInstance().getDataset()!=null)
         {
-            FileMetadata[] files_arr = new FileMetadata[SafetyManager.getInstance().getDataset().size()];
+            Metafile[] files_arr = new Metafile[SafetyManager.getInstance().getDataset().size()];
             SafetyManager.getInstance().getDataset().values().toArray(files_arr);
 
             IO.viewIndexPage("Safety Documents Index", files_arr, "bin/safety_index.pdf");
@@ -143,7 +136,7 @@ public class SafetyFilesController extends ScreenController implements Initializ
     {
         if(SafetyManager.getInstance().getDataset()!=null)
         {
-            FileMetadata[] files_arr = new FileMetadata[SafetyManager.getInstance().getDataset().size()];
+            Metafile[] files_arr = new Metafile[SafetyManager.getInstance().getDataset().size()];
             SafetyManager.getInstance().getDataset().values().toArray(files_arr);
 
             IO.printSelectedDocuments(files_arr);
@@ -155,7 +148,7 @@ public class SafetyFilesController extends ScreenController implements Initializ
     {
         if(SafetyManager.getInstance().getDataset()!=null)
         {
-            FileMetadata[] files_arr = new FileMetadata[SafetyManager.getInstance().getDataset().size()];
+            Metafile[] files_arr = new Metafile[SafetyManager.getInstance().getDataset().size()];
             SafetyManager.getInstance().getDataset().values().toArray(files_arr);
 
             IO.printAllDocuments(files_arr);
@@ -188,7 +181,7 @@ public class SafetyFilesController extends ScreenController implements Initializ
                             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
                             headers.add(new AbstractMap.SimpleEntry<>("Filename", f.getName()));
-                            RemoteComms.uploadFile("/api/upload", headers, buffer);
+                            RemoteComms.uploadFile("/file/upload", headers, buffer);
                             System.out.println("\n File size: " + buffer.length + " bytes.");
                         } else
                         {
@@ -221,30 +214,26 @@ public class SafetyFilesController extends ScreenController implements Initializ
             if(!smgr.getActive().isExpired())
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                 try
                 {
-                    HttpURLConnection connection = RemoteComms.postData("/api/safety/init", "", headers);
+                    HttpURLConnection connection = RemoteComms.post("/safety/init", "", headers);
                     if(connection!=null)
                     {
                         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
-                        {
                             IO.logAndAlert("Success", "Successfully repopulated safety documents.", IO.TAG_INFO);
-                        }
                         else
-                        {
                             IO.logAndAlert("Error: " + connection.getResponseCode(), IO
                                     .readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                        }
                         connection.disconnect();
                     } else IO.logAndAlert("Error", "Could not connect to server.", IO.TAG_ERROR);
                 } catch (IOException e)
                 {
-                    IO.log(getClass().getName() , IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("Error" , e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
                 }
-            }else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-        }else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
+        } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
     @FXML

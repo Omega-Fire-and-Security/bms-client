@@ -21,7 +21,6 @@ import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.ZoneId;
 import java.util.AbstractMap;
@@ -193,7 +192,7 @@ public class NewClientController extends ScreenController implements Initializab
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.putJSON("/clients", client.getJSONString(), headers);
+            HttpURLConnection connection = RemoteComms.put("/client", client.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -202,20 +201,23 @@ public class NewClientController extends ScreenController implements Initializab
 
                     if(response==null)
                     {
-                        IO.logAndAlert("New Client Creation Failure", "Invalid response.", IO.TAG_ERROR);
+                        IO.logAndAlert("Client Creation Failure", "Invalid server response.", IO.TAG_ERROR);
                         return;
                     }
                     if(response.isEmpty())
                     {
-                        IO.logAndAlert("New Client Creation Failure", "Invalid response.", IO.TAG_ERROR);
+                        IO.logAndAlert("Client Creation Failure", "Invalid server response.", IO.TAG_ERROR);
                         return;
                     }
+                    IO.logAndAlert("Client Creation Success", "Successfully created new Client ["+client.getClient_name()+"]", IO.TAG_INFO);
+
                     String new_client_id = response.replaceAll("\"","");//strip inverted commas around client_id
                     new_client_id = new_client_id.replaceAll("\n","");//strip new line chars
                     new_client_id = new_client_id.replaceAll(" ","");//strip whitespace chars
-                    ClientManager.getInstance().initialize();
+
+                    ClientManager.getInstance().forceSynchronise();
+
                     ClientManager.getInstance().setSelected(client);
-                    IO.logAndAlert("New Client Creation Success", "Successfully created new Client ["+client.getClient_name()+"]", IO.TAG_INFO);
                     itemsModified = false;
                 }else
                 {

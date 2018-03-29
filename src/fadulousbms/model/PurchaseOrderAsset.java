@@ -58,6 +58,6 @@ public class PurchaseOrderAsset extends PurchaseOrderItem
     @Override
     public String apiEndpoint()
     {
-        return "/purchaseorders/assets";
+        return "/purchaseorder/asset";
     }
 }

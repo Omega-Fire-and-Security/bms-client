@@ -2,6 +2,11 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.EmployeeManager;
+import fadulousbms.managers.JobManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -25,6 +30,12 @@ public class JobEmployee extends BusinessObject
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.ADMIN;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return JobManager.getInstance();
     }
 
     public String getJob_id()
@@ -57,12 +68,42 @@ public class JobEmployee extends BusinessObject
         this.usr = usr;
     }
 
-    private StringProperty job_idProperty(){return new SimpleStringProperty(job_id);}
-    private StringProperty task_idProperty(){return new SimpleStringProperty(task_id);}
-    private StringProperty usrProperty(){return new SimpleStringProperty(usr);}
+    public Employee getEmployee()
+    {
+        if(EmployeeManager.getInstance().getDataset()!=null && getUsr()!=null)
+            return EmployeeManager.getInstance().getDataset().get(getUsr());
+        else
+        {
+            IO.log(getClass().getName(), IO.TAG_WARN, "no employees were found in the dataset.");
+            return null;
+        }
+    }
+
+    public Job getJob()
+    {
+        if(getManager().getDataset()!=null)
+        {
+            BusinessObject obj = getManager().getDataset().get(getJob_id());
+            if(obj!=null)
+                return (Job) obj;
+        }
+        return null;
+    }
+
+    private StringProperty job_idProperty(){return new SimpleStringProperty(getJob_id());}
+    private StringProperty task_idProperty(){return new SimpleStringProperty(getTask_id());}
+    private StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
+    public StringProperty access_levelProperty(){return getEmployee().access_levelProperty();}
+    public StringProperty activeProperty(){return getEmployee().activeProperty();}
+    public StringProperty firstnameProperty(){return getEmployee().firstnameProperty();}
+    public StringProperty lastnameProperty(){return getEmployee().lastnameProperty();}
+    public StringProperty emailProperty(){return getEmployee().emailProperty();}
+    public StringProperty telProperty(){return getEmployee().telProperty();}
+    public StringProperty cellProperty(){return getEmployee().cellProperty();}
+    public StringProperty genderProperty(){return getEmployee().genderProperty();}
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -117,13 +158,33 @@ public class JobEmployee extends BusinessObject
             json_obj+=",\"task_id\":\""+task_id+"\"";
         json_obj+="}";
 
-        IO.log(getClass().getName(),IO.TAG_INFO, json_obj);
+        IO.log(getClass().getName(), IO.TAG_INFO, json_obj);
         return json_obj;
+    }
+
+    @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number();
+
+        Employee employee = getEmployee();
+        if(employee!=null)
+            str += ", employee: " + employee.getName();
+        else  str += " user: [" + getUsr() + "]";
+
+        Job job = getJob();
+        if(job!=null)
+            str += ", assigned to job " + job;
+
+        if(str.length()>0)
+            return str;
+
+        return str;
     }
 
     @Override
     public String apiEndpoint()
     {
-        return "/jobs/employees";
+        return "/job/employee";
     }
 }

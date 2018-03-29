@@ -37,15 +37,15 @@ import java.time.ZoneId;
 import java.util.*;
 
 /**
- * views Controller class
- *
- * @author ghost
+ * ViewJob Controller class
+ * Created by ghost on 2017/01/13.
+ * @author th3gh0st
  */
 public class ViewJobController extends ScreenController implements Initializable
 {
     private boolean itemsModified;
     @FXML
-    private TableView<Employee> tblEmployees;
+    private TableView<JobEmployee> tblEmployees;
     @FXML
     private TableColumn colFirstname,colLastname,colCell,colEmail,colTel,colGender,
                         colActive,colEmployeeAction;
@@ -65,14 +65,14 @@ public class ViewJobController extends ScreenController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        Callback<TableColumn<Employee, String>, TableCell<Employee, String>> actionColCellFactory
+        Callback<TableColumn<JobEmployee, String>, TableCell<JobEmployee, String>> actionColCellFactory
                 =
-                new Callback<TableColumn<Employee, String>, TableCell<Employee, String>>()
+                new Callback<TableColumn<JobEmployee, String>, TableCell<JobEmployee, String>>()
                 {
                     @Override
-                    public TableCell call(final TableColumn<Employee, String> param)
+                    public TableCell call(final TableColumn<JobEmployee, String> param)
                     {
-                        final TableCell<Employee, String> cell = new TableCell<Employee, String>()
+                        final TableCell<JobEmployee, String> cell = new TableCell<JobEmployee, String>()
                         {
                             final Button btnRemove = new Button("Remove");
 
@@ -96,11 +96,28 @@ public class ViewJobController extends ScreenController implements Initializable
                                 {
                                     btnRemove.setOnAction(event ->
                                     {
-                                        Employee employee = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(employee);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        System.out.println("Successfully removed sale representative: " + employee.getName());
+                                        try
+                                        {
+                                            //remove JobEmployee from remote server
+                                            EmployeeManager.getInstance().deleteObject(getTableView().getItems().get(getIndex()), job_empl_id->
+                                            {
+                                                if(job_empl_id != null)
+                                                {
+                                                    //TODO: deallocate all JobEmployee objects with same usr from all Job's Tasks too?
+                                                    IO.logAndAlert("Success", "Successfully dissociated user [" + getTableView().getItems().get(getIndex()).getEmployee().getName() + "] from job #" + getTableView().getItems().get(getIndex()).getJob().getObject_number(), IO.TAG_INFO);
+                                                    //remove JobEmployee from memory
+                                                    JobManager.getInstance().getJob_employees().remove(getTableView().getItems().get(getIndex()));
+                                                    //remove JobEmployee from table
+                                                    tblEmployees.getItems().remove(getTableView().getItems().get(getIndex()));
+                                                    tblEmployees.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not dissociate employee ["+getTableView().getItems().get(getIndex()).getEmployee().getName()+"]'s from job #" + getTableView().getItems().get(getIndex()).getJob().getObject_number(), IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
                                     setGraphic(btnRemove);
                                     setText(null);
@@ -143,7 +160,7 @@ public class ViewJobController extends ScreenController implements Initializable
         colActive.setCellValueFactory(new PropertyValueFactory<>("active"));
 
         //Populate fields
-        Job selected = ((Job)JobManager.getInstance().getSelected());
+        Job selected = JobManager.getInstance().getSelected();
         if(selected!=null)
         {
             if(selected.getQuote()==null)
@@ -169,7 +186,7 @@ public class ViewJobController extends ScreenController implements Initializable
             txtRequest.setText(selected.getQuote().getRequest());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                         String.valueOf(selected.getQuote().getTotal()));
-            txtStatus.setText(selected.getStatus()>=BusinessObject.STATUS_APPROVED?"APPROVED":"PENDING");
+            txtStatus.setText(selected.getStatus()>=BusinessObject.STATUS_FINALISED ?"APPROVED":"PENDING");
             txtQuoteNumber.setText(String.valueOf(selected.getQuote().getObject_number()));
 
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -188,8 +205,14 @@ public class ViewJobController extends ScreenController implements Initializable
 
             dateAssigned.valueProperty().addListener((observable, oldValue, newValue) ->
             {
-                if(newValue!=null)
+                if(newValue!=null && dateAssigned.isFocused())
                 {
+                    if(newValue==oldValue)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_WARN, "same date");
+                        return;
+                    }
+
                     if(SessionManager.getInstance().getActive()!=null)
                     {
                         if(!SessionManager.getInstance().getActive().isExpired())
@@ -197,19 +220,16 @@ public class ViewJobController extends ScreenController implements Initializable
                             selected.setDate_assigned(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);//epoch milliseconds
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
                             try
                             {
-                                HttpURLConnection connection = RemoteComms
-                                        .postJSON(selected.apiEndpoint(), selected.getJSONString(), headers);
+                                HttpURLConnection connection = RemoteComms.post(selected.apiEndpoint(), selected.getJSONString(), headers);
                                 if (connection != null)
                                 {
                                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
-                                    {
                                         IO.logAndAlert("Success", "Successfully updated job's date_assigned attribute: " + IO
                                                 .readStream(connection.getInputStream()), IO.TAG_INFO);
-                                    } else IO.logAndAlert("Update Error", "Could not update Job object: " + IO
+                                    else IO.logAndAlert("Update Error", "Could not update Job object: " + IO
                                             .readStream(connection.getErrorStream()), IO.TAG_ERROR);
                                     connection.disconnect();
                                 } else IO.logAndAlert("Connection Error", "Connection to server was lost.", IO.TAG_ERROR);
@@ -219,13 +239,19 @@ public class ViewJobController extends ScreenController implements Initializable
                             }
                         } else IO.logAndAlert("Error: Session Expired", "Active session has expired.\nPlease log in.", IO.TAG_ERROR);
                     } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.", IO.TAG_ERROR);
-                }
+                }  else IO.log(getClass().getName(), IO.TAG_WARN, "new value is null or date_assigned DatePicker is not focused.");
             });
 
             dateStarted.valueProperty().addListener((observable, oldValue, newValue) ->
             {
-                if(newValue!=null)
+                if(newValue!=null && dateStarted.isFocused())
                 {
+                    if(newValue==oldValue)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_WARN, "same date");
+                        return;
+                    }
+
                     if(SessionManager.getInstance().getActive()!=null)
                     {
                         if(!SessionManager.getInstance().getActive().isExpired())
@@ -233,11 +259,10 @@ public class ViewJobController extends ScreenController implements Initializable
                             selected.setDate_started(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
                             try
                             {
-                                HttpURLConnection connection = RemoteComms.postJSON(selected.apiEndpoint(), selected.getJSONString(), headers);
+                                HttpURLConnection connection = RemoteComms.post(selected.apiEndpoint(), selected.getJSONString(), headers);
                                 if(connection!=null)
                                 {
                                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -249,16 +274,22 @@ public class ViewJobController extends ScreenController implements Initializable
                             } catch (IOException e)
                             {
                                 IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                e.printStackTrace();
                             }
                         } else IO.logAndAlert("Error: Session Expired", "Active session has expired.\nPlease log in.", IO.TAG_ERROR);
                     } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.", IO.TAG_ERROR);
-                }
+                } else IO.log(getClass().getName(), IO.TAG_WARN, "new value is null or date_started DatePicker is not focused.");
             });
 
             dateCompleted.valueProperty().addListener((observable, oldValue, newValue) ->
             {
-                if(newValue!=null)
+                if(newValue!=null && dateCompleted.isFocused())
                 {
+                    if(newValue==oldValue)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_WARN, "same date");
+                        return;
+                    }
                     if(SessionManager.getInstance().getActive()!=null)
                     {
                         if(!SessionManager.getInstance().getActive().isExpired())
@@ -266,26 +297,25 @@ public class ViewJobController extends ScreenController implements Initializable
                             selected.setDate_completed(newValue.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000);
 
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
                             try
                             {
-                                HttpURLConnection connection = RemoteComms.postJSON(selected.apiEndpoint(), selected.getJSONString(), headers);
+                                HttpURLConnection connection = RemoteComms.post(selected.apiEndpoint(), selected.getJSONString(), headers);
                                 if(connection!=null)
                                 {
                                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                                    {
                                         IO.logAndAlert("Success", "Successfully updated job's date_completed attribute: " + IO.readStream(connection.getInputStream()), IO.TAG_INFO);
-                                    } else IO.logAndAlert("Error", "Could not update Job object: " + IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                                    else IO.logAndAlert("Error", "Could not update Job object: " + IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                                     connection.disconnect();
                                 } else IO.logAndAlert("Error", "Connection to server was lost.", IO.TAG_ERROR);
                             } catch (IOException e)
                             {
                                 IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                e.printStackTrace();
                             }
                         } else IO.logAndAlert("Error: Session Expired", "Active session has expired.\nPlease log in.", IO.TAG_ERROR);
                     } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.", IO.TAG_ERROR);
-                }
+                } else IO.log(getClass().getName(), IO.TAG_WARN, "new value is null or date_completed DatePicker is not focused.");
             });
 
             try
@@ -297,11 +327,12 @@ public class ViewJobController extends ScreenController implements Initializable
                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
             }
 
-            if (selected.getAssigned_employees() != null)
+            HashMap job_employees = selected.getAssigned_employees();
+            if (job_employees != null)
             {
-                tblEmployees.setItems(FXCollections.observableArrayList(selected.getAssigned_employees()));
+                tblEmployees.setItems(FXCollections.observableArrayList(job_employees.values()));
                 tblEmployees.refresh();
-            } else IO.log(getClass().getName(), IO.TAG_WARN, "job [" + selected.get_id() + "] has no representatives.");
+            } else IO.log(getClass().getName(), IO.TAG_WARN, "job [" + selected.get_id() + "] has no assignees.");
         } else IO.logAndAlert("Job Viewer", "Selected Job is invalid.", IO.TAG_ERROR);
     }
 
@@ -391,11 +422,42 @@ public class ViewJobController extends ScreenController implements Initializable
                     {
                         if(JobManager.getInstance().getSelected()!=null)
                         {
-                            ((Job)JobManager.getInstance().getSelected()).setDate_assigned(System.currentTimeMillis());
-                        } else IO.log(getClass().getName(), IO.TAG_WARN, "selected job is invalid.");
-                        tblEmployees.getItems().add(employeeComboBox.getValue());
-                        itemsModified=true;
-                    } else IO.logAndAlert("Add Job Technician", "Invalid employee selected.", IO.TAG_ERROR);
+                            if(SessionManager.getInstance().getActive()!=null)
+                            {
+                                JobEmployee jobEmployee = new JobEmployee();
+                                jobEmployee.setJob_id(JobManager.getInstance().getSelected().get_id());
+                                jobEmployee.setUsr(employeeComboBox.getValue().getUsr());
+                                jobEmployee.setCreator(SessionManager.getInstance().getActive().getUsr());
+
+                                tblEmployees.getItems().add(jobEmployee);
+                                tblEmployees.refresh();
+
+                                itemsModified = true;
+
+                                //update date_assigned of current job
+                                if(JobManager.getInstance().getSelected().getDate_assigned()<=0)
+                                {
+                                    //update in memory
+                                    JobManager.getInstance().getSelected().setDate_assigned(System.currentTimeMillis());
+                                    //update on server
+                                    try
+                                    {
+                                        JobManager.getInstance().patchObject(JobManager.getInstance().getSelected(), job_id->
+                                        {
+                                            if(job_id!=null)
+                                                IO.logAndAlert("Success", "Updated job #" +JobManager.getInstance().getSelected().getObject_number()+"'s date assigned attribute.", IO.TAG_INFO);
+                                            else IO.logAndAlert("Error", "Could not update job #" +JobManager.getInstance().getSelected().getObject_number()+"'s date assigned attribute.", IO.TAG_WARN);
+                                            return null;
+                                        });
+                                    } catch (IOException e)
+                                    {
+                                        IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                        e.printStackTrace();
+                                    }
+                                } else IO.log(getClass().getName(), IO.TAG_VERBOSE, "Job #" + JobManager.getInstance().getSelected().getObject_number() + " already has a valid date_assigned, ignoring patch.");
+                            }  else IO.logAndAlert("Error", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
+                        } else IO.logAndAlert("Error", "Selected job is invalid.", IO.TAG_ERROR);
+                    } else IO.logAndAlert("Error", "Selected employee is invalid.", IO.TAG_ERROR);
                 });
 
                 btnCancel.setOnAction(event ->
@@ -410,10 +472,10 @@ public class ViewJobController extends ScreenController implements Initializable
     {
         if(JobManager.getInstance().getSelected()!=null)
         {
-            if(((Job)JobManager.getInstance().getSelected()).getAssigned_employees()!=null)
+            if((JobManager.getInstance().getSelected()).getAssigned_employees()!=null)
             {
-                if(((Job)JobManager.getInstance().getSelected()).getAssigned_employees().length>0)
-                    JobManager.showJobCard(((Job)JobManager.getInstance().getSelected()));
+                if((JobManager.getInstance().getSelected()).getAssigned_employees().size()>0)
+                    JobManager.showJobCard((JobManager.getInstance().getSelected()));
                 else IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
             } else IO.logAndAlert("Error", "Selected job has no assigned employees, please assign employees first then try again.", IO.TAG_ERROR);
         } else IO.logAndAlert("Error", "Selected job is invalid.", IO.TAG_ERROR);
@@ -432,83 +494,49 @@ public class ViewJobController extends ScreenController implements Initializable
                     IO.log(getClass().getName(), IO.TAG_WARN, "selected job is invalid.");
                     return;
                 }
-                Job selected = ((Job)JobManager.getInstance().getSelected());
-                if(selected!=null)
+                if(JobManager.getInstance().getSelected()!=null)
                 {
                     //update Job object on server (only the date_assigned attribute is set and has not been approved already.)
-                    if(selected.getStatus()!=Job.STATUS_APPROVED)
+                    if(JobManager.getInstance().getSelected().getStatus()!=Job.STATUS_FINALISED)
                     {
                         //set date assigned to current UNIX epoch date
                         //if (selected.getDate_assigned() <= 0)
                         //    selected.setDate_assigned(System.currentTimeMillis());
 
                         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                        headers.add(new AbstractMap.SimpleEntry("Cookie", smgr.getActive().getSession_id()));
                         headers.add(new AbstractMap.SimpleEntry("Content-Type", "application/json"));
 
                         try
                         {
-                            HttpURLConnection connection = RemoteComms.postJSON(selected.apiEndpoint(), selected.getJSONString(), headers);
+                            HttpURLConnection connection = RemoteComms.post(JobManager.getInstance().getSelected().apiEndpoint(), JobManager.getInstance().getSelected().getJSONString(), headers);
                             if (connection != null)
                             {
                                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                                 {
                                     //add job representatives
-                                    boolean created_all = true;
                                     if (tblEmployees.getItems() != null)
-                                        for (Employee employee : tblEmployees.getItems())
-                                            created_all = JobManager
-                                                    .createJobRepresentative(JobManager.getInstance().getSelected()
-                                                            .get_id(), employee.getUsr());
-                                    if (created_all)
                                     {
-                                        IO.logAndAlert("Success", "Successfully updated job[#"
-                                                +String.valueOf(JobManager.getInstance().getSelected().getObject_number())
-                                                + "] representatives.", IO.TAG_INFO);
-
-                                        //force refresh Job data-set
-                                        JobManager.getInstance().forceSynchronise();
-
-                                        if (JobManager.getInstance().getDataset() != null)
+                                        for (JobEmployee jobEmployee : tblEmployees.getItems())
                                         {
-                                            //update selected Job
-                                            JobManager.getInstance().setSelected(JobManager.getInstance().getDataset()
-                                                    .get(JobManager.getInstance().getSelected().get_id()));
-
-                                            ScreenManager.getInstance().showLoadingScreen(param ->
+                                            if(jobEmployee.get_id()==null)
                                             {
-                                                new Thread(new Runnable()
+                                                //Employee has not been associated with Job yet, create new record on db
+                                                JobManager.getInstance().putObject(jobEmployee, new_je_id->
                                                 {
-                                                    @Override
-                                                    public void run()
-                                                    {
-                                                        try
-                                                        {
-                                                            if (ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB
-                                                                    .getScreen(), fadulousbms.FadulousBMS.class
-                                                                    .getResource("views/" + Screens.VIEW_JOB
-                                                                            .getScreen())))
-                                                            {
-                                                                Platform.runLater(() -> ScreenManager.getInstance()
-                                                                        .setScreen(Screens.VIEW_JOB.getScreen()));
-                                                            }
-                                                            else IO.log(getClass()
-                                                                    .getName(), IO.TAG_ERROR, "could not load job viewer screen.");
-                                                        } catch (IOException e)
-                                                        {
-                                                            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-                                                        }
-                                                    }
-                                                }).start();
-
-                                                return null;
-                                            });
-                                        } else
-                                            IO.logAndAlert("Error", "Could not find any jobs in the database.", IO.TAG_INFO);
-
-                                    } else IO.logAndAlert("Error", "Could NOT update job[#"
-                                            + String.valueOf(JobManager.getInstance().getSelected().getObject_number())
-                                            + "] representatives.", IO.TAG_ERROR);
+                                                    if(new_je_id==null)
+                                                        IO.logAndAlert("Success", "Successfully updated job[#"
+                                                                +String.valueOf(JobManager.getInstance().getSelected().getObject_number())
+                                                                + "] representatives.", IO.TAG_INFO);
+                                                    else
+                                                        IO.logAndAlert("Error", "Could NOT update job[#"
+                                                            + String.valueOf(JobManager.getInstance().getSelected().getObject_number())
+                                                            + "] representatives.", IO.TAG_ERROR);
+                                                    return null;
+                                                });
+                                                /*created_all = JobManager.createJobRepresentative(JobManager.getInstance().getSelected().get_id(), employee.getUsr());*/
+                                            } else IO.log(getClass().getName(), IO.TAG_VERBOSE, "Employee " + jobEmployee.getUsr() + " has already been assigned to Job #" + JobManager.getInstance().getSelected().getObject_number() + ", skipping."); //don't duplicate record
+                                        }
+                                    } else IO.logAndAlert("Error", "You have not assigned any employees to this job.", IO.TAG_ERROR);
                                 } else IO.logAndAlert("Error: " + connection
                                         .getResponseCode(), "Could not update Job object: " + IO
                                         .readStream(connection.getErrorStream()), IO.TAG_ERROR);
@@ -583,17 +611,23 @@ public class ViewJobController extends ScreenController implements Initializable
             return;
         }
 
-        JobManager.getInstance().approveJob((Job) JobManager.getInstance().getSelected(), param1 ->
+        try
         {
-            //Refresh UI
-            new Thread(() ->
-                    refreshModel(param ->
-                    {
-                        Platform.runLater(() -> refreshView());
-                        return null;
-                    })).start();
-            return null;
-        });
+            JobManager.getInstance().approveJob(JobManager.getInstance().getSelected(), job_id ->
+            {
+                //Refresh UI
+                new Thread(() ->
+                        refreshModel(param ->
+                        {
+                            Platform.runLater(() -> refreshView());
+                            return null;
+                        })).start();
+                return null;
+            });
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -606,7 +640,8 @@ public class ViewJobController extends ScreenController implements Initializable
             return;
         }
         //set selected Quote
-        QuoteManager.getInstance().setSelected(((Job) JobManager.getInstance().getSelected()).getQuote());
+        QuoteManager.getInstance().setSelected(JobManager.getInstance().getSelected().getQuote());
+
         //load Quote viewer
         ScreenManager.getInstance().showLoadingScreen(param ->
         {
@@ -629,154 +664,5 @@ public class ViewJobController extends ScreenController implements Initializable
             }).start();
             return null;
         });
-    }
-
-    class ComboBoxTableCell extends TableCell<BusinessObject, String>
-    {
-        private ComboBox<String> comboBox;
-        private String property, label_property, api_method;
-        private BusinessObject[] business_objects;
-        public static final String TAG = "ComboBoxTableCell";
-
-        public ComboBoxTableCell(BusinessObject[] business_objects, String property, String label_properties)
-        {
-            super();
-            this.property = property;
-            this.api_method = api_method;
-            this.business_objects=business_objects;
-            this.label_property = label_properties;
-
-            String[] combobox_items;
-            if(business_objects==null)
-            {
-                IO.log(TAG, IO.TAG_ERROR, "business objects array for the combo box cannot be null!");
-                return;
-            }
-            if(business_objects.length<=0)
-            {
-                IO.log(TAG, IO.TAG_ERROR, "business objects array for the combo box cannot be empty!");
-                return;
-            }
-
-            combobox_items = new String[business_objects.length];
-            String[] properties = label_properties.split("\\|");
-            for(int i=0;i<business_objects.length;i++)
-            {
-                String prop_val = getBusinessObjectProperty(properties, business_objects[i]);
-                if (prop_val!=null)
-                {
-                    combobox_items[i] = prop_val;
-                    IO.log(TAG, IO.TAG_INFO, String.format("set combo box array item #%s to '%s'.", i, prop_val));
-                    //break;
-                }else
-                {
-                    IO.log(TAG, IO.TAG_WARN, String.format("property '%s' on object of type '%s' is null.", label_property, business_objects[i].getClass().getName()));
-                }
-            }
-
-            comboBox = new ComboBox<>(FXCollections.observableArrayList(combobox_items));
-            HBox.setHgrow(comboBox, Priority.ALWAYS);
-
-            IO.log(TAG, IO.TAG_INFO, "set array to combo box.");
-
-            comboBox.valueProperty().addListener((observable, oldValue, newValue) ->
-            {
-                int selected_pos = comboBox.selectionModelProperty().get().getSelectedIndex();
-                if(selected_pos>=0 && selected_pos<business_objects.length)
-                {
-                    commitEdit(business_objects[selected_pos].get_id());
-                    updateItem(business_objects[selected_pos].get_id(), business_objects[selected_pos].get_id()==null);
-                    IO.log(TAG, IO.TAG_INFO, "selected: " + business_objects[selected_pos]);
-                }else IO.log(TAG, IO.TAG_ERROR, "index out of bounds.");
-            });
-        }
-
-        /**
-         * Function to get the matching values to a list of BusinessObject attributes.
-         * @param properties list of attributes to be retrieved.
-         * @param business_object BusinessObject to retrieve the values from.
-         * @return String with all the attribute values separated by a space.
-         */
-        public String getBusinessObjectProperty(String[] properties, BusinessObject business_object)
-        {
-            String prop_val = "";
-            for (String label_property : properties)
-                prop_val += business_object.get(label_property) + " ";
-            if (prop_val != null)
-                return prop_val.substring(0,prop_val.length()-1);//return the chained String - without the last space.
-            return null;
-        }
-
-        @Override
-        public void commitEdit(String selected_id)
-        {
-            super.commitEdit(selected_id);
-            if(selected_id!=null)
-            {
-                if(!selected_id.isEmpty())
-                {
-                    if (getTableRow().getItem() instanceof BusinessObject)
-                    {
-                        int selected_pos = comboBox.selectionModelProperty().get().getSelectedIndex();
-                        if(selected_pos>=0 && selected_pos<business_objects.length)
-                        {
-                            System.out.println("\n\ngetIndex():" + getIndex() + " getTableRow().getIndex():" + getTableRow().getIndex() + "\n\n");
-                            //getTableRow().setItem(comboBox.get);
-                            System.out.println("Current: " + getTableRow().getItem());
-                            for(BusinessObject bo: business_objects)
-                            {
-                                if(bo.get_id().equals(selected_id))
-                                {
-                                    System.out.println("New: " + bo);
-                                    System.out.println("TableView item count: "+getTableView().getItems().size());
-                                    //getTableView().getItems().set(getIndex(), bo);
-                                    List items = getTableView().getItems();
-                                    items.set(getIndex(), bo);
-                                    getTableView().setItems(FXCollections.observableArrayList(items));
-                                    return;
-                                }
-                            }
-                            //getTableView().getItems()
-                            /*for (Employee employee : QuoteManager.getInstance().getEmployees())
-                            {
-                                if (employee.get_id().equals(selected_id))
-                                {
-                                    getTableView().getItems().set(selected_pos, employee);
-                                    return;
-                                }
-                            }*/
-                        }else IO.log(TAG, IO.TAG_ERROR, "index out of bounds.");
-                        IO.logAndAlert(TAG, "NewQuoteController.ComboBoxTableCell> Selected Employee was not found in Employee list.", IO.TAG_ERROR);
-                        /*
-                        bo.parse(property, selected_id);
-                        if (bo != null)
-                        {
-                            RemoteComms.updateBusinessObjectOnServer(bo, api_method, property);
-
-                        } else
-                        {
-                            IO.log(TAG, IO.TAG_ERROR, "row business object is null.");
-                        }*/
-                    } else IO.log(TAG, IO.TAG_ERROR, String.format("unknown row object: " + getTableRow().getItem()));
-                } else IO.log(TAG, IO.TAG_ERROR, String.format("selected_id is empty"));
-            }else IO.log(TAG, IO.TAG_ERROR, "selected_id is null.");
-        }
-
-        @Override
-        protected void updateItem(String selected_id, boolean empty)
-        {
-            super.updateItem(selected_id, empty);
-            //comboBox.setValue(prop_val);
-            if(!empty && selected_id!=null)
-            {
-                setGraphic(comboBox);
-            }
-        }
-
-        @Override
-        public void startEdit()
-        {
-            super.startEdit();
-        }
     }
 }

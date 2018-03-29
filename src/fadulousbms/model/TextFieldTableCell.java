@@ -1,6 +1,7 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
@@ -34,12 +35,21 @@ public class TextFieldTableCell extends TableCell<BusinessObject, String>
             if(event.getCode()== KeyCode.ENTER)
             {
                 BusinessObject obj = (BusinessObject)getTableRow().getItem();
-                obj.parse(property,txt.getText());
+                try
+                {
+                    obj.parse(property,txt.getText());
 
-                if(callback!=null)
-                    callback.call(obj);
+                    //execute callback w/ args
+                    if(callback!=null)
+                        callback.call(obj);
 
-                getTableRow().setItem(obj);
+                    getTableRow().setItem(obj);
+                } catch (ParseException e)
+                {
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
+                    //TODO: execute callback w/o args?
+                }
             }
         });
     }
@@ -54,7 +64,14 @@ public class TextFieldTableCell extends TableCell<BusinessObject, String>
             if (getTableRow().getItem() instanceof BusinessObject)
             {
                 BusinessObject bo = (BusinessObject) getTableRow().getItem();
-                bo.parse(property, selected_id);
+                try
+                {
+                    bo.parse(property, selected_id);
+                } catch (ParseException e)
+                {
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
+                }
             } else IO.log(TAG, IO.TAG_ERROR, String.format("unknown row object: " + getTableRow().getItem()));
         }else IO.log(TAG, IO.TAG_ERROR, "selected id is null.");
     }

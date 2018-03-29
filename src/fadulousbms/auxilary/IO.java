@@ -5,7 +5,7 @@ import fadulousbms.controllers.ScreenController;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.BusinessObject;
-import fadulousbms.model.FileMetadata;
+import fadulousbms.model.Metafile;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -92,9 +92,13 @@ public class IO<T extends BusinessObject>
         return i;
     }
 
-    public static String generateRandomString(int len)
+    public static String generateRandomString(int len, boolean include_digits, boolean include_specials)
     {
-        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        if(include_digits)
+            chars+="1234567890";
+        if(include_specials)
+            chars+="!@#$%^&*()-=_+/{}[],:;.<>?|~`";//quote & backslash?
         String str="";
         for(int i=0;i<len;i++)
             str+=chars.charAt((int)(Math.floor(Math.random()*chars.length())));
@@ -108,6 +112,12 @@ public class IO<T extends BusinessObject>
 
     public static void log(String src, String tag, String msg)
     {
+        if(msg==null || tag==null || src==null)
+        {
+            //showMessage("Error", "Log's message and/or tag and/or source is invalid. Please check you params.", IO.TAG_ERROR);
+            System.err.println("Error: log message/tag/source is invalid. Please check you params.");
+            return;
+        }
         if(screenManager!=null)
         {
             ScreenController current_screen = screenManager.getFocused();
@@ -176,7 +186,8 @@ public class IO<T extends BusinessObject>
         ArrayList<ButtonType> buttons = new ArrayList<>();
         for (String option : options)
         {
-            buttons.add(new ButtonType(option));
+            ButtonType btn = new ButtonType(option);
+            buttons.add(btn);
         }
 
         alert.getButtonTypes().setAll(buttons);
@@ -336,7 +347,7 @@ public class IO<T extends BusinessObject>
         return null;
     }
 
-    public static void viewIndexPage(String title, FileMetadata[] documents, String path)
+    public static void viewIndexPage(String title, Metafile[] documents, String path)
     {
         try
         {
@@ -396,7 +407,7 @@ public class IO<T extends BusinessObject>
         } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
-    public static void printSelectedDocuments(FileMetadata[] documents)
+    public static void printSelectedDocuments(Metafile[] documents)
     {
         IO.log(TAG, IO.TAG_INFO, "printing selected documents.");
         //Validate session - also done on server-side don't worry ;)
@@ -407,21 +418,21 @@ public class IO<T extends BusinessObject>
             {
                 try
                 {
-                    for (FileMetadata fileMetadata : documents)
+                    for (Metafile metafile : documents)
                     {
-                        if (fileMetadata.isMarked())
+                        if (metafile.isMarked())
                         {
                             //Prepare headers
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                             headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                             long start = System.currentTimeMillis();
-                            byte[] doc = RemoteComms.sendFileRequest(fileMetadata.getPath(), headers);
+                            byte[] doc = RemoteComms.sendFileRequest(metafile.getPath(), headers);
                             long ellapsed = System.currentTimeMillis() - start;
-                            IO.log(TAG, IO.TAG_INFO, "File [" + fileMetadata.getLabel() + "] download complete, size: " + doc.length + " bytes in " + ellapsed + "msec.");
+                            IO.log(TAG, IO.TAG_INFO, "File [" + metafile.getLabel() + "] download complete, size: " + doc.length + " bytes in " + ellapsed + "msec.");
 
                             PDF.printPDF(doc);
-                            IO.log(TAG, IO.TAG_INFO, "Printing: " + fileMetadata.getLabel() + " ["+fileMetadata.get_id()+"]");
+                            IO.log(TAG, IO.TAG_INFO, "Printing: " + metafile.getLabel() + " ["+ metafile.get_id()+"]");
                         }
                     }
                 }catch (PrintException e)
@@ -435,7 +446,7 @@ public class IO<T extends BusinessObject>
         } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
-    public static void printAllDocuments(FileMetadata[] documents)
+    public static void printAllDocuments(Metafile[] documents)
     {
         IO.log(TAG, IO.TAG_INFO, "initiating atch printing of all documents...");
         //Validate session - also done on server-side don't worry ;)
@@ -446,19 +457,19 @@ public class IO<T extends BusinessObject>
             {
                 try
                 {
-                    for (FileMetadata fileMetadata : documents)
+                    for (Metafile metafile : documents)
                     {
                         //Prepare headers
                         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                         headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
                         long start = System.currentTimeMillis();
-                        byte[] doc = RemoteComms.sendFileRequest(fileMetadata.getPath(), headers);
+                        byte[] doc = RemoteComms.sendFileRequest(metafile.getPath(), headers);
                         long ellapsed = System.currentTimeMillis() - start;
-                        IO.log(TAG, IO.TAG_INFO, "File [" + fileMetadata.getLabel() + "] download complete, size: " + doc.length + " bytes in " + ellapsed + "msec.");
+                        IO.log(TAG, IO.TAG_INFO, "File [" + metafile.getLabel() + "] download complete, size: " + doc.length + " bytes in " + ellapsed + "msec.");
 
                         PDF.printPDF(doc);
-                        IO.log(TAG, IO.TAG_INFO, "Printing: " + fileMetadata.getLabel() + " ["+fileMetadata.get_id()+"]");
+                        IO.log(TAG, IO.TAG_INFO, "Printing: " + metafile.getLabel() + " ["+ metafile.get_id()+"]");
                     }
                 }catch (PrintException e)
                 {
@@ -471,6 +482,7 @@ public class IO<T extends BusinessObject>
         } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
+    //TODO: use blowfish/bcrypt
     public static String getEncryptedHexString(String message) throws Exception
     {
         StringBuilder str = new StringBuilder();
@@ -479,6 +491,7 @@ public class IO<T extends BusinessObject>
         return str.toString();
     }
 
+    //TODO: use blowfish/bcrypt
     public static byte[] hash(String plaintext) throws Exception
     {
         MessageDigest m = MessageDigest.getInstance("MD5");
@@ -487,6 +500,7 @@ public class IO<T extends BusinessObject>
         return m.digest();
     }
 
+    //TODO: use blowfish/bcrypt
     public static byte[] encrypt(String digest, String message) throws Exception
     {
         final MessageDigest md = MessageDigest.getInstance("md5");

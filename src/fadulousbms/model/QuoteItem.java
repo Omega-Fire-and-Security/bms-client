@@ -3,13 +3,14 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.QuoteManager;
 import fadulousbms.managers.ResourceManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 
 /**
@@ -37,6 +38,12 @@ public class QuoteItem extends BusinessObject implements Serializable
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.ADMIN;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return QuoteManager.getInstance();
     }
 
     public String getItem_number()
@@ -225,6 +232,15 @@ public class QuoteItem extends BusinessObject implements Serializable
         return getRate()*getQuantityValue();
     }
 
+    public Quote getQuote()
+    {
+        if(getManager().getDataset()!=null)
+            if(getManager().getDataset().get(getQuote_id())!=null)
+                return (Quote) getManager().getDataset().get(getQuote_id());
+
+        return null;
+    }
+
     //Properties
     public StringProperty item_numberProperty(){return new SimpleStringProperty(String.valueOf(item_number));}
     public StringProperty quote_idProperty(){return new SimpleStringProperty(quote_id);}
@@ -251,7 +267,7 @@ public class QuoteItem extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -345,8 +361,18 @@ public class QuoteItem extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        Quote quote = getQuote();
+        String str = "#" + getObject_number();
+        if(quote!=null)
+            str += ", for quote " + quote.toString() + "";
+        return str;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/quotes/resources";
+        return "/quote/resource";
     }
 }

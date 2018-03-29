@@ -2,8 +2,8 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.ClientManager;
-import fadulousbms.managers.EmployeeManager;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import java.util.HashMap;
@@ -30,6 +30,12 @@ public class Requisition extends BusinessObject
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return RequisitionManager.getInstance();
     }
 
     public StringProperty client_idProperty(){return new SimpleStringProperty(client_id);}
@@ -89,7 +95,7 @@ public class Requisition extends BusinessObject
     {
         switch (status)
         {
-            case BusinessObject.STATUS_APPROVED:
+            case BusinessObject.STATUS_FINALISED:
                 return "Approved";
             case BusinessObject.STATUS_PENDING:
                 return "Pending";
@@ -143,7 +149,7 @@ public class Requisition extends BusinessObject
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -213,8 +219,17 @@ public class Requisition extends BusinessObject
     }
 
     @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number() + " " + getDescription();
+        if(getClient()!=null)
+            str += ", for client " + getClient().toString() + "";
+        return str;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/requisitions";
+        return "/requisition";
     }
 }

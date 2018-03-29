@@ -9,7 +9,7 @@ import fadulousbms.auxilary.RemoteComms;
 import fadulousbms.auxilary.Validators;
 import fadulousbms.model.BusinessObject;
 import fadulousbms.model.CustomTableViewControls;
-import fadulousbms.model.FileMetadata;
+import fadulousbms.model.Metafile;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -37,7 +37,7 @@ import java.util.HashMap;
 public class AppointmentManager extends BusinessObjectManager
 {
     private TableView tblAppointment;
-    private FileMetadata[] documents;
+    private Metafile[] documents;
     private static AppointmentManager appointment_manager = new AppointmentManager();
 
     private AppointmentManager()
@@ -56,7 +56,7 @@ public class AppointmentManager extends BusinessObjectManager
     }
 
     @Override
-    public HashMap<String, FileMetadata> getDataset()
+    public HashMap<String, Metafile> getDataset()
     {
         return null;
     }
@@ -74,11 +74,11 @@ public class AppointmentManager extends BusinessObjectManager
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                     headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
 
-                    String index_json = RemoteComms.sendGetRequest("/appointment/indices", headers);
-                    documents = gson.fromJson(index_json, FileMetadata[].class);
+                    String index_json = RemoteComms.get("/appointment/indices", headers);
+                    documents = gson.fromJson(index_json, Metafile[].class);
 
                     //Sort array in ascending order
-                    //TODO:FileMetadata.quickSort(documents, 0, documents.length-1);
+                    //TODO:Metafile.quickSort(documents, 0, documents.length-1);
                 } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
             } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
         }catch (JsonSyntaxException ex)
@@ -116,13 +116,13 @@ public class AppointmentManager extends BusinessObjectManager
                 tblAppointment.setEditable(true);
 
                 TableColumn<BusinessObject, String> index = new TableColumn("Index");
-                CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", "/appointment/index");
+                CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", AppointmentManager.getInstance());
 
                 TableColumn<BusinessObject, String> label = new TableColumn("Label");
-                CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", "/appointment/index");
+                CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", AppointmentManager.getInstance());
 
                 TableColumn<BusinessObject, String> document = new TableColumn("Document Path");
-                CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", "/appointment/index");
+                CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", AppointmentManager.getInstance());
 
                 TableColumn<BusinessObject, HBox> action = new TableColumn("Action");
                 CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/appointment/index");
@@ -133,7 +133,7 @@ public class AppointmentManager extends BusinessObjectManager
                 TableColumn<BusinessObject, GridPane> mark = new TableColumn("Mark");
                 CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/appointment/index");
 
-                ObservableList<FileMetadata> lst_inspection = FXCollections.observableArrayList();
+                ObservableList<Metafile> lst_inspection = FXCollections.observableArrayList();
                 lst_inspection.addAll(documents);
 
                 tblAppointment.setItems(lst_inspection);
@@ -248,27 +248,21 @@ public class AppointmentManager extends BusinessObjectManager
 
             try
             {
+                //TODO:
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                else
-                {
-                    JOptionPane.showMessageDialog(null, "No active sessions.", "Session expired", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                HttpURLConnection connection = RemoteComms.postData("/appointment/index/add", params, headers);
+                HttpURLConnection connection = RemoteComms.post("/appointment/index", "", headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
-                        JOptionPane.showMessageDialog(null, "Successfully added new appointment document reference!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    }else{
+                        IO.logAndAlert("Success", "Successfully added new appointment document reference!", IO.TAG_INFO);
+                    } else
+                    {
                         String msg = IO.readStream(connection.getErrorStream());
-                        JOptionPane.showMessageDialog(null, msg, "Error " + connection.getResponseCode(), JOptionPane.ERROR_MESSAGE);
+                        IO.logAndAlert("Error " + connection.getResponseCode(), msg, IO.TAG_ERROR);
                     }
                     connection.disconnect();
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "handleNewAppointmentReference()> Could not get a valid response from the server.");
             } catch (IOException e)
             {
                 IO.logAndAlert(getClass().getName(), e.getMessage(), IO.TAG_ERROR);

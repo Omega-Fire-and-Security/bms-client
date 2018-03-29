@@ -144,10 +144,9 @@ public class NewRevenueController extends ScreenController implements Initializa
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
             //create new quote on database
-            HttpURLConnection connection = RemoteComms.postJSON(revenue.apiEndpoint(), revenue.getJSONString(), headers);
+            HttpURLConnection connection = RemoteComms.post(revenue.apiEndpoint(), revenue.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

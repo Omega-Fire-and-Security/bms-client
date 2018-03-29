@@ -7,7 +7,6 @@ import fadulousbms.model.*;
 import javafx.util.Callback;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/11.
+ * @author ghost
  */
 public class TaskManager extends BusinessObjectManager
 {
@@ -60,6 +60,12 @@ public class TaskManager extends BusinessObjectManager
     }
 
     @Override
+    public Task getSelected()
+    {
+        return (Task) super.getSelected();
+    }
+
+    @Override
     Callback getSynchronisationCallback()
     {
         return new Callback()
@@ -76,10 +82,10 @@ public class TaskManager extends BusinessObjectManager
                         {
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/tasks_timestamp", headers);
+                            String timestamp_json = RemoteComms.get("/timestamp/tasks_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
@@ -96,8 +102,8 @@ public class TaskManager extends BusinessObjectManager
                             if (!isSerialized(ROOT_PATH + filename))
                             {
                                 //Load Task objects from server
-                                String tasks_json = RemoteComms.sendGetRequest("/tasks", headers);
-                                TaskServerObject taskServerObject = gson.fromJson(tasks_json, TaskServerObject.class);
+                                String tasks_json = RemoteComms.get("/tasks", headers);
+                                TaskServerObject taskServerObject = (TaskServerObject) TaskManager.getInstance().parseJSONobject(tasks_json, new TaskServerObject());
                                 if (taskServerObject != null)
                                 {
                                     if (taskServerObject.get_embedded() != null)
@@ -112,8 +118,8 @@ public class TaskManager extends BusinessObjectManager
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Tasks in the database.");
                                 } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Tasks in the database.");
 
-                                String task_items_json = RemoteComms.sendGetRequest("/tasks/resources", headers);
-                                TaskItemServerObject taskItemsServerObject = gson.fromJson(task_items_json, TaskItemServerObject.class);
+                                String task_items_json = RemoteComms.get("/tasks/resources", headers);
+                                TaskItemServerObject taskItemsServerObject = (TaskItemServerObject) TaskManager.getInstance().parseJSONobject(task_items_json, new TaskItemServerObject());
                                 if (taskItemsServerObject != null)
                                 {
                                     if (taskItemsServerObject.get_embedded() != null)
@@ -156,76 +162,20 @@ public class TaskManager extends BusinessObjectManager
                     } else IO.logAndAlert("Session Expired", "No valid active sessions found.", IO.TAG_ERROR);
                 } catch (MalformedURLException e)
                 {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
                 } catch (ClassNotFoundException e)
                 {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
                 } catch (IOException e)
                 {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
                 }
                 return null;
             }
         };
-    }
-
-    /**
-     * Method to create new Task object on the database server.
-     * @param task Task object to be created.
-     * @param callback Callback to be executed on if request was successful.
-     * @return server response.
-     */
-    public String createNewTask(Task task, Callback callback)
-    {
-        try
-        {
-            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-
-            //create new task on database
-            HttpURLConnection connection = RemoteComms.putJSON("/tasks", task.getJSONString(), headers);
-            if(connection!=null)
-            {
-                if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                {
-                    String response = IO.readStream(connection.getInputStream());
-
-                    //server will return message object in format "<task_id>"
-                    String new_task_id = response.replaceAll("\"","");//strip inverted commas around task_id
-                    new_task_id = new_task_id.replaceAll("\n","");//strip new line chars
-                    new_task_id = new_task_id.replaceAll(" ","");//strip whitespace chars
-
-                    if(connection!=null)
-                        connection.disconnect();
-
-                    IO.logAndAlert("Success", "Successfully created a new task: " + new_task_id, IO.TAG_INFO);
-
-                    TaskManager.getInstance().synchroniseDataset();
-                    //execute callback w/ args
-                    if(callback!=null)
-                        callback.call(new_task_id);
-                    return new_task_id;
-                } else
-                {
-                    //Get error message
-                    if(connection!=null)
-                    {
-                        connection.disconnect();
-                        String msg = IO.readStream(connection.getErrorStream());
-                        IO.logAndAlert("Error " + String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
-                    }
-                    //execute callback w/o args
-                    if(callback!=null)
-                        callback.call(null);
-                    return null;
-                }
-            } else IO.logAndAlert("Task Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
-        } catch (IOException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
     }
 
     class TaskServerObject extends ServerObject

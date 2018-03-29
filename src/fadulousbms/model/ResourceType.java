@@ -1,5 +1,8 @@
 package fadulousbms.model;
 
+import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ResourceManager;
+
 /**
  * Created by ghost on 2017/01/13.
  */
@@ -11,8 +14,14 @@ public class ResourceType extends Type
     }
 
     @Override
+    public BusinessObjectManager getManager()
+    {
+        return ResourceManager.getInstance();
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/resources/types";
+        return "/resource/type";
     }
 }

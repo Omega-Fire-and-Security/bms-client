@@ -3,6 +3,8 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.Link;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.BusinessObjectManager;
 import fadulousbms.managers.EmployeeManager;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -25,7 +27,7 @@ public abstract class BusinessObject implements Serializable
     private boolean marked;
     private Link _links;
     public static final int STATUS_PENDING =0;
-    public static final int STATUS_APPROVED =1;
+    public static final int STATUS_FINALISED =1;
     public static final int STATUS_ARCHIVED =2;
 
     //Read/Write permissions
@@ -36,7 +38,7 @@ public abstract class BusinessObject implements Serializable
 
     public abstract AccessLevel getWriteMinRequiredAccessLevel();
 
-    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
+    public abstract BusinessObjectManager getManager();
 
     /**
      * Function to get identifier of Quote object.
@@ -64,18 +66,6 @@ public abstract class BusinessObject implements Serializable
     public void setDate_logged(long date_logged)
     {
         this.date_logged = date_logged;
-    }
-
-    public SimpleStringProperty creator_nameProperty()
-    {
-        if(getCreatorEmployee()!=null)
-            return new SimpleStringProperty(getCreatorEmployee().getName());
-        else return new SimpleStringProperty(getCreator());
-    }
-
-    public StringProperty creatorProperty()
-    {
-        return new SimpleStringProperty(String.valueOf(getCreator()));
     }
 
     public String getCreator()
@@ -117,6 +107,20 @@ public abstract class BusinessObject implements Serializable
         this.other = other;
     }
 
+    public boolean isMarked()
+    {
+        return marked;
+    }
+
+    public void setMarked(boolean marked){this.marked=marked;}
+
+    public void set_links(Link links)
+    {
+        this._links=links;
+    }
+
+    public StringProperty idProperty(){return new SimpleStringProperty(_id);}
+
     public SimpleLongProperty object_numberProperty(){return new SimpleLongProperty(object_number);}
 
     /**
@@ -130,35 +134,19 @@ public abstract class BusinessObject implements Serializable
         return _id.substring(0, 8);
     }
 
-    public boolean isMarked()
+    public SimpleStringProperty creator_nameProperty()
     {
-        return marked;
+        if(getCreatorEmployee()!=null)
+            return new SimpleStringProperty(getCreatorEmployee().getName());
+        else return new SimpleStringProperty(getCreator());
     }
 
-    public void setMarked(boolean marked){this.marked=marked;}
-
-    public void set_links(Link links)
+    public StringProperty creatorProperty()
     {
-        this._links=links;
-        /*if(get_id()==null)
-        {
-            String id=null;
-            //if no id has been set, try retrieve it from _links object
-            if (_links != null)
-                if (_links.getSelf() != null)
-                    if (_links.getSelf().getHref() != null)
-                    {
-                        //returns data of format  http://localhost:8080/invoices/5a314faf6604db0001816e07
-                        String[] arr = _links.getSelf().getHref().split("/");
-                        if(arr!=null)
-                            if(arr.length>0)
-                                id=arr[arr.length-1];
-                    }
-            set_id(id);
-        }*/
+        return new SimpleStringProperty(String.valueOf(getCreator()));
     }
 
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         switch (var.toLowerCase())
         {

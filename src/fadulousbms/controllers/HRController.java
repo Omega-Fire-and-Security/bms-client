@@ -101,7 +101,7 @@ public class HRController extends ScreenController implements Initializable
         //append to default context menu
         //new employee menu item
         context_menu[default_context_menu.length] = new RadialMenuItemCustom(30, "New Employee", null,
-                null, event -> EmployeeManager.getInstance().newExternalEmployeeWindow("Create New Employee",null));
+                null, event -> EmployeeManager.getInstance().newEmployee(ScreenManager.getInstance(),null));
         //record overtime menu item
         context_menu[default_context_menu.length+1] = new RadialMenuItemCustom(30, "Overtime Application", null, null, event ->
         {

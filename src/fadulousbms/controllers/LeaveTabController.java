@@ -64,7 +64,7 @@ public class LeaveTabController extends ScreenController implements Initializabl
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colEndDate, "end_date");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colReturnDate, "return_date");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", "/leave_records");
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 120, "other", LeaveManager.getInstance());
 
         if(LeaveManager.getInstance().getDataset()!=null)
         {
@@ -143,7 +143,7 @@ public class LeaveTabController extends ScreenController implements Initializabl
                                 HBox.setHgrow(btnEmailSigned, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()>=Leave.STATUS_APPROVED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()>=Leave.STATUS_FINALISED)
                                     {
                                         btnEmailSigned.getStyleClass().add("btnDefault");
                                         btnEmailSigned.setDisable(false);
@@ -291,7 +291,7 @@ public class LeaveTabController extends ScreenController implements Initializabl
 
                     //String filename = String.valueOf(bo.get(property));
                     long start = System.currentTimeMillis();
-                    byte[] file = RemoteComms.sendFileRequest("/api/leave_record/signed/" + leave.get_id(), headers);
+                    byte[] file = RemoteComms.sendFileRequest("/leave_application/signed/" + leave.get_id(), headers);
 
                     if (file != null)
                     {

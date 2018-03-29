@@ -3,6 +3,9 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
 import fadulousbms.managers.ResourceManager;
 import fadulousbms.managers.TaskManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -36,6 +39,12 @@ public class TaskItem extends BusinessObject implements Serializable
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return TaskManager.getInstance();
     }
 
     public String getTask_id()
@@ -197,7 +206,7 @@ public class TaskItem extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -286,9 +295,19 @@ public class TaskItem extends BusinessObject implements Serializable
         return json_obj;
     }
 
+
+    @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number() + ", " + getEquipment_description();
+        if(getTask()!=null)
+            str+= ", for task " + getTask().toString();
+        return str;
+    }
+
     @Override
     public String apiEndpoint()
     {
-        return "/tasks/resources";
+        return "/task/resource";
     }
 }

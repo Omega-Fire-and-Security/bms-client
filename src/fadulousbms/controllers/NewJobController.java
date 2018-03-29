@@ -69,7 +69,7 @@ public class NewJobController extends ScreenController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        colAction.setCellFactory(new ButtonTableCellFactory<>());
+        //colAction.setCellFactory(new ButtonTableCellFactory<>());
         colAction.setCellValueFactory(new PropertyValueFactory<>(""));
 
         Callback<TableColumn<QuoteItem, String>, TableCell<QuoteItem, String>> cellFactory
@@ -275,7 +275,7 @@ public class NewJobController extends ScreenController implements Initializable
                             {
                                 job_item.setMarkup(Double.valueOf(txt.getText()));
                                 //TODO: include service items below
-                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems(), null)));
+                                txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.getInstance().computeQuoteTotal(getTableView().getItems())));
                                 tblJobItems.refresh();
                                 //RemoteComms.updateBusinessObjectOnServer(job_item, "/api/job/resource", "markup");
                                 //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
@@ -425,7 +425,7 @@ public class NewJobController extends ScreenController implements Initializable
                 case Job.STATUS_PENDING:
                     status = "PENDING";
                     break;
-                case Job.STATUS_APPROVED:
+                case Job.STATUS_FINALISED:
                     status = "APPROVED";
                     break;
                 case Job.STATUS_ARCHIVED:
@@ -449,13 +449,13 @@ public class NewJobController extends ScreenController implements Initializable
         lblVat.setText("VAT ["+new DecimalFormat("##.##").format(vat)+"%]");
         if(tblJobItems.getItems()!=null)
         {
-            double total = QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null);
+            double total = QuoteManager.computeQuoteTotal(tblJobItems.getItems());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                     new DecimalFormat("##.##").format((total + (total*(vat)))));
         }
         if(tblJobItems.getItems()!=null)
         {
-            double total = QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null);
+            double total = QuoteManager.computeQuoteTotal(tblJobItems.getItems());
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                     new DecimalFormat("##.##").format((total + (total*(vat/100)))));
         }
@@ -560,7 +560,7 @@ public class NewJobController extends ScreenController implements Initializable
                                 {
                                     callback.call(null);
                                     tblJobItems.refresh();
-                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null)));
+                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
                                 }
                             });
                             txtMarkup.setOnKeyPressed(event ->
@@ -569,7 +569,7 @@ public class NewJobController extends ScreenController implements Initializable
                                 {
                                     callback.call(null);
                                     tblJobItems.refresh();
-                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null)));
+                                    txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
                                 }
                             });
 
@@ -733,7 +733,7 @@ public class NewJobController extends ScreenController implements Initializable
             tblJobItems.getColumns().add(col);
             tblJobItems.refresh();
 
-            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null)));
+            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
         });
 
         HBox row1 = new HBox(lblName, txtName);
@@ -836,7 +836,7 @@ public class NewJobController extends ScreenController implements Initializable
 
                             //txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " +
                             //        String.valueOf(QuoteManager.computeQuoteTotal(JobManager.getInstance().getSelectedJob())));
-                            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems(), null)));
+                            txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue()+" "+String.valueOf(QuoteManager.computeQuoteTotal(tblJobItems.getItems())));
 
                         } else IO.logAndAlert("New Job Resource", "Invalid resource selected.", IO.TAG_ERROR);
                     });
@@ -954,7 +954,7 @@ public class NewJobController extends ScreenController implements Initializable
         quote.setContact_person_id(cbxContactPerson.getValue().getUsr());
         quote.setSitename(txtSite.getText());
         quote.setRequest(txtRequest.getText());
-        quote.setStatus(Job.STATUS_APPROVED);
+        quote.setStatus(Job.STATUS_FINALISED);
         quote.setAccount_name(cbxAccount.getValue());
         quote.setCreator(SessionManager.getInstance().getActive().getUsr());
         quote.setRevision(1.0);
@@ -970,7 +970,7 @@ public class NewJobController extends ScreenController implements Initializable
         try
         {
             //create Job
-            QuoteManager.getInstance().createQuote(quote, tblJobItems.getItems(), null, new Callback()
+            QuoteManager.getInstance().createQuote(quote, tblJobItems.getItems(), new Callback()
             {
                 @Override
                 public Object call(Object quote_id)
@@ -982,44 +982,50 @@ public class NewJobController extends ScreenController implements Initializable
                         job.setCreator(SessionManager.getInstance().getActiveEmployee().getUsr());
 
                         //create Job
-                        JobManager.getInstance().createNewJob(job, new Callback()
-                        {
-                            @Override
-                            public Object call(Object job_id)
+                        try {
+                            JobManager.getInstance().putObject(job, new Callback()
                             {
-                                ScreenManager.getInstance().showLoadingScreen(param ->
+                                @Override
+                                public Object call(Object job_id)
                                 {
-                                    new Thread(new Runnable()
+                                    ScreenManager.getInstance().showLoadingScreen(param ->
                                     {
-                                        @Override
-                                        public void run()
+                                        new Thread(new Runnable()
                                         {
-                                            try
+                                            @Override
+                                            public void run()
                                             {
-                                                //reload quote data-set
-                                                QuoteManager.getInstance().forceSynchronise();
-                                                //reload job data-set
-                                                JobManager.getInstance().forceSynchronise();
-                                                if(job_id!=null)
+                                                try
                                                 {
-                                                    //update selected job
-                                                    JobManager.getInstance().setSelected(JobManager.getInstance().getDataset().get(job_id));
-                                                    //load viewer
-                                                    if (ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/" + Screens.VIEW_JOB.getScreen()))) {
-                                                        Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_JOB.getScreen()));
-                                                    } else
-                                                        IO.log(getClass().getName(), IO.TAG_ERROR, "could not load job viewer  screen.");
+                                                    //reload quote data-set
+                                                    QuoteManager.getInstance().forceSynchronise();
+                                                    //reload job data-set
+                                                    JobManager.getInstance().forceSynchronise();
+                                                    if(job_id!=null)
+                                                    {
+                                                        //update selected job
+                                                        JobManager.getInstance().setSelected(JobManager.getInstance().getDataset().get(job_id));
+                                                        //load viewer
+                                                        if (ScreenManager.getInstance().loadScreen(Screens.VIEW_JOB.getScreen(), fadulousbms.FadulousBMS.class.getResource("views/" + Screens.VIEW_JOB.getScreen()))) {
+                                                            Platform.runLater(() -> ScreenManager.getInstance().setScreen(Screens.VIEW_JOB.getScreen()));
+                                                        } else
+                                                            IO.log(getClass().getName(), IO.TAG_ERROR, "could not load job viewer  screen.");
+                                                    }
+                                                } catch (IOException e) {
+                                                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                                 }
-                                            } catch (IOException e) {
-                                                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
                                             }
-                                        }
-                                    }).start();
+                                        }).start();
+                                        return null;
+                                    });
                                     return null;
-                                });
-                                return null;
-                            }
-                        });
+                                }
+                            });
+                        } catch (IOException e)
+                        {
+                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                            e.printStackTrace();
+                        }
                         txtJobId.setText(quote_id.toString());
                     } //else did not create job
                     return null;

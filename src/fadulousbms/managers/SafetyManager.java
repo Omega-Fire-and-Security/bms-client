@@ -17,10 +17,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.swing.*;
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import java.util.HashMap;
  */
 public class SafetyManager extends BusinessObjectManager
 {
-    private static HashMap<String, FileMetadata> documents;
+    private static HashMap<String, Metafile> documents;
     private static SafetyManager safety_manager = new SafetyManager();
     public static final String TAG = "SafetyManager";
 
@@ -52,7 +52,7 @@ public class SafetyManager extends BusinessObjectManager
     }
 
     @Override
-    public HashMap<String, FileMetadata> getDataset()
+    public HashMap<String, Metafile> getDataset()
     {
         return documents;
     }
@@ -77,15 +77,15 @@ public class SafetyManager extends BusinessObjectManager
                             Gson gson = new GsonBuilder().create();
                             //Prepare headers
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Request index
-                            String resources_json = RemoteComms.sendGetRequest("/safety/indices", headers);
-                            //Convert to local model - FileMetadata[]
-                            FileMetadata[] documents_arr = gson.fromJson(resources_json, FileMetadata[].class);
+                            String resources_json = RemoteComms.get("/safety/index", headers);
+                            //Convert to local model - Metafile[]
+                            Metafile[] documents_arr = gson.fromJson(resources_json, Metafile[].class);
                             documents = new HashMap<>();
-                            for(FileMetadata fileMetadata: documents_arr)
-                                documents.put(fileMetadata.getFilename(), fileMetadata);
+                            for(Metafile metafile : documents_arr)
+                                documents.put(metafile.getFilename(), metafile);
 
                             //System.out.println("\n\n>>>>>Documents successfully loaded, size: " + documents.length + "<<<<<\n\n");
 
@@ -116,13 +116,13 @@ public class SafetyManager extends BusinessObjectManager
     {
         if(documents!=null)
         {
-            FileMetadata[] files_arr = new FileMetadata[documents.size()];
+            Metafile[] files_arr = new Metafile[documents.size()];
             documents.values().toArray(files_arr);
             listSafetyDocuments(files_arr, null);
         }
     }
 
-    public static void listSafetyDocuments(FileMetadata[] docs, String job_id)
+    public static void listSafetyDocuments(Metafile[] docs, String job_id)
     {
         //Validate session - also done on server-side don't worry ;)
         SessionManager smgr = SessionManager.getInstance();
@@ -141,37 +141,37 @@ public class SafetyManager extends BusinessObjectManager
 
                 //Some Safety columns
                 TableColumn<BusinessObject, String> index = new TableColumn("Index");
-                CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", "/api/safety/index");
+                CustomTableViewControls.makeEditableTableColumn(index, TextFieldTableCell.forTableColumn(), 80, "index", SafetyManager.getInstance());
 
                 TableColumn<BusinessObject, String> label = new TableColumn("Label");
-                CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", "/api/safety/index");
+                CustomTableViewControls.makeEditableTableColumn(label, TextFieldTableCell.forTableColumn(), 250, "label", SafetyManager.getInstance());
 
                 TableColumn<BusinessObject, String> document = new TableColumn("Document Path");
-                CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", "/api/safety/index");
+                CustomTableViewControls.makeEditableTableColumn(document, TextFieldTableCell.forTableColumn(), 250, "pdf_path", SafetyManager.getInstance());
 
-                TableColumn<BusinessObject, HBox> action = new TableColumn("Quick Action");
-                CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/api/safety/index");
+                //TableColumn<BusinessObject, HBox> action = new TableColumn("Quick Action");
+                //CustomTableViewControls.makeActionTableColumn(action, 270, "pdf_path", "/api/safety/index");
 
                 TableColumn<BusinessObject, GridPane> required = new TableColumn("Required?");
-                CustomTableViewControls.makeToggleButtonTableColumn(required, null,100, "required", "/api/safety/index");
+                CustomTableViewControls.makeToggleButtonTableColumn(required, null,100, "required", "/safety");
 
                 TableColumn<BusinessObject, String> logo_options = new TableColumn("Logo Options");
-                CustomTableViewControls.makeEditableTableColumn(logo_options, TextFieldTableCell.forTableColumn(), 250, "logo_options", "/api/safety/index");
+                CustomTableViewControls.makeEditableTableColumn(logo_options, TextFieldTableCell.forTableColumn(), 250, "logo_options", SafetyManager.getInstance());
 
                 //TableColumn<BusinessObject, String> type = new TableColumn("Type");
                 //CustomTableViewControls.makeEditableTableColumn(type, TextFieldTableCellOld.forTableColumn(), 250, "type", "/api/safety/index");
 
                 TableColumn<BusinessObject, GridPane> type = new TableColumn("Type");
-                CustomTableViewControls.makeToggleButtonTypeTableColumn(type, null,80, "type", "/api/safety/index");
+                CustomTableViewControls.makeToggleButtonTypeTableColumn(type, null,80, "type", "/safety");
 
                 TableColumn<BusinessObject, GridPane> mark = new TableColumn("Select");
-                CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/api/safety/index");
+                CustomTableViewControls.makeCheckboxedTableColumn(mark, null,100, "marked", "/safety");
 
-                ObservableList<FileMetadata> lst_safety = FXCollections.observableArrayList();
+                ObservableList<Metafile> lst_safety = FXCollections.observableArrayList();
                 lst_safety.addAll(docs);
 
                 tblSafety.setItems(lst_safety);
-                tblSafety.getColumns().addAll(index, label, document, action, required, logo_options, type, mark);
+                tblSafety.getColumns().addAll(index, label, document, required, logo_options, type, mark);
 
                 //Menu bar
                 MenuBar menu_bar = new MenuBar();
@@ -209,7 +209,7 @@ public class SafetyManager extends BusinessObjectManager
                                 headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
                                 headers.add(new AbstractMap.SimpleEntry<>("Filename", f.getName()));
-                                RemoteComms.uploadFile("/api/upload", headers, buffer);
+                                RemoteComms.uploadFile("/file/upload", headers, buffer);
                                 IO.log(TAG, "File size: " + buffer.length + " bytes.", IO.TAG_INFO);
                             }else{
                                 IO.logAndAlert(TAG, "File not found.", IO.TAG_ERROR);
@@ -283,8 +283,8 @@ public class SafetyManager extends BusinessObjectManager
             IO.log(TAG, IO.TAG_ERROR, "addToJobCatalogue> selected safety document index out of bounds.");
             return;
         }
-        FileMetadata selected = (FileMetadata) tblSafety.getSelectionModel().selectedItemProperty().get();
-        FileMetadata selected_doc = documents.get(selected);
+        Metafile selected = (Metafile) tblSafety.getSelectionModel().selectedItemProperty().get();
+        Metafile selected_doc = documents.get(selected);
 
         parentStage.setAlwaysOnTop(false);
         Stage stage = new Stage();
@@ -370,7 +370,7 @@ public class SafetyManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/job/safetycatalogue/add", params, headers);
+                /*HttpURLConnection connection = RemoteComms.postData("/api/job/safetycatalogue/add", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -381,8 +381,9 @@ public class SafetyManager extends BusinessObjectManager
                         JOptionPane.showMessageDialog(null, msg, "Error " + connection.getResponseCode(), JOptionPane.ERROR_MESSAGE);
                     }
                     connection.disconnect();
-                }
-            } catch (IOException e)
+                }*/
+                throw new NotImplementedException();
+            } catch (Exception e)
             {
                 IO.logAndAlert(TAG, e.getMessage(), IO.TAG_ERROR);
             }
@@ -478,7 +479,7 @@ public class SafetyManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/safety/index/add", params, headers);
+                /*HttpURLConnection connection = RemoteComms.postData("/api/safety/index/add", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -489,8 +490,9 @@ public class SafetyManager extends BusinessObjectManager
                         IO.logAndAlert("Error " + connection.getResponseCode(), msg, IO.TAG_ERROR);
                     }
                     connection.disconnect();
-                }
-            } catch (IOException e)
+                }*/
+                throw new NotImplementedException();
+            } catch (Exception e)
             {
                 IO.logAndAlert(TAG, e.getMessage(), IO.TAG_ERROR);
             }

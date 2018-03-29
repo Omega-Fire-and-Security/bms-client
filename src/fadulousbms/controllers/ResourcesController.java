@@ -54,21 +54,21 @@ public class ResourcesController extends ScreenController implements Initializab
 
         colId.setMinWidth(80);
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colName, TextFieldTableCell.forTableColumn(), 80, "brand_name", "/resources");
-        CustomTableViewControls.makeEditableTableColumn(colSerial, TextFieldTableCell.forTableColumn(), 80, "resource_code", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colName, TextFieldTableCell.forTableColumn(), 80, "brand_name", ResourceManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSerial, TextFieldTableCell.forTableColumn(), 80, "resource_code", ResourceManager.getInstance());
 
         colType.setMinWidth(120);
         colType.setCellValueFactory(new PropertyValueFactory<>("resource_type"));
         colType.setCellFactory(col -> new ComboBoxTableCell(ResourceManager.getInstance().getResource_types(), "resource_type", "type_name"));
 
-        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "resource_description", "/resources");
-        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 80, "resource_value", "/resources");
-        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", "/resources");
-        CustomTableViewControls.makeEditableTableColumn(colUnit, TextFieldTableCell.forTableColumn(), 50, "unit", "/resources");
-        CustomTableViewControls.makeEditableTableColumn(colQuantity, TextFieldTableCell.forTableColumn(), 50, "quantity", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "resource_description", ResourceManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 80, "resource_value", ResourceManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 80, "account", ResourceManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colUnit, TextFieldTableCell.forTableColumn(), 50, "unit", ResourceManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colQuantity, TextFieldTableCell.forTableColumn(), 50, "quantity", ResourceManager.getInstance());
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateAcquired, "date_acquired");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateExhausted, "date_exhausted");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 80, "other", "/resources");
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 80, "other", ResourceManager.getInstance());
 
         ObservableList<Resource> lst_resources = FXCollections.observableArrayList();
         if(ResourceManager.getInstance().getDataset()!=null)
@@ -124,11 +124,31 @@ public class ResourcesController extends ScreenController implements Initializab
 
                                     btnRemove.setOnAction(event ->
                                     {
-                                        //Quote quote = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(resource);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        //IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Resource)
+                                                ResourceManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove Resource from remote server
+                                            ResourceManager.getInstance().deleteObject(ResourceManager.getInstance().getSelected(), res_id->
+                                            {
+                                                if(res_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted material [#" + ResourceManager.getInstance().getSelected().getObject_number() + "]{"+res_id+"}", IO.TAG_INFO);
+                                                    //remove Resource from memory
+                                                    ResourceManager.getInstance().getDataset().remove(ResourceManager.getInstance().getSelected());
+                                                    //remove Resource from table
+                                                    tblResources.getItems().remove(ResourceManager.getInstance().getSelected());
+                                                    tblResources.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not delete material [#"+ResourceManager.getInstance().getSelected().getObject_number()+"]{"+res_id+"}", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
 
                                     hBox.setFillHeight(true);

@@ -68,9 +68,10 @@ public class RevenueManager extends BusinessObjectManager
 
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
+
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/revenues_timestamp", headers);
+                            String timestamp_json = RemoteComms.get("/timestamp/revenues_timestamp", headers);
                             Counters cnt_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cnt_timestamp != null)
                             {
@@ -85,8 +86,8 @@ public class RevenueManager extends BusinessObjectManager
                             if (!isSerialized(ROOT_PATH+filename))
                             {
                                 //Load Revenue
-                                String revenues_json = RemoteComms.sendGetRequest("/revenue_records", headers);
-                                RevenueServerObject revenueServerObject = gson.fromJson(revenues_json, RevenueServerObject.class);
+                                String revenues_json = RemoteComms.get("/revenues", headers);
+                                RevenueServerObject revenueServerObject = (RevenueServerObject) RevenueManager.getInstance().parseJSONobject(revenues_json, new RevenueServerObject());
                                 if (revenueServerObject != null)
                                 {
                                     if(revenueServerObject.get_embedded()!=null)

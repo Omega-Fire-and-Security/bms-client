@@ -2,6 +2,9 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -11,7 +14,7 @@ import java.io.Serializable;
  * Created by ghost on 2017/01/13.
  * @author ghost
  */
-public class Type extends BusinessObject implements Serializable
+public abstract class Type extends BusinessObject implements Serializable
 {
     private String type_name;
     private String type_description;
@@ -33,6 +36,9 @@ public class Type extends BusinessObject implements Serializable
     {
         return AccessLevel.STANDARD;
     }
+
+    @Override
+    public abstract BusinessObjectManager getManager();
 
     public StringProperty type_nameProperty(){return new SimpleStringProperty(type_name);}
 
@@ -59,7 +65,7 @@ public class Type extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         switch (var.toLowerCase())
@@ -107,9 +113,5 @@ public class Type extends BusinessObject implements Serializable
         return getType_name();
     }
 
-    @Override
-    public String apiEndpoint()
-    {
-        return "/resources/types";
-    }
+    //TODO: apiEndpoint() pointing to /type that searches from all Type collections?
 }

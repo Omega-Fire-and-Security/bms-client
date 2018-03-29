@@ -62,15 +62,14 @@ public class RevenueController extends ScreenController implements Initializable
 
         //Set up expenses table
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colTitle, TextFieldTableCell.forTableColumn(), 100, "revenue_title", "/api/revenue");
-        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "revenue_description", "/api/revenue");
-        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 100, "revenue_value", "/api/revenue");
-        CustomTableViewControls.makeDatePickerTableColumn(colDateLogged, "date_logged", "/api/revenue");
+        CustomTableViewControls.makeEditableTableColumn(colTitle, TextFieldTableCell.forTableColumn(), 100, "revenue_title", RevenueManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "revenue_description", RevenueManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 100, "revenue_value", RevenueManager.getInstance());
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", false);
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
-        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 100, "account", "/api/revenue");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 100, "extra", "/api/revenue");
+        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 100, "account", RevenueManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 100, "extra", RevenueManager.getInstance());
 
-        final ScreenManager screenManager = ScreenManager.getInstance();
         Callback colGenericCellFactory
                 =
                 new Callback<TableColumn<Revenue, String>, TableCell<Revenue, String>>()

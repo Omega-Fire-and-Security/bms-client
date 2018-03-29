@@ -2,11 +2,14 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
+import fadulousbms.exceptions.ParseException;
 import javafx.collections.FXCollections;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.util.Callback;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -67,12 +70,23 @@ public class ComboBoxTableCell<T extends  BusinessObject> extends TableCell<T, S
                     if (row_item != null)
                     {
                         //String update_property_val = comboBox.getValue().get_id();
-                        row_item.parse(update_property, selected_id);
-                        RemoteComms.updateBusinessObjectOnServer(row_item, update_property);
-                        IO.log(TAG, IO.TAG_INFO, "updated business object: " + "[" + row_item.getClass().getName() + "]'s "
-                                + update_property + " property to [" + selected_id + "].");
-                    } else
-                        IO.log(TAG, IO.TAG_WARN, "row business object is not set.");
+                        try
+                        {
+                            row_item.parse(update_property, selected_id);
+                            row_item.getManager().patchObject(row_item, param -> null);
+                            //RemoteComms.updateBusinessObjectOnServer(row_item, update_property);
+                            IO.log(TAG, IO.TAG_INFO, "updated business object: " + "[" + row_item.getClass().getName() + "]'s "
+                                                            + update_property + " property to [" + selected_id + "].");
+                        } catch (ParseException e)
+                        {
+                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                            e.printStackTrace();
+                        } catch (IOException e)
+                        {
+                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                            e.printStackTrace();
+                        }
+                    } else IO.log(TAG, IO.TAG_WARN, "row business object is not set.");
                 } else IO.log(TAG, IO.TAG_WARN, String.format("unknown row object type: " + getTableRow().getItem()));
             } else IO.log(TAG, IO.TAG_WARN, "selected row is not set.");
         } else IO.log(TAG, IO.TAG_WARN, "selected combo box object id is not set.");

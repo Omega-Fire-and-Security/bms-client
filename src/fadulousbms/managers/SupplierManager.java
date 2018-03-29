@@ -2,6 +2,7 @@ package fadulousbms.managers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
 import javafx.scene.Scene;
@@ -10,22 +11,19 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.text.Normalizer;
 import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.regex.Matcher;
 
 /**
  * Created by ghost on 2017/01/11.
+ * @author ghost
  */
 public class SupplierManager extends BusinessObjectManager
 {
@@ -199,7 +197,7 @@ public class SupplierManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/supplier/add", params, headers);
+                /*HttpURLConnection connection = RemoteComms.postData("/api/supplier/add", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -215,8 +213,9 @@ public class SupplierManager extends BusinessObjectManager
                         String msg = IO.readStream(connection.getErrorStream());
                         IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
                     }
-                }
-            } catch (IOException e)
+                }*/
+                throw new NotImplementedException();
+            } catch (Exception e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
             }
@@ -266,44 +265,45 @@ public class SupplierManager extends BusinessObjectManager
                 try
                 {
                     SessionManager smgr = SessionManager.getInstance();
-                    if(smgr.getActive()!=null)
+                    if (smgr.getActive() != null)
                     {
-                        if(!smgr.getActive().isExpired())
+                        if (!smgr.getActive().isExpired())
                         {
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
                             String timestamp_json = RemoteComms
-                                    .sendGetRequest("/timestamp/suppliers_timestamp", headers);
+                                    .get("/timestamp/suppliers_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
                                 timestamp = cntr_timestamp.getCount();
                                 filename = "suppliers_" + timestamp + ".dat";
                                 IO.log(this.getClass().getName(), IO.TAG_INFO, "Server Timestamp: " + timestamp);
-                            }
-                            else
-                            {
+                            } else
+                                {
                                 IO.log(this.getClass().getName(), IO.TAG_WARN, "could not get valid timestamp");
                                 return null;
                             }
 
                             if (!isSerialized(ROOT_PATH + filename))
                             {
-                                String suppliers_json = RemoteComms.sendGetRequest("/suppliers", headers);
-                                SupplierServerObject supplierServerObject= gson.fromJson(suppliers_json, SupplierServerObject.class);
-                                if(supplierServerObject!=null)
+                                String suppliers_json = RemoteComms.get("/suppliers", headers);
+                                SupplierServerObject supplierServerObject = (SupplierServerObject) SupplierManager.getInstance().parseJSONobject(suppliers_json, new SupplierServerObject());
+                                if (supplierServerObject != null)
                                 {
-                                    if(supplierServerObject.get_embedded()!=null)
+                                    if (supplierServerObject.get_embedded() != null)
                                     {
                                         Supplier[] suppliers_arr = supplierServerObject.get_embedded().getSuppliers();
                                         suppliers = new HashMap<>();
                                         for (Supplier supplier : suppliers_arr)
                                             suppliers.put(supplier.get_id(), supplier);
-                                    } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Suppliers in the database");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "SupplierServerObject (containing Supplier objects & other metadata) is null");
+                                    } else
+                                        IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Suppliers in the database");
+                                } else
+                                    IO.log(getClass().getName(), IO.TAG_ERROR, "SupplierServerObject (containing Supplier objects & other metadata) is null");
 
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of suppliers.");
                                 serialize(ROOT_PATH + filename, suppliers);
@@ -312,85 +312,28 @@ public class SupplierManager extends BusinessObjectManager
                                 IO.log(this.getClass().getName(), IO.TAG_INFO, "binary object [" + ROOT_PATH + filename + "] on local disk is already up-to-date.");
                                 suppliers = (HashMap) deserialize(ROOT_PATH + filename);
                             }
-                        } else IO.logAndAlert("Session Expired", "Active session has expired.",  IO.TAG_ERROR);
+                        } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
                     } else IO.logAndAlert("Invalid Session.", "Active Session is invalid", IO.TAG_ERROR);
                 } catch (MalformedURLException e)
                 {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
+                } catch (JsonSyntaxException e)
+                {
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
                 } catch (ClassNotFoundException e)
                 {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
                 } catch (IOException e)
                 {
-                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
                 }
                 return null;
             }
         };
-    }
-
-    public String createNewSupplier(Supplier supplier, Callback callback)
-    {
-        if(SessionManager.getInstance().getActive()==null)
-        {
-            IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
-            return null;
-        }
-        if(SessionManager.getInstance().getActive().isExpired())
-        {
-            IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log in.", IO.TAG_ERROR);
-            return null;
-        }
-
-        try
-        {
-            ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-
-            //create new supplier on database
-            HttpURLConnection connection = RemoteComms.putJSON("/suppliers", supplier.getJSONString(), headers);
-            if(connection!=null)
-            {
-                if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                {
-                    String response = IO.readStream(connection.getInputStream());
-
-                    //server will return message object in format "<supplier_id>"
-                    String new_supplier_id = response.replaceAll("\"","");//strip inverted commas around supplier_id
-                    new_supplier_id = new_supplier_id.replaceAll("\n","");//strip new line chars
-                    new_supplier_id = new_supplier_id.replaceAll(" ","");//strip whitespace chars
-
-                    IO.log(getClass().getName(), IO.TAG_INFO, "successfully created a new supplier: " + new_supplier_id);
-
-                    SupplierManager.getInstance().synchroniseDataset();
-
-                    if(callback!=null)
-                        callback.call(new_supplier_id);
-
-                    if(connection!=null)
-                        connection.disconnect();
-                    return new_supplier_id;
-                } else
-                {
-                    //Get error message
-                    String msg = IO.readStream(connection.getErrorStream());
-                    IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
-
-                    if(callback!=null)
-                        callback.call(null);
-
-                    if(connection!=null)
-                        connection.disconnect();
-                    return null;
-                }
-
-            } else IO.logAndAlert("Supplier Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
-        } catch (IOException e)
-        {
-            IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-        }
-        return null;
     }
 
     class SupplierServerObject extends ServerObject

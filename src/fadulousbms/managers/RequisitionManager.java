@@ -25,7 +25,6 @@ import java.util.*;
 public class RequisitionManager extends BusinessObjectManager
 {
     private HashMap<String, Requisition> requisitions;
-    private Requisition selected;
     private Gson gson;
     private static RequisitionManager requisition_manager = new RequisitionManager();
     public static final String TAG = "RequisitionManager";
@@ -72,10 +71,10 @@ public class RequisitionManager extends BusinessObjectManager
                         {
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/requisitions_timestamp", headers);
+                            String timestamp_json = RemoteComms.get("/timestamp/requisitions_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
@@ -90,8 +89,8 @@ public class RequisitionManager extends BusinessObjectManager
 
                             if (!isSerialized(ROOT_PATH + filename))
                             {
-                                String requisitions_json = RemoteComms.sendGetRequest("/requisitions", headers);
-                                RequisitionServerObject requisitionServerObject= gson.fromJson(requisitions_json, RequisitionServerObject.class);
+                                String requisitions_json = RemoteComms.get("/requisitions", headers);
+                                RequisitionServerObject requisitionServerObject = (RequisitionServerObject) RequisitionManager.getInstance().parseJSONobject(requisitions_json, new RequisitionServerObject());
                                 if(requisitionServerObject!=null)
                                 {
                                     if(requisitionServerObject.get_embedded()!=null)
@@ -128,186 +127,6 @@ public class RequisitionManager extends BusinessObjectManager
                 return null;
             }
         };
-    }
-
-    public void createRequisition(Requisition requisition, Callback callback) throws IOException
-    {
-        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-        if(SessionManager.getInstance().getActive()!=null)
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-        else
-        {
-            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-            return;
-        }
-
-        //create new requisition on database
-        //ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-        HttpURLConnection connection = RemoteComms.putJSON("/requisitions", requisition.getJSONString(), headers);
-        if(connection!=null)
-        {
-            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-            {
-                String response = IO.readStream(connection.getInputStream());
-
-                if(response==null)
-                {
-                    IO.logAndAlert("New Requisition Creation Error", "Invalid server response.", IO.TAG_ERROR);
-                    return;
-                }
-                if(response.isEmpty())
-                {
-                    IO.logAndAlert("New Requisition Creation Error", "Invalid server response.", IO.TAG_ERROR);
-                    return;
-                }
-
-                //server will return message object in format "<requisition_id>"
-                String new_requisition_id = response.replaceAll("\"","");//strip inverted commas around requisition_id
-                new_requisition_id = new_requisition_id.replaceAll("\n","");//strip new line chars
-                new_requisition_id = new_requisition_id.replaceAll(" ","");//strip whitespace chars
-
-                //Close connection
-                if(connection!=null)
-                    connection.disconnect();
-
-                //update selected requisition
-                forceSynchronise();
-                if(new_requisition_id!=null && RequisitionManager.getInstance().getDataset()!=null)
-                    RequisitionManager.getInstance().setSelected(RequisitionManager.getInstance().getDataset().get(new_requisition_id));
-
-                IO.logAndAlert("New Requisition Creation Success", "Successfully created new Requisition.", IO.TAG_INFO);
-
-                if(callback!=null)
-                    if(new_requisition_id!=null)
-                        callback.call(new_requisition_id);
-            } else
-            {
-                //Get error message
-                String msg = IO.readStream(connection.getErrorStream());
-                IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
-            }
-            if(connection!=null)
-                connection.disconnect();
-        } else IO.logAndAlert("New Requisition Creation Failure", "Could not connect to server.", IO.TAG_ERROR);
-    }
-
-    public static void emailRequisition(Requisition requisition, Callback callback)
-    {
-        if(requisition==null)
-        {
-            IO.logAndAlert("Error", "Invalid Requisition.", IO.TAG_ERROR);
-            return;
-        }
-
-        //upload requisition PDF to server
-        uploadRequisitionPDF(requisition);
-
-        Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - eMail Requisition ["+requisition.get_id()+"]");
-        stage.setMinWidth(320);
-        stage.setHeight(350);
-        stage.setAlwaysOnTop(true);
-
-        VBox vbox = new VBox(1);
-
-        final TextField txt_destination = new TextField();
-        txt_destination.setMinWidth(200);
-        txt_destination.setMaxWidth(Double.MAX_VALUE);
-        txt_destination.setPromptText("Type in email address/es separated by commas");
-        HBox destination = CustomTableViewControls.getLabelledNode("To: ", 200, txt_destination);
-
-        final TextField txt_subject = new TextField();
-        txt_subject.setMinWidth(200);
-        txt_subject.setMaxWidth(Double.MAX_VALUE);
-        txt_subject.setPromptText("Type in an eMail subject");
-        HBox subject = CustomTableViewControls.getLabelledNode("Subject: ", 200, txt_subject);
-
-        final TextField txt_requisition_id = new TextField();
-        txt_requisition_id.setMinWidth(200);
-        txt_requisition_id.setMaxWidth(Double.MAX_VALUE);
-        txt_requisition_id.setPromptText("Type in a message");
-        txt_requisition_id.setEditable(false);
-        txt_requisition_id.setText(String.valueOf(requisition.get_id()));
-        HBox hbox_requisition_id = CustomTableViewControls.getLabelledNode("Requisition ID: ", 200, txt_requisition_id);
-
-        final TextArea txt_message = new TextArea();
-        txt_message.setMinWidth(200);
-        txt_message.setMaxWidth(Double.MAX_VALUE);
-        HBox message = CustomTableViewControls.getLabelledNode("Message: ", 200, txt_message);
-
-        HBox submit;
-        submit = CustomTableViewControls.getSpacedButton("Send", event ->
-        {
-            String date_regex="\\d+(\\-|\\/|\\\\)\\d+(\\-|\\/|\\\\)\\d+";
-
-            if(!Validators.isValidNode(txt_destination, txt_destination.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_subject, txt_subject.getText(), 1, ".+"))
-                return;
-            if(!Validators.isValidNode(txt_message, txt_message.getText(), 1, ".+"))
-                return;
-
-            String str_destination = txt_destination.getText();
-            String str_subject = txt_subject.getText();
-            String str_message = txt_message.getText();
-
-            ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<>();
-            params.add(new AbstractMap.SimpleEntry<>("requisition_id", requisition.get_id()));
-            params.add(new AbstractMap.SimpleEntry<>("to_email", str_destination));
-            params.add(new AbstractMap.SimpleEntry<>("subject", str_subject));
-            params.add(new AbstractMap.SimpleEntry<>("message", str_message));
-            try
-            {
-                //send email
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                if(SessionManager.getInstance().getActive()!=null)
-                {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                            .getSession_id()));
-                    params.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
-                } else
-                {
-                    IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
-                    return;
-                }
-
-                HttpURLConnection connection = RemoteComms.postData("/requisitions/mailto", params, headers);
-                if(connection!=null)
-                {
-                    if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-                    {
-                        IO.logAndAlert("Success", "Successfully emailed requisition to ["+txt_destination.getText()+"]!", IO.TAG_INFO);
-                        if(callback!=null)
-                            callback.call(null);
-                    }else{
-                        IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                    }
-                    connection.disconnect();
-                }
-            } catch (IOException e)
-            {
-                IO.log(RequisitionManager.class.getName(), IO.TAG_ERROR, e.getMessage());
-            }
-        });
-
-        //Add form controls vertically on the stage
-        vbox.getChildren().add(destination);
-        vbox.getChildren().add(subject);
-        vbox.getChildren().add(hbox_requisition_id);
-        vbox.getChildren().add(message);
-        vbox.getChildren().add(submit);
-
-        //Setup scene and display stage
-        Scene scene = new Scene(vbox);
-        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
-        scene.getStylesheets().clear();
-        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-
-        stage.setScene(scene);
-        stage.show();
-        stage.centerOnScreen();
-        stage.setResizable(true);
     }
 
     public void requestRequisitionApproval(Requisition requisition, Callback callback)
@@ -438,39 +257,40 @@ public class RequisitionManager extends BusinessObjectManager
                 headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
 
                 if(SessionManager.getInstance().getActive()!=null)
-                {
-                    headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
                     headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
-                } else
+                else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
-                FileMetadata fileMetadata = new FileMetadata("requisition_"+requisition.get_id()+".pdf","application/pdf");
-                fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
-                fileMetadata.setFile(finalBase64_requisition);
+                Metafile metafile = new Metafile("requisition_"+requisition.get_id()+".pdf","application/pdf");
+                metafile.setCreator(SessionManager.getInstance().getActive().getUsr());
+                metafile.setFile(finalBase64_requisition);
 
-                HttpURLConnection connection = RemoteComms.postJSON("/requisitions/request_approval", fileMetadata.getJSONString(), headers);
+                HttpURLConnection connection = RemoteComms.post("/requisition/request_approval", metafile.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         //TODO: CC self
                         IO.logAndAlert("Success", "Successfully requested Requisition #"+requisition.get_id()+" approval!", IO.TAG_INFO);
+                        //execute callback w/ args
                         if(callback!=null)
                             callback.call(IO.readStream(connection.getInputStream()));
-                    } else
-                    {
-                        IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                    }
+                        return;
+                    } else IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+
                     connection.disconnect();
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                 e.printStackTrace();
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
             }
+            //execute callback w/o args
+            if(callback!=null)
+                callback.call(null);
         });
 
 
@@ -524,7 +344,7 @@ public class RequisitionManager extends BusinessObjectManager
                                         .getActive().getSession_id()));
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
-                                RemoteComms.uploadFile("/requisitions/upload/" + requisition.get_id(), headers, buffer);
+                                RemoteComms.uploadFile("/file/upload/" + requisition.get_id(), headers, buffer);
                                 IO.log(RequisitionManager.class.getName(), IO.TAG_INFO, "\n uploaded Requisition[#" + requisition.get_id()
                                         + "], file size: [" + buffer.length + "] bytes.");
                             } else

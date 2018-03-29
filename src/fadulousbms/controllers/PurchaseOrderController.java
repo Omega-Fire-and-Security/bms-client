@@ -24,11 +24,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
+import org.controlsfx.control.textfield.TextFields;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.AbstractMap;
@@ -139,20 +139,20 @@ public class PurchaseOrderController extends ScreenController implements Initial
         colItemNumber.setCellValueFactory(new PropertyValueFactory<>("item_number"));
         colName.setCellValueFactory(new PropertyValueFactory<>("item_name"));
         colDescription.setCellValueFactory(new PropertyValueFactory<>("item_description"));
-        colValue.setCellFactory(col -> new TextFieldTableCell("cost", "cost", event ->
+        colValue.setCellFactory(col -> new TextFieldTableCell("cost", event ->
         {
             refreshTotal();
             tblPurchaseOrderItems.refresh();
             return null;
         }));
         colUnit.setCellValueFactory(new PropertyValueFactory<>("unit"));
-        colQuantity.setCellFactory(col -> new TextFieldTableCell("quantity", "quantity", event ->
+        colQuantity.setCellFactory(col -> new TextFieldTableCell("quantity", event ->
         {
             refreshTotal();
             tblPurchaseOrderItems.refresh();
             return null;
         }));
-        colDiscount.setCellFactory(col -> new TextFieldTableCell("discount", "discount", null));
+        colDiscount.setCellFactory(col -> new TextFieldTableCell("discount", null));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
         //update totals on TableCell commit
@@ -162,14 +162,14 @@ public class PurchaseOrderController extends ScreenController implements Initial
             tblPurchaseOrderItems.refresh();
         });*/
 
-        Callback<TableColumn<PurchaseOrder, String>, TableCell<PurchaseOrder, String>> cellFactory
+        Callback<TableColumn<PurchaseOrderItem, String>, TableCell<PurchaseOrderItem, String>> cellFactory
                 =
-                new Callback<TableColumn<PurchaseOrder, String>, TableCell<PurchaseOrder, String>>()
+                new Callback<TableColumn<PurchaseOrderItem, String>, TableCell<PurchaseOrderItem, String>>()
                 {
                     @Override
-                    public TableCell call(final TableColumn<PurchaseOrder, String> param)
+                    public TableCell call(final TableColumn<PurchaseOrderItem, String> param)
                     {
-                        final TableCell<PurchaseOrder, String> cell = new TableCell<PurchaseOrder, String>()
+                        final TableCell<PurchaseOrderItem, String> cell = new TableCell<PurchaseOrderItem, String>()
                         {
                             final Button btnRemove = new Button("Delete");
 
@@ -195,13 +195,27 @@ public class PurchaseOrderController extends ScreenController implements Initial
 
                                     btnRemove.setOnAction(event ->
                                     {
-                                        PurchaseOrder purchaseOrder = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(purchaseOrder);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        IO.log(getClass()
-                                                .getName(), IO.TAG_INFO, "successfully removed purchase order: " + purchaseOrder
-                                                .get_id());
+                                        try
+                                        {
+                                            //remove PO item from remote server
+                                            PurchaseOrderManager.getInstance().deleteObject(getTableView().getItems().get(getIndex()), po_item_id->
+                                            {
+                                                if(po_item_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted Purchase Order Item [#" + getTableView().getItems().get(getIndex()).getObject_number() + "] from PO #" + getTableView().getItems().get(getIndex()).getPurchaseOrder().getObject_number(), IO.TAG_INFO);
+                                                    //remove PO item from memory
+                                                    //TODO: PurchaseOrderManager.getInstance().getSelected().get.remove(PurchaseOrderManager.getInstance().getSelected());
+                                                    //remove PO item from table
+                                                    tblPurchaseOrderItems.getItems().remove(getTableView().getItems().get(getIndex()));
+                                                    tblPurchaseOrderItems.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not delete Purchase Order Item [#"+getTableView().getItems().get(getIndex()).getObject_number()+"] from PO #"+getTableView().getItems().get(getIndex()).getPurchaseOrder().getObject_number(), IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
 
                                     hBox.setFillHeight(true);
@@ -383,6 +397,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
         IO.logAndAlert("Add Purchase Order Item", "No resources were found in the database, please add some resources first and try again.", IO.TAG_ERROR);
     }
 
+    //TODO: remove this
     @FXML
     public void updatePurchaseOrder()
     {
@@ -493,17 +508,9 @@ public class PurchaseOrderController extends ScreenController implements Initial
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-            if (SessionManager.getInstance().getActive() != null)
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive()
-                        .getSession_id()));
-            else
-            {
-                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                return;
-            }
 
             //update purchase order on database
-            HttpURLConnection connection = RemoteComms.patchJSON(purchaseOrder.apiEndpoint(), purchaseOrder.getJSONString(), headers);
+            HttpURLConnection connection = RemoteComms.patch(purchaseOrder.apiEndpoint(), purchaseOrder.getJSONString(), headers);
             if(connection != null)
             {
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
@@ -537,17 +544,16 @@ public class PurchaseOrderController extends ScreenController implements Initial
                             {
                                 //update po item
                                 if(purchaseOrderItem.getItem() instanceof Resource)
-                                    connection = RemoteComms.postJSON(purchaseOrder.apiEndpoint(), purchaseOrderItem.getJSONString(), headers);
+                                    connection = RemoteComms.post(purchaseOrder.apiEndpoint(), purchaseOrderItem.getJSONString(), headers);
                                 else if(purchaseOrderItem.getItem() instanceof Asset)
-                                    connection = RemoteComms.postJSON(purchaseOrder.apiEndpoint(), purchaseOrderItem.getJSONString(), headers);
+                                    connection = RemoteComms.post(purchaseOrder.apiEndpoint(), purchaseOrderItem.getJSONString(), headers);
                                 else IO.log(getClass().getName(), IO.TAG_ERROR, "unknown purchase order item type.");
 
                                 if (connection != null)
                                 {
                                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
-                                    {
                                         IO.log(getClass().getName(), IO.TAG_INFO, "successfully updated purchase order item [" + purchaseOrderItem.get_id() + "]");
-                                    } else
+                                    else
                                     {
                                         added_all_po_items = false;
                                         //Get error message
@@ -564,10 +570,10 @@ public class PurchaseOrderController extends ScreenController implements Initial
                         //purchaseOrderItem.setPurchase_order_id(response);//response = entire po object
 
                         if(purchaseOrderItem.getItem() instanceof Resource)
-                            connection = RemoteComms.postJSON(purchaseOrder.apiEndpoint(), purchaseOrderItem
+                            connection = RemoteComms.post(purchaseOrder.apiEndpoint(), purchaseOrderItem
                                     .getJSONString(), headers);
                         else if(purchaseOrderItem.getItem() instanceof Asset)
-                            connection = RemoteComms.postJSON(purchaseOrder.apiEndpoint(), purchaseOrderItem
+                            connection = RemoteComms.post(purchaseOrder.apiEndpoint(), purchaseOrderItem
                                     .getJSONString(), headers);
                         else IO.log(getClass().getName(), IO.TAG_ERROR, "unknown purchase order item type.");
 
@@ -657,15 +663,22 @@ public class PurchaseOrderController extends ScreenController implements Initial
 
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
         headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
         if(PurchaseOrderManager.getInstance().getSelected()!=null)
         {
-            if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getStatus()!=BusinessObject.STATUS_APPROVED)
+            if(((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).getStatus()!=BusinessObject.STATUS_FINALISED)
             {
                 // set PO status and update it on server.
-                ((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).setStatus(BusinessObject.STATUS_APPROVED);
-                RemoteComms.updateBusinessObjectOnServer(PurchaseOrderManager.getInstance().getSelected(), "status");
+                ((PurchaseOrder)PurchaseOrderManager.getInstance().getSelected()).setStatus(BusinessObject.STATUS_FINALISED);
+                //RemoteComms.updateBusinessObjectOnServer(PurchaseOrderManager.getInstance().getSelected(), "status");
+                try
+                {
+                    PurchaseOrderManager.getInstance().patchObject(PurchaseOrderManager.getInstance().getSelected(), null);
+                } catch (IOException e)
+                {
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    e.printStackTrace();
+                }
                 //updatePurchaseOrder();
                 //System.out.println("Status::::::::: " + PurchaseOrderManager.getInstance().getSelected().getStatus());
 
@@ -697,7 +710,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
                     try
                     {
                         //update date_acquired & quantity
-                        connection = RemoteComms.postJSON(obj.apiEndpoint() +"/increment_quantity/"+obj.get_id(), obj.getJSONString(), headers);
+                        connection = RemoteComms.post(obj.apiEndpoint() +"/increment_quantity/"+obj.get_id(), obj.getJSONString(), headers);
                         if(connection!=null)
                         {
                             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
@@ -954,6 +967,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
         } else IO.logAndAlert("Asset Purchase Order", "No assets were found in the database, please add some assets first and try again.", IO.TAG_ERROR);
     }
 
+    //TODO: remove this
     @FXML
     public void createPurchaseOrder()
     {
@@ -1063,16 +1077,9 @@ public class PurchaseOrderController extends ScreenController implements Initial
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-            if(SessionManager.getInstance().getActive()!=null)
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-            else
-            {
-                IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                return;
-            }
 
             //create new purchase order on database
-            HttpURLConnection connection = RemoteComms.putJSON("/purchaseorders", purchaseOrder.getJSONString(), headers);
+            HttpURLConnection connection = RemoteComms.put("/purchaseorders", purchaseOrder.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -1109,9 +1116,9 @@ public class PurchaseOrderController extends ScreenController implements Initial
                         purchaseOrderItem.setCreator(SessionManager.getInstance().getActive().getUsr());
 
                         if(purchaseOrderItem instanceof PurchaseOrderAsset)
-                            connection = RemoteComms.putJSON("/purchaseorders/assets", purchaseOrderItem.getJSONString(), headers);
+                            connection = RemoteComms.put("/purchaseorders/assets", purchaseOrderItem.getJSONString(), headers);
                         else if(purchaseOrderItem instanceof PurchaseOrderResource)
-                            connection = RemoteComms.putJSON("/purchaseorders/resources", purchaseOrderItem.getJSONString(), headers);
+                            connection = RemoteComms.put("/purchaseorders/resources", purchaseOrderItem.getJSONString(), headers);
                         else IO.logAndAlert("Purchase Order Item Creation Error", "unknown purchase order item type ["+purchaseOrderItem+"].", IO.TAG_ERROR);
 
                         if (connection != null)
@@ -1172,6 +1179,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
         }
     }
 
+    //TODO: update to use PopOver
     @FXML
     public void newSupplier()
     {
@@ -1190,7 +1198,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
     @FXML
     public void newEmployee()
     {
-        EmployeeManager.getInstance().newExternalEmployeeWindow("Create a Contact Person for this Purchase Order", param ->
+        EmployeeManager.getInstance().newEmployee(ScreenManager.getInstance(), param ->
         {
             new Thread(() ->
                     refreshModel(param1 ->
@@ -1205,7 +1213,7 @@ public class PurchaseOrderController extends ScreenController implements Initial
     @FXML
     public void newResource()
     {
-        ResourceManager.getInstance().newResourceWindow(param ->
+        ResourceManager.getInstance().newResourcePopOver(ScreenManager.getInstance(), param ->
         {
             new Thread(() ->
                     refreshModel(param1 ->

@@ -186,10 +186,9 @@ public class NewSupplierController extends ScreenController implements Initializ
         try
         {
             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-            headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
             //create new supplier on database
-            HttpURLConnection connection = RemoteComms.putJSON("/suppliers", supplier.getJSONString(), headers);
+            HttpURLConnection connection = RemoteComms.put("/supplier", supplier.getJSONString(), headers);
             if(connection!=null)
             {
                 if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)

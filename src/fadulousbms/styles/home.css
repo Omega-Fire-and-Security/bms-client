@@ -161,10 +161,10 @@
 .calendarButton:hover
 {
     -fx-border-width: 1 1 1 1;
-    -fx-background-color: rgba(2, 3, 20, .4);
-    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.7) , 7, 0.0 , 0 , 4 );
-    -fx-background-radius: 10;
-    -fx-border-radius:10;
+    -fx-background-color: rgba(2, 3, 20, .3);
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.5) , 7, 0.0 , 0 , 4 );
+    -fx-background-radius: 5;
+    -fx-border-radius:5;
 }
 
 .btnDisabled

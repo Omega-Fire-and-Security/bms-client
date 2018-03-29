@@ -8,6 +8,10 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.InvoiceManager;
 import fadulousbms.managers.JobManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -21,6 +25,11 @@ import java.util.HashMap;
  */
 public class Invoice extends BusinessObject implements Serializable
 {
+    private String job_id;
+    private String quote_revision_numbers;//semi-colon separated array of Quote revision numbers associated with Invoice.
+    private double receivable;
+    private int status;
+
     @Override
     public AccessLevel getReadMinRequiredAccessLevel()
     {
@@ -33,6 +42,12 @@ public class Invoice extends BusinessObject implements Serializable
         return AccessLevel.ADMIN;
     }
 
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return InvoiceManager.getInstance();
+    }
+
     public void setQuote_revision_numbers(String quote_revision_numbers)
     {
         this.quote_revision_numbers = quote_revision_numbers;
@@ -42,11 +57,6 @@ public class Invoice extends BusinessObject implements Serializable
     {
         return receivable;
     }
-
-    private String job_id;
-    private String quote_revision_numbers;//semi-colon separated array of Quote revision numbers associated with Invoice.
-    private double receivable;
-    private int status;
 
     public HashMap<String, Quote> quoteRevisions()
     {
@@ -201,7 +211,7 @@ public class Invoice extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -266,8 +276,19 @@ public class Invoice extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number();
+
+        if(getJob()!=null)
+            str += ", for job " + getJob().toString();
+
+        return str;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/invoices";
+        return "/invoice";
     }
 }

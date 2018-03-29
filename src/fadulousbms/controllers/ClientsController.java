@@ -70,19 +70,19 @@ public class ClientsController extends ScreenController implements Initializable
 
         colClientId.setMinWidth(100);
         colClientId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colClientName, TextFieldTableCell.forTableColumn(), 80, "client_name", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientPhysicalAddress, TextFieldTableCell.forTableColumn(), 120, "physical_address", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientTel, TextFieldTableCell.forTableColumn(), 80, "tel", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientFax, TextFieldTableCell.forTableColumn(), 80, "fax", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", "/clients");
-        CustomTableViewControls.makeCheckboxedTableColumn(colClientActive, null, 80, "active", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientName, TextFieldTableCell.forTableColumn(), 80, "client_name", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientPhysicalAddress, TextFieldTableCell.forTableColumn(), 120, "physical_address", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientTel, TextFieldTableCell.forTableColumn(), 80, "tel", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientFax, TextFieldTableCell.forTableColumn(), 80, "fax", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", ClientManager.getInstance());
+        CustomTableViewControls.makeCheckboxedTableColumn(colClientActive, null, 80, "active", "/client");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colClientDatePartnered, "date_partnered");
-        CustomTableViewControls.makeEditableTableColumn(colClientWebsite, TextFieldTableCell.forTableColumn(), 100, "website", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientRegistration, TextFieldTableCell.forTableColumn(), 100, "registration_number", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientVat, TextFieldTableCell.forTableColumn(), 100, "vat_number", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/clients");
-        CustomTableViewControls.makeEditableTableColumn(colClientOther, TextFieldTableCell.forTableColumn(), 50, "other", "/clients");
+        CustomTableViewControls.makeEditableTableColumn(colClientWebsite, TextFieldTableCell.forTableColumn(), 100, "website", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientRegistration, TextFieldTableCell.forTableColumn(), 100, "registration_number", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientVat, TextFieldTableCell.forTableColumn(), 100, "vat_number", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", ClientManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colClientOther, TextFieldTableCell.forTableColumn(), 50, "other", ClientManager.getInstance());
 
         final ScreenManager screenManager = ScreenManager.getInstance();
         Callback<TableColumn<Client, String>, TableCell<Client, String>> cellFactory
@@ -132,11 +132,31 @@ public class ClientsController extends ScreenController implements Initializable
 
                                     btnRemove.setOnAction(event ->
                                     {
-                                        //Quote quote = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(client);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        //IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Client)
+                                                ClientManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove Client from remote server
+                                            ClientManager.getInstance().deleteObject(ResourceManager.getInstance().getSelected(), client_id->
+                                            {
+                                                if(client_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted client [#" + ClientManager.getInstance().getSelected().getObject_number() + "]{"+client_id+"}", IO.TAG_INFO);
+                                                    //remove Client from memory
+                                                    ResourceManager.getInstance().getDataset().remove(ClientManager.getInstance().getSelected());
+                                                    //remove Client from table
+                                                    tblClients.getItems().remove(ClientManager.getInstance().getSelected());
+                                                    tblClients.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not delete client [#"+ClientManager.getInstance().getSelected().getObject_number()+"]{"+client_id+"}", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
 
                                     hBox.setFillHeight(true);

@@ -5,19 +5,26 @@ import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.textfield.TextFields;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.util.AbstractMap;
@@ -32,6 +39,7 @@ public class ResourceManager extends BusinessObjectManager
     private HashMap<String, Resource> resources;
     private HashMap<String, Resource> acquired_resources;//resources that have been approved/acquired/delivered
     private HashMap<String, ResourceType> resource_types;
+    private ResourceType selectedResourceType;
     private Gson gson;
     private static ResourceManager resource_manager = new ResourceManager();
     public static final String TAG = "ResourceManager";
@@ -59,6 +67,22 @@ public class ResourceManager extends BusinessObjectManager
     public HashMap<String, Resource> getDataset()
     {
         return resources;
+    }
+
+    @Override
+    public Resource getSelected()
+    {
+        return (Resource) super.getSelected();
+    }
+
+    public ResourceType getSelectedResourceType()
+    {
+        return selectedResourceType;
+    }
+
+    public void setSelectedResourceType(ResourceType resourceType)
+    {
+        this.selectedResourceType = resourceType;
     }
 
     /**
@@ -92,11 +116,11 @@ public class ResourceManager extends BusinessObjectManager
                         {
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
                             String timestamp_json = RemoteComms
-                                    .sendGetRequest("/timestamp/resources_timestamp", headers);
+                                    .get("/timestamp/resources_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
@@ -113,8 +137,8 @@ public class ResourceManager extends BusinessObjectManager
                             //load resources and resource types if they are not on local disk
                             if (!isSerialized(ROOT_PATH + filename) || !isSerialized(ROOT_PATH + "resource_types.dat"))
                             {
-                                String resources_json = RemoteComms.sendGetRequest("/resources", headers);
-                                ResourceServerObject resources_server_object = gson.fromJson(resources_json, ResourceServerObject.class);
+                                String resources_json = RemoteComms.get("/resources", headers);
+                                ResourceServerObject resources_server_object = (ResourceServerObject) ResourceManager.getInstance().parseJSONobject(resources_json, new ResourceServerObject());
 
                                 if(resources_server_object!=null)
                                 {
@@ -138,8 +162,8 @@ public class ResourceManager extends BusinessObjectManager
                                 } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceServerObject (containing Resource objects & other metadata) is null");
 
 
-                                String resource_types_json = RemoteComms.sendGetRequest("/resources/types", headers);
-                                ResourceTypeServerObject resourceTypeServerObject = gson.fromJson(resource_types_json, ResourceTypeServerObject.class);
+                                String resource_types_json = RemoteComms.get("/resources/types", headers);
+                                ResourceTypeServerObject resourceTypeServerObject = (ResourceTypeServerObject) ResourceManager.getInstance().parseJSONobject(resource_types_json, new ResourceTypeServerObject());
                                 if(resourceTypeServerObject!=null)
                                 {
                                     if(resourceTypeServerObject.get_embedded()!=null)
@@ -214,6 +238,264 @@ public class ResourceManager extends BusinessObjectManager
                 reloadDataFromServer(getSynchronisationCallback());
             else IO.log(getClass().getName(), IO.TAG_WARN, "can't synchronize "+getClass().getSimpleName()+" model's data-set, thread started at ["+getRefresh_lock()+"] is still busy.");
         else IO.log(getClass().getName(), IO.TAG_WARN, getClass().getSimpleName()+" model's data-set has already been set, not synchronizing.");
+    }
+
+    public void newResourcePopOver(Node parent, Callback callback)
+    {
+        setSelected(null);
+        setSelectedResourceType(null);
+
+        TextField txt_mat_description = new TextField("");
+        txt_mat_description.setMinWidth(120);
+        txt_mat_description.setPromptText("Summary of material");
+        Label lbl_des = new Label("Material Description*: ");
+        lbl_des.setMinWidth(160);
+
+        TextField txt_mat_category = new TextField("");
+        txt_mat_category.setMinWidth(120);
+        txt_mat_category.setPromptText("Material type e.g. Access Control Hardware");
+        Label lbl_cat = new Label("Material Category*: ");
+        lbl_cat.setMinWidth(160);
+
+        TextField txt_mat_value = new TextField("");
+        txt_mat_value.setMinWidth(120);
+        txt_mat_value.setPromptText("Material cost excl. tax");
+        Label lbl_val = new Label("Material Value*: ");
+        lbl_val.setMinWidth(160);
+
+        TextField txt_mat_unit = new TextField("");
+        txt_mat_unit.setMinWidth(120);
+        txt_mat_unit.setPromptText("Unit of measurement");
+        Label lbl_unit = new Label("Material Unit*: ");
+        lbl_unit.setMinWidth(160);
+
+        Button btnSubmit = new Button("Create & Add Material");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnSubmit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        btnSubmit.getStyleClass().add("btnAdd");
+        btnSubmit.setMinWidth(140);
+        btnSubmit.setMinHeight(35);
+        HBox.setMargin(btnSubmit, new Insets(15, 0, 0, 10));
+
+        GridPane page = new GridPane();
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.setHgap(20);
+        page.setVgap(20);
+
+        page.add(lbl_des, 0, 0);
+        page.add(txt_mat_description, 1, 0);
+
+        page.add(lbl_cat, 0, 1);
+        page.add(txt_mat_category, 1, 1);
+
+        page.add(lbl_val, 0, 2);
+        page.add(txt_mat_value, 1, 2);
+
+        page.add(lbl_unit, 0, 3);
+        page.add(txt_mat_unit, 1, 3);
+
+        page.add(btnSubmit, 0, 4);
+
+        PopOver popover = new PopOver(page);
+        popover.setTitle("Create & Add Material");
+        popover.setDetached(true);
+        popover.show(parent);
+
+        TextFields.bindAutoCompletion(txt_mat_category, ResourceManager.getInstance().getResource_types().values()).setOnAutoCompleted(event ->
+        {
+            if(event!=null)
+            {
+                if(event.getCompletion()!=null)
+                {
+                    setSelectedResourceType(event.getCompletion());
+                }
+            }
+        });
+
+        TextFields.bindAutoCompletion(txt_mat_description, ResourceManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
+        {
+            if(event!=null)
+            {
+                if(event.getCompletion()!=null)
+                {
+                    //update selected material
+                    setSelected(event.getCompletion());
+
+                    IO.log(getClass().getName(), IO.TAG_INFO, "auto-completed material: " + getSelected().getResource_description());
+                    txt_mat_description.setText(getSelected().getResource_description());
+
+                    if(ResourceManager.getInstance().getResource_types()!=null && getSelected().getResource_type()!=null)
+                    {
+                        setSelectedResourceType(ResourceManager.getInstance().getResource_types().get(getSelected().getResource_type()));
+                        txt_mat_category.setText(getSelectedResourceType().getType_name());
+                    }
+                    txt_mat_value.setText(String.valueOf(getSelected().getResource_value()));
+                    txt_mat_unit.setText(getSelected().getUnit());
+                }
+            }
+        });
+
+        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                if(SessionManager.getInstance().getActive()==null)
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+                if(SessionManager.getInstance().getActive().isExpired())
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+
+                File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+
+                if(!Validators.isValidNode(txt_mat_description, txt_mat_description.getText(), 1, ".+"))
+                {
+                    txt_mat_description.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                    return;
+                }
+
+                if(txt_mat_category.getText()==null)
+                {
+                    IO.logAndAlert("Error", "Invalid material category.\nPlease enter a valid value.", IO.TAG_WARN);
+                    return;
+                }
+
+                if(txt_mat_category.getText().isEmpty())
+                {
+                    IO.logAndAlert("Error", "Invalid material category.\nPlease enter a valid value.", IO.TAG_WARN);
+                    return;
+                }
+
+                if(!Validators.isValidNode(txt_mat_value, txt_mat_value.getText(), 1, ".+"))
+                {
+                    txt_mat_value.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                    return;
+                }
+                if(!Validators.isValidNode(txt_mat_unit, txt_mat_unit.getText(), 1, ".+"))
+                {
+                    txt_mat_unit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+                    return;
+                }
+
+                String resource_type_id = null;
+
+                if(getSelectedResourceType()!=null)
+                {
+                    /*
+                        If category text is not exactly the same as the category text inputted in the material creation
+                        Form then create new category/material type.
+                     */
+                    if(getSelectedResourceType().getType_name().equals(txt_mat_category.getText()))
+                        resource_type_id = getSelectedResourceType().get_id();
+                }
+
+                Resource resource = new Resource();
+                resource.setResource_description(txt_mat_description.getText());
+                resource.setUnit(txt_mat_unit.getText());
+                resource.setQuantity(Long.valueOf(1));
+                resource.setDate_acquired(System.currentTimeMillis());
+                resource.setCreator(SessionManager.getInstance().getActive().getUsr());
+                try
+                {
+                    resource.setResource_value(Double.valueOf(txt_mat_value.getText()));
+                } catch (NumberFormatException e)
+                {
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                    return;
+                }
+                /*
+                    If selected_material_type is null then create new material type/category using inputted
+                    Text from material creation form
+                 */
+                if(resource_type_id==null)
+                {
+                    //create new resource type/category
+                    ResourceType resourceType = new ResourceType(txt_mat_category.getText(), "");
+                    resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
+                    try
+                    {
+                        ResourceManager.getInstance().putObject(resourceType, material_category_id ->
+                        {
+                            if(material_category_id!=null)
+                            {
+                                ResourceManager.getInstance().setSelected(ResourceManager.getInstance().getResource_types().get(material_category_id));
+
+                                resource.setResource_type((String) material_category_id);
+
+                                //create new material using new category
+                                createMaterial(resource, callback);
+                            } else IO.logAndAlert("Error", "Could not create material category ["+txt_mat_category.getText()+"]", IO.TAG_ERROR);
+                            return null;
+                        });
+                    } catch (IOException e)
+                    {
+                        IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    }
+                } else //new material not in new category
+                {
+                    //create new material using selected category
+                    resource.setResource_type(resource_type_id);
+                    createMaterial(resource, callback);
+                }
+            }
+        });
+    }
+
+    /**
+     * Method that creates a new material record on the database but first checks if it's
+     * Description is not the same as the currently selected material's description.
+     * @param resource the Resource object to be created.
+     * @param callback the Callback to be executed on post creation of the Resource object.
+     */
+    private void createMaterial(Resource resource, Callback callback)
+    {
+        if(resource==null)
+        {
+            IO.logAndAlert("Error", "Resource to be created is invalid", IO.TAG_ERROR);
+            //execute callback w/o args
+            if(callback!=null)
+                callback.call(null);
+            return;
+        }
+
+        try
+        {
+            String proceed = IO.OK;
+            if(ResourceManager.getInstance().getSelected()!=null)
+                if(resource.getResource_description().equals(ResourceManager.getInstance().getSelected().getResource_description()))
+                    proceed = IO.showConfirm("Duplicate material found, proceed?", "New material's description is the same as an existing material, continue with creation of material?");
+
+            if(proceed.equals(IO.OK))
+            {
+                ResourceManager.getInstance().putObject(resource, new_res_id ->
+                {
+                    if(new_res_id!=null)
+                    {
+                        //update selected material
+                        ResourceManager.getInstance().setSelected(ResourceManager.getInstance().getDataset().get(new_res_id));
+
+                        //execute callback w/ args
+                        if (callback != null)
+                            callback.call(new_res_id);
+                    } else
+                    {
+                        //execute callback w/o args
+                        if(callback!=null)
+                            callback.call(null);
+                    }
+                    return null;
+                });
+            } else IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelled new material creation.");
+        } catch (IOException e)
+        {
+            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+            e.printStackTrace();
+        }
     }
 
     public void newResourceWindow(Callback callback)
@@ -405,7 +687,7 @@ public class ResourceManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/resource/add", params, headers);
+                /*HttpURLConnection connection = RemoteComms.post("/api/resource/add", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -425,8 +707,9 @@ public class ResourceManager extends BusinessObjectManager
                         String msg = IO.readStream(connection.getErrorStream());
                         IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
                     }
-                }
-            } catch (IOException e)
+                }*/
+                throw new NotImplementedException();
+            } catch (Exception e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
             }
@@ -456,11 +739,6 @@ public class ResourceManager extends BusinessObjectManager
 
         stage.setScene(scene);
         stage.show();
-    }
-
-    public  void resourceCreationWindow(Node parent_node, Callback callback)
-    {
-        IO.showPopOver("New Resource", Screens.NEW_RESOURCE.getScreen(), parent_node);
     }
 
     public void newResourceTypeWindow(Callback callback)
@@ -521,7 +799,7 @@ public class ResourceManager extends BusinessObjectManager
 
             try
             {
-                ResourceManager.getInstance().createBusinessObject(resourceType, callback);
+                ResourceManager.getInstance().putObject(resourceType, callback);
             } catch (IOException e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());

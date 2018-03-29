@@ -7,7 +7,6 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.PDF;
-import fadulousbms.auxilary.PDFViewer;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -76,14 +75,14 @@ public class InvoicesController extends ScreenController implements Initializabl
         colClient.setMinWidth(80);
         colClient.setCellValueFactory(new PropertyValueFactory<>("client"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateGenerated, "date_logged", false);
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/invoices");
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/invoice");
         colCreator.setMinWidth(70);
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
         colAccount.setCellValueFactory(new PropertyValueFactory<>("account"));
-        CustomTableViewControls.makeEditableTableColumn(colReceivable, TextFieldTableCell.forTableColumn(), 80, "receivable", "/invoices");
+        CustomTableViewControls.makeEditableTableColumn(colReceivable, TextFieldTableCell.forTableColumn(), 80, "receivable", InvoiceManager.getInstance());
         CustomTableViewControls.makeJobManagerAction(colAction, 600, null);
-        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 80, "other", "/invoices");
+        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 80, "other", InvoiceManager.getInstance());
         colAction.setMinWidth(460);
 
         ObservableList<Invoice> lst_invoices = FXCollections.observableArrayList();
@@ -148,7 +147,7 @@ public class InvoicesController extends ScreenController implements Initializabl
                                         IO.logAndAlert("Error " + getClass().getName(), "Invoice object is not set", IO.TAG_ERROR);
                                         return;
                                     }
-                                    if (getTableView().getItems().get(getIndex()).getStatus()==BusinessObject.STATUS_APPROVED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()==BusinessObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -271,12 +270,31 @@ public class InvoicesController extends ScreenController implements Initializabl
 
                                     btnRemove.setOnAction(event ->
                                     {
-                                        //197.242.144.30
-                                        //Quote quote = getTableView().getItems().get(getIndex());
-                                        //getTableView().getItems().remove(quote);
-                                        //getTableView().refresh();
-                                        //TODO: remove from server
-                                        //IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Invoice)
+                                                InvoiceManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove Invoice from remote server
+                                            InvoiceManager.getInstance().deleteObject(InvoiceManager.getInstance().getSelected(), inv_id->
+                                            {
+                                                if(inv_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted invoice [#" + InvoiceManager.getInstance().getSelected().getObject_number() + "]{"+inv_id+"}", IO.TAG_INFO);
+                                                    //remove Invoice from memory
+                                                    InvoiceManager.getInstance().getDataset().remove(InvoiceManager.getInstance().getSelected());
+                                                    //remove Invoice from table
+                                                    tblInvoices.getItems().remove(InvoiceManager.getInstance().getSelected());
+                                                    tblInvoices.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not delete invoice [#"+InvoiceManager.getInstance().getSelected().getObject_number()+"]{"+inv_id+"}", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
 
                                     btnPDF.setOnAction(event ->

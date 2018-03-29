@@ -82,15 +82,17 @@ public class ResetPwdController extends ScreenController implements Initializabl
         params.add(new AbstractMap.SimpleEntry<>("usr", txtUsr.getText()));
         try
         {
-            HttpURLConnection connection = RemoteComms.postData("/api/vericode/add", params, null);
-            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
-            {
-                IO.logAndAlert("Reset Code Sent", IO.readStream(connection.getInputStream()), IO.TAG_INFO);
-            }else IO.logAndAlert("Reset Code Error", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+            HttpURLConnection connection = RemoteComms.post("/vericode", "", null);
+            if(connection!=null)
+                if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+                    IO.logAndAlert("Reset Code Sent", IO.readStream(connection.getInputStream()), IO.TAG_INFO);
+                else IO.logAndAlert("Reset Code Error", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+            else IO.log(getClass().getName(), IO.TAG_ERROR, "sendCode()> Could not get a valid response from the server.");
 
         } catch (IOException e)
         {
             IO.logAndAlert("Password Reset Error", e.getMessage(), IO.TAG_ERROR);
+            e.printStackTrace();
         }
     }
 
@@ -104,15 +106,19 @@ public class ResetPwdController extends ScreenController implements Initializabl
 
         try
         {
-            HttpURLConnection connection = RemoteComms.postData("/api/employee/pwdreset", params, null);
-            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+            HttpURLConnection connection = RemoteComms.post("/employee/pwdreset", "", null);
+            if(connection!=null)
             {
-                IO.logAndAlert("Password Successfully Reset", IO.readStream(connection.getInputStream()), IO.TAG_INFO);
-            }else IO.logAndAlert("Password Reset Error", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    IO.logAndAlert("Password Successfully Reset", IO.readStream(connection.getInputStream()), IO.TAG_INFO);
+                } else IO.logAndAlert("Password Reset Error", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+            } else IO.log(getClass().getName(), IO.TAG_ERROR, "resetPassword()> Could not get a valid response from the server.");
 
         } catch (IOException e)
         {
             IO.logAndAlert("Password Reset Error", e.getMessage(), IO.TAG_ERROR);
+            e.printStackTrace();
         }
     }
 }

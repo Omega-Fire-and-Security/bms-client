@@ -73,20 +73,20 @@ public class SuppliersController extends ScreenController implements Initializab
 
         colSupplierId.setMinWidth(100);
         colSupplierId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colSupplierName, TextFieldTableCell.forTableColumn(), 100, "supplier_name", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierPhysicalAddress, TextFieldTableCell.forTableColumn(), 120, "physical_address", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierTel, TextFieldTableCell.forTableColumn(), 80, "tel", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierFax, TextFieldTableCell.forTableColumn(), 80, "fax", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierSpeciality, TextFieldTableCell.forTableColumn(), 80, "speciality", "/suppliers");
-        CustomTableViewControls.makeCheckboxedTableColumn(colSupplierActive, null, 80, "active", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierName, TextFieldTableCell.forTableColumn(), 100, "supplier_name", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierPhysicalAddress, TextFieldTableCell.forTableColumn(), 120, "physical_address", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierPostalAddress, TextFieldTableCell.forTableColumn(), 120, "postal_address", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierTel, TextFieldTableCell.forTableColumn(), 80, "tel", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierFax, TextFieldTableCell.forTableColumn(), 80, "fax", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierEmail, TextFieldTableCell.forTableColumn(), 80, "contact_email", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierSpeciality, TextFieldTableCell.forTableColumn(), 80, "speciality", SupplierManager.getInstance());
+        CustomTableViewControls.makeCheckboxedTableColumn(colSupplierActive, null, 80, "active", "/supplier");
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colSupplierDatePartnered, "date_partnered");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierWebsite, TextFieldTableCell.forTableColumn(), 100, "website", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierRegistration, TextFieldTableCell.forTableColumn(), 100, "registration_number", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierVat, TextFieldTableCell.forTableColumn(), 100, "vat_number", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", "/suppliers");
-        CustomTableViewControls.makeEditableTableColumn(colSupplierOther, TextFieldTableCell.forTableColumn(), 80, "other", "/suppliers");
+        CustomTableViewControls.makeEditableTableColumn(colSupplierWebsite, TextFieldTableCell.forTableColumn(), 100, "website", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierRegistration, TextFieldTableCell.forTableColumn(), 100, "registration_number", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierVat, TextFieldTableCell.forTableColumn(), 100, "vat_number", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierAccount, TextFieldTableCell.forTableColumn(), 100, "account_name", SupplierManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colSupplierOther, TextFieldTableCell.forTableColumn(), 80, "other", SupplierManager.getInstance());
 
         final ScreenManager screenManager = ScreenManager.getInstance();
         Callback<TableColumn<Supplier, String>, TableCell<Supplier, String>> cellFactory
@@ -136,11 +136,31 @@ public class SuppliersController extends ScreenController implements Initializab
 
                                     btnRemove.setOnAction(event ->
                                     {
-                                        //Quote quote = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(supplier);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        //IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Supplier)
+                                                SupplierManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove Supplier from remote server
+                                            SupplierManager.getInstance().deleteObject(SupplierManager.getInstance().getSelected(), supplier_id->
+                                            {
+                                                if(supplier_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted supplier [#" + SupplierManager.getInstance().getSelected().getObject_number() + "]{"+supplier_id+"}", IO.TAG_INFO);
+                                                    //remove Supplier from memory
+                                                    SupplierManager.getInstance().getDataset().remove(SupplierManager.getInstance().getSelected());
+                                                    //remove Supplier from table
+                                                    tblSuppliers.getItems().remove(SupplierManager.getInstance().getSelected());
+                                                    tblSuppliers.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not delete supplier [#"+SupplierManager.getInstance().getSelected().getObject_number()+"]{"+supplier_id+"}", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
 
                                     hBox.setFillHeight(true);

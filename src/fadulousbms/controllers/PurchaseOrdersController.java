@@ -7,7 +7,6 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.PDF;
-import fadulousbms.auxilary.PDFViewer;
 import fadulousbms.managers.PurchaseOrderManager;
 import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SupplierManager;
@@ -85,10 +84,10 @@ public class PurchaseOrdersController extends ScreenController implements Initia
         colSupplier.setCellValueFactory(new PropertyValueFactory<>("supplier_name"));
         colVat.setCellValueFactory(new PropertyValueFactory<>("vat"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", false);
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/purchaseorders");
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/purchaseorder");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
-        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 215, "extra", "/purchaseorders");
+        CustomTableViewControls.makeEditableTableColumn(colExtra, TextFieldTableCell.forTableColumn(), 215, "extra", PurchaseOrderManager.getInstance());
 
         ObservableList<PurchaseOrder> lst_po = FXCollections.observableArrayList();
         lst_po.addAll(PurchaseOrderManager.getInstance().getDataset().values());
@@ -131,7 +130,7 @@ public class PurchaseOrdersController extends ScreenController implements Initia
                                 HBox.setHgrow(btnEmail, Priority.ALWAYS);
                                 if(!empty)
                                 {
-                                    if (getTableView().getItems().get(getIndex()).getStatus()==BusinessObject.STATUS_APPROVED)
+                                    if (getTableView().getItems().get(getIndex()).getStatus()==BusinessObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -251,11 +250,31 @@ public class PurchaseOrdersController extends ScreenController implements Initia
 
                                     btnRemove.setOnAction(event ->
                                     {
-                                        //Quote quote = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(po);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        //IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed quote: " + quote.get_id());
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof PurchaseOrder)
+                                                PurchaseOrderManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove PO from remote server
+                                            PurchaseOrderManager.getInstance().deleteObject(PurchaseOrderManager.getInstance().getSelected(), po_id->
+                                            {
+                                                if(po_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted Purchase Order [#" + PurchaseOrderManager.getInstance().getSelected().getObject_number() + "]{"+po_id+"}", IO.TAG_INFO);
+                                                    //remove PO from memory
+                                                    PurchaseOrderManager.getInstance().getDataset().remove(PurchaseOrderManager.getInstance().getSelected());
+                                                    //remove PO from table
+                                                    tblPurchaseOrders.getItems().remove(PurchaseOrderManager.getInstance().getSelected());
+                                                    tblPurchaseOrders.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not delete Purchase Order [#"+PurchaseOrderManager.getInstance().getSelected().getObject_number()+"]{"+po_id+"}", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
 
                                     hBox.setFillHeight(true);

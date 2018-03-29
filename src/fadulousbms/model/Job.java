@@ -8,8 +8,8 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.QuoteManager;
-import fadulousbms.managers.TaskManager;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import jfxtras.scene.control.agenda.Agenda;
@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalField;
 import java.time.temporal.TemporalUnit;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,8 +35,7 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
     private String invoice_id;
     private String quote_id;
     private int status;
-    private Employee[] assigned_employees;
-    private FileMetadata[] safety_catalogue;
+    private Metafile[] safety_catalogue;
 
     @Override
     public AccessLevel getReadMinRequiredAccessLevel()
@@ -49,6 +47,12 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.ADMIN;
+    }
+
+    @Override
+    public JobManager getManager()
+    {
+        return JobManager.getInstance();
     }
 
     //Getters and setters
@@ -148,38 +152,50 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
         this.invoice_id = invoice_id;
     }
 
-    /**
-     * @return Array of Employees assigned to a Job object.
-     */
-    public Employee[] getAssigned_employees()
+    public HashMap<String, JobEmployee> getJobEmployees(String job_id)
     {
-        return assigned_employees;
-    }
+        IO.log(getClass().getName(), IO.TAG_VERBOSE, "querying assignees for job: " + job_id);
 
-    /**
-     * @param employees Array of Employees to be assigned to a Job object.
-     */
-    public void setAssigned_employees(Employee[] employees)
-    {
-        this.assigned_employees=employees;
-    }
-
-    /**
-     * @param reps ArrayList of Employees to be assigned to a Job object.
-     */
-    public void setAssigned_employees(ArrayList<Employee> reps)
-    {
-        this.assigned_employees = new Employee[reps.size()];
-        for(int i=0;i<reps.size();i++)
+        if(getManager().getJob_employees()!=null)
         {
-            this.assigned_employees[i] = reps.get(i);
+            if(getManager().getJob_employees().get(job_id)!=null)
+            {
+                return getManager().getJob_employees().get(job_id);
+            } else
+            {
+                IO.log(getClass().getName(), IO.TAG_ERROR, "no job assignees were found in the database for job: " + job_id);
+                return null;
+            }
+        } else
+        {
+            IO.log(getClass().getName(), IO.TAG_ERROR, "no job assignees were found in the database." );
+            return null;
         }
     }
 
     /**
-     * @return Safety documents associated with a Job object.
+     * @return Map of Employees assigned to this Job object.
      */
-    public FileMetadata[] getSafety_catalogue()
+    public HashMap<String, JobEmployee> getAssigned_employees()
+    {
+        HashMap<String, JobEmployee> all_job_employees = getJobEmployees(get_id());
+        if(all_job_employees!=null)
+        {
+            //try get distinct Employees for this Job - JobEmployee objects may be assigned to the same Job but different Tasks
+            HashMap<String, JobEmployee> unique_job_employees = new HashMap<>();
+            for(JobEmployee jobEmployee: all_job_employees.values())
+                unique_job_employees.putIfAbsent(jobEmployee.getUsr(), jobEmployee);
+            IO.log(getClass().getName(), IO.TAG_VERBOSE, "job [" + get_id() + "] has [" + all_job_employees.size() + "] employee assignments in total and [" + unique_job_employees.size() + "] unique assignees.");
+            return unique_job_employees;
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "job #"+ getObject_number() + " has no assignees." );
+
+        return null;
+    }
+
+    /**
+     * @return Safety documents associated with this Job object.
+     */
+    public Metafile[] getSafety_catalogue()
     {
         return safety_catalogue;
     }
@@ -187,7 +203,7 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
     /**
      * @param safety_catalogue Safety documents associated with a Job object.
      */
-    public void setSafety_catalogue(FileMetadata[] safety_catalogue)
+    public void setSafety_catalogue(Metafile[] safety_catalogue)
     {
         this.safety_catalogue=safety_catalogue;
     }
@@ -207,7 +223,7 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
     public StringProperty safety_catalogueProperty()
     {
         String s="";
-        for(FileMetadata file: safety_catalogue)
+        for(Metafile file: safety_catalogue)
             s += " : " + file.getLabel() + ",";
         return new SimpleStringProperty(s.substring(0,s.length()-1));
     }
@@ -268,7 +284,7 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
      * @param val Model attribute value to be set.
      */
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -296,15 +312,10 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
                 case "invoice_id":
                     invoice_id = (String)val;
                     break;
-                case "assigned_employees":
-                    if(val!=null)
-                        assigned_employees = (Employee[]) val;
-                    else IO.log(getClass().getName(), IO.TAG_WARN, "value to be casted to Employee[] is null.");
-                    break;
                 case "safety_catalogue":
                     if(val!=null)
-                        safety_catalogue = (FileMetadata[]) val;
-                    else IO.log(getClass().getName(), IO.TAG_WARN, "value to be casted to FileMetadata[] is null.");
+                        safety_catalogue = (Metafile[]) val;
+                    else IO.log(getClass().getName(), IO.TAG_WARN, "value to be casted to Metafile[] is null.");
                     break;
                 default:
                     IO.log(getClass().getName(), IO.TAG_ERROR, "unknown "+getClass().getName()+" attribute '" + var + "'.");
@@ -373,13 +384,22 @@ public class Job extends BusinessObject implements Agenda.Appointment, Temporal
         return json_obj;
     }
 
+    @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number() + ", ["  + getDescription()+"]";
+        if(getQuote()!=null)
+            str += ", for quote " + getQuote().toString();
+        return str;
+    }
+
     /**
      * @return Job model's endpoint URL.
      */
     @Override
     public String apiEndpoint()
     {
-        return "/jobs";
+        return "/job";
     }
 
     @Override

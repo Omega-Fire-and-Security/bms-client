@@ -3,8 +3,8 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.EmployeeManager;
-import fadulousbms.managers.SupplierManager;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import java.util.HashMap;
@@ -32,6 +32,12 @@ public class PurchaseOrder extends BusinessObject
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.ADMIN;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return PurchaseOrderManager.getInstance();
     }
 
     public String getVat()
@@ -167,7 +173,7 @@ public class PurchaseOrder extends BusinessObject
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -237,8 +243,17 @@ public class PurchaseOrder extends BusinessObject
     }
 
     @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number();
+        if(getSupplier()!=null)
+            str += ", to " + getSupplier().toString();
+        return str;
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/purchaseorders";
+        return "/purchaseorder";
     }
 }

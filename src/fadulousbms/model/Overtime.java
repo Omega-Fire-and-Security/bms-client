@@ -2,8 +2,8 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
-import fadulousbms.managers.EmployeeManager;
-import fadulousbms.managers.JobManager;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -33,6 +33,12 @@ public class Overtime extends BusinessObject implements Serializable
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return OvertimeManager.getInstance();
     }
 
     public StringProperty usrProperty(){return new SimpleStringProperty(getUsr());}
@@ -117,7 +123,7 @@ public class Overtime extends BusinessObject implements Serializable
         {
             case STATUS_PENDING:
                 return new SimpleStringProperty("Pending");
-            case STATUS_APPROVED:
+            case STATUS_FINALISED:
                 return new SimpleStringProperty("Approved");
             case STATUS_ARCHIVED:
                 return new SimpleStringProperty("Archived");
@@ -155,7 +161,7 @@ public class Overtime extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -241,9 +247,15 @@ public class Overtime extends BusinessObject implements Serializable
     }
 
     @Override
+    public String toString()
+    {
+        return " application for " + getEmployee();
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/overtime_records";
+        return "/overtime_application";
     }
 
 }

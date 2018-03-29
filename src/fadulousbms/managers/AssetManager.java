@@ -20,7 +20,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,10 +82,10 @@ public class AssetManager extends BusinessObjectManager
                 {
                     gson = new GsonBuilder().create();
                     ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                    headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                     //Get Timestamp
-                    String timestamp_json = RemoteComms.sendGetRequest("/timestamp/assets_timestamp", headers);
+                    String timestamp_json = RemoteComms.get("/timestamp/assets_timestamp", headers);
                     Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                     if(cntr_timestamp!=null)
                     {
@@ -101,8 +100,8 @@ public class AssetManager extends BusinessObjectManager
 
                     if(!isSerialized(ROOT_PATH+filename) || !isSerialized(ROOT_PATH+"asset_types.dat"))
                     {
-                        String assets_json = RemoteComms.sendGetRequest("/assets", headers);
-                        AssetServerObject assetServerObject= gson.fromJson(assets_json, AssetServerObject.class);
+                        String assets_json = RemoteComms.get("/assets", headers);
+                        AssetServerObject assetServerObject = (AssetServerObject) AssetManager.getInstance().parseJSONobject(assets_json, new AssetServerObject());
                         if(assetServerObject!=null)
                         {
                             if(assetServerObject.get_embedded()!=null)
@@ -115,8 +114,8 @@ public class AssetManager extends BusinessObjectManager
                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Assets in database.");
                         } else IO.log(getClass().getName(), IO.TAG_ERROR, "AssetServerObject (containing Asset objects & other metadata) is null");
 
-                        String asset_types_json = RemoteComms.sendGetRequest("/assets/types", headers);
-                        AssetTypeServerObject assetTypeServerObject= gson.fromJson(asset_types_json, AssetTypeServerObject.class);
+                        String asset_types_json = RemoteComms.get("/assets/types", headers);
+                        AssetTypeServerObject assetTypeServerObject = (AssetTypeServerObject) AssetManager.getInstance().parseJSONobject(asset_types_json, new AssetTypeServerObject());
                         if(assetTypeServerObject!=null)
                         {
                             if(assetTypeServerObject.get_embedded()!=null)
@@ -363,15 +362,9 @@ public class AssetManager extends BusinessObjectManager
             try
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                else
-                {
-                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                    return;
-                }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/asset/add", params, headers);
+                //TODO:
+                HttpURLConnection connection = RemoteComms.post("/asset", "", headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -385,7 +378,7 @@ public class AssetManager extends BusinessObjectManager
                         String msg = IO.readStream(connection.getErrorStream());
                         IO.logAndAlert("Error " +String.valueOf(connection.getResponseCode()), msg, IO.TAG_ERROR);
                     }
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
@@ -468,15 +461,9 @@ public class AssetManager extends BusinessObjectManager
             try
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                else
-                {
-                    IO.logAndAlert("Session expired", "No active sessions.", IO.TAG_ERROR);
-                    return;
-                }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/asset/type/add", params, headers);
+                //TODO:
+                HttpURLConnection connection = RemoteComms.post("/asset/type", "", headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -488,7 +475,7 @@ public class AssetManager extends BusinessObjectManager
                         IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                     }
                     connection.disconnect();
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
                 IO.log(TAG, IO.TAG_ERROR, e.getMessage());
@@ -566,30 +553,31 @@ public class AssetManager extends BusinessObjectManager
             try
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                if(SessionManager.getInstance().getActive()!=null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                else
-                {
-                    IO.logAndAlert("No active sessions.", "Session expired", IO.TAG_ERROR);
-                    return;
-                }
 
-                HttpURLConnection connection = RemoteComms.postData("/api/asset/type/add", params, headers);
+                //TODO:
+                HttpURLConnection connection = RemoteComms.put("/asset/type", "", headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         IO.logAndAlert("Success", "Successfully added new asset type! [" + IO
                                 .readStream(connection.getInputStream()) + "]", IO.TAG_INFO);
-                        callback.call(null);
+                        //execute callback w/ args
+                        if(callback!=null)
+                            callback.call(IO.readStream(connection.getInputStream()));
+                        return;
                     }
                     else
                         IO.logAndAlert("Error "+ connection.getResponseCode(), IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
-                IO.log(TAG, IO.TAG_ERROR, e.getMessage());
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
             }
+            //execute callback w/o args
+            if(callback!=null)
+                callback.call(null);
         });
 
         //Add form controls vertically on the scene

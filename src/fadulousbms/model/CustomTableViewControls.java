@@ -1,6 +1,8 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.*;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.BusinessObjectManager;
 import fadulousbms.managers.JobManager;
 import fadulousbms.managers.SessionManager;
 import javafx.beans.property.SimpleObjectProperty;
@@ -17,6 +19,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.print.PrintException;
 import java.io.File;
@@ -34,15 +37,6 @@ public class CustomTableViewControls
 {
     public static final String TAG = "CustomTableViewControls";
 
-    public static void makeDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property, String api_method)
-    {
-        date_col.setMinWidth(130);
-        date_col.setCellValueFactory(new PropertyValueFactory<>(property));
-        date_col.setCellFactory(col -> new DatePickerCell(property, api_method));
-        date_col.setEditable(true);
-        date_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
-    }
-
     public static void makeLabelledDatePickerTableColumn(TableColumn<BusinessObject, Long> date_col, String property)
     {
         makeLabelledDatePickerTableColumn(date_col, property, false);
@@ -54,10 +48,20 @@ public class CustomTableViewControls
         date_col.setCellValueFactory(new PropertyValueFactory<>(property));
         date_col.setCellFactory(col -> new LabelledDatePickerCell(property, editable));
         date_col.setEditable(true);
-        date_col.setOnEditCommit(event -> event.getRowValue().parse(property, event.getNewValue()));
+        date_col.setOnEditCommit(event ->
+        {
+            try
+            {
+                event.getRowValue().parse(property, event.getNewValue());
+            } catch (ParseException e)
+            {
+                IO.logAndAlert("Error", IO.TAG_ERROR, e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 
-    public static void makeEditableTableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, String api_call)
+    public static void makeEditableTableColumn(TableColumn<BusinessObject, String> col, Callback<TableColumn<BusinessObject, String>, TableCell<BusinessObject, String>> editable_control_callback, int min_width, String property, BusinessObjectManager manager)
     {
         if(col!=null)
         {
@@ -69,8 +73,22 @@ public class CustomTableViewControls
                 BusinessObject bo = event.getRowValue();
                 if(bo!=null)
                 {
-                    bo.parse(property, event.getNewValue());
-                    RemoteComms.updateBusinessObjectOnServer(bo, property);
+                    //RemoteComms.post(bo, property);
+                    try
+                    {
+                        //update object's property
+                        bo.parse(property, event.getNewValue());
+                        //update object on server if no ParseException
+                        manager.patchObject(bo, null);
+                    } catch (ParseException e)
+                    {
+                        IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                        e.printStackTrace();
+                    } catch (IOException e)
+                    {
+                        IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                        e.printStackTrace();
+                    }
                 }
             });
         } else IO.log(TAG, IO.TAG_WARN, "null table column!");
@@ -120,7 +138,7 @@ public class CustomTableViewControls
 
                 //Make toggle button and set button state from data from database.
                 ToggleButton toggleButton;
-                if(bo instanceof FileMetadata)
+                if(bo instanceof Metafile)
                 {
                     Object val = bo.get(property);
                     if(val!=null)
@@ -173,14 +191,16 @@ public class CustomTableViewControls
                             break;
                     }
 
-                    if((bo instanceof FileMetadata))
+                    /*if((bo instanceof Metafile))
                     {
                         if (newVal != null)
                             bo.parse(property, newVal);
                         else IO.log(TAG, IO.TAG_ERROR, "new value [meant to be either generic/custom/unknown] is null.");
                     } else IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to BusinessObject{"+bo.getClass().getName()+"}'s " + property + " property.");
 
-                    RemoteComms.updateBusinessObjectOnServer(bo, property);
+                    RemoteComms.updateBusinessObjectOnServer(bo, property);*/
+                    //TODO: remove this
+                    throw new NotImplementedException();
                 });
                 return new SimpleObjectProperty<>(grid);
             });
@@ -207,7 +227,7 @@ public class CustomTableViewControls
 
                 //Make toggle button and set button state from data from database.
                 ToggleButton toggleButton;
-                if(bo instanceof FileMetadata)
+                if(bo instanceof Metafile)
                 {
                     Object val = bo.get(property);
                     if(val!=null)
@@ -246,12 +266,20 @@ public class CustomTableViewControls
                     }else{
                         toggleButton.setText("No");
                     }
-                    if(!(bo instanceof FileMetadata))
+                    if(!(bo instanceof Metafile))
                         IO.log(TAG, IO.TAG_ERROR, "unknown class, attempting to set boolean value to BusinessObject{"+bo.getClass().getName()+"}'s " + property + " property.");
-                    else IO.log(TAG, IO.TAG_INFO, "attempting to set boolean value to FileMetadata's " + property + " property.");
+                    else IO.log(TAG, IO.TAG_INFO, "attempting to set boolean value to Metafile's " + property + " property.");
 
-                    bo.parse(property, newValue);
-                    RemoteComms.updateBusinessObjectOnServer(bo, property);
+                    try
+                    {
+                        bo.parse(property, newValue);
+                    } catch (ParseException e)
+                    {
+                        IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                        e.printStackTrace();
+                    }
+                    throw new NotImplementedException();
+                    //RemoteComms.updateBusinessObjectOnServer(bo, property);
                 });
                 return new SimpleObjectProperty<>(grid);
             });
@@ -302,16 +330,24 @@ public class CustomTableViewControls
 
                 toggleButton.selectedProperty().addListener((observable, oldValue, newValue) ->
                 {
-                    if(newValue)
+                    try
                     {
-                        toggleButton.setText(props[3]);
-                        bo.parse(property, props[2]);
-                    }else{
-                        toggleButton.setText(props[1]);
-                        bo.parse(property, props[0]);
+                        if (newValue)
+                        {
+                            toggleButton.setText(props[3]);
+                            bo.parse(property, props[2]);
+                        } else
+                        {
+                            toggleButton.setText(props[1]);
+                            bo.parse(property, props[0]);
+                        }
+                    } catch (ParseException e)
+                    {
+                        IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                     }
 
-                    RemoteComms.updateBusinessObjectOnServer(bo, property);
+                    //TODO: replace RemoteComms.updateBusinessObjectOnServer(bo, property);
+                    throw new NotImplementedException();
                 });
                 return new SimpleObjectProperty<>(grid);
             });
@@ -424,59 +460,8 @@ public class CustomTableViewControls
                     jobManager.showJobCard(job);
                 });
 
-                Button btnEmployees = new Button("Assigned Employees");
-                btnEmployees.setOnAction(event ->
-                {
-                    JobManager jobManager = JobManager.getInstance();
-                    jobManager.showJobReps(job);
-                    /*ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
-                    Session active = SessionManager.getInstance().getActive();
-                    try
-                    {
-                        if (active != null)
-                        {
-                            if (!active.isExpired())
-                            {
-                                headers.add(new AbstractMap.SimpleEntry<String, String>("Cookie", active.getSession_id()));
-                                headers.add(new AbstractMap.SimpleEntry<String, String>("logo_options", (String)bo.get("logo_options")));
-
-                                String filename = String.valueOf(bo.get(property));
-                                long start = System.currentTimeMillis();
-                                byte[] file = RemoteComms.sendFileRequest(filename, headers);
-                                if (file != null)
-                                {
-                                    long ellapsed = System.currentTimeMillis()-start;
-                                    IO.log(TAG, IO.TAG_INFO, "File ["+filename+"] download complete, size: "+file.length+" bytes in "+ellapsed+"msec.");
-                                    PDFViewer pdfViewer = new PDFViewer(true);
-                                    pdfViewer.setVisible(true);
-
-                                    FileOutputStream out = new FileOutputStream(new File("out/temp.pdf"));
-                                    out.write(file, 0, file.length);
-                                    out.flush();
-                                    out.close();
-
-                                    //pdfViewer.doOpen("bin/" + filename + ".bin");
-                                    pdfViewer.doOpen("out/temp.pdf");
-                                    //Clean up
-                                    Files.delete(Paths.get("out/temp.pdf"));
-                                } else
-                                {
-                                    IO.logAndAlert("File Downloader", "File '" + filename + "' could not be downloaded.", IO.TAG_ERROR);
-                                }
-                            } else IO.showMessage("Session Expired", "Active session has expired.", IO.TAG_ERROR);
-                        } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
-                    }catch (IOException e)
-                    {
-                        IO.logAndAlert(TAG, e.getMessage(), IO.TAG_ERROR);
-                    }*/
-                });
-                /*Button btnPrint = new Button("Print Now");
-                HBox.setMargin(btnPrint, new Insets(0,10,0,10));
-                btnPrint.setOnAction(event -> printDocument(bo, property));*/
-
                 HBox container = new HBox();
-                container.getChildren().addAll(btnEmployees, btnSafety, btnJobCard);
-                HBox.setMargin(btnEmployees, new Insets(0,10,0,10));
+                container.getChildren().addAll(btnSafety, btnJobCard);
                 HBox.setMargin(btnJobCard, new Insets(0,10,0,10));
                 container.setAlignment(Pos.CENTER);
                 container.setMinHeight(min_width);

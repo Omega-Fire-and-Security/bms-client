@@ -35,9 +35,15 @@ public class ViewQuoteController extends QuoteController
         {
             if(selected.getRoot()==null)
             {
-                IO.logAndAlert("View Quote Error", "Selected quote's root is null. Should return self if base.", IO.TAG_ERROR);
+                IO.logAndAlert("View Quote Error", "Selected quote's root is null. Should return self if root.", IO.TAG_ERROR);
                 return;
             }
+
+            //update selected Client to Quote's Client
+            ClientManager.getInstance().setSelected(selected.getClient());
+
+            //update selected Employee to Quote's contact
+            EmployeeManager.getInstance().setSelected(selected.getContact_person());
 
             //get selected Quote's siblings sorted by revision number
             Quote[] selected_quote_siblings = selected.getSortedSiblings("revision");
@@ -80,9 +86,6 @@ public class ViewQuoteController extends QuoteController
                 btnApprove.setVisible(true);
                 btnApprove.setDisable(false);
             }
-
-            selected_client = selected.getClient();
-            selected_contact_person = selected.getContact_person();
 
             txtClient.setText(selected.getClient().getClient_name());
             txtContactPerson.setText(selected.getContact_person().getName());
@@ -134,11 +137,6 @@ public class ViewQuoteController extends QuoteController
                 tblQuoteItems.setItems(FXCollections.observableArrayList(selected.getResources()));
             else IO.log(getClass().getName(), IO.TAG_WARN, "quote [" + selected.get_id() + "] has no resources.");
 
-            //set quote services
-            if (selected.getServices() != null)
-                tblQuoteServices.setItems(FXCollections.observableArrayList(selected.getServices()));
-            else IO.log(getClass().getName(), IO.TAG_WARN, "quote [" + selected.get_id() + "] has no services.");
-
             /** Store additional cost cols in a HashMap -  used a map
              * To ensure that only a single instance of all additional
              * Cost columns are stored.
@@ -174,8 +172,7 @@ public class ViewQuoteController extends QuoteController
             }
             tblQuoteItems.refresh();
             txtTotal.setText(Globals.CURRENCY_SYMBOL.getValue() + " " + QuoteManager.computeQuoteTotal(
-                    selected.getResources()!=null?FXCollections.observableArrayList(selected.getResources()):null,
-                    selected.getServices()!=null?FXCollections.observableArrayList(selected.getServices()):null));
+                    selected.getResources()!=null?FXCollections.observableArrayList(selected.getResources()):null));
         } else IO.logAndAlert("View Quote Error", "Selected quote is invalid.", IO.TAG_ERROR);
     }
 

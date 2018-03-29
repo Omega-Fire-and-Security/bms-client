@@ -5,20 +5,23 @@ import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.*;
 import fadulousbms.controllers.JobsController;
 import fadulousbms.model.*;
-import javafx.collections.FXCollections;
-import javafx.scene.Scene;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.textfield.TextFields;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -26,14 +29,13 @@ import java.util.HashMap;
 
 /**
  * Created by ghost on 2017/01/11.
+ * @author ghost
  */
 public class EmployeeManager extends BusinessObjectManager
 {
     private HashMap<String, Employee> employees;
     private Gson gson;
     private static EmployeeManager employeeManager = new EmployeeManager();
-    public static String[] access_levels = {"NONE", "STANDARD", "ADMIN", "SUPER"};
-    public static String[] sexes = {"MALE", "FEMALE"};
 
     private EmployeeManager()
     {
@@ -54,6 +56,12 @@ public class EmployeeManager extends BusinessObjectManager
     }
 
     @Override
+    public Employee getSelected()
+    {
+        return (Employee) super.getSelected();
+    }
+
+    @Override
     Callback getSynchronisationCallback()
     {
         return new Callback()
@@ -70,10 +78,10 @@ public class EmployeeManager extends BusinessObjectManager
                         {
                             gson  = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String,String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
-                            String employee_json_object = RemoteComms.sendGetRequest("/employees", headers);
-                            EmployeeServerObject employeeServerObject = gson.fromJson(employee_json_object, EmployeeServerObject.class);
+                            String employee_json_object = RemoteComms.get("/employees", headers);
+                            EmployeeServerObject employeeServerObject = (EmployeeServerObject) EmployeeManager.getInstance().parseJSONobject(employee_json_object, new EmployeeServerObject());
 
                             if(employeeServerObject!=null)
                             {
@@ -101,158 +109,216 @@ public class EmployeeManager extends BusinessObjectManager
         };
     }
 
-    public void newExternalEmployeeWindow(String title, Callback callback)
+    public void newEmployee(Node parent, Callback callback)
     {
-        if(SessionManager.getInstance().getActive()==null)
-        {
-            IO.logAndAlert("Error", "Invalid active session.", IO.TAG_ERROR);
-            return;
-        }
-        if(SessionManager.getInstance().getActive().isExpired())
-        {
-            IO.logAndAlert("Error", "Active session has expired.", IO.TAG_ERROR);
-            return;
-        }
-        Stage stage = new Stage();
-        stage.setTitle(Globals.APP_NAME.getValue() + " - " + title);
-        stage.setMinWidth(320);
-        stage.setMinHeight(350);
-        stage.setHeight(350);
-        stage.setAlwaysOnTop(true);
-        stage.setResizable(false);
-        stage.centerOnScreen();
+        //TODO: pass set_password boolean arg
+        EmployeeManager.getInstance().setSelected(null);
 
-        final TextField txtFirstname,txtLastname,txtEmail,txtTelephone,txtCellphone;
-        final TextArea txtOther;
-
-        VBox vbox = new VBox(1);
-
-        txtFirstname = new TextField();
+        TextField txtFirstname = new TextField();
         txtFirstname.setMinWidth(200);
         txtFirstname.setMaxWidth(Double.MAX_VALUE);
-        HBox first_name = CustomTableViewControls.getLabelledNode("First Name", 200, txtFirstname);
+        //HBox first_name = CustomTableViewControls.getLabelledNode("First Name", 200, txtFirstname);
 
-        txtLastname = new TextField();
+        TextField txtLastname = new TextField();
         txtLastname.setMinWidth(200);
         txtLastname.setMaxWidth(Double.MAX_VALUE);
-        HBox last_name = CustomTableViewControls.getLabelledNode("Last Name", 200, txtLastname);
+        //HBox last_name = CustomTableViewControls.getLabelledNode("Last Name", 200, txtLastname);
 
-        txtEmail = new TextField();
+        TextField txtEmail = new TextField();
         txtEmail.setMinWidth(200);
         txtEmail.setMaxWidth(Double.MAX_VALUE);
-        HBox email = CustomTableViewControls.getLabelledNode("eMail Address:", 200, txtEmail);
+        //HBox email = CustomTableViewControls.getLabelledNode("eMail Address:", 200, txtEmail);
 
-        txtTelephone = new TextField();
+        TextField txtTelephone = new TextField();
         txtTelephone.setMinWidth(200);
         txtTelephone.setMaxWidth(Double.MAX_VALUE);
-        HBox telephone = CustomTableViewControls.getLabelledNode("Telephone #: ", 200, txtTelephone);
+        //HBox telephone = CustomTableViewControls.getLabelledNode("Telephone #: ", 200, txtTelephone);
 
-        txtCellphone = new TextField();
+        TextField txtCellphone = new TextField();
         txtCellphone.setMinWidth(200);
         txtCellphone.setMaxWidth(Double.MAX_VALUE);
-        HBox cellphone = CustomTableViewControls.getLabelledNode("Cellphone #: ", 200, txtCellphone);
+        //HBox cellphone = CustomTableViewControls.getLabelledNode("Cellphone #: ", 200, txtCellphone);
 
-        txtOther = new TextArea();
+        TextArea txtOther = new TextArea();
         txtOther.setMinWidth(200);
         txtOther.setMaxWidth(Double.MAX_VALUE);
-        HBox other = CustomTableViewControls.getLabelledNode("Other: ", 200, txtOther);
+        //HBox other = CustomTableViewControls.getLabelledNode("Other: ", 200, txtOther);
 
-        HBox submit;
-        submit = CustomTableViewControls.getSpacedButton("Submit", event ->
+        Button btnSubmit = new Button("Create New Client Representative");
+        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");
+        btnSubmit.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
+        btnSubmit.getStyleClass().add("btnAdd");
+        btnSubmit.setMinWidth(140);
+        btnSubmit.setMinHeight(45);
+        HBox.setMargin(btnSubmit, new Insets(15, 0, 0, 10));
+
+        GridPane page = new GridPane();
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.setHgap(20);
+        page.setVgap(20);
+
+        page.add(new Label("First Name: "), 0, 0);
+        page.add(txtFirstname, 1, 0);
+
+        page.add(new Label("Last Name: "), 0, 1);
+        page.add(txtLastname, 1, 1);
+
+        page.add(new Label("eMail Address: "), 0, 2);
+        page.add(txtEmail, 1, 2);
+
+        page.add(new Label("Tel No.: "), 0, 3);
+        page.add(txtTelephone, 1, 3);
+
+        page.add(new Label("Cellphone Address: "), 0, 4);
+        page.add(txtCellphone, 1, 4);
+
+        page.add(new Label("Other info: "), 0, 5);
+        page.add(txtOther, 1, 5);
+
+        page.add(btnSubmit, 1, 6);
+
+        PopOver popover = new PopOver(page);
+        popover.setTitle("Create new Client Representative");
+        popover.setDetached(true);
+        popover.show(parent);
+
+        TextFields.bindAutoCompletion(txtFirstname, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
         {
-            if(!validateFormField(txtFirstname, "Invalid Firstname", "please enter a valid first name", "^.*(?=.{1,}).*"))
-                return;
-            if(!validateFormField(txtLastname, "Invalid Lastname", "please enter a valid last name", "^.*(?=.{1,}).*"))
-                return;
-            if(!validateFormField(txtEmail, "Invalid Email", "please enter a valid email address", "^.*(?=.{5,})(?=(.*@.*\\.)).*"))
-                return;
-            if(!validateFormField(txtTelephone, "Invalid Telephone Number", "please enter a valid telephone number", "^.*(?=.{10,}).*"))
-                return;
-            if(!validateFormField(txtCellphone, "Invalid Cellphone Number", "please enter a valid cellphone number", "^.*(?=.{10,}).*"))
-                return;
-
-            //all valid, send data to server
-            int access_lvl=0;
-
-            Employee employee = new Employee();
-            employee.setUsr(txtEmail.getText());
-            try
+            if(event!=null)
             {
-                employee.setPwd(IO.getEncryptedHexString(txtCellphone.getText()));//TODO: hash
-            } catch (Exception e)
-            {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
-            }
-
-            employee.setAccessLevel(access_lvl);
-            employee.setFirstname(txtFirstname.getText());
-            employee.setLastname(txtLastname.getText());
-            employee.setGender("Male");
-            employee.setEmail(txtEmail.getText());
-            employee.setTel(txtTelephone.getText());
-            employee.setCell(txtCellphone.getText());
-            employee.setCreator(SessionManager.getInstance().getActive().getUsr());
-
-            if(txtOther.getText()!=null)
-                employee.setOther(txtOther.getText());
-
-            try
-            {
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-
-                HttpURLConnection connection = RemoteComms.putJSON("/employees", employee.getJSONString(), headers);
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
+                if(event.getCompletion()!=null)
                 {
-                    IO.logAndAlert("Account Creation Success", "Successfully created new user ["+employee.getName()+"]!", IO.TAG_INFO);
+                    setSelected(event.getCompletion());
 
-                    EmployeeManager.getInstance().forceSynchronise();
-
-                    //execute callback w/ args
-                    if(callback!=null)
-                        callback.call(IO.readStream(connection.getInputStream()));
-                } else
-                    IO.logAndAlert("Account Creation Failure", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                //execute callback w/o args
-                if(callback!=null)
-                    callback.call(null);
-                connection.disconnect();
-            } catch (IOException e)
-            {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                    if(getSelected().getFirstname()!=null)
+                        txtFirstname.setText(getSelected().getFirstname());
+                    if(getSelected().getLastname()!=null)
+                        txtLastname.setText(getSelected().getLastname());
+                    if(getSelected().getCell()!=null)
+                        txtCellphone.setText(getSelected().getCell());
+                    if(getSelected().getTel()!=null)
+                        txtTelephone.setText(getSelected().getTel());
+                    if(getSelected().getEmail()!=null)
+                        txtEmail.setText(getSelected().getEmail());
+                    if(getSelected().getTel()!=null)
+                        txtOther.setText(getSelected().getOther());
+                }
             }
         });
-        //Add form controls vertically on the stage
-        vbox.getChildren().add(first_name);
-        vbox.getChildren().add(last_name);
-        vbox.getChildren().add(email);
-        vbox.getChildren().add(telephone);
-        vbox.getChildren().add(cellphone);
-        vbox.getChildren().add(other);
-        vbox.getChildren().add(submit);
 
-        //Setup scene and display stage
-        Scene scene = new Scene(vbox);
-        File fCss = new File(IO.STYLES_ROOT_PATH+"home.css");//src/fadulousbms/
-        scene.getStylesheets().clear();
-        scene.getStylesheets().add("file:///"+ fCss.getAbsolutePath().replace("\\", "/"));
-
-        stage.onHidingProperty().addListener((observable, oldValue, newValue) ->
-                synchroniseDataset());
-
-        stage.setScene(scene);
-        stage.show();
-    }
-
-    private boolean validateFormField(TextField txt, String errTitle, String errMsg, String regex)
-    {
-        if(!Validators.isValidNode(txt, txt.getText(), regex))
+        TextFields.bindAutoCompletion(txtLastname, EmployeeManager.getInstance().getDataset().values()).setOnAutoCompleted(event ->
         {
-            //IO.logAndAlert(errTitle, errMsg, IO.TAG_ERROR);
-            IO.log(getClass().getName(), IO.TAG_ERROR, errMsg);
-            return false;
-        }
-        return true;
+            if(event!=null)
+            {
+                if(event.getCompletion()!=null)
+                {
+                    setSelected(event.getCompletion());
+
+                    if(getSelected().getFirstname()!=null)
+                        txtFirstname.setText(getSelected().getFirstname());
+                    if(getSelected().getLastname()!=null)
+                        txtLastname.setText(getSelected().getLastname());
+                    if(getSelected().getCell()!=null)
+                        txtCellphone.setText(getSelected().getCell());
+                    if(getSelected().getTel()!=null)
+                        txtTelephone.setText(getSelected().getTel());
+                    if(getSelected().getEmail()!=null)
+                        txtEmail.setText(getSelected().getEmail());
+                    if(getSelected().getTel()!=null)
+                        txtOther.setText(getSelected().getOther());
+                }
+            }
+        });
+
+        btnSubmit.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                if(SessionManager.getInstance().getActive()==null)
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+                if(SessionManager.getInstance().getActive().isExpired())
+                {
+                    IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+                    return;
+                }
+
+                if(!Validators.isValidNode(txtFirstname, txtFirstname.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txtLastname, txtLastname.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txtCellphone, txtCellphone.getText(), 1, ".+"))
+                    return;
+                if(!Validators.isValidNode(txtTelephone, txtTelephone.getText(), 1, ".+"))
+                    return;
+
+                //TODO: check if email doesn't exist already
+                if(!Validators.isValidNode(txtEmail, txtEmail.getText(), 1, ".+"))
+                    return;
+
+                boolean found = false;
+                for(Employee employee: EmployeeManager.getInstance().getDataset().values())
+                    if(txtEmail.getText().toLowerCase().equals(employee.getEmail().toLowerCase()))
+                        found=true;
+
+                if(found)
+                {
+                    IO.logAndAlert("Error", "User with email address ["+txtEmail.getText()+"] already exists.", IO.TAG_ERROR);
+                    return;
+                }
+
+                //if txtFirstname and txtLastname matches selected_contact_person's first_name and last_name ask if they want to make a duplicate record
+                String proceed = IO.OK;
+                if(getSelected()!=null)
+                    if(txtFirstname.getText().equals(getSelected().getFirstname()) && txtLastname.equals(getSelected().getLastname()))
+                        proceed = IO.showConfirm("Found duplicate person, continue?", "Found person with the name ["+getSelected().getName()+"], add another record?");
+
+                //did they choose to continue with the creation or cancel?
+                if(!proceed.equals(IO.OK))
+                {
+                    IO.log(getClass().getName(), "aborting new Client contact person creation.", IO.TAG_VERBOSE);
+                    return;
+                }
+
+                int access_lvl=0;
+
+                Employee employee = new Employee();
+                employee.setUsr(txtEmail.getText().toLowerCase());
+                String pwd = "";
+                try
+                {
+                    pwd = IO.generateRandomString(32, true, true);
+                    assert pwd.length()==12;
+                    employee.setPwd(IO.getEncryptedHexString(pwd));
+                } catch (Exception e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+
+                employee.setAccessLevel(access_lvl);
+                employee.setFirstname(txtFirstname.getText());
+                employee.setLastname(txtLastname.getText());
+                employee.setGender("Male");
+                employee.setEmail(txtEmail.getText());
+                employee.setTel(txtTelephone.getText());
+                employee.setCell(txtCellphone.getText());
+                employee.setCreator(SessionManager.getInstance().getActive().getUsr());
+
+                if(txtOther.getText()!=null)
+                    employee.setOther(txtOther.getText());
+                employee.setOther(employee.getOther() + " pwd=" + pwd);
+                try
+                {
+                    EmployeeManager.getInstance().putObject(employee, callback);
+                } catch (IOException e)
+                {
+                    IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                }
+            }
+        });
     }
 
     public void uploadID(String employee_id)
@@ -280,7 +346,7 @@ public class EmployeeManager extends BusinessObjectManager
                             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
-                            RemoteComms.uploadFile("/employee/id/upload/" + employee_id, headers, buffer);
+                            RemoteComms.uploadFile("/file/upload/" + employee_id, headers, buffer);
                             IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded ID for employee ["+employee_id+"], file size: [" + buffer.length + "] bytes.");
                         } else
                         {
@@ -323,7 +389,8 @@ public class EmployeeManager extends BusinessObjectManager
                             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
-                            RemoteComms.uploadFile("/employee/cv/upload/" + employee_id, headers, buffer);
+                            //TODO:
+                            RemoteComms.uploadFile("/file/upload/" + employee_id, headers, buffer);
                             IO.log(getClass().getName(), IO.TAG_INFO, "\n uploaded CV for employee ["+employee_id+"], file size: [" + buffer.length + "] bytes.");
                         } else
                         {
@@ -362,8 +429,9 @@ public class EmployeeManager extends BusinessObjectManager
 
                     //String filename = String.valueOf(bo.get(property));
                     long start = System.currentTimeMillis();
-                    byte[] file = RemoteComms.sendFileRequest("/employee/id/" + employee_id, headers);
+                    byte[] file = RemoteComms.sendFileRequest("/file/" + employee_id, headers);
 
+                    //TODO:
                     if (file != null)
                     {
                         long ellapsed = System.currentTimeMillis() - start;
@@ -442,7 +510,8 @@ public class EmployeeManager extends BusinessObjectManager
 
                     //String filename = String.valueOf(bo.get(property));
                     long start = System.currentTimeMillis();
-                    byte[] file = RemoteComms.sendFileRequest("/employee/cv/" + employee_id, headers);
+                    //TODO:
+                    byte[] file = RemoteComms.sendFileRequest("/file/" + employee_id, headers);
 
                     if (file != null)
                     {

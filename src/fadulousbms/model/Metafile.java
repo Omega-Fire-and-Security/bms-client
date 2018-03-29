@@ -2,15 +2,19 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.Serializable;
 
 /**
  * Created by ghost on 2017/02/24.
  */
-public class FileMetadata extends BusinessObject implements Serializable
+public class Metafile extends BusinessObject implements Serializable
 {
     private String filename;
     private String label;
@@ -18,7 +22,7 @@ public class FileMetadata extends BusinessObject implements Serializable
     private String content_type;
     private String file;//Base64 String representation of file
     //private String extra;//{"logo_options":{}, "required":false}
-    public static final String TAG = "FileMetadata";
+    public static final String TAG = "Metafile";
 
     @Override
     public AccessLevel getReadMinRequiredAccessLevel()
@@ -32,7 +36,13 @@ public class FileMetadata extends BusinessObject implements Serializable
         return AccessLevel.STANDARD;
     }
 
-    public FileMetadata(String filename, String content_type)
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Metafile(String filename, String content_type)
     {
         setFilename(filename);
         setLabel(filename);
@@ -40,7 +50,7 @@ public class FileMetadata extends BusinessObject implements Serializable
         setContent_type(content_type);
     }
 
-    public FileMetadata(String filename, String label, String path, String content_type)
+    public Metafile(String filename, String label, String path, String content_type)
     {
         setFilename(filename);
         setLabel(label);
@@ -105,7 +115,7 @@ public class FileMetadata extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         switch (var.toLowerCase())
@@ -173,14 +183,14 @@ public class FileMetadata extends BusinessObject implements Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/files";
+        return "/metafile";
     }
 
     //Additional methods
-    /*static int partition(FileMetadata arr[], int left, int right)
+    /*static int partition(Metafile arr[], int left, int right)
     {
         int i = left, j = right;
-        FileMetadata tmp;
+        Metafile tmp;
         double pivot = arr[(left + right) / 2].getIndex();
 
         while (i <= j)
@@ -202,7 +212,7 @@ public class FileMetadata extends BusinessObject implements Serializable
         return i;
     }
 
-    public static void quickSort(FileMetadata arr[], int left, int right)
+    public static void quickSort(Metafile arr[], int left, int right)
     {
         int index = partition(arr, left, right);
         if (left < index - 1)

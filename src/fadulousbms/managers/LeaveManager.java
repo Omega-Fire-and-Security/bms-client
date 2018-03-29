@@ -14,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.awt.*;
 import java.io.File;
@@ -74,10 +75,10 @@ public class LeaveManager extends BusinessObjectManager
                         {
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
-                            String timestamp_json = RemoteComms.sendGetRequest("/timestamp/leave_records_timestamp", headers);
+                            String timestamp_json = RemoteComms.get("/timestamp/leave_applications_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
@@ -92,8 +93,8 @@ public class LeaveManager extends BusinessObjectManager
 
                             if (!isSerialized(ROOT_PATH + filename))
                             {
-                                String leave_records_json = RemoteComms.sendGetRequest("/leave_records", headers);
-                                LeaveServerObject leaveServerObject = gson.fromJson(leave_records_json, LeaveServerObject.class);
+                                String leave_records_json = RemoteComms.get("/leave_applications", headers);
+                                LeaveServerObject leaveServerObject = (LeaveServerObject) LeaveManager.getInstance().parseJSONobject(leave_records_json, new LeaveServerObject());
                                 if (leaveServerObject != null)
                                 {
                                     if(leaveServerObject.get_embedded()!=null)
@@ -238,15 +239,8 @@ public class LeaveManager extends BusinessObjectManager
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-                if (SessionManager.getInstance().getActive() != null)
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
-                else
-                {
-                    IO.logAndAlert("Error: Session expired", "No active sessions.", IO.TAG_INFO);
-                    return;
-                }
 
-                HttpURLConnection connection = RemoteComms.putJSON("/leave_records", leave_record.getJSONString(), headers);
+                HttpURLConnection connection = RemoteComms.put("/leave_application", leave_record.getJSONString(), headers);
                 if (connection != null)
                 {
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
@@ -255,20 +249,20 @@ public class LeaveManager extends BusinessObjectManager
                         //execute callback w/ args
                         if (callback != null)
                             callback.call(IO.readStream(connection.getInputStream()));
+                        return;
                     } else
-                    {
                         IO.logAndAlert("ERROR_" + connection.getResponseCode(), IO
                                 .readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                        //execute callback w/o args
-                        if (callback != null)
-                            callback.call(null);
-                    }
                     connection.disconnect();
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
             }
+            //execute callback w/o args
+            if (callback != null)
+                callback.call(null);
         });
 
         //Add form controls vertically on the stage
@@ -322,7 +316,8 @@ public class LeaveManager extends BusinessObjectManager
                             headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                             headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
-                            RemoteComms.uploadFile("/api/leave_record/signed/upload/" + leave_id, headers, buffer);
+                            //TODO:
+                            RemoteComms.uploadFile("/file/upload/" + leave_id, headers, buffer);
                             IO.log(LeaveManager.class.getName(), IO.TAG_INFO, "\n uploaded signed leave application ["+leave_id+"], file size: [" + buffer.length + "] bytes.");
                         } else
                         {
@@ -377,7 +372,8 @@ public class LeaveManager extends BusinessObjectManager
                                         .getActive().getSession_id()));
                                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/pdf"));
 
-                                RemoteComms.uploadFile("/api/leave_record/upload/" + leave.get_id(), headers, buffer);
+                                //TODO:
+                                RemoteComms.uploadFile("/file/upload/" + leave.get_id(), headers, buffer);
                                 IO.log(LeaveManager.class.getName(), IO.TAG_INFO, "\n uploaded leave application [#" + leave.get_id()
                                         + "], file size: [" + buffer.length + "] bytes.");
                             } else {
@@ -504,19 +500,17 @@ public class LeaveManager extends BusinessObjectManager
                 headers.add(new AbstractMap.SimpleEntry<>("message", msg));
                 headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
                 if(SessionManager.getInstance().getActive()!=null)
-                {
-                    headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                     headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
-                } else
+                else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
-                FileMetadata fileMetadata = new FileMetadata("leave_"+leave.get_id()+".pdf","application/pdf");
-                fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
-                fileMetadata.setFile(finalBase64_leave_application);
-                HttpURLConnection connection = RemoteComms.postJSON("/leave_records/request_approval", fileMetadata.getJSONString(), headers);
+                Metafile metafile = new Metafile("leave_"+leave.get_id()+".pdf","application/pdf");
+                metafile.setCreator(SessionManager.getInstance().getActive().getUsr());
+                metafile.setFile(finalBase64_leave_application);
+                HttpURLConnection connection = RemoteComms.post("/leave_application/request_approval", metafile.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -526,6 +520,7 @@ public class LeaveManager extends BusinessObjectManager
                         //execute callback w/ args
                         if(callback!=null)
                             callback.call(IO.readStream(connection.getInputStream()));
+                        return;
                     } else {
                         IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                         //execute callback w/o args
@@ -533,11 +528,14 @@ public class LeaveManager extends BusinessObjectManager
                             callback.call(null);
                     }
                     connection.disconnect();
-                }
+                } else IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                 e.printStackTrace();
-                IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, e.getMessage());
+                //execute callback w/o args
+                if(callback!=null)
+                    callback.call(null);
             }
         });
 
@@ -641,7 +639,7 @@ public class LeaveManager extends BusinessObjectManager
                     return;
                 }
 
-                HttpURLConnection connection = RemoteComms.postData("/leave_records/signed/mailto", params, headers);
+                /*HttpURLConnection connection = RemoteComms.post("/leave_records/signed/mailto", params, headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
@@ -653,8 +651,9 @@ public class LeaveManager extends BusinessObjectManager
                         IO.logAndAlert( "ERROR: " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                     }
                     connection.disconnect();
-                }
-            } catch (IOException e)
+                }*/
+                throw new NotImplementedException();
+            } catch (Exception e)
             {
                 IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, e.getMessage());
             }
@@ -686,7 +685,7 @@ public class LeaveManager extends BusinessObjectManager
             IO.logAndAlert("Error", "Invalid leave record.", IO.TAG_ERROR);
             return;
         }
-        if (leave.getStatus() == Leave.STATUS_APPROVED)
+        if (leave.getStatus() == Leave.STATUS_FINALISED)
         {
             IO.logAndAlert("Error", "Leave record has already been approved.", IO.TAG_ERROR);
             return;
@@ -697,31 +696,36 @@ public class LeaveManager extends BusinessObjectManager
             if (!SessionManager.getInstance().getActive().isExpired())
             {
                 ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
 
-                leave.setStatus(Leave.STATUS_APPROVED);
+                leave.setStatus(Leave.STATUS_FINALISED);
                 try
                 {
-                    HttpURLConnection connection = RemoteComms.postData( "/leave_records", leave.getJSONString(), headers);
+                    HttpURLConnection connection = RemoteComms.post( "/leave_application", leave.getJSONString(), headers);
                     if(connection!=null)
                     {
                         if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                         {
                             IO.logAndAlert("Success", leave.getEmployee().getName()+"'s leave application has been successfully approved.", IO.TAG_INFO);
+                            //execute callback w/ args
                             if(callback!=null)
-                                callback.call(null);
-                        }else{
-                            IO.logAndAlert("Error", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                        }
+                                callback.call(IO.readStream(connection.getInputStream()));
+                            return;
+                        } else IO.logAndAlert("Error", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+
                         connection.disconnect();
-                    }
+                    } else IO.log(LeaveManager.class.getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
                 } catch (IOException e)
                 {
+                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
                     e.printStackTrace();
                 }
             } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
         } else IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+
+        //execute callback w/o args
+        if(callback!=null)
+            callback.call(null);
     }
 
     class LeaveServerObject extends ServerObject

@@ -7,27 +7,18 @@ package fadulousbms.controllers;
 
 import fadulousbms.auxilary.*;
 import fadulousbms.managers.EmployeeManager;
-import fadulousbms.managers.ScreenManager;
 import fadulousbms.managers.SessionManager;
 import fadulousbms.model.Employee;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.util.Callback;
 import jfxtras.labs.scene.control.radialmenu.RadialMenuItem;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 /**
@@ -171,7 +162,7 @@ public class AccountCreationController extends ScreenController implements Initi
             }
             try
             {
-                ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+                /*ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
                 headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
                 HttpURLConnection connection = RemoteComms.putJSON("/employees", employee.getJSONString(), headers);
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
@@ -180,8 +171,16 @@ public class AccountCreationController extends ScreenController implements Initi
                     IO.logAndAlert("Account Creation Success", "Successfully created account ["+txtUsername.getText()+"].", IO.TAG_INFO);
                 } else
                     IO.logAndAlert("Account Creation Failure", IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-
-                connection.disconnect();
+                connection.disconnect();*/
+                employee.getManager().putObject(employee, new_user_id ->
+                {
+                    if (new_user_id!=null)
+                    {
+                        IO.logAndAlert("Account Creation Success", "Successfully created account ["+txtUsername.getText()+"].", IO.TAG_INFO);
+                    } else
+                        IO.logAndAlert("Account Creation Failure", "Could not create account.", IO.TAG_ERROR);
+                    return null;
+                });
             } catch (IOException e)
             {
                 IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
@@ -219,6 +218,6 @@ public class AccountCreationController extends ScreenController implements Initi
     @FXML
     public void generatePassword()
     {
-        txtPassword.setText(IO.generateRandomString(10));
+        txtPassword.setText(IO.generateRandomString(32, true, true));
     }
 }

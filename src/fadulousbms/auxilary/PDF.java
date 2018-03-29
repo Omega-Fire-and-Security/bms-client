@@ -3,26 +3,18 @@ package fadulousbms.auxilary;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.util.Callback;
-import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.pdfbox.rendering.PDFRenderer;
-import org.apache.pdfbox.rendering.PageDrawer;
-import org.apache.pdfbox.rendering.PageDrawerParameters;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.util.Matrix;
-import org.apache.pdfbox.util.Vector;
+
 import javax.print.*;
 import java.awt.*;
 import java.awt.print.PrinterJob;
@@ -33,8 +25,6 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by ghost on 2017/02/10.
@@ -123,7 +113,7 @@ public class PDF
         }
     }
 
-    public static void createDocumentIndex(String title, FileMetadata[] fileMetadata, String path) throws IOException
+    public static void createDocumentIndex(String title, Metafile[] fileMetadata, String path) throws IOException
     {
         //create PDF output directory
         if(new File("out/pdf/").mkdirs())
@@ -177,7 +167,7 @@ public class PDF
         line_pos-=LINE_HEIGHT;//next line
 
         //int pos = line_pos;
-        for(FileMetadata metadata : fileMetadata)
+        for(Metafile metadata : fileMetadata)
         {
             //contents.beginText();
             //TODO:addTextToPageStream(contents, String.valueOf(metadata.getIndex()), 14, 20, line_pos);
@@ -347,7 +337,7 @@ public class PDF
             case BusinessObject.STATUS_PENDING:
                 status="PENDING";
                 break;
-            case BusinessObject.STATUS_APPROVED:
+            case BusinessObject.STATUS_FINALISED:
                 status="GRANTED";
                 break;
             case BusinessObject.STATUS_ARCHIVED:
@@ -464,7 +454,7 @@ public class PDF
             case Leave.STATUS_PENDING:
                 status="PENDING";
                 break;
-            case Leave.STATUS_APPROVED:
+            case Leave.STATUS_FINALISED:
                 status="GRANTED";
                 break;
             case Leave.STATUS_ARCHIVED:
@@ -1211,73 +1201,6 @@ public class PDF
             IO.log(TAG, IO.TAG_VERBOSE, "successfully processed quote resources.");
         } else IO.log(TAG, IO.TAG_WARN, "quote ["+quote.get_id()+"] has no resources.");
 
-        if(quote.getServices()!=null)
-        {
-            /** Render quote services **/
-            for (QuoteService service : quote.getServices())
-            {
-                item_index++;//increment major index
-                //render service items
-
-                //add blank line
-                line_pos = addTextToPageStream(document, "", PDType1Font.COURIER, 9, 10, PAGE_MARGINS.left, line_pos, no_border, col_positions);
-                line_pos -= LINE_HEIGHT;//next line
-
-                //render service index
-                line_pos = addTextToPageStream(document, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 12, page_content_max_width, col_positions[0]+text_offset, line_pos, no_border, col_positions);
-
-                //render service title
-                line_pos = addTextToPageStream(document, service.getService().getService_title(), PDType1Font.COURIER_BOLD, 11, col_positions[2]-col_positions[1], col_positions[1] + text_offset, line_pos, no_border, col_positions);
-
-                line_pos -= LINE_HEIGHT;//next line
-
-                if (service.getService() == null) {
-                    IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "]'s service object for quote [" + quote.get_id() + "] is invalid.");
-                    continue;
-                }
-                if (service.getService().getServiceItemsMap() == null) {
-                    IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "] for quote [" + quote.get_id() + "] services are invalid.");
-                    continue;
-                }
-                if (service.getService().getServiceItemsMap().isEmpty()) {
-                    IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "] for quote [" + quote.get_id() + "] has no services.");
-                    continue;
-                }
-
-                int item_index_minor = 0;//reset minor index
-                for (ServiceItem service_item : service.getService().getServiceItemsMap().values())
-                {
-                    item_index_minor += 1;//increment minor item index
-                    //render service items
-
-                    /**begin rendering actual quote service information**/
-                    //Border quote_items_border = new Border(Border.BORDER_RIGHT, Color.BLACK, 1, new Insets(0, 0, 0, text_offset));
-
-                    //first column, Item number
-                    line_pos = addTextToPageStream(document, String.valueOf(item_index) + "." + String.valueOf(item_index_minor), PDType1Font.COURIER, 12, page_content_max_width, col_positions[0]+text_offset, line_pos, no_border, col_positions);
-
-                    //Description col //int new_line_pos
-                    line_pos = addTextToPageStream(document, service_item.getItem_name(), PDType1Font.COURIER, 9, col_positions[2]-col_positions[1], col_positions[1] + text_offset, line_pos, no_border, col_positions);
-                    System.out.println("current line position: "+ line_pos);
-
-                    //Unit col
-                    line_pos = addTextToPageStream(document, service_item.getUnit(), PDType1Font.COURIER, 8, col_positions[3]-col_positions[2], col_positions[2]+text_offset, line_pos, no_border, col_positions);
-
-                    //Quantity col
-                    line_pos = addTextToPageStream(document, String.valueOf(service_item.getQuantity()), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[3]+text_offset, line_pos, no_border, col_positions);
-
-                    //Rate col
-                    line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getItem_rate())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[4]+text_offset, line_pos, no_border, col_positions);
-
-                    //Total col
-                    sub_total += service_item.getTotal();
-                    line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getTotal())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[5]+text_offset, line_pos, no_border, col_positions);
-
-                    line_pos -= LINE_HEIGHT;//next line
-                }
-            }
-        } else IO.log(PDF.class.getName(), IO.TAG_WARN,"quote ["+quote.get_id()+"] has no services.");
-
         //render notes
         if(quote.getOther()!=null)
         {
@@ -1723,73 +1646,6 @@ public class PDF
                 IO.log(TAG, IO.TAG_VERBOSE, "successfully processed quote resources.");
             } else IO.log(TAG, IO.TAG_INFO, "quote has no resources.");
 
-            if(quote.getServices()!=null)
-            {
-                /** Render quote services **/
-                for (QuoteService service : quote.getServices())
-                {
-                    item_index++;//increment major index
-                    //render service items
-
-                    //add blank line
-                    line_pos = addTextToPageStream(document, "", PDType1Font.COURIER, 12, 10, 10, line_pos, no_border, col_positions);
-                    line_pos -= LINE_HEIGHT;//next line
-
-                    //render service index
-                    line_pos = addTextToPageStream(document, String.valueOf(item_index), PDType1Font.COURIER_BOLD, 14, page_content_max_width, col_positions[0]+col_text_offset, line_pos, no_border, col_positions);
-
-                    //render service title
-                    line_pos = addTextToPageStream(document, service.getService().getService_title(), PDType1Font.COURIER_BOLD, 14, col_positions[2]-col_positions[1], col_positions[1] + col_text_offset, line_pos, new Border(Border.BORDER_RIGHT, Color.RED, 2, new Insets(0, 0, 0, col_text_offset)), col_positions);
-
-                    line_pos -= LINE_HEIGHT;//next line
-
-                    if (service.getService() == null) {
-                        IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "]'s service object for quote [" + quote.get_id() + "] is invalid.");
-                        continue;
-                    }
-                    if (service.getService().getServiceItemsMap() == null) {
-                        IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "] for quote [" + quote.get_id() + "] services are invalid.");
-                        continue;
-                    }
-                    if (service.getService().getServiceItemsMap().isEmpty()) {
-                        IO.log(PDF.class.getName(), IO.TAG_WARN, "quote service [" + service.get_id() + "] for quote [" + quote.get_id() + "] has no services.");
-                        continue;
-                    }
-
-                    int item_index_minor = 0;//reset minor index
-                    for (ServiceItem service_item : service.getService().getServiceItemsMap().values())
-                    {
-                        item_index_minor += 1;//increment minor item index
-                        //render service items
-
-                        /**begin rendering actual quote service information**/
-                        Border quote_items_border = new Border(Border.BORDER_RIGHT, Color.BLACK, 1, new Insets(0, 0, 0, col_text_offset));
-
-                        //first column, Item number
-                        line_pos = addTextToPageStream(document, String.valueOf(item_index) + "." + String.valueOf(item_index_minor), PDType1Font.COURIER, 12, page_content_max_width, col_positions[0]+col_text_offset, line_pos,no_border, col_positions);
-
-                        //Description col //int new_line_pos
-                        line_pos = addTextToPageStream(document, service_item.getItem_name(), PDType1Font.COURIER, 12, col_positions[2]-col_positions[1], col_positions[1] + col_text_offset, line_pos, no_border, col_positions);
-                        System.out.println("current line position: "+ line_pos);
-
-                        //Unit col
-                        line_pos = addTextToPageStream(document, service_item.getUnit(), PDType1Font.COURIER, 8, col_positions[3]-col_positions[2], col_positions[2]+col_text_offset, line_pos, no_border, col_positions);
-
-                        //Quantity col
-                        line_pos = addTextToPageStream(document, String.valueOf(service_item.getQuantity()), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[3]+col_text_offset, line_pos, no_border, col_positions);
-
-                        //Rate col
-                        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getItem_rate())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[4]+col_text_offset, line_pos,no_border, col_positions);
-
-                        //Total col
-                        sub_total += service_item.getTotal();
-                        line_pos = addTextToPageStream(document, String.valueOf(DecimalFormat.getCurrencyInstance().format(service_item.getTotal())), PDType1Font.COURIER, digit_font_size, page_content_max_width, col_positions[5]+col_text_offset, line_pos,no_border, col_positions);
-
-                        line_pos -= LINE_HEIGHT;//next line
-                    }
-                }
-            } else IO.log(PDF.class.getName(), IO.TAG_WARN,"quote ["+quote.get_id()+"] has no services.");
-
             //render notes
             if(quote.getOther()!=null)
             {
@@ -1938,7 +1794,7 @@ public class PDF
             IO.logAndAlert("Error", "Job[#"+job.getObject_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
             return null;
         }
-        if(job.getAssigned_employees().length<=0)
+        if(job.getAssigned_employees().size()<=0)
         {
             IO.logAndAlert("Error", "Job[#"+job.getObject_number()+"] has not been assigned any employees, please fix this and try again.", IO.TAG_ERROR);
             return null;
@@ -1947,7 +1803,7 @@ public class PDF
         //ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
         //headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
         //Client client;
-        //String client_json = null;//RemoteComms.sendGetRequest("/api/client/" + job.getClient_id(), headers);
+        //String client_json = null;//RemoteComms.get("/api/client/" + job.getClient_id(), headers);
         //client = new GsonBuilder().create().fromJson(client_json, Client.class);
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -1970,16 +1826,13 @@ public class PDF
         {
             PDImageXObject logo = PDImageXObject.createFromFile(logo_path, document);
 
-            for (Employee employee : job.getAssigned_employees())
+            for (JobEmployee job_employee : job.getAssigned_employees().values())
             {
-                //contents.close();
                 final PDPage new_page = new PDPage(new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()));
                 //Add page to document
                 document.addPage(new_page);
                 contents_stream = new PDPageContentStream(document, new_page);
-                //contents.setFont(font, 14);
 
-                //line_pos = (int)h-logo_h-20;
                 IO.log("Job PDF Exporter", IO.TAG_INFO, "added new page.");
                 int logo_h = 60;
                 float w = new_page.getBBox().getWidth();
@@ -2152,10 +2005,13 @@ public class PDF
                 line_pos -= LINE_HEIGHT;//next line
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "TECHNICIAN SIGNATURE: ____________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + text_offset, line_pos, no_border, null);
                 line_pos = addTextToPageStream(document, new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()), "DATE: ____________________________", PDType1Font.HELVETICA, 11, page_content_max_width-text_offset*2, PAGE_MARGINS.left + 540 + text_offset, line_pos, no_border, null);
+
+                //close stream for current page
+                contents_stream.close();
             }
         } else
         {
-            IO.logAndAlert(TAG, "job " + job.get_id() + " has no assigned employees.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "Could not find any assignees for job #"+job.getObject_number(), IO.TAG_ERROR);
             return null;
         }
 
@@ -2208,6 +2064,7 @@ public class PDF
 
         if(contents_stream!=null)
             contents_stream.close();
+
         document.save(path);
         document.close();
         return path;

@@ -12,7 +12,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
@@ -89,7 +88,7 @@ public abstract class ScreenController
     @FXML
     public void newClient()
     {
-        ClientManager.newClientWindow("Create a new Client for this Job", param ->
+        ClientManager.getInstance().newClientPopOver(ScreenManager.getInstance(), new_client_id ->
         {
             new Thread(() ->
                     refreshModel(c->{Platform.runLater(() -> refreshView());return null;})).start();
@@ -100,7 +99,7 @@ public abstract class ScreenController
     @FXML
     public void newEmployee()
     {
-        EmployeeManager.getInstance().newExternalEmployeeWindow("Create a new Contact Person for this Job", param ->
+        EmployeeManager.getInstance().newEmployee(ScreenManager.getInstance(), employee_id ->
         {
             new Thread(() ->
                     refreshModel(cb->{Platform.runLater(() -> refreshView());return null;})).start();
@@ -250,13 +249,21 @@ public abstract class ScreenController
 
                                 IO.log(getClass().getName(),IO.TAG_INFO, "############new Client"+supplier.getJSONString());
 
-                                SupplierManager.getInstance().createNewSupplier(supplier, arg ->
+                                try
                                 {
-                                    if(arg!=null)
-                                        IO.logAndAlert("Success", "Successfully created new Supplier: ["+param+"]{"+supplier.getSupplier_name()+"}", IO.TAG_INFO);
-                                    else IO.logAndAlert("Error", "Could not create new Supplier", IO.TAG_ERROR);
-                                    return null;
-                                });
+                                    SupplierManager.getInstance().putObject(supplier, arg ->
+                                    {
+                                        if(arg!=null)
+                                            IO.logAndAlert("Success", "Successfully created new Supplier: ["+param+"]{"+supplier.getSupplier_name()+"}", IO.TAG_INFO);
+                                        else IO.logAndAlert("Error", "Could not create new Supplier", IO.TAG_ERROR);
+                                        return null;
+                                    });
+                                }
+                                catch (IOException e)
+                                {
+                                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                    e.printStackTrace();
+                                }
                             } else IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log inx.", IO.TAG_ERROR);
                         } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
                         return null;
@@ -305,13 +312,20 @@ public abstract class ScreenController
 
                                 IO.log(getClass().getName(),IO.TAG_INFO, "############new Client"+client.getJSONString());
 
-                                ClientManager.createNewClient(client, arg ->
+                                try
                                 {
-                                    if(arg!=null)
-                                        IO.logAndAlert("Success", "Successfully created new Client: ["+param+"]{"+client.getClient_name()+"}", IO.TAG_INFO);
-                                    else IO.logAndAlert("Error", "Could not create new Client", IO.TAG_ERROR);
-                                    return null;
-                                });
+                                    ClientManager.getInstance().putObject(client, arg ->
+                                    {
+                                        if(arg!=null)
+                                            IO.logAndAlert("Success", "Successfully created new Client: ["+param+"]{"+client.getClient_name()+"}", IO.TAG_INFO);
+                                        else IO.logAndAlert("Error", "Could not create new Client", IO.TAG_ERROR);
+                                        return null;
+                                    });
+                                } catch (IOException e)
+                                {
+                                    IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                    e.printStackTrace();
+                                }
                             } else IO.logAndAlert("Error: Session Expired", "Active session is has expired.\nPlease log inx.", IO.TAG_ERROR);
                         } else IO.logAndAlert("Error: Invalid Session", "Active session is invalid.\nPlease log in.", IO.TAG_ERROR);
                         return null;
@@ -339,7 +353,7 @@ public abstract class ScreenController
                                 resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
                                 try
                                 {
-                                    ResourceManager.getInstance().createBusinessObject(resourceType, res_type_id ->
+                                    ResourceManager.getInstance().putObject(resourceType, res_type_id ->
                                     {
                                         if(res_type_id !=null)
                                         {
@@ -362,7 +376,7 @@ public abstract class ScreenController
                                                 //create resource
                                                 try
                                                 {
-                                                    ResourceManager.getInstance().createBusinessObject(resource, res_id ->
+                                                    ResourceManager.getInstance().putObject(resource, res_id ->
                                                     {
                                                         if (res_id != null)
                                                             IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);
@@ -409,7 +423,7 @@ public abstract class ScreenController
                                 resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
                                 try
                                 {
-                                    ResourceManager.getInstance().createBusinessObject(resourceType, res_type_id ->
+                                    ResourceManager.getInstance().putObject(resourceType, res_type_id ->
                                     {
                                         if(res_type_id !=null)
                                         {
@@ -432,7 +446,7 @@ public abstract class ScreenController
                                                 //create resource
                                                 try
                                                 {
-                                                    ResourceManager.getInstance().createBusinessObject(resource, res_id ->
+                                                    ResourceManager.getInstance().putObject(resource, res_id ->
                                                     {
                                                         if (res_id != null)
                                                             IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);
@@ -479,7 +493,7 @@ public abstract class ScreenController
                                 resourceType.setCreator(SessionManager.getInstance().getActive().getUsr());
                                 try
                                 {
-                                    ResourceManager.getInstance().createBusinessObject(resourceType, res_type_id ->
+                                    ResourceManager.getInstance().putObject(resourceType, res_type_id ->
                                     {
                                         if(res_type_id !=null)
                                         {
@@ -502,7 +516,7 @@ public abstract class ScreenController
                                                 //create resource
                                                 try
                                                 {
-                                                    ResourceManager.getInstance().createBusinessObject(resource, res_id ->
+                                                    ResourceManager.getInstance().putObject(resource, res_id ->
                                                     {
                                                         if (res_id != null)
                                                             IO.logAndAlert("Success", "Successfully created new material: " + resource.getResource_description() + "!", IO.TAG_INFO);

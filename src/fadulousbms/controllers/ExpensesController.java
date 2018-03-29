@@ -6,7 +6,6 @@
 package fadulousbms.controllers;
 
 import fadulousbms.auxilary.IO;
-import fadulousbms.auxilary.RadialMenuItemCustom;
 import fadulousbms.managers.*;
 import fadulousbms.model.*;
 import javafx.application.Platform;
@@ -70,18 +69,18 @@ public class ExpensesController extends ScreenController implements Initializabl
 
         //Set up expenses table
         colId.setCellValueFactory(new PropertyValueFactory<>("_id"));
-        CustomTableViewControls.makeEditableTableColumn(colTitle, TextFieldTableCell.forTableColumn(), 100, "expense_title", "/api/expense");
-        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "expense_description", "/api/expense");
-        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 100, "expense_value", "/api/expense");
+        CustomTableViewControls.makeEditableTableColumn(colTitle, TextFieldTableCell.forTableColumn(), 100, "expense_title", ExpenseManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "expense_description", ExpenseManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colValue, TextFieldTableCell.forTableColumn(), 100, "expense_value", ExpenseManager.getInstance());
 
         colSupplier.setMinWidth(120);
         colSupplier.setCellValueFactory(new PropertyValueFactory<>("supplier_id"));
-        colSupplier.setCellFactory(col -> new ComboBoxTableCell(SupplierManager.getInstance().getDataset(), "supplier_id", "/api/expense"));
+        colSupplier.setCellFactory(col -> new ComboBoxTableCell(SupplierManager.getInstance().getDataset(), "supplier_id", "/expense"));
 
-        CustomTableViewControls.makeDatePickerTableColumn(colDateLogged, "date_logged", "/api/expense");
+        CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", false);
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator"));
-        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 100, "account", "/api/expense");
-        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 100, "extra", "/api/expense");
+        CustomTableViewControls.makeEditableTableColumn(colAccount, TextFieldTableCell.forTableColumn(), 100, "account", ExpenseManager.getInstance());
+        CustomTableViewControls.makeEditableTableColumn(colOther, TextFieldTableCell.forTableColumn(), 100, "extra", ExpenseManager.getInstance());
 
         Callback colGenericCellFactory
                 =

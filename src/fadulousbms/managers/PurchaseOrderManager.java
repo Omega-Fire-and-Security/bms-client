@@ -79,11 +79,11 @@ public class PurchaseOrderManager extends BusinessObjectManager
                         {
                             gson = new GsonBuilder().create();
                             ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
-                            headers.add(new AbstractMap.SimpleEntry<>("Cookie", smgr.getActive().getSession_id()));
+                            headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             //Get Timestamp
                             String timestamp_json = RemoteComms
-                                    .sendGetRequest("/timestamp/purchase_orders_timestamp", headers);
+                                    .get("/timestamp/purchase_orders_timestamp", headers);
                             Counters cntr_timestamp = gson.fromJson(timestamp_json, Counters.class);
                             if (cntr_timestamp != null)
                             {
@@ -99,8 +99,8 @@ public class PurchaseOrderManager extends BusinessObjectManager
 
                             if (!isSerialized(ROOT_PATH + filename))
                             {
-                                String purchaseorders_json = RemoteComms.sendGetRequest("/purchaseorders", headers);
-                                PurchaseOrderServerObject purchaseOrderServerObject= gson.fromJson(purchaseorders_json, PurchaseOrderServerObject.class);
+                                String purchaseorders_json = RemoteComms.get("/purchaseorders", headers);
+                                PurchaseOrderServerObject purchaseOrderServerObject = (PurchaseOrderServerObject) PurchaseOrderManager.getInstance().parseJSONobject(purchaseorders_json, new PurchaseOrderServerObject());
                                 if(purchaseOrderServerObject!=null)
                                 {
                                     if(purchaseOrderServerObject.get_embedded()!=null)
@@ -124,8 +124,9 @@ public class PurchaseOrderManager extends BusinessObjectManager
                                         ArrayList<PurchaseOrderItem> purchaseOrderItems = new ArrayList<>();
 
                                         //get po items from server and set them to local object
-                                        String purchase_order_items_json = RemoteComms.sendGetRequest("/purchaseorders/resources/" + po.get_id(), headers);
-                                        PurchaseOrderResourceServerObject purchaseOrderResourceServerObject= gson.fromJson(purchase_order_items_json, PurchaseOrderResourceServerObject.class);
+                                        String purchase_order_items_json = RemoteComms.get("/purchaseorder/resources/" + po.get_id(), headers);
+                                        PurchaseOrderResourceServerObject purchaseOrderResourceServerObject = (PurchaseOrderResourceServerObject) PurchaseOrderManager.getInstance().parseJSONobject(purchase_order_items_json, new PurchaseOrderResourceServerObject());
+                                        //purchaseOrderResourceServerObject = gson.fromJson(purchase_order_items_json, PurchaseOrderResourceServerObject.class);
                                         if(purchaseOrderResourceServerObject!=null)
                                         {
                                             if(purchaseOrderResourceServerObject.get_embedded()!=null)
@@ -137,9 +138,8 @@ public class PurchaseOrderManager extends BusinessObjectManager
                                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources for PO #"+ po.get_id());
                                         } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderResourceServerObject (containing PurchaseOrderResource objects & other metadata) is null");
 
-                                        String purchase_order_assets_json = RemoteComms
-                                                .sendGetRequest("/purchaseorders/assets/" + po.get_id(), headers);
-                                        PurchaseOrderAssetServerObject purchaseOrderAssetServerObject= gson.fromJson(purchase_order_assets_json, PurchaseOrderAssetServerObject.class);
+                                        String purchase_order_assets_json = RemoteComms.get("/purchaseorder/assets/" + po.get_id(), headers);
+                                        PurchaseOrderAssetServerObject purchaseOrderAssetServerObject = (PurchaseOrderAssetServerObject) PurchaseOrderManager.getInstance().parseJSONobject(purchase_order_assets_json, new PurchaseOrderAssetServerObject());
                                         if(purchaseOrderAssetServerObject!=null)
                                         {
                                             if(purchaseOrderAssetServerObject.get_embedded()!=null)
@@ -301,35 +301,37 @@ public class PurchaseOrderManager extends BusinessObjectManager
                 headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
 
                 if(SessionManager.getInstance().getActive()!=null)
-                {
-                    headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
                     headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
-                } else
+                else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
-                FileMetadata fileMetadata = new FileMetadata("purchase_order_"+po.get_id()+".pdf","application/pdf");
-                fileMetadata.setFile(finalBase64_po);
-                HttpURLConnection connection = RemoteComms.postJSON("/purchaseorders/approval_request", fileMetadata.getJSONString(), headers);
+                Metafile metafile = new Metafile("purchase_order_"+po.get_id()+".pdf","application/pdf");
+                metafile.setFile(finalBase64_po);
+                HttpURLConnection connection = RemoteComms.post("/purchaseorder/approval_request", metafile.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         //TODO: CC self
                         IO.logAndAlert("Success", "Successfully requested Purchase Order approval!", IO.TAG_INFO);
+                        //execute callback w/ args
                         if(callback!=null)
-                            callback.call(null);
-                    } else {
-                        IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
-                    }
+                            callback.call(IO.readStream(connection.getInputStream()));
+                        return;
+                    } else IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                     connection.disconnect();
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
             }
+            //execute callback w/o args
+            if(callback!=null)
+                callback.call(null);
         });
 
         //Add form controls vertically on the stage

@@ -1,5 +1,8 @@
 package fadulousbms.managers;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import fadulousbms.auxilary.*;
 import fadulousbms.model.*;
 import javafx.scene.Scene;
@@ -102,6 +105,12 @@ public abstract class BusinessObjectManager implements HSSFListener
         return this.selected;
     }
 
+    /**
+     * Method to deserialize Objects from local disk and load them into memory
+     * @param file_path Path of file to be serialized.
+     * @param obj Object to be serialized to local disk.
+     * @throws IOException
+     */
     public void serialize(String file_path, Object obj) throws IOException
     {
         String path = file_path.substring(0, file_path.lastIndexOf("/")+1);
@@ -125,9 +134,16 @@ public abstract class BusinessObjectManager implements HSSFListener
             out.flush();
             out.close();
             IO.log(getClass().getName(), IO.TAG_INFO, "successfully serialized file["+file.getAbsolutePath()+"] to disk.");
-        }else IO.log(getClass().getName(), IO.TAG_INFO, "file["+file.getAbsolutePath()+"] is already up-to-date.");
+        } else IO.log(getClass().getName(), IO.TAG_INFO, "file["+file.getAbsolutePath()+"] is already up-to-date.");
     }
 
+    /**
+     * Method to deserialize Objects from local disk and load them into memory
+     * @param path Path of serialized file to be deserialized.
+     * @return deserialized Object.
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public Object deserialize(String path) throws IOException, ClassNotFoundException
     {
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(path)));
@@ -137,8 +153,20 @@ public abstract class BusinessObjectManager implements HSSFListener
         return obj;
     }
 
-    public void createBusinessObject(BusinessObject businessObject, Callback callback) throws IOException
+    /**
+     * Method to create new ApplicationObject's on the database server.
+     * @param businessObject ApplicationObject to be created.
+     * @param callback Callback to be executed after completion of request
+     *                 - Server will pass ApplicationObject _id to callback on execution.
+     */
+    public void putObject(BusinessObject businessObject, Callback callback) throws IOException
     {
+        //check if object is valid
+        if(businessObject==null)
+        {
+            IO.logAndAlert("Error", "Object to be created is invalid.", IO.TAG_ERROR);
+            return;
+        }
         //check if active user session is valid
         if(SessionManager.getInstance().getActive()==null)
         {
@@ -154,25 +182,43 @@ public abstract class BusinessObjectManager implements HSSFListener
         //check if user is allowed to create this type of object
         if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < businessObject.getWriteMinRequiredAccessLevel().getLevel())
         {
-            IO.logAndAlert("Error", "You're not authorised to create " + businessObject.getClass().getSimpleName() + " objects.\nPlease ask your administrator for more info.", IO.TAG_ERROR);
+            IO.logAndAlert("Error", "You're not authorised to create " + businessObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
             return;
         }
 
+        //if model's manager is not the same as this instance then ask if that's the user's true intention
+        if(businessObject.getManager() != this)
+        {
+            String proceed = IO.showConfirm("Model manager miss-match", "Object of type " + businessObject.getClass().getName() + "'s manager does not match the current manager " +
+                    "in use ("+this.getClass().getName()+"), do you want to proceed with this action?");
+
+            //did they choose to continue with the creation or cancel?
+            if(!proceed.equals(IO.OK))
+            {
+                IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + businessObject.getClass().getName() + " creation.");
+                return;
+            }
+        }
+
+        //create object on server
         ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
         headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
-        headers.add(new AbstractMap.SimpleEntry<>("Cookie", SessionManager.getInstance().getActive().getSession_id()));
 
-        HttpURLConnection connection = RemoteComms.putJSON(businessObject.apiEndpoint(), businessObject.getJSONString(), headers);
+        HttpURLConnection connection = RemoteComms.put(businessObject.apiEndpoint(), businessObject.getJSONString(), headers);
         if(connection!=null)
         {
             if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
             {
-                IO.log("Success", IO.TAG_INFO, "Successfully created new BusinessObject("+businessObject.getClass().getName()+"): " +businessObject.toString()+"!");
+                IO.log("Success", IO.TAG_INFO, "successfully created new BusinessObject("+businessObject.getClass().getName()+"): " +businessObject.toString()+"!");
+
+                String response = IO.readStream(connection.getInputStream());
+
+                //close connection to server
+                connection.disconnect();
 
                 //refresh model & view after object has been created.
                 forceSynchronise();
 
-                String response = IO.readStream(connection.getInputStream());
                 String new_obj_id = null;
                 if(response!=null)
                 {
@@ -181,7 +227,95 @@ public abstract class BusinessObjectManager implements HSSFListener
                     new_obj_id = new_obj_id.replaceAll("\n","");//strip new line chars
                     new_obj_id = new_obj_id.replaceAll(" ","");//strip whitespace chars
 
-                    IO.log(getClass().getName(), IO.TAG_INFO, "Successfully created BusinessObject("+businessObject.getClass().getName()+")["+new_obj_id+"].");
+                    //update selected object for model manager
+                    if(getDataset()!=null)
+                        if(getDataset().containsKey(new_obj_id))
+                            setSelected(getDataset().get(new_obj_id));
+
+                    //IO.logAndAlert("Success", "Successfully created "+businessObject.getClass().getSimpleName()+"["+new_obj_id+"].", IO.TAG_INFO);
+                } else IO.logAndAlert("Error", businessObject.getClass().getSimpleName() + " not created.\nCould not get a valid response from server on post " + businessObject.getClass().getSimpleName() + " creation.", IO.TAG_ERROR);
+
+                //execute callback
+                if(callback!=null)
+                    callback.call(new_obj_id);
+                return;
+            } else
+            {
+                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+                //close connection to server
+                connection.disconnect();
+            }
+            connection.disconnect();
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "putObject()> Could not get a valid response from the server.");
+        //execute callback w/o args
+        if(callback!=null)
+            callback.call(null);
+    }
+
+    /**
+     * Method to patch/update ApplicationObject's on the database server.
+     * @param businessObject ApplicationObject to be patched.
+     * @param callback Callback to be executed after completion of request
+     *                 - Server will pass ApplicationObject _id to callback on execution.
+     */
+    public void patchObject(BusinessObject businessObject, Callback callback) throws IOException
+    {
+        //check if object is valid
+        if(businessObject==null)
+        {
+            IO.logAndAlert("Error", "Object to be updated is invalid.", IO.TAG_ERROR);
+            return;
+        }
+        //check if active user session is valid
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+        //check if user's session hasn't expired
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+        //check if user is allowed to update this type of object
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < businessObject.getWriteMinRequiredAccessLevel().getLevel())
+        {
+            IO.logAndAlert("Error", "You're not authorised to edit " + businessObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
+            return;
+        }
+
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+
+        HttpURLConnection connection = RemoteComms.post(businessObject.apiEndpoint(), businessObject.getJSONString(), headers);
+        if(connection!=null)
+        {
+            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+            {
+                IO.log("Success", IO.TAG_INFO, "Successfully updated BusinessObject("+businessObject.getClass().getName()+"): " +businessObject.toString()+"!");
+
+                String response = IO.readStream(connection.getInputStream());
+
+                //close connection to server
+                connection.disconnect();
+
+                //refresh model & view after object has been created.
+                forceSynchronise();
+
+                String new_obj_id = businessObject.get_id();
+                if(response!=null)
+                {
+                    //server will return message object in format "object_id"
+                    new_obj_id = response.replaceAll("\"","");//strip inverted commas around object_id
+                    new_obj_id = new_obj_id.replaceAll("\n","");//strip new line chars
+                    new_obj_id = new_obj_id.replaceAll(" ","");//strip whitespace chars
+
+                    //update selected object for model manager
+                    if(getDataset()!=null)
+                        setSelected(getDataset().get(new_obj_id));
+
+                    IO.log(getClass().getName(), IO.TAG_INFO, "Successfully updated BusinessObject("+businessObject.getClass().getName()+")["+new_obj_id+"].");
                 }
                 //execute callback w/ args
                 if(callback!=null)
@@ -190,12 +324,134 @@ public abstract class BusinessObjectManager implements HSSFListener
             } else
             {
                 IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+
+                //close connection to server
+                connection.disconnect();
             }
-            connection.disconnect();
-        }
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "patchObject()> Could not get a valid response from the server.");
         //execute callback w/o args
         if(callback!=null)
             callback.call(null);
+    }
+
+    /**
+     * Method to delete ApplicationObject's from the database server.
+     * @param businessObject ApplicationObject to be deleted.
+     * @param callback Callback to be executed after completion of request
+     *                 - Server will pass ApplicationObject _id to callback on execution.
+     */
+    public void deleteObject(BusinessObject businessObject, Callback callback) throws IOException
+    {
+        //check if object is valid
+        if(businessObject==null)
+        {
+            IO.logAndAlert("Error", "Object to be deleted is invalid.", IO.TAG_ERROR);
+            return;
+        }
+        //check if active user session is valid
+        if(SessionManager.getInstance().getActive()==null)
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+        //check if user's session hasn't expired
+        if(SessionManager.getInstance().getActive().isExpired())
+        {
+            IO.logAndAlert("Session Expired", "No active sessions.", IO.TAG_ERROR);
+            return;
+        }
+        //check if user is allowed to delete this type of object
+        if(SessionManager.getInstance().getActiveEmployee().getAccessLevel() < businessObject.getWriteMinRequiredAccessLevel().getLevel())
+        {
+            IO.logAndAlert("Error", "You're not authorised to delete " + businessObject.getClass().getSimpleName() + " objects.\nPlease consult your administrator for more info.", IO.TAG_ERROR);
+            return;
+        }
+
+        //if model's manager is not the same as this instance then ask if that's the user's true intention
+        if(businessObject.getManager() != this)
+        {
+            String proceed = IO.showConfirm("Model manager miss-match", "Object of type " + businessObject.getClass().getName() + "'s manager does not match the current manager " +
+                    "in use ("+this.getClass().getName()+"), do you want to proceed with this action?");
+
+            //did they choose to continue with the creation or cancel?
+            if(!proceed.equals(IO.OK))
+            {
+                IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + businessObject.getClass().getName() + " deletion.");
+                return;
+            }
+        }
+
+        String proceed = IO.showConfirm("Confirm Deletion", "Are you sure you want to DELETE [" + businessObject.getClass().getSimpleName()+ " "+businessObject.toString()+"] FOREVER.");
+
+        //did they choose to continue with the deletion or cancel?
+        if(!proceed.equals(IO.OK))
+        {
+            IO.log(getClass().getName(), IO.TAG_VERBOSE, "cancelling " + businessObject.getClass().getName() + " deletion.");
+            return;
+        }
+
+        //create object on server
+        ArrayList<AbstractMap.SimpleEntry<String, String>> headers = new ArrayList<>();
+        headers.add(new AbstractMap.SimpleEntry<>("Content-Type", "application/json"));
+
+        HttpURLConnection connection = RemoteComms.delete(businessObject.apiEndpoint(), businessObject.get_id(), headers);
+        if(connection!=null)
+        {
+            if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
+            {
+                IO.log("Success", IO.TAG_INFO, "successfully deleted BusinessObject("+businessObject.getClass().getName()+"): " +businessObject.toString()+"!");
+
+                String response = IO.readStream(connection.getInputStream());
+
+                //close connection to server
+                connection.disconnect();
+
+                //refresh model & view after object has been created.
+                forceSynchronise();
+
+                String new_obj_id = null;
+                if(response!=null)
+                {
+                    //server will return message object in format "object_id"
+                    new_obj_id = response.replaceAll("\"","");//strip inverted commas around object_id
+                    new_obj_id = new_obj_id.replaceAll("\n","");//strip new line chars
+                    new_obj_id = new_obj_id.replaceAll(" ","");//strip whitespace chars
+
+                    //IO.logAndAlert("Success", "Successfully deleted "+businessObject.getClass().getSimpleName()+"["+new_obj_id+"].", IO.TAG_INFO);
+                } else IO.logAndAlert("Error", businessObject.getClass().getSimpleName() + " not deleted.\nCould not get a valid response from server on post " + businessObject.getClass().getSimpleName() + " deletion.", IO.TAG_ERROR);
+
+                //execute callback w/ args
+                if(callback!=null)
+                    callback.call(new_obj_id);
+                return;
+            } else
+                IO.logAndAlert( "ERROR_" + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
+            //close connection to server
+            connection.disconnect();
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "deleteObject()> Could not get a valid response from the server.");
+
+        //execute callback w/o args
+        if(callback!=null)
+            callback.call(null);
+    }
+
+    /**
+     * Method to convert a JSON object to an ApplicationObject.
+     * @param json_object JSON to be parsed.
+     * @param object_type data type of output ApplicationObject
+     * @return ServerObject containing parsed ApplicationObject
+     */
+    public <T extends ServerObject> ServerObject parseJSONobject(String json_object, T object_type)
+    {
+        try
+        {
+            Gson gson = new GsonBuilder().create();
+            return gson.fromJson(json_object, object_type.getClass());
+        }catch (JsonSyntaxException e)
+        {
+            IO.log(getClass().getName()+">parseJSONobject()", IO.TAG_WARN, "Invalid JSON object: " + json_object);
+            return null;
+        }
     }
 
     public void emailBusinessObject(BusinessObject businessObject, String pdf_path, Callback callback) throws IOException
@@ -308,36 +564,40 @@ public abstract class BusinessObjectManager implements HSSFListener
                 headers.add(new AbstractMap.SimpleEntry<>("subject", txt_subject.getText()));
 
                 if(SessionManager.getInstance().getActive()!=null)
-                {
-                    headers.add(new AbstractMap.SimpleEntry<>("session_id", SessionManager.getInstance().getActive().getSession_id()));
                     headers.add(new AbstractMap.SimpleEntry<>("from_name", SessionManager.getInstance().getActiveEmployee().getName()));
-                } else
+                else
                 {
                     IO.logAndAlert( "No active sessions.", "Session expired", IO.TAG_ERROR);
                     return;
                 }
 
-                FileMetadata fileMetadata = new FileMetadata(businessObject.getClass().getSimpleName().toLowerCase()+"_"+businessObject.get_id()+".pdf","application/pdf");
-                fileMetadata.setCreator(SessionManager.getInstance().getActive().getUsr());
-                fileMetadata.setFile(finalBase64_obj);
-                HttpURLConnection connection = RemoteComms.postJSON(businessObject.apiEndpoint()+"/mailto", fileMetadata.getJSONString(), headers);
+                Metafile metafile = new Metafile(businessObject.getClass().getSimpleName().toLowerCase()+"_"+businessObject.get_id()+".pdf","application/pdf");
+                metafile.setCreator(SessionManager.getInstance().getActive().getUsr());
+                metafile.setFile(finalBase64_obj);
+                HttpURLConnection connection = RemoteComms.post(businessObject.apiEndpoint()+"/mailto", metafile.getJSONString(), headers);
                 if(connection!=null)
                 {
                     if(connection.getResponseCode()==HttpURLConnection.HTTP_OK)
                     {
                         //TODO: CC self
                         IO.logAndAlert("Success", "Successfully emailed "+businessObject.getClass().getSimpleName()+"!", IO.TAG_INFO);
+                        //execute callback w/ args
                         if(callback!=null)
-                            callback.call(null);
+                            callback.call(true);
+                        return;
                     } else {
                         IO.logAndAlert( "ERROR " + connection.getResponseCode(),  IO.readStream(connection.getErrorStream()), IO.TAG_ERROR);
                     }
                     connection.disconnect();
-                }
+                } else IO.log(getClass().getName(), IO.TAG_ERROR, "Could not get a valid response from the server.");
             } catch (IOException e)
             {
-                IO.log(getClass().getName(), IO.TAG_ERROR, e.getMessage());
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
             }
+            //execute callback w/o args
+            if(callback!=null)
+                callback.call(null);
         });
 
         //Add form controls vertically on the stage

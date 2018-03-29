@@ -1,5 +1,8 @@
 package fadulousbms.model;
 
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
+
 import java.io.Serializable;
 
 /**
@@ -13,8 +16,14 @@ public class AssetType extends Type implements Serializable
     }
 
     @Override
+    public BusinessObjectManager getManager()
+    {
+        return AssetManager.getInstance();
+    }
+
+    @Override
     public String apiEndpoint()
     {
-        return "/assets/types";
+        return "/asset/type";
     }
 }

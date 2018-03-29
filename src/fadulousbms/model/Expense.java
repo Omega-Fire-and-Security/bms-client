@@ -2,6 +2,10 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
+import fadulousbms.managers.ExpenseManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import java.io.Serializable;
@@ -28,6 +32,12 @@ public class Expense extends BusinessObject implements Serializable
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return ExpenseManager.getInstance();
     }
 
     public String getSupplier()
@@ -89,7 +99,7 @@ public class Expense extends BusinessObject implements Serializable
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -158,6 +168,6 @@ public class Expense extends BusinessObject implements Serializable
     @Override
     public String apiEndpoint()
     {
-        return "/expenses";
+        return "/expense";
     }
 }

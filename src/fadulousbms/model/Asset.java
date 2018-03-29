@@ -3,6 +3,9 @@ package fadulousbms.model;
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -31,6 +34,12 @@ public class Asset extends BusinessObject
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.ADMIN;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return AssetManager.getInstance();
     }
 
     public StringProperty asset_nameProperty(){return new SimpleStringProperty(asset_name);}
@@ -142,7 +151,7 @@ public class Asset extends BusinessObject
     }
 
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         switch (var.toLowerCase())
@@ -214,7 +223,7 @@ public class Asset extends BusinessObject
     @Override
     public String apiEndpoint()
     {
-        return "/assets";
+        return "/asset";
     }
 
     @Override

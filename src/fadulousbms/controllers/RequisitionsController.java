@@ -71,10 +71,10 @@ public class RequisitionsController extends OperationsController implements Init
         colResponsiblePerson.setCellValueFactory(new PropertyValueFactory<>("responsible_person"));
         //colResponsiblePerson.setCellFactory(col -> new ComboBoxTableCell(EmployeeManager.getInstance().getEmployees(), "responsible_person_id", "usr"));
         CustomTableViewControls.makeLabelledDatePickerTableColumn(colDateLogged, "date_logged", false);
-        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "description", "/requisitions");
+        CustomTableViewControls.makeEditableTableColumn(colDescription, TextFieldTableCell.forTableColumn(), 100, "description", RequisitionManager.getInstance());
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
-        //CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", RequisitionManager.TYPES, false,"/requisitions");
-        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/requisitions");
+        //CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", RequisitionManager.TYPES, false,"/requisition");
+        CustomTableViewControls.makeDynamicToggleButtonTableColumn(colStatus,100, "status", new String[]{"0","PENDING","1","APPROVED"}, false,"/requisition");
         colCreator.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
 
         Callback<TableColumn<Requisition, String>, TableCell<Requisition, String>> cellFactory
@@ -127,7 +127,7 @@ public class RequisitionsController extends OperationsController implements Init
                                         IO.logAndAlert("Error " + getClass().getName(), "Requisition object is not set", IO.TAG_ERROR);
                                         return;
                                     }
-                                    if (requisition.getStatus()==BusinessObject.STATUS_APPROVED)
+                                    if (requisition.getStatus()==BusinessObject.STATUS_FINALISED)
                                     {
                                         btnEmail.getStyleClass().add("btnAdd");
                                         btnEmail.setDisable(false);
@@ -217,7 +217,7 @@ public class RequisitionsController extends OperationsController implements Init
                                         quote_reps.add(SessionManager.getInstance().getActiveEmployee());
                                         try
                                         {
-                                            QuoteManager.getInstance().createQuote(quote, null, null, new Callback()
+                                            QuoteManager.getInstance().createQuote(quote, null, new Callback()
                                             {
                                                 @Override
                                                 public Object call(Object param)
@@ -269,11 +269,31 @@ public class RequisitionsController extends OperationsController implements Init
 
                                     btnRemove.setOnAction(event ->
                                     {
-                                        Requisition requisition = getTableView().getItems().get(getIndex());
-                                        getTableView().getItems().remove(requisition);
-                                        getTableView().refresh();
-                                        //TODO: remove from server
-                                        IO.log(getClass().getName(), IO.TAG_INFO, "successfully removed requisition: " + requisition.get_id());
+                                        if(getTableView().getItems().get(getIndex())!=null)
+                                            if(getTableView().getItems().get(getIndex()) instanceof Requisition)
+                                                RequisitionManager.getInstance().setSelected(getTableView().getItems().get(getIndex()));
+
+                                        try
+                                        {
+                                            //remove Requisition from remote server
+                                            RequisitionManager.getInstance().deleteObject(RequisitionManager.getInstance().getSelected(), requisition_id->
+                                            {
+                                                if(requisition_id != null)
+                                                {
+                                                    IO.logAndAlert("Success", "Successfully deleted requisition [#" + RequisitionManager.getInstance().getSelected().getObject_number() + "]{"+requisition_id+"}", IO.TAG_INFO);
+                                                    //remove Requisition from memory
+                                                    RequisitionManager.getInstance().getDataset().remove(RequisitionManager.getInstance().getSelected());
+                                                    //remove Requisition from table
+                                                    tblRequisitions.getItems().remove(RequisitionManager.getInstance().getSelected());
+                                                    tblRequisitions.refresh();//update table
+                                                } else IO.logAndAlert("Error", "Could not delete requisition [#"+RequisitionManager.getInstance().getSelected().getObject_number()+"]", IO.TAG_ERROR);
+                                                return null;
+                                            });
+                                        } catch (IOException e)
+                                        {
+                                            IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                                            e.printStackTrace();
+                                        }
                                     });
 
                                     hBox.setFillHeight(true);

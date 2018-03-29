@@ -90,9 +90,7 @@ public class NavController extends ScreenController implements Initializable
                     user_name.setCache(false);
                     //Render user name
                     Employee e = EmployeeManager.getInstance().getDataset().get(SessionManager.getInstance().getActive().getUsr());//SessionManager.getInstance().getActiveEmployee();
-                    System.out.println("########"+e.getName());
                     if (e != null)
-                        //this.getUserNameLabel().setText(e.getName());
                         user_name.setText(e.getName());
                     else IO.log(getClass().getName(), IO.TAG_ERROR, "No active sessions.");
                 }

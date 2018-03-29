@@ -7,6 +7,9 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
 import fadulousbms.auxilary.IO;
+import fadulousbms.exceptions.ParseException;
+import fadulousbms.managers.AssetManager;
+import fadulousbms.managers.BusinessObjectManager;
 import fadulousbms.managers.JobManager;
 import fadulousbms.managers.TaskManager;
 import javafx.beans.property.SimpleStringProperty;
@@ -27,7 +30,6 @@ public class Task extends BusinessObject
     private String description;
     private String location;
     private int status;
-    private String assignees;
 
     @Override
     public AccessLevel getReadMinRequiredAccessLevel()
@@ -39,6 +41,12 @@ public class Task extends BusinessObject
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
         return AccessLevel.STANDARD;
+    }
+
+    @Override
+    public BusinessObjectManager getManager()
+    {
+        return TaskManager.getInstance();
     }
 
     //Getters and setters
@@ -79,7 +87,7 @@ public class Task extends BusinessObject
 
     public boolean isCompleted()
     {
-        return (date_completed>0 && status==STATUS_APPROVED);
+        return (date_completed>0 && status== STATUS_FINALISED);
     }
 
     public int getStatus()
@@ -139,19 +147,23 @@ public class Task extends BusinessObject
     }
 
     /**
-     * @return Array of Employees assigned to a Job object.
+     * @return HashMap of Employees assigned to this Task.
      */
-    public String getAssignees()
+    public HashMap<String, Employee> getAssignees()
     {
-        return assignees;
-    }
-
-    /**
-     * @param assignees Array of Employees to be assigned to a Job object.
-     */
-    public void setAssignees(String assignees)
-    {
-        this.assignees=assignees;
+        Job job = getJob();
+        if(job!=null)
+        {
+            if (job.getAssigned_employees() != null)
+            {
+                HashMap<String, Employee> taskEmployeesMap = new HashMap<>();
+                for (JobEmployee job_employee : job.getAssigned_employees().values())
+                    if(get_id().equals(job_employee.getTask_id()))
+                        taskEmployeesMap.put(job_employee.getUsr(), job_employee.getEmployee());
+                return taskEmployeesMap;
+            } else IO.logAndAlert("Error", "No employees have been assigned to this job", IO.TAG_WARN);
+        } else IO.logAndAlert("Error", "Could not find a job for this task", IO.TAG_WARN);
+        return null;
     }
 
     //Properties
@@ -173,7 +185,7 @@ public class Task extends BusinessObject
      * @param val Model attribute value to be set.
      */
     @Override
-    public void parse(String var, Object val)
+    public void parse(String var, Object val) throws ParseException
     {
         super.parse(var, val);
         try
@@ -203,10 +215,6 @@ public class Task extends BusinessObject
                     break;
                 case "location":
                     location = (String)val;
-                    break;
-                case "assigned_employees":
-                case "assignees":
-                    assignees = (String) val;
                     break;
                 default:
                     IO.log(getClass().getName(), IO.TAG_ERROR, "unknown "+getClass().getName()+" attribute '" + var + "'.");
@@ -268,13 +276,20 @@ public class Task extends BusinessObject
             json_obj+=",\"date_started\":\""+date_started+"\"";
         if(date_completed>0)
             json_obj+=",\"date_completed\":\""+date_completed+"\"";
-        if(assignees!=null)
-            json_obj+=",\"assignees\":\""+assignees+"\"";
         if(location!=null)
             json_obj+=",\"location\":\""+getLocation()+"\"";
         json_obj+="}";
 
         return json_obj;
+    }
+
+    @Override
+    public String toString()
+    {
+        String str = "#" + getObject_number() + " " + getDescription();
+        if(getJob()!=null)
+            str += ", for job " + getJob().toString();
+        return str;
     }
 
     /**
@@ -283,6 +298,6 @@ public class Task extends BusinessObject
     @Override
     public String apiEndpoint()
     {
-        return "/tasks";
+        return "/task";
     }
 }

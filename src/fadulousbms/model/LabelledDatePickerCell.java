@@ -2,10 +2,12 @@ package fadulousbms.model;
 
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
+import fadulousbms.exceptions.ParseException;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -84,9 +86,23 @@ public class LabelledDatePickerCell extends TableCell<BusinessObject, Long>
         BusinessObject bo = (BusinessObject) getTableRow().getItem();
         if(bo!=null)
         {
-            bo.parse(property, newValue);
-            RemoteComms.updateBusinessObjectOnServer(bo, property);
-        }else IO.log(getClass().getName(), IO.TAG_WARN, "TableRow BusinessObject is null.");
+            try
+            {
+                //RemoteComms.updateBusinessObjectOnServer(bo, property);
+                bo.parse(property, newValue);
+                if(bo.getManager()!=null)
+                    bo.getManager().patchObject(bo, null);
+                else IO.logAndAlert("Error", "Model " + bo.getClass().getSimpleName() + " has no valid manager.", IO.TAG_ERROR);
+            } catch (ParseException e)
+            {
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
+            } catch (IOException e)
+            {
+                IO.logAndAlert("Error", e.getMessage(), IO.TAG_ERROR);
+                e.printStackTrace();
+            }
+        } else IO.log(getClass().getName(), IO.TAG_WARN, "TableRow BusinessObject is null.");
     }
 
     @Override
