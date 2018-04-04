@@ -94,7 +94,7 @@ public class LeaveManager extends ApplicationObjectManager
                             if (!isSerialized(ROOT_PATH + filename))
                             {
                                 String leave_records_json = RemoteComms.get("/leave_applications", headers);
-                                LeaveServerObject leaveServerObject = (LeaveServerObject) LeaveManager.getInstance().parseJSONobject(leave_records_json, new LeaveServerObject());
+                                LeaveServerResponseObject leaveServerObject = (LeaveServerResponseObject) LeaveManager.getInstance().parseJSONobject(leave_records_json, new LeaveServerResponseObject());
                                 if (leaveServerObject != null)
                                 {
                                     if(leaveServerObject.get_embedded()!=null)
@@ -728,7 +728,7 @@ public class LeaveManager extends ApplicationObjectManager
             callback.call(null);
     }
 
-    class LeaveServerObject extends ServerObject
+    class LeaveServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

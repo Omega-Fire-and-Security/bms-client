@@ -291,7 +291,7 @@ public class SupplierManager extends ApplicationObjectManager
                             if (!isSerialized(ROOT_PATH + filename))
                             {
                                 String suppliers_json = RemoteComms.get("/suppliers", headers);
-                                SupplierServerObject supplierServerObject = (SupplierServerObject) SupplierManager.getInstance().parseJSONobject(suppliers_json, new SupplierServerObject());
+                                SupplierServerResponseObject supplierServerObject = (SupplierServerResponseObject) SupplierManager.getInstance().parseJSONobject(suppliers_json, new SupplierServerResponseObject());
                                 if (supplierServerObject != null)
                                 {
                                     if (supplierServerObject.get_embedded() != null)
@@ -303,7 +303,7 @@ public class SupplierManager extends ApplicationObjectManager
                                     } else
                                         IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Suppliers in the database");
                                 } else
-                                    IO.log(getClass().getName(), IO.TAG_ERROR, "SupplierServerObject (containing Supplier objects & other metadata) is null");
+                                    IO.log(getClass().getName(), IO.TAG_ERROR, "SupplierServerResponseObject (containing Supplier objects & other metadata) is null");
 
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of suppliers.");
                                 serialize(ROOT_PATH + filename, suppliers);
@@ -336,16 +336,16 @@ public class SupplierManager extends ApplicationObjectManager
         };
     }
 
-    class SupplierServerObject extends ServerObject
+    class SupplierServerResponseObject extends ServerResponseObject
     {
-        private SupplierServerObject.Embedded _embedded;
+        private SupplierServerResponseObject.Embedded _embedded;
 
-        SupplierServerObject.Embedded get_embedded()
+        SupplierServerResponseObject.Embedded get_embedded()
         {
             return _embedded;
         }
 
-        void set_embedded(SupplierServerObject.Embedded _embedded)
+        void set_embedded(SupplierServerResponseObject.Embedded _embedded)
         {
             this._embedded = _embedded;
         }

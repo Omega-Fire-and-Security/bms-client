@@ -28,17 +28,15 @@ public class Client extends ApplicationObject implements Serializable
     private String fax;
     private String contact_email;
     private String registration_number;
-    private String vat_number;
+    private String tax_number;
     private String account_name;
     private long date_partnered;
     private String website;
     private boolean active;
     private Job[] jobs;
+    public static final String INTERNAL = "INTERNAL";
 
     //Read/Write permissions
-    //public static final int READ_MIN_ACCESS_LEVEL = AccessLevel.STANDARD.getLevel();
-    //public static final int WRITE_MIN_ACCESS_LEVEL = AccessLevel.ADMIN.getLevel();
-
     @Override
     public AccessLevel getReadMinRequiredAccessLevel()
     {
@@ -48,7 +46,7 @@ public class Client extends ApplicationObject implements Serializable
     @Override
     public AccessLevel getWriteMinRequiredAccessLevel()
     {
-        return AccessLevel.ADMIN;
+        return AccessLevel.STANDARD;
     }
 
     @Override
@@ -62,9 +60,10 @@ public class Client extends ApplicationObject implements Serializable
         return client_name;
     }
 
-    public void setClient_name(String client_name)
+    public Client setClient_name(String client_name)
     {
         this.client_name = client_name;
+        return this;
     }
 
     public String getPhysical_address()
@@ -72,9 +71,10 @@ public class Client extends ApplicationObject implements Serializable
         return physical_address;
     }
 
-    public void setPhysical_address(String physical_address)
+    public Client setPhysical_address(String physical_address)
     {
         this.physical_address = physical_address;
+        return this;
     }
 
     public String getPostal_address()
@@ -82,9 +82,10 @@ public class Client extends ApplicationObject implements Serializable
         return postal_address;
     }
 
-    public void setPostal_address(String postal_address)
+    public Client setPostal_address(String postal_address)
     {
         this.postal_address = postal_address;
+        return this;
     }
 
     public String getTel()
@@ -92,9 +93,10 @@ public class Client extends ApplicationObject implements Serializable
         return tel;
     }
 
-    public void setTel(String tel)
+    public Client setTel(String tel)
     {
         this.tel = tel;
+        return this;
     }
 
     public String getFax()
@@ -102,9 +104,10 @@ public class Client extends ApplicationObject implements Serializable
         return fax;
     }
 
-    public void setFax(String fax)
+    public Client setFax(String fax)
     {
         this.fax = fax;
+        return this;
     }
 
     public String getContact_email()
@@ -112,9 +115,10 @@ public class Client extends ApplicationObject implements Serializable
         return contact_email;
     }
 
-    public void setContact_email(String contact_email)
+    public Client setContact_email(String contact_email)
     {
         this.contact_email = contact_email;
+        return this;
     }
 
     public Job[] getJobs()
@@ -122,19 +126,15 @@ public class Client extends ApplicationObject implements Serializable
         return jobs;
     }
 
-    public void setJobs(Job[] jobs)
-    {
-        this.jobs = jobs;
-    }
-
     public boolean isActive()
     {
         return active;
     }
 
-    public void setActive(boolean active)
+    public Client setActive(boolean active)
     {
         this.active = active;
+        return this;
     }
 
     public long getDate_partnered()
@@ -142,9 +142,10 @@ public class Client extends ApplicationObject implements Serializable
         return date_partnered;
     }
 
-    public void setDate_partnered(long date_partnered)
+    public Client setDate_partnered(long date_partnered)
     {
         this.date_partnered = date_partnered;
+        return this;
     }
 
     public String getWebsite()
@@ -152,9 +153,10 @@ public class Client extends ApplicationObject implements Serializable
         return website;
     }
 
-    public void setWebsite(String website)
+    public Client setWebsite(String website)
     {
         this.website = website;
+        return this;
     }
 
     public String getRegistration_number()
@@ -162,19 +164,21 @@ public class Client extends ApplicationObject implements Serializable
         return registration_number;
     }
 
-    public void setRegistration_number(String registration_number)
+    public Client setRegistration_number(String registration_number)
     {
         this.registration_number = registration_number;
+        return this;
     }
 
-    public String getVat_number()
+    public String getTax_number()
     {
-        return vat_number;
+        return tax_number;
     }
 
-    public void setVat_number(String vat_number)
+    public Client setTax_number(String tax_number)
     {
-        this.vat_number = vat_number;
+        this.tax_number = tax_number;
+        return this;
     }
 
     public String getAccount_name()
@@ -182,9 +186,10 @@ public class Client extends ApplicationObject implements Serializable
         return account_name;
     }
 
-    public void setAccount_name(String account_name)
+    public Client setAccount_name(String account_name)
     {
         this.account_name = account_name;
+        return this;
     }
 
     //model properties
@@ -207,7 +212,7 @@ public class Client extends ApplicationObject implements Serializable
 
     public StringProperty registration_numberProperty(){return new SimpleStringProperty(getRegistration_number());}
 
-    public StringProperty vat_numberProperty(){return new SimpleStringProperty(getVat_number());}
+    public StringProperty tax_numberProperty(){return new SimpleStringProperty(getTax_number());}
 
     public StringProperty account_nameProperty(){return new SimpleStringProperty(getAccount_name()==null?"N/A":getAccount_name());}
 
@@ -240,8 +245,8 @@ public class Client extends ApplicationObject implements Serializable
                 case "registration_number":
                     setRegistration_number((String) val);
                     break;
-                case "vat_number":
-                    setVat_number((String) val);
+                case "tax_number":
+                    setTax_number((String) val);
                     break;
                 case "account_name":
                     setAccount_name((String)val);
@@ -284,8 +289,8 @@ public class Client extends ApplicationObject implements Serializable
                 return getContact_email();
             case "registration_number":
                 return getRegistration_number();
-            case "vat_number":
-                return getVat_number();
+            case "tax_number":
+                return getTax_number();
             case "account_name":
                 return getAccount_name();
             case "date_partnered":
@@ -312,7 +317,7 @@ public class Client extends ApplicationObject implements Serializable
                 +",\"website\":\""+getWebsite()+"\""
                 +",\"account_name\":\""+getAccount_name()+"\""
                 +",\"registration_number\":\""+getRegistration_number()+"\""
-                +",\"vat_number\":\""+getVat_number()+"\"";
+                +",\"tax_number\":\""+ getTax_number()+"\"";
         if(getDate_partnered()>0)
             json_obj+=",\"date_partnered\":\""+getDate_partnered()+"\"";
         json_obj+="}";

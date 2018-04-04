@@ -121,7 +121,7 @@ public class ViewQuoteController extends QuoteController
             //cbxAccount.setValue(QuoteManager.getInstance().getSelectedQuote().getAccount_name());
             txtSite.setText(selected.getSitename());
             txtRequest.setText(selected.getRequest());
-            //txtVat.setText(String.valueOf(selected.getVat_number()));
+            //txtVat.setText(String.valueOf(selected.getTax_number()));
 
             try
             {

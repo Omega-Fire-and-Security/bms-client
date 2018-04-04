@@ -97,7 +97,7 @@ public class ClientManager extends ApplicationObjectManager
                             if (!isSerialized(ROOT_PATH + filename))
                             {
                                 String clients_json_object = RemoteComms.get("/clients", headers);
-                                ClientServerObject clientServerObject = (ClientServerObject) ClientManager.getInstance().parseJSONobject(clients_json_object, new ClientServerObject());
+                                ClientServerResponseObject clientServerObject = (ClientServerResponseObject) ClientManager.getInstance().parseJSONobject(clients_json_object, new ClientServerResponseObject());
                                 if(clientServerObject!=null)
                                 {
                                     if(clientServerObject.get_embedded()!=null)
@@ -106,11 +106,9 @@ public class ClientManager extends ApplicationObjectManager
 
                                         clients = new HashMap<>();
                                         for (Client client : clients_arr)
-                                        {
                                             clients.put(client.get_id(), client);
-                                        }
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Clients in database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ClientServerObject (containing Client objects & other metadata) is null");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ClientServerResponseObject (containing Client objects & other metadata) is null");
 
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of clients.");
                                 serialize(ROOT_PATH + filename, clients);
@@ -267,7 +265,7 @@ public class ClientManager extends ApplicationObjectManager
                         txt_postal_address.setText(((Client)getSelected()).getRegistration_number());
                     if(((Client)getSelected()).getRegistration_number()!=null)
                         txt_client_reg.setText(((Client)getSelected()).getRegistration_number());
-                    if(((Client)getSelected()).getVat_number()!=null)
+                    if(((Client)getSelected()).getTax_number()!=null)
                         txt_client_vat.setText(((Client)getSelected()).getRegistration_number());
                     if(((Client)getSelected()).getAccount_name()!=null)
                         txt_client_account.setText(((Client)getSelected()).getAccount_name());
@@ -346,7 +344,7 @@ public class ClientManager extends ApplicationObjectManager
                 client.setTel(txt_tel.getText());
                 client.setContact_email(txt_contact_email.getText());
                 client.setRegistration_number(txt_client_reg.getText());
-                client.setVat_number(txt_client_vat.getText());
+                client.setTax_number(txt_client_vat.getText());
                 client.setAccount_name(txt_client_account.getText());
                 client.setDate_partnered(date_partnered_in_sec);
                 client.setWebsite(txt_website.getText());
@@ -373,7 +371,7 @@ public class ClientManager extends ApplicationObjectManager
         });
     }
 
-    class ClientServerObject extends ServerObject
+    class ClientServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

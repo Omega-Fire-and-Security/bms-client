@@ -93,7 +93,7 @@ public abstract class ApplicationObjectManager implements HSSFListener
 
     abstract Callback getSynchronisationCallback();
 
-    public abstract HashMap<String, ? extends ApplicationObject> getDataset();
+    public abstract HashMap<?, ? extends ApplicationObject> getDataset();
 
     public void setSelected(ApplicationObject selected)
     {
@@ -439,18 +439,18 @@ public abstract class ApplicationObjectManager implements HSSFListener
      * Method to convert a JSON object to an ApplicationObject.
      * @param json_object JSON to be parsed.
      * @param object_type data type of output ApplicationObject
-     * @return ServerObject containing parsed ApplicationObject
+     * @return ServerResponseObject containing parsed ApplicationObject
      */
-    public <T extends ServerObject> ServerObject parseJSONobject(String json_object, T object_type)
+    public <T extends ServerResponseObject> ServerResponseObject parseJSONobject(String json_object, T object_type)
     {
         try
         {
             Gson gson = new GsonBuilder().create();
             return gson.fromJson(json_object, object_type.getClass());
-        }catch (JsonSyntaxException e)
+        } catch (JsonSyntaxException e)
         {
             IO.log(getClass().getName()+">parseJSONobject()", IO.TAG_WARN, "Invalid JSON object: " + json_object);
-            IO.logAndAlert("Error", json_object, IO.TAG_WARN);
+            //IO.logAndAlert("Error", json_object, IO.TAG_WARN);
             return null;
         }
     }

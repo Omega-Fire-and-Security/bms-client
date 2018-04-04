@@ -101,7 +101,7 @@ public class AssetManager extends ApplicationObjectManager
                     if(!isSerialized(ROOT_PATH+filename) || !isSerialized(ROOT_PATH+"asset_types.dat"))
                     {
                         String assets_json = RemoteComms.get("/assets", headers);
-                        AssetServerObject assetServerObject = (AssetServerObject) AssetManager.getInstance().parseJSONobject(assets_json, new AssetServerObject());
+                        AssetServerResponseObject assetServerObject = (AssetServerResponseObject) AssetManager.getInstance().parseJSONobject(assets_json, new AssetServerResponseObject());
                         if(assetServerObject!=null)
                         {
                             if(assetServerObject.get_embedded()!=null)
@@ -112,10 +112,10 @@ public class AssetManager extends ApplicationObjectManager
                                 for (Asset asset : assets_arr)
                                     assets.put(asset.get_id(), asset);
                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Assets in database.");
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "AssetServerObject (containing Asset objects & other metadata) is null");
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "AssetServerResponseObject (containing Asset objects & other metadata) is null");
 
                         String asset_types_json = RemoteComms.get("/assets/types", headers);
-                        AssetTypeServerObject assetTypeServerObject = (AssetTypeServerObject) AssetManager.getInstance().parseJSONobject(asset_types_json, new AssetTypeServerObject());
+                        AssetTypeServerResponseObject assetTypeServerObject = (AssetTypeServerResponseObject) AssetManager.getInstance().parseJSONobject(asset_types_json, new AssetTypeServerResponseObject());
                         if(assetTypeServerObject!=null)
                         {
                             if(assetTypeServerObject.get_embedded()!=null)
@@ -126,7 +126,7 @@ public class AssetManager extends ApplicationObjectManager
                                 for (AssetType assetType : asset_types_arr)
                                     asset_types.put(assetType.get_id(), assetType);
                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Asset Types in the database.");
-                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "AssetTypeServerObject (containing AssetType objects & other metadata) is null");
+                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "AssetTypeServerResponseObject (containing AssetType objects & other metadata) is null");
 
                         IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of assets.");
 
@@ -601,7 +601,7 @@ public class AssetManager extends ApplicationObjectManager
         stage.setResizable(true);
     }
 
-    class AssetServerObject extends ServerObject
+    class AssetServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 
@@ -631,7 +631,7 @@ public class AssetManager extends ApplicationObjectManager
         }
     }
 
-    class AssetTypeServerObject extends ServerObject
+    class AssetTypeServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

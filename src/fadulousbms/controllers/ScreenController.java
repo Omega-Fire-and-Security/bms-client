@@ -108,6 +108,17 @@ public abstract class ScreenController
     }
 
     @FXML
+    public void newTimesheetActivity()
+    {
+        TimesheetManager.getInstance().newActivityPopOver(ScreenManager.getInstance(), activity_id ->
+        {
+            new Thread(() ->
+                               refreshModel(cb->{Platform.runLater(() -> refreshView());return null;})).start();
+            return null;
+        });
+    }
+
+    @FXML
     public static void showLogin()
     {
         try
@@ -308,7 +319,7 @@ public abstract class ScreenController
                                 client.setPostal_address("");
                                 client.setPhysical_address("");
                                 client.setRegistration_number("");
-                                client.setVat_number("");
+                                client.setTax_number("");
 
                                 IO.log(getClass().getName(),IO.TAG_INFO, "############new Client"+client.getJSONString());
 

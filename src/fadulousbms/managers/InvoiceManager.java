@@ -90,7 +90,7 @@ public class InvoiceManager extends ApplicationObjectManager
                             if(!isSerialized(ROOT_PATH+filename))
                             {
                                 String invoices_json = RemoteComms.get("/invoices", headers);
-                                InvoiceServerObject invoiceServerObject = (InvoiceServerObject) InvoiceManager.getInstance().parseJSONobject(invoices_json, new InvoiceServerObject());
+                                InvoiceServerResponseObject invoiceServerObject = (InvoiceServerResponseObject) InvoiceManager.getInstance().parseJSONobject(invoices_json, new InvoiceServerResponseObject());
                                 if(invoiceServerObject!=null)
                                 {
                                     if(invoiceServerObject.get_embedded()!=null)
@@ -100,7 +100,7 @@ public class InvoiceManager extends ApplicationObjectManager
                                         for (Invoice invoice : invoices_arr)
                                             invoices.put(invoice.get_id(), invoice);
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Invoices in the database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "InvoiceServerObject (containing Invoice objects & other metadata) is null");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "InvoiceServerResponseObject (containing Invoice objects & other metadata) is null");
 
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of invoices.");
                                 serialize(ROOT_PATH+filename, invoices);
@@ -301,16 +301,16 @@ public class InvoiceManager extends ApplicationObjectManager
         stage.setResizable(true);
     }
 
-    class InvoiceServerObject extends ServerObject
+    class InvoiceServerResponseObject extends ServerResponseObject
     {
-        private InvoiceServerObject.Embedded _embedded;
+        private InvoiceServerResponseObject.Embedded _embedded;
 
-        InvoiceServerObject.Embedded get_embedded()
+        InvoiceServerResponseObject.Embedded get_embedded()
         {
             return _embedded;
         }
 
-        void set_embedded(InvoiceServerObject.Embedded _embedded)
+        void set_embedded(InvoiceServerResponseObject.Embedded _embedded)
         {
             this._embedded = _embedded;
         }

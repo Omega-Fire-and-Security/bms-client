@@ -138,7 +138,7 @@ public class ResourceManager extends ApplicationObjectManager
                             if (!isSerialized(ROOT_PATH + filename) || !isSerialized(ROOT_PATH + "resource_types.dat"))
                             {
                                 String resources_json = RemoteComms.get("/resources", headers);
-                                ResourceServerObject resources_server_object = (ResourceServerObject) ResourceManager.getInstance().parseJSONobject(resources_json, new ResourceServerObject());
+                                ResourceServerResponseObject resources_server_object = (ResourceServerResponseObject) ResourceManager.getInstance().parseJSONobject(resources_json, new ResourceServerResponseObject());
 
                                 if(resources_server_object!=null)
                                 {
@@ -159,11 +159,11 @@ public class ResourceManager extends ApplicationObjectManager
                                             }
                                         } else IO.log(getClass().getName(), IO.TAG_WARN, "no resources found in database.");
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources in database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceServerObject (containing Resource objects & other metadata) is null");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceServerResponseObject (containing Resource objects & other metadata) is null");
 
 
                                 String resource_types_json = RemoteComms.get("/resources/types", headers);
-                                ResourceTypeServerObject resourceTypeServerObject = (ResourceTypeServerObject) ResourceManager.getInstance().parseJSONobject(resource_types_json, new ResourceTypeServerObject());
+                                ResourceTypeServerResponseObject resourceTypeServerObject = (ResourceTypeServerResponseObject) ResourceManager.getInstance().parseJSONobject(resource_types_json, new ResourceTypeServerResponseObject());
                                 if(resourceTypeServerObject!=null)
                                 {
                                     if(resourceTypeServerObject.get_embedded()!=null)
@@ -175,7 +175,7 @@ public class ResourceManager extends ApplicationObjectManager
                                         for (ResourceType resource_type : resource_types_arr)
                                             resource_types.put(resource_type.get_id(), resource_type);
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resource Types in the database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceTypeServerObject (containing ResourceType objects & other metadata) is null");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ResourceTypeServerResponseObject (containing ResourceType objects & other metadata) is null");
 
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of materials.");
 
@@ -825,16 +825,16 @@ public class ResourceManager extends ApplicationObjectManager
         stage.show();
     }
 
-    class ResourceServerObject extends ServerObject
+    class ResourceServerResponseObject extends ServerResponseObject
     {
-        private ResourceServerObject.Embedded _embedded;
+        private ResourceServerResponseObject.Embedded _embedded;
 
-        ResourceServerObject.Embedded get_embedded()
+        ResourceServerResponseObject.Embedded get_embedded()
         {
             return _embedded;
         }
 
-        void set_embedded(ResourceServerObject.Embedded _embedded)
+        void set_embedded(ResourceServerResponseObject.Embedded _embedded)
         {
             this._embedded = _embedded;
         }
@@ -855,7 +855,7 @@ public class ResourceManager extends ApplicationObjectManager
         }
     }
 
-    class ResourceTypeServerObject extends ServerObject
+    class ResourceTypeServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

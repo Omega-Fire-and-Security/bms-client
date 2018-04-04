@@ -113,7 +113,7 @@ public class JobManager extends ApplicationObjectManager
                             {
                                 //Load Job objects from server
                                 String jobs_json = RemoteComms.get("/jobs", headers);
-                                JobServerObject jobServerObject = (JobServerObject) JobManager.getInstance().parseJSONobject(jobs_json, new JobServerObject());
+                                JobServerResponseObject jobServerObject = (JobServerResponseObject) JobManager.getInstance().parseJSONobject(jobs_json, new JobServerResponseObject());
                                 if (jobServerObject != null)
                                 {
                                     if (jobServerObject.get_embedded() != null)
@@ -127,7 +127,7 @@ public class JobManager extends ApplicationObjectManager
                                 } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Jobs in the database.");
 
                                 String job_employees_json = RemoteComms.get("/jobs/employees", headers);
-                                JobEmployeeServerObject jobEmployeeServerObject = (JobEmployeeServerObject) JobManager.getInstance().parseJSONobject(job_employees_json, new JobEmployeeServerObject());
+                                JobEmployeeServerResponseObject jobEmployeeServerObject = (JobEmployeeServerResponseObject) JobManager.getInstance().parseJSONobject(job_employees_json, new JobEmployeeServerResponseObject());
                                 if (jobEmployeeServerObject != null)
                                 {
                                     if (jobEmployeeServerObject.get_embedded() != null)
@@ -162,7 +162,7 @@ public class JobManager extends ApplicationObjectManager
                                     {
                                         //Load JobEmployee objects using Job_id
                                         String job_employees_json = RemoteComms.get("/jobs/employees/" + job.get_id(), headers);
-                                        JobEmployeeServerObject jobEmployeeServerObject = gson.fromJson(job_employees_json, JobEmployeeServerObject.class);
+                                        JobEmployeeServerResponseObject jobEmployeeServerObject = gson.fromJson(job_employees_json, JobEmployeeServerResponseObject.class);
                                         if (jobEmployeeServerObject != null)
                                         {
                                             if(jobEmployeeServerObject.get_embedded()!=null)
@@ -188,7 +188,7 @@ public class JobManager extends ApplicationObjectManager
                                             } else IO.log(getClass()
                                                     .getName(), IO.TAG_WARN, "could not load assigned Employees for job #"
                                                     + job.get_id()+". Could not find any JobEmployee documents in collection.");
-                                        } else IO.log(getClass().getName(), IO.TAG_WARN, "invalid JobEmployeeServerObject for Job#"+job.get_id());
+                                        } else IO.log(getClass().getName(), IO.TAG_WARN, "invalid JobEmployeeServerResponseObject for Job#"+job.get_id());
                                     }
                                 } else IO.log(getClass().getName(), IO.TAG_WARN, "could not find any Jobs in the database.");*/
 
@@ -619,9 +619,9 @@ public class JobManager extends ApplicationObjectManager
         }else IO.logAndAlert("Error: Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
-    class JobServerObject extends ServerObject
+    class JobServerResponseObject extends ServerResponseObject
     {
-        private JobServerObject.Embedded _embedded;
+        private JobServerResponseObject.Embedded _embedded;
 
         Embedded get_embedded()
         {
@@ -649,7 +649,7 @@ public class JobManager extends ApplicationObjectManager
         }
     }
 
-    class JobEmployeeServerObject extends ServerObject
+    class JobEmployeeServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

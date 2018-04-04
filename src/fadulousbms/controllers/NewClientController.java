@@ -177,7 +177,7 @@ public class NewClientController extends ScreenController implements Initializab
         client.setDate_partnered(datePartnered.getValue().atStartOfDay(ZoneId.systemDefault()).toEpochSecond());
         client.setWebsite(txtWebsite.getText());
         client.setRegistration_number(txtRegistration.getText());
-        client.setVat_number(txtVat.getText());
+        client.setTax_number(txtVat.getText());
         client.setAccount_name(txtAccount.getText());
         client.setActive(cbxActive.isSelected());
         client.setCreator(SessionManager.getInstance().getActive().getUsr());

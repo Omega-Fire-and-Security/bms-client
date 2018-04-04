@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.Counters;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
-import fadulousbms.auxilary.ServerObject;
+import fadulousbms.auxilary.ServerResponseObject;
 import fadulousbms.model.*;
 import javafx.util.Callback;
 
@@ -81,7 +81,7 @@ public class ExpenseManager extends ApplicationObjectManager
                             {
                                 //Load Expenses
                                 String expenses_json = RemoteComms.get("/expenses", headers);
-                                ExpenseServerObject expenseServerObject = (ExpenseServerObject) ExpenseManager.getInstance().parseJSONobject(expenses_json, new ExpenseServerObject());
+                                ExpenseServerResponseObject expenseServerObject = (ExpenseServerResponseObject) ExpenseManager.getInstance().parseJSONobject(expenses_json, new ExpenseServerResponseObject());
 
                                 if (expenseServerObject != null)
                                 {
@@ -93,7 +93,7 @@ public class ExpenseManager extends ApplicationObjectManager
                                         for (Expense expense : expenses_arr)
                                             expenses.put(expense.get_id(), expense);
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Expenses in the database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ExpenseServerObject (containing Expense objects & other metadata) is null");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "ExpenseServerResponseObject (containing Expense objects & other metadata) is null");
 
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of expenses.");
                                 serialize(ROOT_PATH + filename, expenses);
@@ -124,7 +124,7 @@ public class ExpenseManager extends ApplicationObjectManager
         return expenses;
     }
 
-    class ExpenseServerObject extends ServerObject
+    class ExpenseServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

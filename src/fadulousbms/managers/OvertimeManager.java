@@ -87,7 +87,7 @@ public class OvertimeManager extends ApplicationObjectManager
                             if (!isSerialized(ROOT_PATH + filename))
                             {
                                 String overtime_records_json = RemoteComms.get("/overtime_applications", headers);
-                                OvertimeServerObject overtimeServerObject = (OvertimeServerObject) OvertimeManager.getInstance().parseJSONobject(overtime_records_json, new OvertimeServerObject());
+                                OvertimeServerResponseObject overtimeServerObject = (OvertimeServerResponseObject) OvertimeManager.getInstance().parseJSONobject(overtime_records_json, new OvertimeServerResponseObject());
                                 if (overtimeServerObject != null)
                                 {
                                     if(overtimeServerObject.get_embedded()!=null)
@@ -357,7 +357,7 @@ public class OvertimeManager extends ApplicationObjectManager
             callback.call(null);
     }
 
-    class OvertimeServerObject extends ServerObject
+    class OvertimeServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

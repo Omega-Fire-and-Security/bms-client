@@ -53,9 +53,10 @@ public abstract class ApplicationObject implements Serializable
      * Method to assign identifier to this object.
      * @param _id identifier to be assigned to this object.
      */
-    public void set_id(String _id)
+    public ApplicationObject set_id(String _id)
     {
         this._id = _id;
+        return this;
     }
 
     public long getDate_logged()

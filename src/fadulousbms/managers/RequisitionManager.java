@@ -90,7 +90,7 @@ public class RequisitionManager extends ApplicationObjectManager
                             if (!isSerialized(ROOT_PATH + filename))
                             {
                                 String requisitions_json = RemoteComms.get("/requisitions", headers);
-                                RequisitionServerObject requisitionServerObject = (RequisitionServerObject) RequisitionManager.getInstance().parseJSONobject(requisitions_json, new RequisitionServerObject());
+                                RequisitionServerResponseObject requisitionServerObject = (RequisitionServerResponseObject) RequisitionManager.getInstance().parseJSONobject(requisitions_json, new RequisitionServerResponseObject());
                                 if(requisitionServerObject!=null)
                                 {
                                     if(requisitionServerObject.get_embedded()!=null)
@@ -104,7 +104,7 @@ public class RequisitionManager extends ApplicationObjectManager
                                                 requisitions.put(requisition.get_id(), requisition);
                                         } else IO.log(getClass().getName(), IO.TAG_WARN, "no requisitions were found in database.");
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Requisitions in database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "RequisitionServerObject (containing Requisition objects & other metadata) is null");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "RequisitionServerResponseObject (containing Requisition objects & other metadata) is null");
                                 IO.log(getClass().getName(), IO.TAG_INFO, "reloaded collection of purchase orders.");
                                 serialize(ROOT_PATH + filename, requisitions);
                             } else
@@ -364,16 +364,16 @@ public class RequisitionManager extends ApplicationObjectManager
         } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
-    class RequisitionServerObject extends ServerObject
+    class RequisitionServerResponseObject extends ServerResponseObject
     {
-        private RequisitionServerObject.Embedded _embedded;
+        private RequisitionServerResponseObject.Embedded _embedded;
 
-        RequisitionServerObject.Embedded get_embedded()
+        RequisitionServerResponseObject.Embedded get_embedded()
         {
             return _embedded;
         }
 
-        void set_embedded(RequisitionServerObject.Embedded _embedded)
+        void set_embedded(RequisitionServerResponseObject.Embedded _embedded)
         {
             this._embedded = _embedded;
         }

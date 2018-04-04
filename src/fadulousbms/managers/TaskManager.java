@@ -103,7 +103,7 @@ public class TaskManager extends ApplicationObjectManager
                             {
                                 //Load Task objects from server
                                 String tasks_json = RemoteComms.get("/tasks", headers);
-                                TaskServerObject taskServerObject = (TaskServerObject) TaskManager.getInstance().parseJSONobject(tasks_json, new TaskServerObject());
+                                TaskServerResponseObject taskServerObject = (TaskServerResponseObject) TaskManager.getInstance().parseJSONobject(tasks_json, new TaskServerResponseObject());
                                 if (taskServerObject != null)
                                 {
                                     if (taskServerObject.get_embedded() != null)
@@ -119,7 +119,7 @@ public class TaskManager extends ApplicationObjectManager
                                 } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Tasks in the database.");
 
                                 String task_items_json = RemoteComms.get("/tasks/resources", headers);
-                                TaskItemServerObject taskItemsServerObject = (TaskItemServerObject) TaskManager.getInstance().parseJSONobject(task_items_json, new TaskItemServerObject());
+                                TaskItemServerResponseObject taskItemsServerObject = (TaskItemServerResponseObject) TaskManager.getInstance().parseJSONobject(task_items_json, new TaskItemServerResponseObject());
                                 if (taskItemsServerObject != null)
                                 {
                                     if (taskItemsServerObject.get_embedded() != null)
@@ -178,7 +178,7 @@ public class TaskManager extends ApplicationObjectManager
         };
     }
 
-    class TaskServerObject extends ServerObject
+    class TaskServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 
@@ -208,7 +208,7 @@ public class TaskManager extends ApplicationObjectManager
         }
     }
 
-    class TaskItemServerObject extends ServerObject
+    class TaskItemServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

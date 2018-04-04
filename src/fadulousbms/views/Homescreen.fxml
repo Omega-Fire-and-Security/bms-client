@@ -74,9 +74,9 @@
                               </Label>
                            </center>
                         </BorderPane>
-                        <BorderPane onMouseClicked="#agendaClick" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <BorderPane onMouseClicked="#showTimesheet" prefHeight="200.0" prefWidth="200.0" styleClass="sys-btn" GridPane.columnIndex="1" GridPane.rowIndex="2">
                            <center>
-                              <Label text="Agenda" BorderPane.alignment="CENTER">
+                              <Label text="Timesheets" BorderPane.alignment="CENTER">
                                  <font>
                                     <Font size="31.0" />
                                  </font>

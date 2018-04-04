@@ -81,7 +81,7 @@ public class EmployeeManager extends ApplicationObjectManager
                             headers.add(new AbstractMap.SimpleEntry<>("session_id", smgr.getActive().getSession_id()));
 
                             String employee_json_object = RemoteComms.get("/employees", headers);
-                            EmployeeServerObject employeeServerObject = (EmployeeServerObject) EmployeeManager.getInstance().parseJSONobject(employee_json_object, new EmployeeServerObject());
+                            EmployeeServerResponseObject employeeServerObject = (EmployeeServerResponseObject) EmployeeManager.getInstance().parseJSONobject(employee_json_object, new EmployeeServerResponseObject());
 
                             if(employeeServerObject!=null)
                             {
@@ -93,7 +93,7 @@ public class EmployeeManager extends ApplicationObjectManager
                                     for (Employee employee : users)
                                         employees.put(employee.getUsr(), employee);
                                 } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Employees in database.");
-                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "EmployeeServerObject (containing Employee objects & other metadata) is null");
+                            } else IO.log(getClass().getName(), IO.TAG_ERROR, "EmployeeServerResponseObject (containing Employee objects & other metadata) is null");
                             IO.log(getClass().getName(), IO.TAG_INFO, "reloaded employee collection.");
                         } else IO.logAndAlert("Session Expired", "Active session has expired.", IO.TAG_ERROR);
                     } else IO.logAndAlert("Session Expired", "Active session is invalid", IO.TAG_ERROR);
@@ -570,7 +570,7 @@ public class EmployeeManager extends ApplicationObjectManager
         } else IO.showMessage("Session Expired", "No active sessions.", IO.TAG_ERROR);
     }
 
-    class EmployeeServerObject extends ServerObject
+    class EmployeeServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

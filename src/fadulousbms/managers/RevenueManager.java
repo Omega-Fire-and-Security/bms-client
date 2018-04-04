@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import fadulousbms.auxilary.Counters;
 import fadulousbms.auxilary.IO;
 import fadulousbms.auxilary.RemoteComms;
-import fadulousbms.auxilary.ServerObject;
+import fadulousbms.auxilary.ServerResponseObject;
 import fadulousbms.model.Revenue;
 import javafx.util.Callback;
 
@@ -87,7 +87,7 @@ public class RevenueManager extends ApplicationObjectManager
                             {
                                 //Load Revenue
                                 String revenues_json = RemoteComms.get("/revenues", headers);
-                                RevenueServerObject revenueServerObject = (RevenueServerObject) RevenueManager.getInstance().parseJSONobject(revenues_json, new RevenueServerObject());
+                                RevenueServerResponseObject revenueServerObject = (RevenueServerResponseObject) RevenueManager.getInstance().parseJSONobject(revenues_json, new RevenueServerResponseObject());
                                 if (revenueServerObject != null)
                                 {
                                     if(revenueServerObject.get_embedded()!=null)
@@ -124,7 +124,7 @@ public class RevenueManager extends ApplicationObjectManager
         };
     }
 
-    class RevenueServerObject extends ServerObject
+    class RevenueServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

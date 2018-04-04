@@ -100,7 +100,7 @@ public class PurchaseOrderManager extends ApplicationObjectManager
                             if (!isSerialized(ROOT_PATH + filename))
                             {
                                 String purchaseorders_json = RemoteComms.get("/purchaseorders", headers);
-                                PurchaseOrderServerObject purchaseOrderServerObject = (PurchaseOrderServerObject) PurchaseOrderManager.getInstance().parseJSONobject(purchaseorders_json, new PurchaseOrderServerObject());
+                                PurchaseOrderServerResponseObject purchaseOrderServerObject = (PurchaseOrderServerResponseObject) PurchaseOrderManager.getInstance().parseJSONobject(purchaseorders_json, new PurchaseOrderServerResponseObject());
                                 if(purchaseOrderServerObject!=null)
                                 {
                                     if(purchaseOrderServerObject.get_embedded()!=null)
@@ -115,7 +115,7 @@ public class PurchaseOrderManager extends ApplicationObjectManager
                                         }
                                         else IO.log(getClass().getName(), IO.TAG_WARN, "no purchase orders found in database.");
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Purchase Orders in database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderServerObject (containing PurchaseOrder objects & other metadata) is null");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderServerResponseObject (containing PurchaseOrder objects & other metadata) is null");
 
                                 if (purchase_orders != null)
                                 {
@@ -125,8 +125,8 @@ public class PurchaseOrderManager extends ApplicationObjectManager
 
                                         //get po items from server and set them to local object
                                         String purchase_order_items_json = RemoteComms.get("/purchaseorder/resources/" + po.get_id(), headers);
-                                        PurchaseOrderResourceServerObject purchaseOrderResourceServerObject = (PurchaseOrderResourceServerObject) PurchaseOrderManager.getInstance().parseJSONobject(purchase_order_items_json, new PurchaseOrderResourceServerObject());
-                                        //purchaseOrderResourceServerObject = gson.fromJson(purchase_order_items_json, PurchaseOrderResourceServerObject.class);
+                                        PurchaseOrderResourceServerResponseObject purchaseOrderResourceServerObject = (PurchaseOrderResourceServerResponseObject) PurchaseOrderManager.getInstance().parseJSONobject(purchase_order_items_json, new PurchaseOrderResourceServerResponseObject());
+                                        //purchaseOrderResourceServerObject = gson.fromJson(purchase_order_items_json, PurchaseOrderResourceServerResponseObject.class);
                                         if(purchaseOrderResourceServerObject!=null)
                                         {
                                             if(purchaseOrderResourceServerObject.get_embedded()!=null)
@@ -136,10 +136,10 @@ public class PurchaseOrderManager extends ApplicationObjectManager
                                                 purchaseOrderItems
                                                         .addAll(FXCollections.observableArrayList(purchase_order_resources_arr));
                                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Resources for PO #"+ po.get_id());
-                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderResourceServerObject (containing PurchaseOrderResource objects & other metadata) is null");
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderResourceServerResponseObject (containing PurchaseOrderResource objects & other metadata) is null");
 
                                         String purchase_order_assets_json = RemoteComms.get("/purchaseorder/assets/" + po.get_id(), headers);
-                                        PurchaseOrderAssetServerObject purchaseOrderAssetServerObject = (PurchaseOrderAssetServerObject) PurchaseOrderManager.getInstance().parseJSONobject(purchase_order_assets_json, new PurchaseOrderAssetServerObject());
+                                        PurchaseOrderAssetServerResponseObject purchaseOrderAssetServerObject = (PurchaseOrderAssetServerResponseObject) PurchaseOrderManager.getInstance().parseJSONobject(purchase_order_assets_json, new PurchaseOrderAssetServerResponseObject());
                                         if(purchaseOrderAssetServerObject!=null)
                                         {
                                             if(purchaseOrderAssetServerObject.get_embedded()!=null)
@@ -149,7 +149,7 @@ public class PurchaseOrderManager extends ApplicationObjectManager
                                                 purchaseOrderItems
                                                         .addAll(FXCollections.observableArrayList(purchase_order_assets_arr));
                                             } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Assets for PO #"+ po.get_id());
-                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderAssetServerObject (containing PurchaseOrderAsset objects & other metadata) is null");
+                                        } else IO.log(getClass().getName(), IO.TAG_ERROR, "PurchaseOrderAssetServerResponseObject (containing PurchaseOrderAsset objects & other metadata) is null");
 
 
                                         if(!purchaseOrderItems.isEmpty())
@@ -351,16 +351,16 @@ public class PurchaseOrderManager extends ApplicationObjectManager
         stage.setResizable(true);
     }
 
-    class PurchaseOrderServerObject extends ServerObject
+    class PurchaseOrderServerResponseObject extends ServerResponseObject
     {
-        private PurchaseOrderServerObject.Embedded _embedded;
+        private PurchaseOrderServerResponseObject.Embedded _embedded;
 
-        PurchaseOrderServerObject.Embedded get_embedded()
+        PurchaseOrderServerResponseObject.Embedded get_embedded()
         {
             return _embedded;
         }
 
-        void set_embedded(PurchaseOrderServerObject.Embedded _embedded)
+        void set_embedded(PurchaseOrderServerResponseObject.Embedded _embedded)
         {
             this._embedded = _embedded;
         }
@@ -381,7 +381,7 @@ public class PurchaseOrderManager extends ApplicationObjectManager
         }
     }
 
-    class PurchaseOrderAssetServerObject extends ServerObject
+    class PurchaseOrderAssetServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 
@@ -411,7 +411,7 @@ public class PurchaseOrderManager extends ApplicationObjectManager
         }
     }
 
-    class PurchaseOrderResourceServerObject extends ServerObject
+    class PurchaseOrderResourceServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

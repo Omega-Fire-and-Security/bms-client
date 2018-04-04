@@ -1,6 +1,7 @@
 package fadulousbms.model;
 
 import fadulousbms.auxilary.AccessLevel;
+import fadulousbms.auxilary.Globals;
 import fadulousbms.auxilary.IO;
 import fadulousbms.exceptions.ParseException;
 import fadulousbms.managers.*;
@@ -19,6 +20,7 @@ public class Requisition extends ApplicationObject
     private String description;
     private String type;
     private int status;
+    public static final String INTERNAL_REQUISITION = "INTERNAL";
     public static final String TAG = "Requisition";
 
     @Override
@@ -104,12 +106,31 @@ public class Requisition extends ApplicationObject
         this.status = status;
     }
 
+    /**
+     * Method to return an instance of a Client object associated with this TimesheetActivity using the client_id
+     * attribute, if the client_id is == TimesheetActivity.INTERNAL_ACTIVITY then return an instance of the local organisation
+     * @return an instance of a Client object associated with this TimesheetActivity.
+     */
     public Client getClient()
     {
-        HashMap<String, Client> clients = ClientManager.getInstance().getDataset();
-        if(clients!=null)
-            return clients.get(client_id);
-        else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in database.");
+        if(ClientManager.getInstance().getDataset() != null)
+        {
+            if (getClient_id() != null)
+            {
+                if (getClient_id().toLowerCase().equals(Requisition.INTERNAL_REQUISITION.toLowerCase()))
+                {
+                    return (Client) new Client().setClient_name(Globals.COMPANY.getValue())
+                                                .setActive(true)
+                                                .setPhysical_address(Globals.PHYSICAL_ADDRESS.getValue())
+                                                .setPostal_address(Globals.POSTAL_ADDRESS.getValue())
+                                                .setRegistration_number(Globals.REGISTRATION_NUMBER.getValue())
+                                                .setTax_number(Globals.TAX_NUMBER.getValue())
+                                                .setContact_email(Globals.EMAIL.getValue())
+                                                .setTel(Globals.TEL.getValue()).setWebsite(Globals.WEBSITE.getValue())
+                                                .set_id(Client.INTERNAL);
+                } else return ClientManager.getInstance().getDataset().get(getClient_id());
+            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid client_id");
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in the database.");
         return null;
     }
 

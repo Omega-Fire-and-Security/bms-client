@@ -91,7 +91,7 @@ public class QuoteManager extends ApplicationObjectManager
                             {
                                 //Load Quotes
                                 String quotes_json = RemoteComms.get("/quotes", headers);
-                                QuoteServerObject quoteServerObject = (QuoteServerObject) QuoteManager.getInstance().parseJSONobject(quotes_json, new QuoteServerObject());
+                                QuoteServerResponseObject quoteServerObject = (QuoteServerResponseObject) QuoteManager.getInstance().parseJSONobject(quotes_json, new QuoteServerResponseObject());
                                 if(quoteServerObject!=null)
                                 {
                                     if(quoteServerObject.get_embedded()!=null)
@@ -101,7 +101,7 @@ public class QuoteManager extends ApplicationObjectManager
                                         for (Quote quote : quotes_arr)
                                             quotes.put(quote.get_id(), quote);
                                     } else IO.log(getClass().getName(), IO.TAG_ERROR, "could not find any Quotes in database.");
-                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "QuoteServerObject (containing Quote objects & other metadata) is null");
+                                } else IO.log(getClass().getName(), IO.TAG_ERROR, "QuoteServerResponseObject (containing Quote objects & other metadata) is null");
 
                                 if(EmployeeManager.getInstance().getDataset()!=null)
                                 {
@@ -122,7 +122,7 @@ public class QuoteManager extends ApplicationObjectManager
                                                     {
                                                         if (!quote_item_ids_json.equals("[]"))
                                                         {
-                                                            QuoteResourceServerObject quoteResourceServerObject = (QuoteResourceServerObject) QuoteManager.getInstance().parseJSONobject(quote_item_ids_json, new QuoteResourceServerObject());
+                                                            QuoteResourceServerResponseObject quoteResourceServerObject = (QuoteResourceServerResponseObject) QuoteManager.getInstance().parseJSONobject(quote_item_ids_json, new QuoteResourceServerResponseObject());
                                                             if (quoteResourceServerObject != null)
                                                             {
                                                                 if (quoteResourceServerObject.get_embedded() != null)
@@ -140,7 +140,7 @@ public class QuoteManager extends ApplicationObjectManager
                                                             }
                                                             else IO.log(getClass().getName(),
                                                                         IO.TAG_ERROR,
-                                                                        "QuoteResourceServerObject (containing QuoteItem objects & other metadata) is null");
+                                                                        "QuoteResourceServerResponseObject (containing QuoteItem objects & other metadata) is null");
                                                         }
                                                         else IO.log(getClass().getName(), IO.TAG_WARN,
                                                                     String.format("quote '%s does not have any resources.",quote.get_id()));
@@ -724,16 +724,16 @@ public class QuoteManager extends ApplicationObjectManager
         stage.setResizable(true);
     }
 
-    class QuoteServerObject extends ServerObject
+    class QuoteServerResponseObject extends ServerResponseObject
     {
-        private QuoteServerObject.Embedded _embedded;
+        private QuoteServerResponseObject.Embedded _embedded;
 
-        QuoteServerObject.Embedded get_embedded()
+        QuoteServerResponseObject.Embedded get_embedded()
         {
             return _embedded;
         }
 
-        void set_embedded(QuoteServerObject.Embedded _embedded)
+        void set_embedded(QuoteServerResponseObject.Embedded _embedded)
         {
             this._embedded = _embedded;
         }
@@ -754,7 +754,7 @@ public class QuoteManager extends ApplicationObjectManager
         }
     }
 
-    class QuoteResourceServerObject extends ServerObject
+    class QuoteResourceServerResponseObject extends ServerResponseObject
     {
         private Embedded _embedded;
 

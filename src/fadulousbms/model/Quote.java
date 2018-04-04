@@ -27,6 +27,7 @@ public class Quote extends ApplicationObject
     private String parent_id;
     private QuoteItem[] resources;
     private int rev_cursor = -1;
+    public static final String INTERNAL_QUOTE = "INTERNAL";
     public static final String TAG = "Quote";
 
     @Override
@@ -190,12 +191,32 @@ public class Quote extends ApplicationObject
         this.resources=resources;
     }
 
+    /**
+     * Method to return an instance of a Client object associated with this TimesheetActivity using the client_id
+     * attribute, if the client_id is == TimesheetActivity.INTERNAL_ACTIVITY then return an instance of the local organisation
+     * @return an instance of a Client object associated with this TimesheetActivity.
+     */
     public Client getClient()
     {
-        if(ClientManager.getInstance().getDataset()!=null)
+        if(ClientManager.getInstance().getDataset() != null)
         {
-            return ClientManager.getInstance().getDataset().get(client_id);
-        } else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in database.");
+            if (getClient_id() != null)
+            {
+                if (getClient_id().toLowerCase().equals(Quote.INTERNAL_QUOTE.toLowerCase()))
+                {
+                    return (Client) new Client().setClient_name(Globals.COMPANY.getValue())
+                                                .setActive(true)
+                                                .setPhysical_address(Globals.PHYSICAL_ADDRESS.getValue())
+                                                .setPostal_address(Globals.POSTAL_ADDRESS.getValue())
+                                                .setRegistration_number(Globals.REGISTRATION_NUMBER.getValue())
+                                                .setTax_number(Globals.TAX_NUMBER.getValue())
+                                                .setContact_email(Globals.EMAIL.getValue())
+                                                .setTel(Globals.TEL.getValue()).setWebsite(Globals.WEBSITE.getValue())
+                                                .set_id(Client.INTERNAL);
+                } else return ClientManager.getInstance().getDataset().get(getClient_id());
+            } else IO.log(getClass().getName(), IO.TAG_ERROR, "invalid client_id");
+        } else IO.log(getClass().getName(), IO.TAG_ERROR, "no clients were found in the database.");
+
         return null;
     }
 
@@ -205,9 +226,7 @@ public class Quote extends ApplicationObject
         HashMap<String, Employee> employees = EmployeeManager.getInstance().getDataset();
 
         if(employees!=null)
-        {
             return employees.get(contact_person_id);
-        }
         return null;
     }
 
